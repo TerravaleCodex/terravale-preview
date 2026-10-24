@@ -1,0 +1,74 @@
+name: Publish Terravale Preview to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+
+concurrency:
+  group: terravale-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and extract compiled preview
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import io
+          import pathlib
+          import zipfile
+
+          files = sorted(pathlib.Path(".preview-bundle").glob("part-*.b64"))
+          if len(files) != 32:
+              raise SystemExit("Missing one or more compiled-preview bundle parts")
+          archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
+          expected = "77d241cf8c26ae077f5ba21e98daa94e4e0315c6260a37fc76abf03883c9138a"
+          if hashlib.sha256(archive).hexdigest() != expected:
+              raise SystemExit("Preview archive integrity verification failed")
+
+          out = pathlib.Path("site")
+          out.mkdir()
+          with zipfile.ZipFile(io.BytesIO(archive)) as z:
+              names = z.namelist()
+              if len(names) != 577 or "index.html" not in names or "codex.json" not in names:
+                  raise SystemExit("Compiled preview files incomplete")
+              for item in z.infolist():
+                  name = pathlib.PurePosixPath(item.filename)
+                  if name.is_absolute() or ".." in name.parts or item.is_dir():
+                      raise SystemExit("Unsafe path in compiled preview")
+                  if ((item.external_attr >> 16) & 0o170000) == 0o120000:
+                      raise SystemExit("Symlinks are not allowed in preview bundle")
+              z.extractall(out)
+          (out / ".nojekyll").touch()
+          print("Prepared", len(names), "static files for GitHub Pages")
+          PY
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: https://terravalecodex.github.io/terravale-preview/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
