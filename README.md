@@ -1,6 +1,6 @@
 # Terravale Living Codex — Public Preview
 
-This repository contains the compiled GitHub Pages preview of **Terravale Living Codex** (v0.11.0).
+This repository contains the compiled GitHub Pages preview of **Terravale Living Codex** (v0.11.1).
 
 The editable source code, backend migrations, and campaign administration stay in a **separate private repository**. This repository only publishes the existing public-safe demo site.
 
