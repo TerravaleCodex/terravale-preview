@@ -32,7 +32,7 @@ jobs:
           if len(files) != 32:
               raise SystemExit("Missing one or more compiled-preview bundle parts")
           archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
-          expected = "583f072eaa29699f2c0e2e92f89de9b0dae0b50a88219001100db6e28e68f965"
+          expected = "be3905c9334d37d0dc3e6c34ee54e77b17c8e0432fb82e163e76b5a441832836"
           if hashlib.sha256(archive).hexdigest() != expected:
               raise SystemExit("Preview archive integrity verification failed")
 
