@@ -1,5 +1,9 @@
 # Terravale Living Codex — Public Preview
 
+## Fidget Pocket — 10 interactive toys
+- Replaces the old Fidget Shrine with ten toys including the Squishable Mimic, Bone Rattle, Potion, Spinner, Rune Scribbler, Pocket Dragon, Big Red Button, Lever, Coin, and Forbidden Worm.
+- Includes interaction-responsive generated audio, mute/volume controls, and locally stored settings. All effects are cosmetic and separate from campaign dice.
+
 This repository contains the compiled GitHub Pages preview of **Terravale Living Codex** (v0.11.3).
 
 The editable source code, backend migrations, and campaign administration stay in a **separate private repository**. This repository only publishes the existing public-safe demo site.
