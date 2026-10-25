@@ -1,5 +1,14 @@
 # Terravale Living Codex — Public Preview
 
+## Character ownership, private sheets, class skills and site tour
+- Full character sheets and roster cards identify the assigned character owner with a campaign-scoped display name.
+- Player or DM can turn full-sheet sharing on/off; Supabase RLS protects full character and state records from other players when private.
+- The active Session Room **still shows** private characters through its deliberately limited snapshot, with room portraits. Unavailable full-sheet links are replaced with a privacy indicator.
+- All 33 classes show level-one class skill proficiency options and selected skills without silently awarding unchosen proficiencies.
+- A one-time skippable interactive site walkthrough with optional DM chapter can be replayed from the '?' help button.
+- Applies with Supabase migration `0019_character_sheet_visibility.sql` (already installed and checked).
+
+
 ## Feat-granted ability choices
 - Players choose their six standard array scores first and then choose the permitted +1 score from their selected starting ancestry feat.
 - ASI/Feat level-up choices allocate standard ASI points separately from any feat-based score increase.
