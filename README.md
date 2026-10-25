@@ -1,5 +1,12 @@
 # Terravale Living Codex — Public Preview
 
+## Feat-granted ability choices
+- Players choose their six standard array scores first and then choose the permitted +1 score from their selected starting ancestry feat.
+- ASI/Feat level-up choices allocate standard ASI points separately from any feat-based score increase.
+- Post-creation ancestry feat changes propose both the feat and its bonus ability for atomic DM approval.
+- Stat previews and DM diffs show the chosen bonus. Supabase migration `0018_feat_ability_score_choices.sql` validates allowed stats and prevents double counting.
+
+
 ## Fidget Pocket v3 — five carefully rebuilt fidgets
 - **Bone Rattle**: articulated bones, a three-skeleton dance, secret reactions and the official *Spooky, Scary Skeletons* YouTube player after discovery (the music recording is not bundled).
 - **Rune Scribbler**: drawn glyph recognition, ward/flame/wind effects, summons and spell combinations.
