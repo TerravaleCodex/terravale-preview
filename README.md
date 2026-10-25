@@ -1,14 +1,13 @@
 # Terravale Living Codex — Public Preview
 
-## Fidget Pocket v2 — upgraded toy collection
-- More responsive physics, mood and object changes, rare animated surprises, and layered procedural audio across all ten toys.
-- Persistent Pocket Log, collectible secrets, Pocket Resonance, visual skins, cross-toy interactions, and an unlockable **Tiny Vault** (eleventh toy).
-- All fidgets are cosmetic: real campaign dice, characters and game sessions are unaffected.
-
-
-## Fidget Pocket — 10 interactive toys
-- Replaces the old Fidget Shrine with ten toys including the Squishable Mimic, Bone Rattle, Potion, Spinner, Rune Scribbler, Pocket Dragon, Big Red Button, Lever, Coin, and Forbidden Worm.
-- Includes interaction-responsive generated audio, mute/volume controls, and locally stored settings. All effects are cosmetic and separate from campaign dice.
+## Fidget Pocket v3 — five carefully rebuilt fidgets
+- **Bone Rattle**: articulated bones, a three-skeleton dance, secret reactions and the official *Spooky, Scary Skeletons* YouTube player after discovery (the music recording is not bundled).
+- **Rune Scribbler**: drawn glyph recognition, ward/flame/wind effects, summons and spell combinations.
+- **Big Red Button**: over forty escalating milestones with temporary, reversible visual incidents across the website.
+- **Pocket Thunderstorm**: interactive weather simulation, squishable rain cloud, lightning, page-wide storm and hidden elemental.
+- **Dvergr Pocket Forge**: heat, bellows, strike accuracy, three object recipes, water quenching, and rare sentient creations.
+- Five-option navigation, discoverable secrets, local persistence, touch and keyboard controls, reduced-motion handling, and procedurally generated toy sounds.
+- The previous mimic, potion, spinner, dragon, lever, coin, worm and vault toys are retired. Toy actions remain cosmetic, with no campaign data changes.
 
 This repository contains the compiled GitHub Pages preview of **Terravale Living Codex** (v0.11.3).
 
