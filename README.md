@@ -1,5 +1,11 @@
 # Terravale Living Codex — Public Preview
 
+## Fidget Pocket v2 — upgraded toy collection
+- More responsive physics, mood and object changes, rare animated surprises, and layered procedural audio across all ten toys.
+- Persistent Pocket Log, collectible secrets, Pocket Resonance, visual skins, cross-toy interactions, and an unlockable **Tiny Vault** (eleventh toy).
+- All fidgets are cosmetic: real campaign dice, characters and game sessions are unaffected.
+
+
 ## Fidget Pocket — 10 interactive toys
 - Replaces the old Fidget Shrine with ten toys including the Squishable Mimic, Bone Rattle, Potion, Spinner, Rune Scribbler, Pocket Dragon, Big Red Button, Lever, Coin, and Forbidden Worm.
 - Includes interaction-responsive generated audio, mute/volume controls, and locally stored settings. All effects are cosmetic and separate from campaign dice.
