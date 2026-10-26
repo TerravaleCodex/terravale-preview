@@ -1,5 +1,12 @@
 # Terravale Living Codex — Public Preview
 
+## v0.11.4 — Character sheets, stable tutorial and inventory
+- Fidget Pocket is temporarily hidden; existing toy source is retained for future work.
+- The tutorial no longer resets when the workspace refreshes, and it highlights the relevant sidebar menu link, including in mobile navigation.
+- Character owners and DMs can add, edit, remove and save inventory items directly on full character sheets. Unsaved inventory changes survive normal refreshes.
+- All 33 classes display suggested main and supporting abilities during standard-array assignment, without forcing a particular build.
+- Every class has a full reference available from the character sheet. All 13 core classes plus 19 custom classes have level-by-level features; Shaman continues through its dedicated progression system.
+
 ## Character ownership, private sheets, class skills and site tour
 - Full character sheets and roster cards identify the assigned character owner with a campaign-scoped display name.
 - Player or DM can turn full-sheet sharing on/off; Supabase RLS protects full character and state records from other players when private.
