@@ -1,5 +1,11 @@
 # Terravale Living Codex — Public Preview
 
+## v0.11.5 — Shady's portrait rescue, campaign names and custom feats
+- Fixed private Storage portrait access; the policy now checks object filenames correctly rather than character names, without making private character sheets public.
+- Character/DM portrait uploader supports a retry when portrait files can't be fetched; cloud DM editing uses the secure uploader.
+- DMs can rename their campaigns while preserving invitations, character ownership and campaign IDs.
+- DMs can create character-specific feats, boons and drawbacks with full rules and prerequisites. They appear on the saved player character sheet.
+
 ## v0.11.4 — Character sheets, stable tutorial and inventory
 - Fidget Pocket is temporarily hidden; existing toy source is retained for future work.
 - The tutorial no longer resets when the workspace refreshes, and it highlights the relevant sidebar menu link, including in mobile navigation.
