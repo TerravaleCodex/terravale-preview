@@ -1,5 +1,11 @@
 # Terravale Living Codex — Public Preview
 
+## v0.12.0 — Rest & Recovery
+- Short Rest and Long Rest on character sheets and live session controls, with confirmation before a save.
+- Players select Hit Dice to spend on short rests and get automatically rolled healing. Long rests restore HP, clear temporary HP and regain half the total Hit Dice (at least one), following the selected 2014-style baseline.
+- DM-authored resource recharge supports full, half, fixed or none on each rest type, including custom feats, class resources and additional custom pools. Unspecified recharge is deliberately not guessed.
+- DMs can detect clear feat recharge wording or configure it explicitly. Rest saves resources and HP without overwriting inventory, Blood State or DM-owned conditions.
+
 ## v0.11.5 — Shady's portrait rescue, campaign names and custom feats
 - Fixed private Storage portrait access; the policy now checks object filenames correctly rather than character names, without making private character sheets public.
 - Character/DM portrait uploader supports a retry when portrait files can't be fetched; cloud DM editing uses the secure uploader.
