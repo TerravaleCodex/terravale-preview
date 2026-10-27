@@ -52,6 +52,25 @@ jobs:
           (out / ".nojekyll").touch()
           print("Prepared", len(names), "static files for GitHub Pages")
           PY
+      - name: Apply public-safe appearance extension
+        shell: bash
+        run: |
+          cp site-overrides/theme-collection.css site/theme-collection.css
+          cp site-overrides/theme-collection.js site/theme-collection.js
+          python3 - <<'PY'
+          from pathlib import Path
+          folder=Path("site")
+          css='<link rel="stylesheet" href="/terravale-preview/theme-collection.css">'
+          js='<script defer src="/terravale-preview/theme-collection.js"></script>'
+          pages=0
+          for file in folder.rglob("*.html"):
+              text=file.read_text(encoding="utf-8")
+              if "</head>" not in text or "</body>" not in text:
+                  raise SystemExit(f"Invalid HTML for appearance extension: {file}")
+              file.write_text(text.replace("</head>",css+"</head>",1).replace("</body>",js+"</body>",1),encoding="utf-8")
+              pages+=1
+          print(f"Applied shared appearance extension to {pages} static pages")
+          PY
       - uses: actions/configure-pages@v5
         with:
           enablement: true
