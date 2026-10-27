@@ -789,10 +789,27 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
 }
 function notifyHeight(){if(LIVE.enabled&&LIVE.loaded)window.parent.postMessage({type:'TV_SHEET_HEIGHT',id:LIVE.charId,height:document.documentElement.scrollHeight},location.origin)}
 if(LIVE.enabled){
- window.addEventListener('message',ev=>{if(ev.source!==window.parent||ev.origin!==location.origin)return;if(ev.data?.type==='TV_SHEET_LOAD')loadApprovedCharacter(ev.data.character);if(ev.data?.type==='TV_SHEET_RESULT'&&ev.data.error)toast('Not saved: '+ev.data.error)});
+ // Parent React hydration can attach its message listener after the iframe load
+ // on mobile Safari. Continue the handshake until approved character data arrives.
+ const announceReady=()=>{if(!LIVE.loaded)window.parent.postMessage({type:'TV_SHEET_READY'},location.origin)};
+ window.addEventListener('message',ev=>{
+  if(ev.source!==window.parent||ev.origin!==location.origin)return;
+  if(ev.data?.type==='TV_SHEET_LOAD'){
+   try{loadApprovedCharacter(ev.data.character)}
+   catch(error){
+    console.error('Terravale character sheet failed to render',error);
+    document.documentElement.classList.add('live-loaded');
+    const panel=document.querySelector('#page');
+    if(panel){panel.replaceChildren();const box=document.createElement('div');box.className='panel';const heading=document.createElement('h3');heading.textContent='Character sheet could not load';const detail=document.createElement('p');detail.textContent='Reload this page. Your saved character data is unaffected.';box.append(heading,detail);panel.append(box);}
+    window.parent.postMessage({type:'TV_SHEET_LOAD_ERROR',error:'The character sheet failed to render. Reload the page.'},location.origin);
+   }
+  }
+  if(ev.data?.type==='TV_SHEET_RESULT'&&ev.data.error)toast('Not saved: '+ev.data.error);
+ });
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(notifyHeight).observe(document.querySelector('.view'));
- window.addEventListener('load',()=>window.parent.postMessage({type:'TV_SHEET_READY'},location.origin));
- setTimeout(()=>window.parent.postMessage({type:'TV_SHEET_READY'},location.origin),0);
+ window.addEventListener('load',announceReady);
+ setTimeout(announceReady,0);
+ const handshakeTimer=setInterval(()=>{if(LIVE.loaded)clearInterval(handshakeTimer);else announceReady()},850);
 }
 render();
 })();
