@@ -59,6 +59,12 @@ jobs:
           cp site-overrides/sheet-workshop-v0.9.1.html site/characters/sheet-workshop/index.html
           test -s site/characters/sheet-workshop/index.html
           grep -q 'Character Overview' site/characters/sheet-workshop/index.html
+      - name: Publish live character-sheet surface
+        shell: bash
+        run: |
+          mkdir -p site/characters/sheet-live
+          cp site-overrides/sheet-live-v091.html site/characters/sheet-live/index.html
+          grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
