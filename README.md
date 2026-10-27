@@ -1,5 +1,12 @@
 # Terravale Living Codex — Public Preview
 
+## v0.12.2 — Echo-Bearer eligibility, clearer class sheets & focus-mode navigation
+- Fixed Echo-Bearer being unselectable: the class had been restricted to AelVaen, an ancestry name not offered by character creation. Base Elf now exposes Echo-Bearer, with Ael’Vaen lineage confirmation left to the DM. Kharithen and Thalassari remain restricted without an explicit exception.
+- Six structural class-sheet families replace one-size-fits-all overview composition: Bloodforger, Shaman, Echo-Bearer, defensive, arcane and martial layouts. Information follows approved rules; the styles do not invent powers.
+- Desktop sidebar collapses to an accessible icon rail, and the choice persists per browser. Mobile retains the existing open/close navigation.
+- Active website themes are Classic Dark and Night Sky only. Active sheet colours are Classic Codex and Night Sky only; old theme metadata and styling remain archived for later rework.
+- Retains inventory, rest/recharge and one-click ability mechanics from prior updates.
+
 ## Emergency workspace-loading hotfix · October 27, 2026
 - Cloud sign-in and initial campaign queries now have bounded loading times. A stalled authentication request can no longer trap all pages behind “Loading workspace…” indefinitely.
 - Background polling, initial auth and focus refreshes share one in-flight load; INITIAL_SESSION no longer duplicates startup login checks.
