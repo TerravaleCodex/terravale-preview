@@ -52,6 +52,8 @@ jobs:
           (out / ".nojekyll").touch()
           print("Prepared", len(names), "static files for GitHub Pages")
           PY
+      - name: Validate appearance JavaScript
+        run: node --check site-overrides/theme-collection.js
       - name: Apply public-safe appearance extension
         shell: bash
         run: |
