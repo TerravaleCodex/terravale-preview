@@ -767,14 +767,14 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  LIVE.disciplineNames=Array.isArray(payload.disciplines)?payload.disciplines:[];
  const clazz=String(payload.className||'Unassigned').toLowerCase().trim();
  const kind=clazz==='bloodforger'||clazz==='crimson conduit'?'bloodforger':clazz==='shaman'?'shaman':clazz==='gatewarden'||clazz==='seal-maintainer'?'gatewarden':clazz==='echo-bearer'?'echo':clazz==='bard'?'bard':clazz==='barbarian'?'barbarian':clazz==='summoner'?'summoner':'barbarian';
- LIVE.generic=!['bloodforger','shaman','gatewarden'].includes(kind)||!['bloodforger','crimson conduit','shaman','gatewarden','seal-maintainer'].includes(clazz);
+ LIVE.generic=!['bloodforger','shaman','gatewarden'].includes(clazz);
  const firstLoad=oldId!==LIVE.charId;
  app.profile=kind;app.contentMode='filled';
  if(firstLoad){app.tab='Overview';app.expandedStat=null;app.layouts={};app.sectionPrefs={};try{const pref=JSON.parse(localStorage.getItem('terravale-live-sheet-layout-'+LIVE.charId)||'{}');app.layouts=pref.layouts||{};app.sectionPrefs=pref.sectionPrefs||{};app.dense=pref.dense??true;}catch(e){}}
  const x=profiles[kind];
  const resource={},current={};(payload.resources||[]).forEach(r=>{const key=r.id==='class:blood-reserve'?'reserve':r.name?.toLowerCase().includes('exertion')?'exertion':r.id.replace(/[^a-z0-9]/gi,'_');resource[key]={label:r.name,current:r.current,max:r.max,note:''};current[key]=r.current;});
  if(kind==='bloodforger'&&!resource.exertion){resource.exertion={label:'Exertion',current:0,max:0,note:'No Exertion pool configured'};current.exertion=0}
- const realInventory=(payload.inventory||[]).map(it=>({...it,category:it.category||identifyGear(it.name).category,twoHanded:!!it.twoHanded}));
+ const realInventory=(payload.inventory||[]).map(it=>({...it,slot:it.slot==='gloves'?'hands':it.slot,category:it.category||identifyGear(it.name).category,twoHanded:!!it.twoHanded}));
  LIVE.realInventory=realInventory;const slots={};realInventory.forEach(it=>{if(it.slot){slots[it.slot]=it.id;if(it.twoHanded&&it.slot==='main')slots.off=it.id}});
  const approvedFeatures=(payload.features||[]).map(x=>typeof x==='string'?x:x.name);
  const featDetails={};approvedFeatures.forEach(name=>featDetails[name]='Approved class feature. Open the Class & Abilities tab for the complete rules.');
