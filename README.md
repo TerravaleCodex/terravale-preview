@@ -1,5 +1,11 @@
 # Terravale Living Codex — Public Preview
 
+## Emergency workspace-loading hotfix · October 27, 2026
+- Cloud sign-in and initial campaign queries now have bounded loading times. A stalled authentication request can no longer trap all pages behind “Loading workspace…” indefinitely.
+- Background polling, initial auth and focus refreshes share one in-flight load; INITIAL_SESSION no longer duplicates startup login checks.
+- Failed workspace loading displays visible diagnostics, a Retry workspace control and a targeted Recover sign-in button. Recovery removes only the current Supabase project's browser auth cookies/token cache and redirects to login. It does not delete campaigns, characters or browser backups.
+- Initial cloud loading never displays mock local demo campaigns. Both private cloud data and the existing short/long rest and interactive ability features are preserved.
+
 ## v0.12.1 — Interactive Abilities
 - Players and DMs can spend charges on DM-linked class features and character-specific feats with one click from character sheets; actions show cost, remaining balance and activation type.
 - Class ability links can only use unlocked class features or approved selections, and must have explicitly configured costs.
