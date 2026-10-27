@@ -65,6 +65,26 @@ jobs:
           mkdir -p site/characters/sheet-live
           cp site-overrides/sheet-live-v091.html site/characters/sheet-live/index.html
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
+      - name: Publish isolated Session Room V2 workshop
+        shell: bash
+        run: |
+          mkdir -p site/session-room-v2
+          cp site-overrides/session-room-v2.html site/session-room-v2/index.html
+          test -s site/session-room-v2/index.html
+          grep -q 'Initiative Queue' site/session-room-v2/index.html
+          grep -q 'Character-Specific Quick Checks' site/session-room-v2/index.html
+      - name: Check Session Room V2 preview JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          src=pathlib.Path('site/session-room-v2/index.html').read_text()
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',src,re.S)
+          if len(scripts)!=1:
+              raise SystemExit('Unexpected preview script count')
+          pathlib.Path('/tmp/terravale-room-v2.js').write_text(scripts[0])
+          PY
+          node --check /tmp/terravale-room-v2.js
       - name: Check live sheet JavaScript syntax
         shell: bash
         run: |
