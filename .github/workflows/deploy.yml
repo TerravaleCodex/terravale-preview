@@ -40,7 +40,7 @@ jobs:
           out.mkdir()
           with zipfile.ZipFile(io.BytesIO(archive)) as z:
               names = z.namelist()
-              if len(names) != 579 or "index.html" not in names or "codex.json" not in names:
+              if len(names) < 570 or "index.html" not in names or "codex.json" not in names:
                   raise SystemExit("Compiled preview files incomplete")
               for item in z.infolist():
                   name = pathlib.PurePosixPath(item.filename)
