@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Room V2 — Terravale Codex</title>
+<style>
+:root{color-scheme:dark;--bg:#08090c;--panel:#0e1117;--panel2:#11151d;--line:#252a35;--line2:#383044;--ink:#e4e5eb;--muted:#8d91a1;--purple:#b58aeb;--purple2:#7e5cae;--green:#7fc7a3;--red:#eb8b90;--gold:#d7b77b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--purple);outline-offset:2px}a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:176px minmax(0,1fr);min-height:100vh}.side{border-right:1px solid #1f2430;background:#07090c;display:flex;flex-direction:column;min-width:0;position:sticky;top:0;height:100vh}.brand{padding:20px 18px 24px;border-bottom:1px solid #171a22;display:flex;gap:10px;align-items:center}.brand-star{font-size:24px;color:#f0f2f9}.brand strong{font:600 15px Georgia,serif;letter-spacing:1.1px}.brand small{display:block;letter-spacing:1.5px;font-size:8px;color:#9a9cac}.nav-head,.micro{color:#8c91a1;font-size:10px;font-weight:750;letter-spacing:1.5px;text-transform:uppercase}.nav-head{padding:22px 17px 10px}.menu{display:grid;gap:4px;padding:0 9px}.menu a{padding:10px 11px;border-radius:6px;color:#aaaeb9;display:flex;align-items:center;gap:10px}.menu a:hover{background:#151923;color:#fff}.menu a.active{border:1px solid #48365e;background:#1b1726;color:#f3e7ff}.nav-ic{display:inline-grid;place-items:center;width:17px;font-size:15px}.campaign{margin-top:auto;padding:16px 12px 18px;border-top:1px solid #252a35}.campaign select{width:100%;margin-top:8px;padding:10px;background:#101319;color:#eee;border:1px solid #333745;border-radius:6px}
+.main{min-width:0}.topbar{height:43px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid #222731;background:#090b10;position:sticky;top:0;z-index:30}.breadcrumbs{font-size:12px;color:#b2b5be}.topright{display:flex;align-items:center;gap:9px}.tiny{font-size:11px;color:#9ba0ac}.cloud{border:1px solid #2f765c;color:#83dbb4;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:1px}
+main{padding:23px 24px 30px;max-width:1900px;margin:auto}.head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}.head h1{font:normal 34px/1 Georgia,serif;margin:0 0 8px}.subtitle{color:#a3a7b4;font-size:12px}.head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #3b404e;border-radius:6px;background:#141821;padding:9px 13px;min-height:34px}.btn:hover{border-color:#75618f;background:#1b1d28}.btn.primary{background:#604389;border-color:#8461b5;color:white}.btn.primary:hover{background:#73509f}.btn.danger{border-color:#663c47;color:#ffb9c0;background:#26171b}.btn.small{padding:5px 9px;min-height:29px}.btn.ghost{background:transparent;border-color:#303440}.btn.is-on{border-color:#9473bf;color:#d7bdfc;background:#241d30}
+.preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border:1px solid #4b3b50;background:#17121d;border-radius:8px;margin-bottom:14px;color:#ddc9ed;font-size:12px}.preview strong{color:#f2e4ff}
+.panel{border:1px solid #242a35;background:linear-gradient(180deg,#10131a,#0c0f15);border-radius:9px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid #252a35;min-height:45px}.panel-head h2{font:normal 16px Georgia,serif;margin:0}.meta{color:#888d9b;font-size:11px}.status{color:#7dceaa;font-weight:700}.initiative{padding:13px 13px 14px;margin-bottom:12px}.section-top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:11px}.section-top h2{font:normal 17px Georgia,serif;margin:0}.section-top span{color:#a7a7b5;font-size:12px}.controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.track{display:flex;gap:10px;overflow-x:auto;padding:3px 2px 6px;scrollbar-color:#4f435e transparent;scrollbar-width:thin}.actor{border:1px solid #2f3440;background:#11141b;border-radius:8px;padding:10px;flex:1 0 134px;min-width:134px;max-width:185px;min-height:172px;text-align:left;position:relative;transition:background .15s,border .15s}.actor.front{border-color:#a97cdd;background:#211a2c;box-shadow:inset 0 0 0 1px #4a2e68}.actor .tag{font-size:10px;color:#aa99c4;letter-spacing:1.1px;text-transform:uppercase;height:16px}.actor .portrait{width:43px;height:43px;margin:4px 0 8px;border-radius:7px}.portrait{display:inline-grid;place-items:center;border:1px solid #594d6d;background:linear-gradient(135deg,#473956,#171622);font:600 18px Georgia,serif;color:#eee4fa;flex:none}.portrait.npc{border-color:#715744;background:linear-gradient(135deg,#443527,#171311);color:#eed3b6}.actor .initiative-num{position:absolute;right:9px;top:11px;font-weight:750;border:1px solid #353540;border-radius:5px;padding:2px 6px;font-size:13px}.actor .name{font-weight:750;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.actor .type{font-size:10px;color:#969bab;min-height:16px}.hp-track{height:6px;border-radius:20px;background:#29303b;overflow:hidden;margin:8px 0 4px}.hp-track i{display:block;height:100%;border-radius:20px;background:#6cbf99}.hp-track i.low{background:#da837f}.hp-text{color:#a9b3be;font-size:11px}.conditions{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px;min-height:22px}.pill{border-radius:5px;padding:2px 6px;border:1px solid #56466d;background:#272034;color:#d9c6ec;font-size:10px;cursor:help}.pill.harm{border-color:#80474e;background:#2a1b22;color:#ffc0c6}.pill.none{border-color:#293540;color:#9199a6;background:transparent}.turn-arrow{color:#caa2f9;font-size:10px;margin:4px 0 0;font-weight:800}
+.active{padding:14px 17px;margin-bottom:13px;border-color:#47315f;background:linear-gradient(100deg,#1d1726 0%,#0f1219 65%)}.active-flex{display:grid;grid-template-columns:180px minmax(0,1fr) auto;gap:18px;align-items:center}.active-person{display:flex;align-items:center;gap:12px}.active-person .portrait{width:56px;height:62px;font-size:26px}.active-person h3{margin:2px 0 2px;font:normal 21px Georgia,serif}.active-person p{font-size:11px;color:#afb1bf;margin:0}.active-stats{display:grid;grid-template-columns:minmax(175px,1fr) minmax(175px,1.25fr);gap:18px}.subheading{font-size:11px;color:#a8acb9;font-weight:700;margin-bottom:7px}.hprow{display:flex;align-items:center;gap:8px}.hpbar{height:11px;border-radius:9px;background:#2b313e;overflow:hidden;flex:1;min-width:50px}.hpbar i{display:block;background:#70c4a2;height:100%;border-radius:9px}.hpbar i.low{background:#d78187}.number{font-size:12px;font-weight:700;white-space:nowrap}.hpbuttons{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.active-commands{display:flex;align-items:center;flex-direction:column;gap:6px;justify-content:center}.active-commands .btn{min-width:113px}
+.details{margin-top:12px;border-top:1px solid #312b3a;padding-top:10px;color:#a9a9b6;font-size:11px;display:flex;gap:20px;justify-content:space-between;flex-wrap:wrap}
+.room{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,1fr);gap:12px;min-height:470px}.chat{display:flex;flex-direction:column;min-height:470px;height:min(570px,calc(100vh - 385px));height:max(470px,min(570px,calc(100vh - 385px)))}.tabs{display:flex;gap:1px}.tab{padding:10px 12px;border:0;background:transparent;border-bottom:2px solid transparent;color:#999da8}.tab.current{border-color:#b58aeb;background:#211a2b;color:#eadbfc}.feed{padding:13px 14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:9px;scrollbar-color:#4f455c transparent}.msg{display:flex;gap:9px;align-items:flex-start;padding:5px 0}.msg-avatar{width:29px;height:29px;border-radius:7px;background:#272034;color:#d4c2e8;display:grid;place-items:center;flex:none;font-weight:800;border:1px solid #5b4576}.msg-body{min-width:0;flex:1}.msg-top{display:flex;gap:9px;align-items:baseline}.msg-top b{color:#d4c3ee;font-size:11px}.msg time{font-size:10px;color:#737d8c}.msg p{margin:4px 0;color:#c9cbd4;white-space:pre-wrap;overflow-wrap:anywhere}.msg.roll{padding:10px;border:1px solid #423352;background:#1c1723;border-radius:8px}.roll-total{font-size:21px;color:#ebd0ff;font-weight:700}.chat-compose{padding:10px;border-top:1px solid #282b35;display:flex;gap:8px}.chat-compose input,.field{background:#080b11;border:1px solid #313541;border-radius:6px;color:#f3f3fa;padding:10px;width:100%;min-width:0}.chat-compose input:focus,.field:focus{outline:1px solid #926cbd}.right{display:flex;flex-direction:column;gap:12px}.dicebox{flex:1}.inner{padding:13px}.dice-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:15px}.die{border:1px solid #353347;background:#151520;border-radius:8px;min-width:0;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:3px}.die:hover{border-color:#a681d7}.die-icon{font-size:18px;color:#cba6ff}.die small{color:#bcbfc7}.roll-row{display:grid;grid-template-columns:minmax(0,1fr) 67px auto;gap:7px}.roll-row .field{text-align:center}.check-title{display:flex;align-items:center;justify-content:space-between;gap:9px}.check-title h3{font-size:12px;margin:0}.check-title select{max-width:180px}.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}.check{border:1px solid #323644;border-radius:6px;background:#151922;padding:9px 6px;min-height:36px;text-align:left;font-size:11px;display:flex;justify-content:space-between;gap:4px}.check:hover{border-color:#8565af;background:#201b2b}.check strong{color:#dbbafe;white-space:nowrap}
+details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cursor:pointer;color:#d6d1dc;font-weight:700;font-size:12px;user-select:none}summary:hover{color:#e3c9fa}.subtle{font-size:11px;color:#89909e;margin:8px 0}.tip{position:relative;cursor:help}.tip:hover:after,.tip:focus-visible:after{content:attr(data-tip);position:absolute;z-index:60;left:0;top:calc(100% + 9px);width:240px;max-width:70vw;background:#231d2d;border:1px solid #8061a2;color:#f1e4ff;padding:10px;border-radius:7px;font-size:11px;font-weight:400;line-height:1.45;white-space:normal;box-shadow:0 12px 25px #0009;pointer-events:none}.cond-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}.cond-label{display:flex;align-items:center;gap:9px;border:1px solid #313542;padding:8px;border-radius:6px;font-size:11px}.cond-label input{accent-color:#b58aeb}.modal{border:1px solid #6f588c;border-radius:10px;padding:0;background:#0f1218;color:#e9e9ef;max-width:min(480px,calc(100vw - 30px));width:100%;box-shadow:0 22px 90px #000}.modal::backdrop{background:#000b}.modal-top{padding:17px;border-bottom:1px solid #303343;display:flex;justify-content:space-between;align-items:center}.modal h2{font:normal 19px Georgia,serif;margin:0}.modal-body{padding:18px}.field-label{display:block;font-weight:700;color:#b5b4c0;font-size:11px;margin:12px 0 5px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkboxline{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:12px}input[type=checkbox]{accent-color:#a47aca}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.empty{color:#969aaa;font-size:12px;padding:18px}.foot{margin-top:13px;text-align:right;color:#777c89;font-size:10px}
+@media(max-width:1270px){.app{grid-template-columns:132px minmax(0,1fr)}.brand{padding:15px 9px}.brand strong{font-size:11px}.menu a{font-size:11px;padding:9px 5px}.nav-ic{width:11px}.active-flex{grid-template-columns:155px 1fr}.active-commands{grid-column:1/-1;flex-direction:row}.room{grid-template-columns:1.2fr 1fr}main{padding:18px 15px}}
+@media(max-width:950px){.app{grid-template-columns:56px minmax(0,1fr)}.brand{padding:14px 8px;justify-content:center}.brand .brand-text,.side .nav-head,.menu a .nav-label,.campaign{display:none}.menu a{justify-content:center}.nav-ic{font-size:18px}.active-flex{grid-template-columns:1fr}.active-stats{grid-template-columns:1fr 1fr}.room{grid-template-columns:1fr}.chat{height:470px}.right{display:grid;grid-template-columns:1fr 1fr}.head h1{font-size:27px}}
+@media(max-width:660px){.topbar{padding:0 8px}.topright .tiny{display:none}main{padding:13px 9px}.head{align-items:start;flex-direction:column}.head-actions{justify-content:flex-start}.preview{align-items:flex-start;flex-direction:column}.active-stats{grid-template-columns:1fr}.right{display:flex}.section-top{align-items:start;flex-direction:column}.actor{flex-basis:130px}.roll-row{grid-template-columns:1fr 65px auto}.checks{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="brand-star">✧</span><span class="brand-text"><strong>TERRAVALE</strong><small>THE LIVING CODEX</small></span></div>
+  <div class="nav-head">Navigation</div>
+  <nav class="menu" aria-label="Site navigation">
+    <a href="../"><span class="nav-ic">◇</span><span class="nav-label">Dashboard</span></a>
+    <a href="../campaigns/"><span class="nav-ic">♧</span><span class="nav-label">Campaigns</span></a>
+    <a href="../characters/"><span class="nav-ic">♙</span><span class="nav-label">Characters</span></a>
+    <a href="../characters/create/"><span class="nav-ic">＋</span><span class="nav-label">Create Character</span></a>
+    <a href="../session-room/" class="active"><span class="nav-ic">⚔</span><span class="nav-label">Session Room V2</span></a>
+    <a href="../classes/"><span class="nav-ic">⚒</span><span class="nav-label">Classes</span></a>
+    <a href="../ancestries/"><span class="nav-ic">⌛</span><span class="nav-label">Ancestries & Feats</span></a>
+    <a href="../journal/"><span class="nav-ic">✎</span><span class="nav-label">Journal</span></a>
+    <a href="../dm/"><span class="nav-ic">✦</span><span class="nav-label">DM Chronicle</span></a>
+    <a href="../appearance/"><span class="nav-ic">✧</span><span class="nav-label">Appearance</span></a>
+  </nav>
+  <div class="campaign"><div class="micro">Campaign</div><select aria-label="Campaign"><option>Shady Test (preview)</option></select><p class="tiny">Local design preview</p></div>
+</aside>
+<div class="main">
+<header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp; / &nbsp; V2 Preview</div><div class="topright"><span class="tiny">Theme&nbsp; Void.exe</span><span class="cloud">PREVIEW</span></div></header>
+<main>
+<section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
+<div class="preview"><div><strong>Independent design test.</strong> Sample combatants, simulated rolls and local-only chat. Nothing here changes your live campaign, characters or existing Session Room.</div><div id="mode-label">DM preview</div></div>
+<section class="panel initiative" aria-label="Initiative order">
+ <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
+ <div class="track" id="queue" aria-live="polite"></div>
+</section>
+<section class="panel active" id="active-combatant" aria-label="Active combatant expanded"></section>
+<section class="room">
+ <section class="panel chat" aria-label="Campaign chat">
+  <div class="panel-head"><div class="tabs"><button class="tab current" id="tab-chat">Campaign chat</button><button class="tab" id="tab-rolls">Dice results</button></div><span class="meta">● Preview activity</span></div>
+  <div class="feed" id="feed"></div>
+  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message the party or type /roll 1d20+5" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
+ </section>
+ <div class="right">
+  <section class="panel dicebox" aria-label="Dice and character checks">
+    <div class="panel-head"><h2>Dice & Character Checks</h2><span class="meta">Rolls appear in chat</span></div>
+    <div class="inner">
+      <div class="subheading">Quick Dice</div><div class="dice-grid" id="dice-grid"></div>
+      <div class="subheading">Custom Roll</div>
+      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form>
+      <details open id="quick-checks"><summary>Character-Specific Quick Checks</summary><div class="check-title" style="margin-top:11px"><span class="subtle">Choose the player making the roll</span><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></details>
+      <details id="dice-help"><summary>Roll format & visibility</summary><p class="subtle">Try 1d20, 2d6+3 or /roll 1d20+5 in chat. This preview rolls locally, with no shared dice history or secure DM-hidden rolls.</p></details>
+    </div>
+  </section>
+  <section class="panel" aria-label="Session controls"><div class="panel-head"><h2>Session Controls</h2><span class="meta">Current combatant</span></div><div class="inner" id="session-tools"></div></section>
+ </div>
+</section>
+<div class="foot">Terravale Codex · Session Room V2 design workshop · No production data connections</div>
+</main>
+</div></div>
+<dialog class="modal" id="add-modal">
+ <form method="dialog" id="add-form">
+ <div class="modal-top"><h2>Add to Initiative</h2><button type="button" class="btn small" data-close="add-modal" aria-label="Close">✕</button></div>
+ <div class="modal-body"><p class="subtle">Add an NPC, monster, creature or person to the local combat preview.</p>
+  <label class="field-label" for="new-name">Name</label><input class="field" id="new-name" maxlength="50" required placeholder="e.g. Pale Warden">
+  <label class="field-label" for="new-type">Combatant type</label><select class="field" id="new-type"><option value="Monster">Monster</option><option value="NPC">NPC</option><option value="Creature">Creature</option><option value="Person">Person</option></select>
+  <div class="two"><div><label class="field-label" for="new-init">Initiative</label><input class="field" id="new-init" type="number" min="-20" max="99" value="12" required></div><div><label class="field-label" for="new-hp">Maximum HP</label><input class="field" id="new-hp" type="number" min="1" max="99999" value="20" required></div></div>
+  <label class="checkboxline"><input id="new-hidden" type="checkbox" checked> Hide HP from players</label>
+  <div class="modal-actions"><button class="btn" type="button" data-close="add-modal">Cancel</button><button class="btn primary" type="submit">Add to queue</button></div>
+ </div></form>
+</dialog>
+<dialog class="modal" id="condition-modal">
+ <div class="modal-top"><h2>Manage Conditions</h2><button class="btn small" type="button" data-close="condition-modal">✕</button></div>
+ <div class="modal-body"><p class="subtle" id="condition-who">Select conditions</p><div id="condition-options" class="cond-list"></div><div class="modal-actions"><button class="btn" type="button" data-close="condition-modal">Close</button><button class="btn primary" type="button" id="save-conditions">Save conditions</button></div></div>
+</dialog>
+<script>
+(function(){
+"use strict";
+const key="terravale-room-v2-workshop-v1";
+const definitions={
+"Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
+"Charmed":"Cannot attack the charmer or target them with harmful abilities. The charmer has advantage on social interaction checks with it.",
+"Deafened":"Cannot hear and automatically fails ability checks requiring hearing.",
+"Frightened":"Has disadvantage on ability checks and attack rolls while the source of fear is in sight; cannot willingly move closer to the source.",
+"Grappled":"Speed becomes 0 and cannot benefit from bonuses to speed. Ends if the grappler is incapacitated or moved out of reach.",
+"Incapacitated":"Cannot take actions or reactions.",
+"Invisible":"Cannot be seen without special senses or magic. Attacks against it usually have disadvantage; its attacks usually have advantage.",
+"Paralyzed":"Incapacitated, cannot move or speak; automatically fails Strength and Dexterity saves. Attacks against it have advantage, and close hits are critical.",
+"Petrified":"Transformed to stone or solid substance; incapacitated, unaware and unable to move or speak. Has resistance to damage and fails Strength and Dexterity saves.",
+"Poisoned":"Has disadvantage on attack rolls and ability checks.",
+"Prone":"Can crawl or spend movement to stand. Has disadvantage on attacks. Close attacks have advantage; attacks from more than 5 feet away have disadvantage.",
+"Restrained":"Speed becomes 0; attacks against it have advantage, its attacks have disadvantage, and it has disadvantage on Dexterity saves.",
+"Stunned":"Incapacitated, cannot move, can only speak falteringly; fails Strength and Dexterity saves. Attacks against it have advantage.",
+"Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
+"Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
+};
+const base=()=>({dm:true,round:1,steps:0,selected:"fighter",tab:"chat",queue:["fighter","bandit","derulo","artificer","barbarian","hound"],actors:[
+{id:"fighter",name:"Fighter Test",type:"Player",subtitle:"Fighter · Level 1",init:22,hp:11,max:11,hidden:false,conditions:[],initial:"F"},
+{id:"bandit",name:"Bandit Captain",type:"NPC",subtitle:"Humanoid · Hostile",init:20,hp:48,max:48,hidden:true,conditions:[],initial:"B"},
+{id:"derulo",name:"Derulo",type:"Player",subtitle:"Shaman · Level 8",init:16,hp:0,max:8,hidden:false,conditions:["Blinded","Deafened"],initial:"D"},
+{id:"artificer",name:"Artificer Test",type:"Player",subtitle:"Artificer · Level 1",init:12,hp:9,max:9,hidden:false,conditions:[],initial:"A"},
+{id:"barbarian",name:"Barbarian Test",type:"Player",subtitle:"Barbarian · Level 1",init:9,hp:13,max:13,hidden:false,conditions:[],initial:"B"},
+{id:"hound",name:"Grave Hound",type:"Creature",subtitle:"Beast · Hostile",init:7,hp:24,max:24,hidden:true,conditions:["Poisoned"],initial:"G"}],
+messages:[{kind:"text",who:"Aster (DM)",message:"The ruined archway creaks. Roll initiative.",time:"22:41"},{kind:"roll",who:"Fighter Test",label:"Initiative · 1d20+2",total:22,detail:"20 + 2",time:"22:42"},{kind:"text",who:"Derulo",message:"I think the hound has seen us.",time:"22:42"}]});
+let state;try{state=JSON.parse(localStorage.getItem(key)||"null")||base();if(!Array.isArray(state.queue)||!Array.isArray(state.actors))state=base();}catch(e){state=base()}
+const $=(id)=>document.getElementById(id);
+const esc=(value)=>String(value).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const actor=(id)=>state.actors.find(a=>a.id===id);
+const current=()=>actor(state.queue[0]);
+const clock=()=>new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+const save=()=>{try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}};
+const hp=(a)=>{
+if(a.hidden&&!state.dm)return '<div class="hp-track"></div><div class="hp-text">HP hidden by DM</div>';
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
+return '<div class="hp-track"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><div class="hp-text">'+a.hp+' / '+a.max+' HP'+(a.hidden?' · DM only':'')+'</div>';
+};
+const tokens=(a)=>a.conditions.length?a.conditions.map(c=>'<span class="pill harm tip" tabindex="0" role="note" data-tip="'+esc(definitions[c]||'Campaign condition')+'">'+esc(c)+'</span>').join(""):'<span class="pill none">No conditions</span>';
+const portrait=(a,clazz)=>'<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-hidden="true">'+esc(a.initial||a.name.slice(0,1))+'</span>';
+function queueRender(){
+$("round-info").textContent='Round '+state.round+' · '+state.queue.length+' in initiative · Current turn at front';
+$("queue").innerHTML=state.queue.map((id,i)=>{
+let a=actor(id);if(!a)return '';
+return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+a.init+(i===0?', acting now':'')+'"><div class="tag">'+(i===0?'● CURRENT TURN':a.type)+'</div><span class="initiative-num">'+a.init+'</span>'+portrait(a)+'<div class="name">'+esc(a.name)+'</div><div class="type">'+esc(a.subtitle)+'</div>'+hp(a)+'<div class="conditions">'+tokens(a)+'</div>'+(i===0?'<div class="turn-arrow">▲ ACTING NOW</div>':'')+'</button>';
+}).join('');
+$("next-turn").disabled=!state.dm;$("add-actor").disabled=!state.dm;
+}
+function activeRender(){
+let a=current();if(!a)return;
+let canhp=state.dm||!a.hidden,pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
+let number=canhp?a.hp+' / '+a.max:'Hidden';
+$("active-combatant").innerHTML='<div class="active-flex"><div class="active-person">'+portrait(a)+'<div><div class="micro">Now acting</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><p>Initiative '+a.init+'</p></div></div><div class="active-stats"><div><div class="subheading">Hit Points</div><div class="hp-row hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+(canhp?pct:0)+'%"></i></div><span class="number">'+number+'</span></div>'+(state.dm?'<div class="hpbuttons"><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="-1">−1 HP</button><button class="btn small" data-action="hp" data-value="1">+1 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button></div>':'<p class="subtle">DM controls HP for this combatant.</p>')+'</div><div><div class="subheading">Conditions <span style="font-weight:normal;color:#92909d">· hover or focus for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" style="margin-top:9px" data-action="conditions">＋ Edit conditions</button>':'')+'</div></div><div class="active-commands">'+(state.dm?'<button class="btn small primary" data-action="next">End turn →</button>':'<span class="micro">Player view</span>')+'<button class="btn small" data-action="inspect">View combatant</button></div></div><div class="details"><span>Next in queue: <b>'+esc((actor(state.queue[1])||a).name)+'</b></span><span>'+esc(a.type)+' · '+(a.hidden?'HP visibility: '+(state.dm?'hidden from players':'hidden'):'HP visible')+'</span><span>Turn order rotates left after every turn</span></div>';
+$("session-tools").innerHTML='<div class="subheading">Combat & Status</div><p class="subtle">Selected: <b>'+esc(a.name)+'</b>. Conditions are explained on hover and keyboard focus.</p><div class="controls">'+(state.dm?'<button class="btn small" data-action="conditions">Manage conditions</button><button class="btn small" data-action="hp" data-value="-5">Deal 5 damage</button><button class="btn small" data-action="hp" data-value="5">Heal 5 HP</button><button class="btn small" data-action="next">Next turn</button>':'<span class="subtle">Only the DM can adjust the shared turn order, HP and conditions.</span>')+'</div><details><summary>Combatant information</summary><div style="padding-top:9px">'+esc(a.subtitle)+'<div class="conditions">'+tokens(a)+'</div></div></details>';
+}
+function feedRender(){
+let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.messages;
+$("tab-chat").classList.toggle("current",state.tab==="chat");$("tab-rolls").classList.toggle("current",state.tab==="rolls");
+let el=$("feed");
+el.innerHTML=list.length?list.slice(-80).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle" style="margin:3px 0">'+esc(m.label)+'</div><div><span class="roll-total">'+m.total+'</span> <span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">No activity in this tab.</div>';
+el.scrollTop=el.scrollHeight;
+}
+const checkData={
+fighter:{abilities:[["STR","+2"],["DEX","+2"],["CON","+1"],["INT","+1"],["WIS","+0"],["CHA","-1"]],saves:[["STR","+4"],["CON","+3"]],skills:[["Athletics","+4"],["Acrobatics","+2"],["Perception","+0"],["Stealth","+2"],["Intimidation","-1"]]},
+derulo:{abilities:[["STR","-1"],["DEX","+2"],["CON","+1"],["INT","+0"],["WIS","+4"],["CHA","+1"]],saves:[["WIS","+7"],["CHA","+4"]],skills:[["Nature","+3"],["Animal Handling","+7"],["Survival","+7"],["Perception","+7"],["Insight","+7"]]},
+artificer:{abilities:[["STR","+0"],["DEX","+2"],["CON","+1"],["INT","+3"],["WIS","+0"],["CHA","-1"]],saves:[["CON","+3"],["INT","+5"]],skills:[["Arcana","+5"],["Investigation","+5"],["Sleight of Hand","+4"]]},
+barbarian:{abilities:[["STR","+3"],["DEX","+1"],["CON","+2"],["INT","-1"],["WIS","+0"],["CHA","+0"]],saves:[["STR","+5"],["CON","+4"]],skills:[["Athletics","+5"],["Survival","+2"],["Intimidation","+2"]]}
+};
+function renderChecks(){
+let players=state.actors.filter(a=>a.type==="Player");
+if(!state.dm)players=players.filter(a=>a.id==="fighter");
+if(!players.some(a=>a.id===state.selected))state.selected=players[0]?.id||"fighter";
+$("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join('');
+let s=checkData[state.selected]||checkData.fighter;
+$("check-groups").innerHTML=[["Ability checks","abilities"],["Saving throws","saves"],["Skill checks","skills"]].map(([name,field])=>'<div class="subheading" style="margin-top:13px">'+name+'</div><div class="checks">'+s[field].map(([n,val])=>'<button class="check" type="button" data-action="check" data-label="'+esc(n)+'" data-mod="'+esc(val)+'">'+esc(n)+' <strong>'+esc(val)+'</strong></button>').join("")+'</div>').join("");
+}
+function render(){queueRender();activeRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
+function next(){if(!state.dm)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
+function log(m){state.messages.push(m);state.messages=state.messages.slice(-180);save();feedRender();}
+function roll(expr,label,who){
+let t=String(expr).replace(/\s/g,""),mat=t.match(/^(\d{0,2})d(4|6|8|10|12|20|100)([+-]\d{1,3})?$/i);
+if(!mat){alert("Use dice notation like 1d20, 2d6+3 or 1d20-1.");return;}
+let count=Number(mat[1]||1),sides=Number(mat[2]),bonus=Number(mat[3]||0);
+if(count<1||count>30){alert("This preview accepts 1 to 30 dice per roll.");return;}
+let faces=Array.from({length:count},()=>1+Math.floor(Math.random()*sides)),total=faces.reduce((a,b)=>a+b,0)+bonus;
+let detail=faces.join(" + ")+(bonus?(bonus>0?" + ":" - ")+Math.abs(bonus):"");
+log({kind:"roll",who:who||"You",label:label||expr,total,detail,time:clock()});
+}
+function editConditions(){
+if(!state.dm)return;let a=current();
+$("condition-who").textContent='Editing '+a.name+' · Changes are local to this preview.';
+$("condition-options").innerHTML=Object.keys(definitions).map(c=>'<label class="cond-label tip" tabindex="0" data-tip="'+esc(definitions[c])+'" title="'+esc(definitions[c])+'"><input type="checkbox" data-condition="'+esc(c)+'" '+(a.conditions.includes(c)?'checked':'')+'>'+esc(c)+'</label>').join("");
+$("condition-modal").showModal();
+}
+function addActor(form){if(!state.dm)return;
+let name=$("new-name").value.trim();if(!name)return;
+let init=Number($("new-init").value),max=Number($("new-hp").value);
+if(!Number.isFinite(init)||max<1||max>99999||!Number.isFinite(max)){alert("Enter valid initiative and HP values.");return;}
+let id="preview-"+Date.now()+"-"+Math.floor(Math.random()*9999);
+state.actors.push({id,name,type:$("new-type").value,subtitle:$("new-type").value+' · Custom combatant',init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase()});
+state.queue.push(id);save();render();$("add-modal").close();form.reset();
+}
+document.addEventListener("click",e=>{
+let b=e.target.closest("button");if(!b)return;
+if(b.dataset.close){$(b.dataset.close).close();return;}
+let action=b.dataset.action;if(!action)return;
+if(action==="next")next();
+if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
+if(action==="conditions")editConditions();
+if(action==="check"){
+let a=actor(state.selected);roll("1d20"+b.dataset.mod,esc(b.dataset.label)+" check · 1d20"+b.dataset.mod,a?.name||"You");
+}
+if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("active-combatant").scrollIntoView({behavior:"smooth",block:"nearest"});}}
+if(action==="inspect"){alert("This is a standalone layout preview. The real character sheet link will be connected during integration.");}
+});
+$("next-turn").addEventListener("click",next);
+$("add-actor").addEventListener("click",()=>{if(state.dm)$("add-modal").showModal();});
+$("add-form").addEventListener("submit",e=>{e.preventDefault();addActor(e.currentTarget);});
+$("save-conditions").addEventListener("click",()=>{
+let a=current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
+save();render();$("condition-modal").close();
+});
+$("view-mode").addEventListener("click",()=>{state.dm=!state.dm;save();render();});
+$("reset").addEventListener("click",()=>{if(confirm("Reset all sample combatants and chat to the original demonstration state?")){state=base();save();render();}});
+$("tab-chat").addEventListener("click",()=>{state.tab="chat";save();feedRender();});
+$("tab-rolls").addEventListener("click",()=>{state.tab="rolls";save();feedRender();});
+$("chat-form").addEventListener("submit",e=>{
+e.preventDefault();let input=$("chat-input"),msg=input.value.trim();if(!msg)return;
+if(/^\/roll?\s+/i.test(msg)){let notation=msg.replace(/^\/roll?\s+/i,"");roll(notation,"Chat command · "+notation,state.dm?"DM":"Fighter Test");}
+else log({kind:"text",who:state.dm?"DM":"Fighter Test",message:msg,time:clock()});
+input.value="";
+});
+$("dice-grid").innerHTML=[4,6,8,10,12,20,100].map(n=>'<button class="die" type="button" data-die="'+n+'"><span class="die-icon">⬡</span><small>d'+n+'</small></button>').join("");
+$("dice-grid").addEventListener("click",e=>{let b=e.target.closest("[data-die]");if(b)roll("1d"+b.dataset.die,"Quick roll · 1d"+b.dataset.die,state.dm?"DM":"Fighter Test");});
+$("roll-form").addEventListener("submit",e=>{
+e.preventDefault();let x=$("notation").value.trim(),bonus=parseInt($("bonus").value,10)||0;
+if(bonus!==0){let m=x.replace(/\s/g,"").match(/^(\d{0,2}d(?:4|6|8|10|12|20|100))([+-]\d+)?$/i);if(m)x=m[1]+((Number(m[2]||0)+bonus)>=0?"+":"")+(Number(m[2]||0)+bonus);}
+roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
+});
+$("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
+render();
+})();
+</script>
+</body>
+</html>
