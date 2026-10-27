@@ -311,6 +311,31 @@ html.live-embedded #crimsonStageSelect{pointer-events:none;opacity:.75}
 html.live-embedded [data-note="story"]{pointer-events:none}
 html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9px 0}
 
+
+.class-wiki-list{display:grid;gap:10px}
+.class-wiki-card{background:var(--paper);border:1px solid var(--line2);border-radius:11px;overflow:hidden}
+.class-wiki-card[open]{border-color:var(--accent)}
+.class-wiki-card summary{list-style:none;display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;min-height:61px}
+.class-wiki-card summary::-webkit-details-marker{display:none}
+.class-wiki-card summary:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.class-wiki-crest{font-size:18px;color:var(--accent);flex:0 0 18px}
+.class-wiki-title{flex:1;min-width:0}
+.class-wiki-title strong{display:block;color:var(--ink);font-size:13px;line-height:1.35}
+.class-wiki-title small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:5px}
+.class-wiki-status{font-size:10px;color:var(--accent);white-space:nowrap}
+.class-wiki-chevron{color:var(--accent);font-size:19px}
+.class-wiki-card[open] .class-wiki-chevron{transform:rotate(180deg)}
+.class-wiki-expanded{border-top:1px solid var(--line2);padding:16px 20px;line-height:1.65;font-size:12px;color:var(--sub)}
+.class-wiki-kicker{color:var(--accent);text-transform:uppercase;font-size:9px;letter-spacing:1.3px;margin-bottom:10px}
+.class-wiki-expanded p,.wiki-expanded p{margin:7px 0;line-height:1.7}
+.class-wiki-expanded ul,.wiki-expanded ul{margin:9px 0 11px;padding-left:19px}
+.class-wiki-expanded li,.wiki-expanded li{margin:6px 0;line-height:1.65}
+.class-wiki-expanded h4,.wiki-expanded h4{font-size:12px;margin:16px 0 7px;color:var(--ink)}
+.class-wiki-expanded blockquote,.wiki-expanded blockquote{margin:10px 0;border-left:2px solid var(--accent);padding-left:12px}
+.class-rule-link{display:inline-block;color:var(--accent);border-top:1px solid var(--line2);padding-top:10px;margin-top:12px;text-decoration:none;font-size:11px}
+.reference-tableline{border-bottom:1px solid var(--line2);padding:5px 0}
+@media(max-width:550px){.class-wiki-card summary{gap:8px;padding:12px}.class-wiki-status{font-size:9px}.class-wiki-expanded{padding:12px 14px}}
+
 </style>
 </head>
 <body class="theme-night dense">
@@ -347,7 +372,7 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 <dialog class="dialog" id="dialog"><div id="dialogBody"></div><div class="row-actions"><button class="action" id="closeDialog">Close</button></div></dialog>
 <script>
 (()=>{'use strict';
-const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:''};
+const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{}};
 if(LIVE.enabled)document.documentElement.classList.add('live-embedded');
 const iconDrop='<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 1C8 5.7 2 10.3 2 15.6a8 8 0 0 0 16 0C18 10.3 12 5.7 10 1Z"/></svg>';
 const profiles={
@@ -591,7 +616,39 @@ function overview(){if(LIVE.enabled&&LIVE.generic){
  return overviewHeader()+`<div class="health-anchor">${healthPanel()}</div><div class="adaptive-columns"><div class="sheet-stack">${resources.map(([id])=>dropTracker(id)).join('')}${panel('Approved class features','Current class record',`<div class="featurelist">${built.features.map(n=>`<div class="feature"><div><b>${esc(n)}</b><small>See Class & Abilities for full published rules.</small></div><span class="tag">Available</span></div>`).join('')||'<p class="meta">No unlocked class features recorded.</p>'}</div>`)}</div><div class="sheet-stack">${panel('Combat & session notes','Character scratchpad',`<textarea class="textarea" data-note="battleNotes">${esc(s().battleNotes||'')}</textarea><p class="meta">Local personal notes only; no changes to class rules.</p>`)}${panel('Progression reference','Level and class',`<div class="statline"><span>Level</span><strong>${built.level}</strong></div><div class="statline"><span>Class</span><strong>${esc(built.label)}</strong></div>`)}</div></div>`;
  }
  const layouts={bloodforger:bloodSheet,shaman:shamanSheet,gatewarden:gateSheet,echo:echoSheet,bard:slotSheet,barbarian:barbarianSheet,summoner:summonerSheet};return overviewHeader()+`<div class="health-anchor">${healthPanel()}</div>${app.profile==='bloodforger'?`<div class="bf-board">${bloodSheet()}</div>`:`<div class="dashboard">${layouts[app.profile]()}${isCrimsonborn()?bloodStatePanel():''}</div>`}`}
-function classTab(){const feat=p().features,sh=showcase();const shown=sh?feat:feat.slice(0,3);return section('Class & Abilities','II · Character record',sh?'Filled character · unlocked feature list':'Class-focused')+`<div class="dashboard">${panel('Unlocked class features','Level-aware · details once',`<div class="featurelist">${shown.map(f=>`<div class="feature"><div><b>${esc(f)}</b><small>${esc(sh?.features?.[f]||'Unlocked feature · consult the published class rules for full mechanics.')}</small></div><span class="tag">Unlocked</span></div>`).join('')}</div>`, 'seven')}${panel('Class snapshot','Character build · example',`<div class="statline"><span>Class</span><strong>${esc(p().label)}</strong></div><div class="statline"><span>Specialisation</span><strong>${esc(p().subclass)}</strong></div><div class="statline"><span>Hit die</span><strong>${esc(p().hitdie)}</strong></div><div class="statline"><span>Saving throws</span><strong>${esc(p().saves.join(' / '))}</strong></div><div class="statline"><span>Level</span><strong>${p().level}</strong></div>${sh?`<div class="statline"><span>Character theme</span><strong>${esc(sh.role)}</strong></div><div class="statline"><span>Tools</span><strong>${esc(sh.tools.join(', '))}</strong></div>`:''}<details class="rules-drawer"><summary>Complete published rules · placeholder</summary><p>The standalone preview does not contain the full live class catalog; live integration should display the exact rules from the Codex rather than duplicate them here.</p></details>`, 'five')}${sh?panel('Player-configured loadout','Filled-content layout test',`<p>${esc(sh.background)}</p><div class="statline"><span>Chosen proficiencies</span><strong>${esc(p().skills.join(', '))}</strong></div>${(p().expertise||[]).length?`<div class="statline"><span>Expertise</span><strong>${esc(p().expertise.join(', '))}</strong></div>`:''}<div class="hint">Illustrative build choices. Open a score above for calculated check bonuses. Real characters must use approved class, ancestry and subclass choices.</div>`):''}</div>`}
+
+function readableRules(raw){
+ const lines=String(raw||'').split(/\r?\n/);
+ let html='',list=false;
+ const flush=()=>{if(list){html+='</ul>';list=false}};
+ const inline=line=>esc(line).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+ for(const source of lines){
+  const line=source.trim();
+  if(!line){flush();continue}
+  if(/^[-]{3,}$/.test(line)){flush();html+='<hr>';continue}
+  if(/^#{1,5}\s/.test(line)){flush();html+='<h4>'+inline(line.replace(/^#{1,5}\s+/,''))+'</h4>';continue}
+  if(/^[-*•]\s+/.test(line)){if(!list){html+='<ul>';list=true}html+='<li>'+inline(line.slice(2))+'</li>';continue}
+  flush();
+  if(/^>\s?/.test(line)){html+='<blockquote>'+inline(line.replace(/^>\s*/,''))+'</blockquote>';continue}
+  if(/^\|/.test(line)){html+='<p class="reference-tableline">'+inline(line.replace(/^\||\|$/g,'').replace(/\|/g,'  ·  '))+'</p>';continue}
+  html+='<p>'+inline(line)+'</p>';
+ }
+ flush();return html||'<p class="meta">No published rules text is available for this feature.</p>';
+}
+function featureRuleCard(name){
+ const raw=LIVE.featureDescriptions[name]||'',level=LIVE.featureLevels[name],hasRules=raw.trim().length>0;
+ const snippet=hasRules?raw.replace(/[#*\n-]/g,' ').replace(/\s+/g,' ').trim().slice(0,110):'Official rules available in the class reference';
+ const path=location.pathname.split('/characters/sheet-live')[0]+'/classes/?focus='+encodeURIComponent(p().label);
+ return '<details class="class-wiki-card"><summary><span class="class-wiki-crest" aria-hidden="true">✦</span><span class="class-wiki-title"><strong>'+esc(name)+'</strong><small>'+(level?'Level '+level+' · ':'')+esc(snippet)+'</small></span><span class="class-wiki-status">Unlocked</span><span class="class-wiki-chevron" aria-hidden="true">⌄</span></summary><div class="class-wiki-expanded"><div class="class-wiki-kicker">'+(level?'LEVEL '+level+' · ':'')+'APPROVED FEATURE</div>'+(hasRules?readableRules(raw):'<p>This feature has no independently matched published description yet. No substitute mechanics have been invented.</p>')+'<a class="class-rule-link" href="'+esc(path)+'" target="_parent" rel="noopener">Read the full '+esc(p().label)+' class reference ↗</a></div></details>';
+}
+function classTab(){if(LIVE.enabled){
+ const names=(p().features||[]).filter(x=>!/(?:^feat\s*\/\s*asi$|^ability score improvement$|^asi\s*\/\s*feat$)/i.test(x.trim()));
+ return section('Class & Abilities','II · Character record','Level '+p().level+' · '+p().label)+
+ '<div class="dashboard class-live-layout">'+
+ panel('Unlocked class features','Published mechanics · expand to read',names.length?'<div class="class-wiki-list">'+names.map(featureRuleCard).join('')+'</div>':'<div class="empty-box">No unlocked class features recorded.</div>','wide')+
+ '</div>';
+}
+const feat=p().features,sh=showcase();const shown=sh?feat:feat.slice(0,3);return section('Class & Abilities','II · Character record',sh?'Filled character · unlocked feature list':'Class-focused')+`<div class="dashboard">${panel('Unlocked class features','Level-aware · details once',`<div class="featurelist">${shown.map(f=>`<div class="feature"><div><b>${esc(f)}</b><small>${esc(sh?.features?.[f]||'Unlocked feature · consult the published class rules for full mechanics.')}</small></div><span class="tag">Unlocked</span></div>`).join('')}</div>`, 'seven')}${panel('Class snapshot','Character build · example',`<div class="statline"><span>Class</span><strong>${esc(p().label)}</strong></div><div class="statline"><span>Specialisation</span><strong>${esc(p().subclass)}</strong></div><div class="statline"><span>Hit die</span><strong>${esc(p().hitdie)}</strong></div><div class="statline"><span>Saving throws</span><strong>${esc(p().saves.join(' / '))}</strong></div><div class="statline"><span>Level</span><strong>${p().level}</strong></div>${sh?`<div class="statline"><span>Character theme</span><strong>${esc(sh.role)}</strong></div><div class="statline"><span>Tools</span><strong>${esc(sh.tools.join(', '))}</strong></div>`:''}<details class="rules-drawer"><summary>Complete published rules · placeholder</summary><p>The standalone preview does not contain the full live class catalog; live integration should display the exact rules from the Codex rather than duplicate them here.</p></details>`, 'five')}${sh?panel('Player-configured loadout','Filled-content layout test',`<p>${esc(sh.background)}</p><div class="statline"><span>Chosen proficiencies</span><strong>${esc(p().skills.join(', '))}</strong></div>${(p().expertise||[]).length?`<div class="statline"><span>Expertise</span><strong>${esc(p().expertise.join(', '))}</strong></div>`:''}<div class="hint">Illustrative build choices. Open a score above for calculated check bonuses. Real characters must use approved class, ancestry and subclass choices.</div>`):''}</div>`}
 
 // Feats are small, searchable, expandable wiki entries. Sample content is clearly illustrative.
 const WIKI={
@@ -611,7 +668,11 @@ function featEntries(){if(LIVE.enabled)return LIVE.feats||[];const sh=showcase()
  if(app.profile==='bard'&&sh)arr.push(...['College of Lore','Archivist’s Oath'].map((name,i)=>({name,summary:WIKI[name].full.split('.')[0]+'.',type:WIKI[name].type,source:WIKI[name].source,full:WIKI[name].full,id:'demo-'+i})));
  return arr;
 }
-function featCard(entry){const type=entry.type.toLowerCase().includes('drawback')?'Drawback':entry.type.toLowerCase().includes('ancestry')?'Ancestry':entry.type.toLowerCase().includes('class')?'Class':entry.type.toLowerCase().includes('personal')?'Personal':'Trait';return `<details class="feat-wiki-card" data-wiki-category="${esc(type)}" data-wiki-text="${esc((entry.name+' '+entry.summary+' '+entry.source+' '+entry.full).toLowerCase())}"><summary><span class="wiki-crest" aria-hidden="true">✦</span><span class="wiki-entry-text"><strong>${esc(entry.name)}</strong><small>${esc(entry.summary)}</small></span><span class="wiki-kind">${esc(type)}</span><span class="wiki-chevron" aria-hidden="true">⌄</span></summary><div class="wiki-expanded"><div class="wiki-source">${esc(entry.source)} · ${esc(entry.type)} · example record</div><p>${esc(entry.full)}</p><p class="wiki-caution">Prototype only — character-specific permissions and costs must be approved in the live build.</p></div></details>`}
+function featCard(entry){
+ const type=String(entry.type||'Trait');
+ const category=type.toLowerCase().includes('drawback')?'Drawback':type.toLowerCase().includes('ancestry')?'Ancestry':type.toLowerCase().includes('class')?'Class':type.toLowerCase().includes('personal')?'Personal':'Trait';
+ return '<details class="feat-wiki-card" data-wiki-category="'+esc(category)+'" data-wiki-text="'+esc((entry.name+' '+entry.summary+' '+entry.source+' '+entry.full).toLowerCase())+'"><summary><span class="wiki-crest" aria-hidden="true">✦</span><span class="wiki-entry-text"><strong>'+esc(entry.name)+'</strong><small>'+esc(entry.summary)+'</small></span><span class="wiki-kind">'+esc(category)+'</span><span class="wiki-chevron" aria-hidden="true">⌄</span></summary><div class="wiki-expanded"><div class="wiki-source">'+esc(entry.source)+' · '+esc(type)+(LIVE.enabled?' · Approved character':' · Example')+'</div>'+readableRules(entry.full)+(LIVE.enabled?'':'<p class="wiki-caution">Preview only — actual character feats must come from the approved build.</p>')+'</div></details>';
+}
 function featsTab(){const entries=featEntries();return section('Feats & Traits','III · Character record','Your character’s personal codex')+`<div class="dashboard">${panel('Known feats & traits','Character mini-wiki · expand entries',`<div class="wiki-toolbar"><label class="sr-only" for="featSearch">Search your feats</label><input id="featSearch" class="input" type="search" placeholder="Search feats, traits, drawbacks…" autocomplete="off" aria-label="Search feats and traits"><div class="wiki-filters" role="group" aria-label="Filter feats by source">${['All','Ancestry','Class','Personal','Drawback'].map(k=>`<button class="wiki-filter ${k==='All'?'active':''}" data-wiki-filter="${k}" aria-pressed="${k==='All'}">${k}</button>`).join('')}</div></div><div class="wiki-cards" id="wikiCards">${entries.length?entries.map(featCard).join(''):'<div class="empty-box">No feats, traits or drawbacks loaded for this outline character. Once an approved build is connected, its individual entries will appear here.</div>'}</div><div class="wiki-empty" id="wikiEmpty" hidden>No matching entries.</div><p class="meta">Skills and expertise are shown only inside the expandable ability scores above. Origin and ancestry narrative now live under Story & Notes.</p>`,'wide')}</div>`}
 function storyTab(){const sh=showcase();return section('Story & Notes','IV · Character record')+`<div class="dashboard">${panel('Player-safe summary','Example character story',`<textarea class="textarea story-textarea" data-note="story" aria-label="Player-safe summary">${esc(s().story??sh?.story??p().notes)}</textarea><p>This approved backstory is read-only here; use Edit Character or DM Chronicle to change it.</p>`,'eight')}${panel('Session notes','Personal notes, saved locally',`<textarea class="textarea story-textarea" data-note="sessionNotes" placeholder="Add personal session notes…">${esc(s().sessionNotes??sh?.session??'')}</textarea><p>Personal notes are stored locally in this prototype only.</p>`,'four')}${panel('Origin & personal history','Narrative details · no automatic background bonuses',`<div class="featurelist"><div class="feature"><div><b>Origin</b><small>${esc(sh?.background||'Unassigned')}</small></div></div><div class="feature"><div><b>Background & upbringing</b><small>${esc(sh?.role||'The player may describe their personal history here.')}</small></div></div><div class="feature"><div><b>Current motivation</b><small>${esc(sh?.notes||p().notes)}</small></div></div></div><p class="meta">Ancestry, size, creature type and known languages are kept with the character header, not duplicated here.</p>`,'wide')}</div>`}
 
@@ -845,6 +906,7 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  const resource={},current={};(payload.resources||[]).forEach(r=>{const key=r.id==='class:blood-reserve'?'reserve':r.name?.toLowerCase().includes('exertion')?'exertion':r.id.replace(/[^a-z0-9]/gi,'_');resource[key]={label:r.name,current:r.current,max:r.max,note:''};current[key]=r.current;});
  if(kind==='bloodforger'&&!resource.exertion){resource.exertion={label:'Exertion',current:0,max:0,note:'No Exertion pool configured'};current.exertion=0}
  const realInventory=(payload.inventory||[]).map(it=>({...it,slot:it.slot==='gloves'?'hands':it.slot,category:it.category||identifyGear(it.name).category,twoHanded:!!it.twoHanded}));
+ LIVE.featureDescriptions=payload.featureDescriptions||{};LIVE.featureLevels=payload.featureLevels||{};
  LIVE.realInventory=realInventory;const slots={};realInventory.forEach(it=>{if(it.slot){slots[it.slot]=it.id;if(it.twoHanded&&it.slot==='main')slots.off=it.id}});
  const approvedFeatures=(payload.features||[]).map(x=>typeof x==='string'?x:x.name);
  const featDetails={};approvedFeatures.forEach(name=>featDetails[name]='Approved class feature. Open the Class & Abilities tab for the complete rules.');
