@@ -37,7 +37,7 @@ function applyTheme(id,persist=true){
   tile.classList.toggle('selected',selected);
   tile.setAttribute('aria-pressed',String(selected));
   const label=tile.querySelector('.theme-tile-active');
-  if(label)label.textContent=selected?'✓ Active everywhere':'Apply to site & sheets →';
+  if(label){const message=selected?'✓ Active everywhere':'Apply to site & sheets →';if(label.textContent!==message)label.textContent=message;}
  }
 }
 function makeTile(t){
@@ -77,7 +77,7 @@ function enhance(){
   for(const t of ADDITIONAL)if(!gallery.querySelector('[data-theme-id="'+t.id+'"]'))gallery.append(makeTile(t));
   const panel=gallery.closest('.panel');const title=panel?.querySelector('.panel-head h2');
   if(title&&title.textContent!=='Website & character-sheet themes')title.textContent='Website & character-sheet themes';
-  const panelTag=panel?.querySelector('.counter');if(panelTag)panelTag.textContent='One shared preference · this device';
+  const panelTag=panel?.querySelector('.counter');if(panelTag&&panelTag.textContent!=='One shared preference · this device')panelTag.textContent='One shared preference · this device';
  }
  const intro=document.querySelector('.section-heading p');
  if(intro&&document.querySelector('.theme-gallery[aria-label="Website theme choices"]')&&intro.textContent?.includes('Only Classic Dark'))
@@ -99,7 +99,7 @@ function enhance(){
   if(eyebrow&&eyebrow.textContent!=='UNIFIED APPEARANCE')eyebrow.textContent='UNIFIED APPEARANCE';
   const label=bar.querySelector('label');if(label)label.style.display='none';
   const link=bar.querySelector('a[href$="/appearance"]');
-  if(link)link.textContent='Change site & sheet theme ↗';
+  if(link&&link.textContent!=='Change site & sheet theme ↗')link.textContent='Change site & sheet theme ↗';
  }
  applyTheme(current,false);
 }
