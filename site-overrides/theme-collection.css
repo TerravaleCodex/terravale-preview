@@ -64,3 +64,111 @@ html[data-app-theme='absolute-zero'] .sidebar{border-right:1px solid #111!import
 html[data-app-theme='absolute-zero'] .theme-tile{transition:none}
 html[data-app-theme='absolute-zero'] .themed-sheet *{text-shadow:none!important}
 @media(max-width:650px){.theme-gallery{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}}
+
+
+/* v0.12.5: finish the theme coverage of hard-coded legacy panels and imported rules.
+   Intentionally retains essential semantic status/HP colours and original layouts. */
+html[data-app-theme] {
+ --theme-reading:var(--public-card,var(--theme-card,var(--panel)));
+ --theme-interactive:var(--panel2);
+ --theme-select:color-mix(in srgb,var(--gold) 14%,var(--panel2));
+ --theme-muted-border:color-mix(in srgb,var(--line) 75%,var(--bg));
+}
+/* Ancestry tabs, class index, feat choices and other clickable library controls. */
+html[data-app-theme] :is(.race-choice,.class-library-option,.explorer-row,.feat-entry,.creator-skill,.archive-link,.archive-select,.subclass-option){
+ background:var(--theme-interactive);
+ border-color:var(--line);
+ color:var(--text);
+}
+html[data-app-theme] :is(.race-choice,.class-library-option,.explorer-row,.feat-entry,.creator-skill,.archive-link,.archive-select,.subclass-option):is(:hover,:focus-visible){
+ background:var(--theme-select);
+ border-color:var(--gold);
+ color:var(--text);
+}
+html[data-app-theme] :is(.race-choice.selected,.class-library-option.selected,.explorer-row.active,.feat-entry.focused,.creator-skill.selected,.archive-select.selected,.archive-link.selected,.subclass-option.selected){
+ background:var(--theme-select);
+ border-color:var(--gold);
+ color:var(--text);
+}
+html[data-app-theme] :is(.race-choice small,.class-library-option small,.feat-entry-title small,.archive-link span,.archive-link small,.creator-skill small){
+ color:var(--muted);
+}
+html[data-app-theme] :is(.feat-entry-title,.feat-entry-title strong,.feat-open,.explorer-row span,.class-library-option strong,.race-choice strong){
+ color:var(--text);
+}
+html[data-app-theme] :is(.feat-open,.explorer-row span){color:var(--gold)}
+/* Rule explorer, its selector, selected state and full feat descriptions. */
+html[data-app-theme] :is(.rule-explorer-list,.feat-list){
+ background:var(--theme-reading);
+ border-color:var(--line);
+ color:var(--text);
+}
+html[data-app-theme] :is(.rule-detail,.feat-detail,.class-library-detail,.feat-prereq){
+ background:var(--theme-interactive);
+ border-color:var(--line);
+ color:var(--text);
+}
+html[data-app-theme] :is(.rule-detail,.feat-detail) :is(h2,h3,h4,strong,p,li),
+html[data-app-theme] :is(.formatted-rules,.formatted-rules p,.formatted-rules h4,.formatted-rules strong){
+ color:var(--text);
+}
+html[data-app-theme] :is(.rule-callout,.rule-table-line,.feat-prereq,.formatted-rules code){
+ background:var(--theme-reading);
+ border-color:var(--line);
+ color:var(--text);
+}
+html[data-app-theme] :is(.feat-entry input[type=checkbox],.feat-explorer input[type=checkbox]){accent-color:var(--gold)}
+/* Imported class/ancestry reference is a real themed reading surface, not parchment. */
+html[data-app-theme] .article-body {
+ background:var(--theme-reading);
+ color:var(--text);
+ border:1px solid var(--line);
+ color-scheme:dark;
+}
+html[data-app-theme] .article-body :is(h1,h2,h3,h4,h5,h6,p,li,strong,em,span){color:inherit}
+html[data-app-theme] .article-body :is(h1,h2,h3,h4,h5,h6){color:var(--text)}
+html[data-app-theme] .article-body :is(h2,hr){border-color:var(--line)}
+html[data-app-theme] .article-body a{color:var(--gold);text-decoration-color:var(--gold2)}
+html[data-app-theme] .article-body :is(th,td){border-color:var(--line);color:var(--text)}
+html[data-app-theme] .article-body th{background:var(--panel2)}
+html[data-app-theme] .article-body td{background:var(--theme-reading)}
+html[data-app-theme] .article-body :is(blockquote,pre,code){
+ background:var(--panel2);
+ color:var(--text);
+ border-color:var(--line);
+}
+html[data-app-theme] .article-body blockquote{border-left:3px solid var(--gold)}
+html[data-app-theme] .article-body pre{overflow:auto}
+html[data-app-theme] .article-body table{border-color:var(--line)}
+html[data-app-theme] .article-body :is(input,textarea,select){background:var(--panel);color:var(--text);border-color:var(--line)}
+html[data-app-theme] :is(.archive-inline,.archive-collection,.class-summary,.class-picker,.reference-rail){
+ color:var(--text);border-color:var(--line)
+}
+html[data-app-theme] :is(.archive-link,.archive-inline,.archive-collection) :is(h2,h3,h4){color:var(--text)}
+html[data-app-theme] :is(.class-facts>span,.class-summary .stat){background:var(--panel2);color:var(--text);border-color:var(--line)}
+html[data-app-theme] :is(.counter,.reference-rail h4,.class-facts strong){color:var(--gold)}
+html[data-app-theme] .reference-rail-link{border-color:var(--line);color:var(--text)}
+html[data-app-theme] .reference-rail-link small{color:var(--muted)}
+/* Preserve the requested minimalist OLED: no faux gold selection and no paper. */
+html[data-app-theme='absolute-zero']{
+ --theme-select:#090909;
+ --theme-reading:#020202;
+ --theme-interactive:#060606;
+ --theme-muted-border:#121212;
+}
+html[data-app-theme='absolute-zero'] :is(.race-choice,.class-library-option,.explorer-row,.feat-entry,.creator-skill,.archive-link,.subclass-option,.rule-detail,.feat-detail,.rule-explorer-list,.feat-list,.article-body,.article-body th,.article-body td){
+ background-image:none!important;
+ box-shadow:none!important;
+ text-shadow:none!important;
+ border-radius:3px;
+}
+html[data-app-theme='absolute-zero'] :is(.race-choice.selected,.class-library-option.selected,.explorer-row.active,.feat-entry.focused,.archive-select.selected,.creator-skill.selected){
+ background:#0b0b0b!important;
+ border-color:#555!important;
+}
+html[data-app-theme='absolute-zero'] .article-body{background:#020202!important;color:#cfcfcf!important;border-color:#101010!important}
+html[data-app-theme='absolute-zero'] .article-body :is(th,blockquote,pre,code){background:#080808!important;border-color:#202020!important}
+html[data-app-theme='absolute-zero'] .article-body td{background:#030303!important}
+html[data-app-theme='absolute-zero'] .article-body :is(h1,h2,h3,h4,h5,h6){color:#d5d5d5!important}
+html[data-app-theme='absolute-zero'] .article-body :is(h2,hr){border-color:#1b1b1b!important}
+html[data-app-theme='absolute-zero'] .hero:after{display:none!important}
