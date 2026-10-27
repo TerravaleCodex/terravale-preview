@@ -73,6 +73,13 @@ jobs:
               pages+=1
           print(f"Applied shared appearance extension to {pages} static pages")
           PY
+      - name: Publish optional character sheet workshop
+        shell: bash
+        run: |
+          mkdir -p site/characters/sheet-workshop
+          cp site-overrides/sheet-workshop-v0.9.1.html site/characters/sheet-workshop/index.html
+          test -s site/characters/sheet-workshop/index.html
+          grep -q 'Character Overview' site/characters/sheet-workshop/index.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
