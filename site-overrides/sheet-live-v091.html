@@ -289,6 +289,20 @@ html.live-embedded .sidebar,html.live-embedded .topbar,html.live-embedded .works
 html.live-embedded .main{width:100%;min-width:0}
 html.live-embedded .view{width:100%;max-width:none;margin:0;padding:0 0 24px}
 html.live-embedded .hero{margin-top:0}
+html.live-embedded .portrait.has-live-portrait:before,
+html.live-embedded .portrait.has-live-portrait:after{display:none}
+html.live-embedded .portrait .live-portrait-trigger{display:block;position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:zoom-in;z-index:1}
+html.live-embedded .portrait .live-portrait-photo{display:block;width:100%;height:100%;object-fit:contain;object-position:center;image-orientation:from-image}
+html.live-embedded .portrait .live-portrait-trigger:focus-visible{outline:3px solid var(--accent);outline-offset:-4px}
+html.live-embedded .portrait.has-live-portrait>small,
+html.live-embedded .portrait.has-live-portrait>.portrait-glyph{display:none}
+html.live-embedded .portrait .live-portrait-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:12px;cursor:pointer;border:0;background:transparent;color:var(--sub);font-size:11px;z-index:2}
+html.live-embedded .portrait .live-portrait-error:focus-visible{outline:3px solid var(--accent);outline-offset:-4px}
+.live-portrait-dialog{padding:12px;max-width:min(96vw,1050px);max-height:96vh;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.live-portrait-dialog::backdrop{background:rgba(0,0,0,.86)}
+.live-portrait-dialog img{display:block;max-width:calc(96vw - 40px);max-height:calc(90vh - 76px);width:auto;height:auto;object-fit:contain;margin:0 auto}
+.live-portrait-dialog header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:9px;font-size:12px}
+.live-portrait-dialog button{border:1px solid var(--line);border-radius:8px;background:var(--paper2);color:var(--ink);padding:7px 12px;cursor:pointer}
 html.live-embedded:not(.live-loaded) .view{visibility:hidden}
 html.live-embedded .hero-copy{padding-bottom:18px}
 html.live-embedded .live-rule-remark{font-size:10px;color:var(--muted)}
@@ -333,7 +347,7 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 <dialog class="dialog" id="dialog"><div id="dialogBody"></div><div class="row-actions"><button class="action" id="closeDialog">Close</button></div></dialog>
 <script>
 (()=>{'use strict';
-const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[]};
+const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:''};
 if(LIVE.enabled)document.documentElement.classList.add('live-embedded');
 const iconDrop='<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 1C8 5.7 2 10.3 2 15.6a8 8 0 0 0 16 0C18 10.3 12 5.7 10 1Z"/></svg>';
 const profiles={
@@ -693,7 +707,63 @@ function handleV08Click(button,e){if(button.dataset.wikiFilter){app.wikiFilter=b
 function handleV08Input(e){if(e.target.id==='featSearch'){filterWiki();return true}if(e.target.dataset.walletAmount){const w=ensureGear().wallet.find(w=>w.id===e.target.dataset.walletAmount);if(w){w.amount=Math.max(0,Math.round(Number(e.target.value)||0));save()}return true}return false}
 function handleV08Change(e){return false}
 
-function renderHeader(){const x=p();$('characterName').textContent=x.name;$('characterDetails').innerHTML=`${esc(x.ancestry)} <span class="star">✦</span> ${esc(x.label)} <span class="star">✦</span> Level ${x.level}`;$('classRole').textContent=x.role;$('subclassPill').textContent=x.subclass;$('portraitGlyph').textContent=x.glyph;const extra=$('heroBasics');if(extra){const languages=showcase()?.languages||['Common · example'];extra.innerHTML=`<span class="pill" title="Character size and type">◈ ${esc(x.size||'Medium')} · ${esc(x.creatureType||'Humanoid')}</span><span class="pill" title="Known languages">☷ ${esc(languages.join(' · '))}</span>`;}$('recordLabel').textContent=app.theme==='night'?'Stellar character record · character record':'Living Codex · character record';$('classIdentity').textContent=x.label.toUpperCase();renderAbilityStrip();renderEssentials();}
+function validLivePortrait(url){
+ if(!LIVE.enabled||typeof url!=='string'||!url)return false;
+ try{
+  const candidate=new URL(url);
+  return candidate.protocol==='https:'&&candidate.origin==='https://emwlvbmnrrhxhrmlwkhs.supabase.co'&&candidate.pathname.startsWith('/storage/v1/object/sign/terravale-character-portraits/');
+ }catch{return false}
+}
+function openPortraitViewer(url,name){
+ if(!validLivePortrait(url))return;
+ const dialog=document.createElement('dialog');dialog.className='live-portrait-dialog';
+ const heading=document.createElement('header');
+ const title=document.createElement('strong');title.textContent=name+' · Portrait';
+ const close=document.createElement('button');close.type='button';close.textContent='Close ×';close.setAttribute('aria-label','Close portrait preview');
+ heading.append(title,close);
+ const img=document.createElement('img');img.src=url;img.alt='Full-size portrait of '+name;
+ dialog.append(heading,img);document.body.append(dialog);
+ const dismiss=()=>dialog.close();
+ close.addEventListener('click',dismiss);
+ dialog.addEventListener('click',event=>{if(event.target===dialog)dismiss()});
+ dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+ dialog.showModal();
+}
+function renderLivePortrait(){
+ if(!LIVE.enabled)return;
+ const slot=document.querySelector('.hero .portrait');
+ if(!slot)return;
+ const url=validLivePortrait(LIVE.portraitUrl)?LIVE.portraitUrl:'';
+ if(slot.dataset.livePortraitUrl===url)return;
+ slot.dataset.livePortraitUrl=url;
+ slot.querySelector('.live-portrait-trigger')?.remove();
+ slot.querySelector('.live-portrait-error')?.remove();
+ slot.classList.remove('has-live-portrait');
+ const glyph=slot.querySelector('.portrait-glyph');
+ const label=slot.querySelector('small');
+ if(!url){
+  if(glyph)glyph.hidden=false;
+  if(label)label.textContent='No portrait uploaded';
+  return;
+ }
+ const trigger=document.createElement('button');trigger.type='button';trigger.className='live-portrait-trigger';
+ trigger.setAttribute('aria-label','Enlarge '+p().name+' portrait');
+ trigger.title='View full portrait';
+ const img=document.createElement('img');img.className='live-portrait-photo';img.alt=p().name+' character portrait';img.src=url;
+ img.loading='eager';img.decoding='async';
+ img.addEventListener('error',()=>{
+  if(slot.dataset.livePortraitUrl!==url)return;
+  trigger.remove();slot.classList.remove('has-live-portrait');
+  const retry=document.createElement('button');retry.type='button';retry.className='live-portrait-error';
+  retry.textContent='Portrait could not load · Tap to retry';
+  retry.addEventListener('click',()=>window.parent.postMessage({type:'TV_SHEET_PORTRAIT_RETRY',id:LIVE.charId},location.origin));
+  slot.append(retry);
+ });
+ trigger.append(img);trigger.addEventListener('click',()=>openPortraitViewer(url,p().name));
+ slot.append(trigger);slot.classList.add('has-live-portrait');
+ if(glyph)glyph.hidden=true;
+}
+function renderHeader(){const x=p();$('characterName').textContent=x.name;$('characterDetails').innerHTML=`${esc(x.ancestry)} <span class="star">✦</span> ${esc(x.label)} <span class="star">✦</span> Level ${x.level}`;$('classRole').textContent=x.role;$('subclassPill').textContent=x.subclass;$('portraitGlyph').textContent=x.glyph;renderLivePortrait();const extra=$('heroBasics');if(extra){const languages=showcase()?.languages||['Common · example'];extra.innerHTML=`<span class="pill" title="Character size and type">◈ ${esc(x.size||'Medium')} · ${esc(x.creatureType||'Humanoid')}</span><span class="pill" title="Known languages">☷ ${esc(languages.join(' · '))}</span>`;}$('recordLabel').textContent=app.theme==='night'?'Stellar character record · character record':'Living Codex · character record';$('classIdentity').textContent=x.label.toUpperCase();renderAbilityStrip();renderEssentials();}
 function renderEssentials(){const x=p();const h=hp();$('essentials').innerHTML=`<div class="essential"><div class="essential-label">Armour class</div><div class="essential-value">${x.ac}</div></div><div class="essential"><div class="essential-label">Speed</div><div class="essential-value">${x.speed} <span style="font-size:12px;color:var(--muted)">ft.</span></div></div><div class="essential"><div class="essential-label">Proficiency</div><div class="essential-value">+${x.pb}</div></div><div class="essential"><div class="hp-wrap"><div class="hp-info"><div class="essential-label">Hit points <em>♥</em> · Temp +${tempHp()}</div><b>${h} <small>/ ${x.hp}</small></b></div><div class="hp-controls"><button class="mini" data-damage="1" aria-label="Take one damage">−</button><button class="mini" data-heal="1" aria-label="Heal one hit point">+</button></div></div><div class="hpbar"><div style="width:${Math.round(h/x.hp*100)}%"></div></div></div>`}
 function renderTabs(){$('tabs').innerHTML=tabs.map(t=>`<button class="tab ${app.tab===t?'selected':''}" data-tab="${t}" aria-current="${app.tab===t?'page':'false'}">${esc(t)}</button>`).join('')}
 function renderPage(){const byTab={'Overview':overview,'Class & abilities':classTab,'Feats & traits':featsTab,'Story & notes':storyTab,'Gear & equipment':gearTab,'Advancement':advancementTab};$('page').innerHTML=byTab[app.tab]();resizeTextareas();if(app.tab==='Overview')arrangeOverviewPanels();else arrangeWorkshopPanels();enhanceSectionControls();renderTabs()}
@@ -762,7 +832,7 @@ document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=
 
 function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)return;
  LIVE.syncing=true;const oldId=LIVE.charId;LIVE.charId=String(payload.id);LIVE.loaded=false;
- LIVE.readOnly=!!payload.readOnly;LIVE.actions=Array.isArray(payload.actions)?payload.actions:[];
+ LIVE.readOnly=!!payload.readOnly;LIVE.portraitUrl=typeof payload.portraitUrl==='string'?payload.portraitUrl:'';LIVE.actions=Array.isArray(payload.actions)?payload.actions:[];
  LIVE.feats=Array.isArray(payload.feats)?payload.feats:[];
  LIVE.disciplineNames=Array.isArray(payload.disciplines)?payload.disciplines:[];
  const clazz=String(payload.className||'Unassigned').toLowerCase().trim();
