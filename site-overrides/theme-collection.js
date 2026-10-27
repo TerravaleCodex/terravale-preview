@@ -7,16 +7,17 @@
 const SITE_KEY='terravale.cosmetic.site.v1';
 const BRIDGE_KEY='terravale.unified.theme.v2';
 const ADDITIONAL=[
- {id:'shotxo',name:'Shotxo · Demon Slayer',description:'VTuber-inspired violet-black, lilac and subtle gold.',swatches:['#090713','#241834','#c1a3ff']},
- {id:'shady',name:'Shady · Obsidian & Ivory',description:'Near-black with soft, weathered-bone highlights.',swatches:['#050506','#171518','#c5b8a4']},
- {id:'absolute-zero',name:'Absolute Zero · OLED',description:'True black, near-invisible panels, no decorative effects.',swatches:['#000000','#030303','#ababab']},
- {id:'sanguine',name:'Sanguine Court',description:'Vampiric burgundy, velvet-black and muted antique gold.',swatches:['#13080c','#301820','#d6a48c']},
- {id:'verdant',name:'Verdant Court',description:'Moss, emerald and dark woodland green.',swatches:['#07150e','#20372a','#bad098']},
- {id:'dragonforge',name:'Dragonforge',description:'Smoked iron, copper and ember.',swatches:['#15110e','#362921','#e6ab78']},
- {id:'astral',name:'Astral Archive',description:'Midnight ink, star charts and brass.',swatches:['#0b1020','#202e47','#d8bd84']},
- {id:'null-meridian',name:'Null Meridian',description:'Industrial graphite, amber and precise lines.',swatches:['#0b0d0d','#232829','#c3b07b']}
+ {id:'shotxo',name:"Guildie",description:'VTuber-inspired violet-black, lilac and subtle gold.',swatches:['#090713','#241834','#c1a3ff']},
+ {id:'shady',name:"Shady's Bone Zone",description:'Near-black with soft, weathered-bone highlights.',swatches:['#050506','#171518','#c5b8a4']},
+ {id:'absolute-zero',name:"Void.exe",description:'True black, near-invisible panels, no decorative effects.',swatches:['#000000','#030303','#ababab']},
+ {id:'sanguine',name:"Blood Money",description:'Vampiric burgundy, velvet-black and muted antique gold.',swatches:['#13080c','#301820','#d6a48c']},
+ {id:'verdant',name:"Moss Boss",description:'Moss, emerald and dark woodland green.',swatches:['#07150e','#20372a','#bad098']},
+ {id:'dragonforge',name:"Forged & Furious",description:'Smoked iron, copper and ember.',swatches:['#15110e','#362921','#e6ab78']},
+ {id:'astral',name:"Starstruck",description:'Midnight ink, star charts and brass.',swatches:['#0b1020','#202e47','#d8bd84']},
+ {id:'null-meridian',name:"404: Magic Not Found",description:'Industrial graphite, amber and precise lines.',swatches:['#0b0d0d','#232829','#c3b07b']}
 ];
 const THEMES=new Set(['dark','night-sky',...ADDITIONAL.map(t=>t.id)]);
+const NAMES={"dark":"Old Faithful","night-sky":"Stargazer's Delusion","shotxo":"Guildie","shady":"Shady's Bone Zone","absolute-zero":"Void.exe","sanguine":"Blood Money","verdant":"Moss Boss","dragonforge":"Forged & Furious","astral":"Starstruck","null-meridian":"404: Magic Not Found"};
 function getPreference(){
  try{
   const selected=localStorage.getItem(BRIDGE_KEY)||localStorage.getItem(SITE_KEY)||'dark';
@@ -64,6 +65,7 @@ function makeTile(t){
 function enhance(){
  for(const select of document.querySelectorAll('select[aria-label="Website theme"],select[aria-label="Website and character-sheet theme"]')){
   select.setAttribute('aria-label','Website and character-sheet theme');
+  for(const option of select.options){const name=NAMES[option.value];if(name&&option.textContent!==name)option.textContent=name;}
   for(const t of ADDITIONAL)if(!Array.from(select.options).some(o=>o.value===t.id)){
    const option=document.createElement('option');option.value=t.id;option.textContent=t.name;select.append(option);
   }
@@ -75,6 +77,7 @@ function enhance(){
  const gallery=document.querySelector('.theme-gallery[aria-label="Website theme choices"]');
  if(gallery){
   for(const t of ADDITIONAL)if(!gallery.querySelector('[data-theme-id="'+t.id+'"]'))gallery.append(makeTile(t));
+  for(const tile of gallery.querySelectorAll('.theme-tile[data-theme-id]')){const name=NAMES[tile.dataset.themeId];const heading=tile.querySelector('strong');if(name&&heading&&heading.textContent!==name)heading.textContent=name;}
   const panel=gallery.closest('.panel');const title=panel?.querySelector('.panel-head h2');
   if(title&&title.textContent!=='Website & character-sheet themes')title.textContent='Website & character-sheet themes';
   const panelTag=panel?.querySelector('.counter');if(panelTag&&panelTag.textContent!=='One shared preference · this device')panelTag.textContent='One shared preference · this device';
