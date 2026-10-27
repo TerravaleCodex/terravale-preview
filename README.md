@@ -1,5 +1,13 @@
 # Terravale Living Codex — Public Preview
 
+## v0.12.1 — Interactive Abilities
+- Players and DMs can spend charges on DM-linked class features and character-specific feats with one click from character sheets; actions show cost, remaining balance and activation type.
+- Class ability links can only use unlocked class features or approved selections, and must have explicitly configured costs.
+- Custom feats can automatically deduct their own uses and an additional resource pool when the DM configures both.
+- Cloud actions verify the latest approved build and atomically compare-and-swap current resources to prevent two open devices double-spending the final charge.
+- Rest recovery is now concurrency-checked to avoid overwriting HP or charges that changed in another session.
+- Players may only activate their own abilities; campaign DMs retain control. Unconfigured abilities stay reference-only, and effects still follow the written rules.
+
 ## v0.12.0 — Rest & Recovery
 - Short Rest and Long Rest on character sheets and live session controls, with confirmation before a save.
 - Players select Hit Dice to spend on short rests and get automatically rolled healing. Long rests restore HP, clear temporary HP and regain half the total Hit Dice (at least one), following the selected 2014-style baseline.
