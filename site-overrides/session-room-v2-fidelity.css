@@ -111,3 +111,159 @@ main{max-width:none;padding:14px 13px 14px}
  .head h1{font-size:27px}
 }
 @media(max-width:440px){.active .hero{grid-template-columns:65px minmax(0,1fr);gap:8px}.active .hero .portrait{width:65px;height:75px;font-size:37px}.active .initiative-square{grid-column:1/-1;padding:4px}.active .initiative-square strong{display:inline;padding-left:8px}.active .sheet-tabs{overflow-x:auto}.active .sheet-tabs button{white-space:nowrap}.check{font-size:9px}}
+
+
+/* Marked-up screenshot revision: panels must fill the available viewport;
+   character cards grow vertically; numbered polyhedral dice are visible. */
+@media (min-width:1061px){
+  main{display:flex;flex-direction:column;min-height:calc(100dvh - 43px)}
+  .room{
+    height:calc(100dvh - 365px);
+    min-height:630px;
+    max-height:none;
+    flex:1;
+    grid-template-columns:minmax(245px,.84fr) minmax(410px,1.5fr) minmax(345px,1.16fr);
+    gap:12px;
+    align-items:stretch
+  }
+  .room>.chat,.room>.active,.room>.right{
+    height:100%;min-height:0;max-height:none
+  }
+  .foot{margin-top:8px;flex:0 0 auto}
+}
+.initiative{min-height:181px;padding-top:8px;padding-bottom:8px}
+.initiative .section-top{flex-basis:132px;min-width:132px}
+.initiative .track{padding-right:130px;align-items:stretch}
+.initiative .actor{
+  min-height:160px;flex:1 0 125px;min-width:125px;
+  padding:8px 8px 7px;border-radius:6px;
+  background:linear-gradient(160deg,#151a27,#0c131d)
+}
+.initiative .actor.front{background:linear-gradient(160deg,#21192e,#101322)}
+.initiative .actor .tag{height:15px;font-size:9px}
+.initiative .actor .portrait{
+  width:62px;height:65px;font-size:36px;margin:1px 0 7px;
+  border-color:#675581;
+  background:radial-gradient(circle at 30% 23%,#625274,#272038 72%,#10141e)
+}
+.initiative .actor .initiative-num{top:7px;right:7px;font-size:18px}
+.initiative .actor .name{font-size:12px}
+.initiative .actor .type{font-size:10px;min-height:15px;max-height:15px;line-height:15px}
+.initiative .actor .hp-track{margin:5px 0 3px;height:6px}
+.initiative .actor .hp-text{font-size:10px}
+.initiative .actor .conditions{min-height:16px;height:16px;margin-top:3px}
+.initiative .actor .pill{font-size:9px}
+.initiative .section-top .controls{top:8px;bottom:8px}
+.initiative .section-top .controls #add-actor{height:62px}
+.initiative .section-top .controls #next-turn{height:50px}
+.initiative .section-top h2{font-size:15px}
+.initiative .section-top span{font-size:10px;line-height:1.5}
+.chat{min-width:0}
+.chat .feed{flex:1;min-height:0;padding:12px;gap:7px}
+.chat .msg{padding:8px 4px}
+.chat .msg.roll{padding:12px 10px}
+.chat .msg p{font-size:12px;line-height:1.5}
+.chat .msg-avatar{width:34px;height:34px}
+.chat .msg .msg-top b{font-size:12px}
+.chat .msg time{font-size:10px}
+.chat .chat-compose{margin-top:auto;flex-shrink:0;padding:11px}
+.chat .chat-compose input{min-height:40px;font-size:12px}
+.active{min-height:0}
+.active .hero{padding:18px 16px 14px;gap:16px}
+.active .hero .portrait{
+  width:105px;height:116px;font-size:64px;
+  border-color:#8065a0
+}
+.active .hero{grid-template-columns:105px minmax(0,1fr) 59px}
+.active .identity h3{font-size:24px}
+.active .identity p{font-size:12px}
+.active .hero .hp-details{margin-top:17px}
+.active .hero .hpbar{height:11px}
+.active .hero .subheading{font-size:12px;margin-bottom:7px}
+.active .hero .active-cond{margin-top:13px}
+.active .sheet-tabs{flex:0 0 auto}
+.active .sheet-tabs button{padding:12px 11px;font-size:11px}
+.active .sheet-body{flex:1;min-height:0;overflow-y:auto;padding:14px 16px 18px}
+.active .sheet-subtitle{margin:14px 0 9px;font-size:13px}
+.active .feature-list{gap:9px;margin-bottom:16px}
+.active .feature{min-height:62px;padding:10px 12px;grid-template-columns:38px minmax(0,1fr) 28px;gap:11px}
+.active .feature-icon{width:38px;height:38px;font-size:20px}
+.active .feature h4{font-size:12px}
+.active .feature p{font-size:11px;line-height:1.48}
+.active .active-foot{padding:10px 14px;min-height:46px;flex:0 0 auto}
+.right{min-height:0;gap:12px;overflow:hidden}
+.right>.panel.dicebox{display:block;flex:none;min-height:0;overflow:visible}
+.right>.panel.dicebox .inner{padding:12px 14px 14px;overflow:visible}
+.right>.panel.checks-panel{
+  display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;
+  background:linear-gradient(180deg,#0d1320,#090e16)
+}
+.right>.panel.checks-panel .panel-head{min-height:42px;flex:0 0 auto}
+.right>.panel.checks-panel .inner{
+  padding:12px 14px 18px;flex:1;min-height:0;overflow-y:auto;
+  scrollbar-color:#4f455d transparent;scrollbar-width:thin
+}
+#quick-checks{border:0;margin:0;padding:0}
+#quick-checks summary{font-size:12px;padding:6px 0 12px}
+#quick-checks .check-title{gap:10px;margin:0 0 13px!important;align-items:center}
+#quick-checks .check-title .subtle{display:block;font-size:11px;margin:0;white-space:nowrap}
+#quick-checks .check-title select{max-width:65%;flex:1}
+#quick-checks .subheading{font-size:12px;margin-top:20px!important;margin-bottom:9px}
+#quick-checks .checks{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+}
+#quick-checks .checks:has(button:nth-child(6):last-child){
+  grid-template-columns:repeat(3,minmax(0,1fr))
+}
+#quick-checks .check{
+  min-height:42px;padding:9px 8px;display:flex;
+  justify-content:space-between;flex-direction:row;
+  font-size:11px;text-align:left;white-space:normal
+}
+#quick-checks .check strong{font-size:11px}
+#dice-help{display:block;padding-top:15px;margin-top:18px}
+.dice-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:4px 0 14px}
+.dice-grid .die{
+  display:flex;flex-direction:column;justify-content:center;
+  min-height:86px;padding:10px 2px 8px;border-radius:6px;gap:5px
+}
+.die-icon{width:40px;height:41px;display:grid;place-items:center;flex-shrink:0}
+.die-icon svg{width:40px;height:41px;display:block;filter:drop-shadow(0 1px 4px #342253)}
+.die small{font-size:10px;margin:0;color:#cec5e1}
+#dice-adv-controls{padding:10px 0 0}
+#dice-adv-controls .btn{padding:8px 3px;min-height:34px}
+@media(max-width:1330px) and (min-width:1061px){
+  .room{grid-template-columns:minmax(205px,.82fr) minmax(340px,1.4fr) minmax(305px,1.2fr)}
+  .active .hero{grid-template-columns:82px minmax(0,1fr) 50px;gap:10px;padding:14px}
+  .active .hero .portrait{width:82px;height:98px;font-size:49px}
+  .active .sheet-body{padding:12px}
+  .active .sheet-tabs button{padding:10px 7px}
+  #quick-checks .checks{gap:5px}
+}
+@media(max-width:1060px){
+  .room{height:auto;min-height:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .room>.chat,.room>.active{height:660px;min-height:660px}
+  .room>.right{height:auto;min-height:0;overflow:visible}
+  .right>.panel.checks-panel{min-height:480px}
+  .right>.panel.checks-panel .inner{overflow:visible}
+  .right>.panel.dicebox .inner{overflow:visible}
+  .initiative .actor{min-width:128px;min-height:160px}
+}
+@media(max-width:735px){
+  .room{display:flex;flex-direction:column}
+  .room>.active{height:645px;min-height:645px}
+  .room>.chat{height:510px;min-height:510px}
+  .room>.right{height:auto}
+  .right>.panel.checks-panel{min-height:460px}
+  .initiative .section-top{flex-basis:105px;min-width:105px}
+  .initiative .track{padding-right:110px}
+  .initiative .actor{min-width:120px}
+}
+@media(max-width:440px){
+  .dice-grid .die{min-height:72px}
+  .die-icon{width:31px;height:31px}
+  .die-icon svg{width:30px;height:30px}
+  .right>.panel.checks-panel .inner{padding:10px}
+  .active .hero{grid-template-columns:65px minmax(0,1fr)}
+  .active .hero .portrait{width:65px;height:75px;font-size:38px}
+}
