@@ -70,9 +70,12 @@ jobs:
         run: |
           mkdir -p site/session-room-v2
           cp site-overrides/session-room-v2.html site/session-room-v2/index.html
+          cp site-overrides/session-room-v2-fidelity.css site/session-room-v2/session-room-v2-fidelity.css
           test -s site/session-room-v2/index.html
           grep -q 'Initiative Queue' site/session-room-v2/index.html
           grep -q 'Character-Specific Quick Checks' site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-fidelity.css
+          grep -q 'sheet-tabs' site/session-room-v2/index.html
       - name: Check Session Room V2 preview JavaScript syntax
         shell: bash
         run: |
