@@ -19,6 +19,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 @media(max-width:950px){.app{grid-template-columns:56px minmax(0,1fr)}.brand{padding:14px 8px;justify-content:center}.brand .brand-text,.side .nav-head,.menu a .nav-label,.campaign{display:none}.menu a{justify-content:center}.nav-ic{font-size:18px}.active-flex{grid-template-columns:1fr}.active-stats{grid-template-columns:1fr 1fr}.room{grid-template-columns:1fr}.chat{height:470px}.right{display:grid;grid-template-columns:1fr 1fr}.head h1{font-size:27px}}
 @media(max-width:660px){.topbar{padding:0 8px}.topright .tiny{display:none}main{padding:13px 9px}.head{align-items:start;flex-direction:column}.head-actions{justify-content:flex-start}.preview{align-items:flex-start;flex-direction:column}.active-stats{grid-template-columns:1fr}.right{display:flex}.section-top{align-items:start;flex-direction:column}.actor{flex-basis:130px}.roll-row{grid-template-columns:1fr 65px auto}.checks{grid-template-columns:1fr 1fr}}
 </style>
+<link rel="stylesheet" href="./session-room-v2-fidelity.css">
 </head>
 <body>
 <div class="app">
@@ -48,20 +49,20 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
  <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
 </section>
-<section class="panel active" id="active-combatant" aria-label="Active combatant expanded"></section>
 <section class="room">
  <section class="panel chat" aria-label="Campaign chat">
   <div class="panel-head"><div class="tabs"><button class="tab current" id="tab-chat">Campaign chat</button><button class="tab" id="tab-rolls">Dice results</button></div><span class="meta">● Preview activity</span></div>
   <div class="feed" id="feed"></div>
   <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message the party or type /roll 1d20+5" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
  </section>
+ <section class="panel active" id="active-combatant" aria-label="Active combatant expanded"></section>
  <div class="right">
   <section class="panel dicebox" aria-label="Dice and character checks">
     <div class="panel-head"><h2>Dice & Character Checks</h2><span class="meta">Rolls appear in chat</span></div>
     <div class="inner">
       <div class="subheading">Quick Dice</div><div class="dice-grid" id="dice-grid"></div>
       <div class="subheading">Custom Roll</div>
-      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form>
+      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20+5" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form><div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
       <details open id="quick-checks"><summary>Character-Specific Quick Checks</summary><div class="check-title" style="margin-top:11px"><span class="subtle">Choose the player making the roll</span><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></details>
       <details id="dice-help"><summary>Roll format & visibility</summary><p class="subtle">Try 1d20, 2d6+3 or /roll 1d20+5 in chat. This preview rolls locally, with no shared dice history or secure DM-hidden rolls.</p></details>
     </div>
@@ -90,7 +91,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <script>
 (function(){
 "use strict";
-const key="terravale-room-v2-workshop-v1";
+const key="terravale-room-v2-workshop-v2";
 const definitions={
 "Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
 "Charmed":"Cannot attack the charmer or target them with harmful abilities. The charmer has advantage on social interaction checks with it.",
@@ -108,14 +109,25 @@ const definitions={
 "Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
 "Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
 };
-const base=()=>({dm:true,round:1,steps:0,selected:"fighter",tab:"chat",queue:["fighter","bandit","derulo","artificer","barbarian","hound"],actors:[
-{id:"fighter",name:"Fighter Test",type:"Player",subtitle:"Fighter · Level 1",init:22,hp:11,max:11,hidden:false,conditions:[],initial:"F"},
-{id:"bandit",name:"Bandit Captain",type:"NPC",subtitle:"Humanoid · Hostile",init:20,hp:48,max:48,hidden:true,conditions:[],initial:"B"},
-{id:"derulo",name:"Derulo",type:"Player",subtitle:"Shaman · Level 8",init:16,hp:0,max:8,hidden:false,conditions:["Blinded","Deafened"],initial:"D"},
-{id:"artificer",name:"Artificer Test",type:"Player",subtitle:"Artificer · Level 1",init:12,hp:9,max:9,hidden:false,conditions:[],initial:"A"},
-{id:"barbarian",name:"Barbarian Test",type:"Player",subtitle:"Barbarian · Level 1",init:9,hp:13,max:13,hidden:false,conditions:[],initial:"B"},
-{id:"hound",name:"Grave Hound",type:"Creature",subtitle:"Beast · Hostile",init:7,hp:24,max:24,hidden:true,conditions:["Poisoned"],initial:"G"}],
-messages:[{kind:"text",who:"Aster (DM)",message:"The ruined archway creaks. Roll initiative.",time:"22:41"},{kind:"roll",who:"Fighter Test",label:"Initiative · 1d20+2",total:22,detail:"20 + 2",time:"22:42"},{kind:"text",who:"Derulo",message:"I think the hound has seen us.",time:"22:42"}]});
+const base=()=>({dm:true,round:2,steps:0,selected:"kai",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
+{id:"kai",name:"Kai",type:"Player",subtitle:"Lv 5 · Fighter",init:24,hp:42,max:42,hidden:false,conditions:[],initial:"K",face:"🧑🏻‍🎤"},
+{id:"derulo",name:"Derulo",type:"Player",subtitle:"Lv 5 · Shaman",init:19,hp:28,max:34,hidden:false,conditions:[],initial:"D",face:"🐺"},
+{id:"haruki",name:"Haruki",type:"Player",subtitle:"Lv 5 · Artificer",init:17,hp:31,max:31,hidden:false,conditions:[],initial:"H",face:"🧝🏻"},
+{id:"shystray",name:"shyStray",type:"Player",subtitle:"Lv 5 · Barbarian",init:14,hp:45,max:52,hidden:false,conditions:[],initial:"S",face:"🧝🏼‍♀️"},
+{id:"goblin",name:"Goblin Scout",type:"Monster",subtitle:"Goblin · Hostile",init:11,hp:17,max:23,hidden:true,conditions:["Poisoned"],initial:"G",face:"👺"},
+{id:"cultist",name:"Cultist Arcanist",type:"NPC",subtitle:"Humanoid · Hostile",init:8,hp:31,max:31,hidden:true,conditions:[],initial:"C",face:"🧙🏽"},
+{id:"skeleton",name:"Skeleton Warrior",type:"Creature",subtitle:"Undead · Hostile",init:5,hp:0,max:13,hidden:true,conditions:[],initial:"S",face:"💀"}],
+messages:[
+{kind:"text",who:"shadyStray",message:"rolling perception real quick",time:"01:26"},
+{kind:"roll",who:"shadyStray",label:"Perception · 1d20",total:17,detail:"17",time:"01:26"},
+{kind:"text",who:"Derulo",message:"that fixes it actually",time:"01:27"},
+{kind:"text",who:"Haruki",message:"gonna check the door",time:"01:28"},
+{kind:"roll",who:"Haruki",label:"1d20+5",total:23,detail:"18 + 5",time:"01:28"},
+{kind:"text",who:"Aster (DM)",message:"the door creaks open…\nyou hear faint voices beyond.",time:"01:29"},
+{kind:"text",who:"shadyStray",message:"uh oh\nstealth check?",time:"01:30"},
+{kind:"roll",who:"shadyStray",label:"1d20+7",total:12,detail:"5 + 7",time:"01:30"},
+{kind:"text",who:"Derulo",message:"we can try to sneak around",time:"01:31"}
+]});
 let state;try{state=JSON.parse(localStorage.getItem(key)||"null")||base();if(!Array.isArray(state.queue)||!Array.isArray(state.actors))state=base();}catch(e){state=base()}
 const $=(id)=>document.getElementById(id);
 const esc=(value)=>String(value).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -129,7 +141,7 @@ let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
 return '<div class="hp-track"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><div class="hp-text">'+a.hp+' / '+a.max+' HP'+(a.hidden?' · DM only':'')+'</div>';
 };
 const tokens=(a)=>a.conditions.length?a.conditions.map(c=>'<span class="pill harm tip" tabindex="0" role="note" data-tip="'+esc(definitions[c]||'Campaign condition')+'">'+esc(c)+'</span>').join(""):'<span class="pill none">No conditions</span>';
-const portrait=(a,clazz)=>'<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-hidden="true">'+esc(a.initial||a.name.slice(0,1))+'</span>';
+const portrait=(a,clazz)=>'<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-hidden="true">'+esc(a.face||a.initial||a.name.slice(0,1))+'</span>';
 function queueRender(){
 $("round-info").textContent='Round '+state.round+' · '+state.queue.length+' in initiative · Current turn at front';
 $("queue").innerHTML=state.queue.map((id,i)=>{
@@ -138,12 +150,55 @@ return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="
 }).join('');
 $("next-turn").disabled=!state.dm;$("add-actor").disabled=!state.dm;
 }
+
+const sampleFeatures={
+"Fighter":[
+["Attacks",[["⚔","Longsword","Melee weapon attack · +7 to hit · Reach 5 ft · 1d8+4 slashing"],["🪓","Handaxe","Melee or thrown attack · damage depends on equipment"]]],
+["Class Features",[["✺","Fighting Style — Great Weapon","A sample feature description for the visual preview; refer to the approved character sheet for actual rules."],["♧","Action Surge (1/1)","Take one additional action on your turn."],["✚","Second Wind (1/1)","Regain 1d10 + your Fighter level hit points."]]],
+["Reactions",[["↪","Opportunity Attack","Make a reaction attack when a creature you can see leaves your reach."]]]
+],
+"Shaman":[["Spirit Techniques",[["✧","Spirit Bond","Your approved bonded spirit techniques appear here in the connected version."],["✦","Spirit Rite","Spend a resource to invoke a prepared rite, if available."]]],["Actions",[["⚔","Weapon Attack","Character-specific attack options appear here."]]]],
+"Artificer":[["Attacks",[["⚙","Tool Attack","Sample class-based action, pending character-sheet integration."]]],["Class Features",[["✧","Infusions & Devices","Expandable character-linked class details will appear here."]]]],
+"Barbarian":[["Attacks",[["⚔","Weapon Attack","Preview attack; actual values will come from the character sheet."]]],["Class Features",[["🔥","Rage","Class resource and status in the final connected room."],["✺","Reckless Attack","Attack with advantage at the cost of exposing yourself."]]]],
+"NPC":[["Actions",[["⚔","Weapon Attack","DM-authored attack and damage."],["✦","Special Action","Optional DM-authored special ability."]]],["Reactions",[["↪","Opportunity Attack","Reaction when the rules allow."]]]]
+};
+function actorClass(a){
+let t=a.subtitle.toLowerCase();
+if(t.includes("fighter"))return "Fighter";
+if(t.includes("shaman"))return "Shaman";
+if(t.includes("artificer"))return "Artificer";
+if(t.includes("barbarian"))return "Barbarian";
+return "NPC";
+}
+function sheetContents(a,tab){
+if(tab==="Abilities"){
+let groups=sampleFeatures[actorClass(a)]||sampleFeatures.NPC;
+return groups.map(([heading,entries])=>'<div class="sheet-subtitle">'+esc(heading)+'</div><div class="feature-list">'+entries.map(([icon,name,detail])=>'<div class="feature"><span class="feature-icon">'+esc(icon)+'</span><div><h4>'+esc(name)+'</h4><p>'+esc(detail)+'</p></div><button type="button" aria-label="Read '+esc(name)+'" data-action="feature-info" data-feature="'+esc(name)+'" data-description="'+esc(detail)+'">◇</button></div>').join("")+'</div>').join("");
+}
+if(tab==="Conditions")return '<div class="sheet-subtitle">Current Conditions</div><p class="subtle">Hover or focus a condition to read its mechanical effects.</p><div class="conditions" style="margin:12px 0">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" data-action="conditions">＋ Manage conditions</button>':'');
+if(tab==="Resources")return '<div class="sheet-subtitle">Character Resources</div><p class="subtle">This preview shows illustrative resource cards. Real values will be linked to the approved character sheet.</p>'+([["Primary Resource","3 / 3"],["Short Rest Recovery","1 / 1"],["Reaction","1 / round"]].map(([n,v])=>'<div class="feature"><span class="feature-icon">✦</span><div><h4>'+esc(n)+'</h4><p>'+esc(v)+'</p></div><span class="meta">Preview</span></div>').join(""));
+if(tab==="Actions")return '<div class="sheet-subtitle">Actions & Reactions</div>'+sheetContents(a,"Abilities")+'<p class="subtle">Action controls will be connected to the character sheet and DM approvals in the integrated version.</p>';
+if(tab==="Inventory")return '<div class="sheet-subtitle">Equipped Items</div><p class="subtle">Inventory and item usage will come from the character sheet. No sample item will modify your actual inventory.</p>';
+return '<div class="sheet-subtitle">Combat Notes</div><p class="subtle">Notes and tracking will be added after we confirm the layout. This preview has no shared notes.</p>';
+}
 function activeRender(){
 let a=current();if(!a)return;
-let canhp=state.dm||!a.hidden,pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
-let number=canhp?a.hp+' / '+a.max:'Hidden';
-$("active-combatant").innerHTML='<div class="active-flex"><div class="active-person">'+portrait(a)+'<div><div class="micro">Now acting</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><p>Initiative '+a.init+'</p></div></div><div class="active-stats"><div><div class="subheading">Hit Points</div><div class="hp-row hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+(canhp?pct:0)+'%"></i></div><span class="number">'+number+'</span></div>'+(state.dm?'<div class="hpbuttons"><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="-1">−1 HP</button><button class="btn small" data-action="hp" data-value="1">+1 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button></div>':'<p class="subtle">DM controls HP for this combatant.</p>')+'</div><div><div class="subheading">Conditions <span style="font-weight:normal;color:#92909d">· hover or focus for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" style="margin-top:9px" data-action="conditions">＋ Edit conditions</button>':'')+'</div></div><div class="active-commands">'+(state.dm?'<button class="btn small primary" data-action="next">End turn →</button>':'<span class="micro">Player view</span>')+'<button class="btn small" data-action="inspect">View combatant</button></div></div><div class="details"><span>Next in queue: <b>'+esc((actor(state.queue[1])||a).name)+'</b></span><span>'+esc(a.type)+' · '+(a.hidden?'HP visibility: '+(state.dm?'hidden from players':'hidden'):'HP visible')+'</span><span>Turn order rotates left after every turn</span></div>';
-$("session-tools").innerHTML='<div class="subheading">Combat & Status</div><p class="subtle">Selected: <b>'+esc(a.name)+'</b>. Conditions are explained on hover and keyboard focus.</p><div class="controls">'+(state.dm?'<button class="btn small" data-action="conditions">Manage conditions</button><button class="btn small" data-action="hp" data-value="-5">Deal 5 damage</button><button class="btn small" data-action="hp" data-value="5">Heal 5 HP</button><button class="btn small" data-action="next">Next turn</button>':'<span class="subtle">Only the DM can adjust the shared turn order, HP and conditions.</span>')+'</div><details><summary>Combatant information</summary><div style="padding-top:9px">'+esc(a.subtitle)+'<div class="conditions">'+tokens(a)+'</div></div></details>';
+let canhp=state.dm||!a.hidden;
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
+let shown=canhp?(a.hp+" / "+a.max):"Hidden";
+let hpbar='<div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+(canhp?pct:0)+'%"></i></div><span class="number">'+shown+'</span></div>';
+let hpbuttons=state.dm?'<div class="hpbuttons"><button class="btn small" data-action="hp" data-value="-10">−10</button><button class="btn small" data-action="hp" data-value="-5">−5</button><button class="btn small" data-action="hp" data-value="-1">−1</button><button class="btn small" data-action="hp" data-value="1">+1</button><button class="btn small" data-action="hp" data-value="5">+5</button><button class="btn small" data-action="hp" data-value="10">+10</button></div>':'';
+let condControls=state.dm?'<button type="button" class="btn small" style="margin-top:6px" data-action="conditions">＋ Edit</button>':'';
+let tabs=["Abilities","Conditions","Resources","Actions","Inventory","Notes"];
+let tab=state.sheetTab||"Abilities";
+let visibility=(a.type!=="Player"&&state.dm?'<button type="button" class="btn small" data-action="toggle-hidden">'+(a.hidden?'Reveal HP to players':'Hide HP from players')+'</button>':'');
+$("active-combatant").innerHTML='<div class="hero">'+portrait(a)+
+'<div class="identity"><div class="micro">Current Turn</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><div class="hp-details"><div class="subheading">HP</div>'+hpbar+hpbuttons+'</div><div class="active-cond"><div class="subheading">Conditions</div><div class="conditions">'+tokens(a)+'</div>'+condControls+'</div></div>'+
+'<div class="initiative-square">Initiative<strong>'+a.init+'</strong></div></div>'+
+'<div class="sheet-tabs" role="tablist" aria-label="Active combatant detail tabs">'+tabs.map(t=>'<button type="button" role="tab" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
+'<div class="sheet-body">'+sheetContents(a,tab)+'</div>'+
+'<div class="active-foot"><span>'+(a.hidden?'Private HP · ':'')+esc(a.type)+' · Round '+state.round+'</span><div class="controls">'+visibility+'<button class="btn small" type="button" data-action="inspect">↗ Open Sheet</button></div></div>';
+$("session-tools").innerHTML='<div class="subheading">Combat & Status</div><p class="subtle">Selected: <b>'+esc(a.name)+'</b>. Conditions are explained on hover and keyboard focus.</p><div class="controls">'+(state.dm?'<button class="btn small" data-action="conditions">Manage conditions</button><button class="btn small" data-action="hp" data-value="-5">Deal 5 damage</button><button class="btn small" data-action="hp" data-value="5">Heal 5 HP</button><button class="btn small" data-action="next">Next turn</button>':'<span class="subtle">Only the DM can adjust the shared turn order, HP and conditions.</span>')+'</div>';
 }
 function feedRender(){
 let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.messages;
@@ -153,17 +208,17 @@ el.innerHTML=list.length?list.slice(-80).map(m=>'<article class="msg '+(m.kind==
 el.scrollTop=el.scrollHeight;
 }
 const checkData={
-fighter:{abilities:[["STR","+2"],["DEX","+2"],["CON","+1"],["INT","+1"],["WIS","+0"],["CHA","-1"]],saves:[["STR","+4"],["CON","+3"]],skills:[["Athletics","+4"],["Acrobatics","+2"],["Perception","+0"],["Stealth","+2"],["Intimidation","-1"]]},
+kai:{abilities:[["STR","+7"],["DEX","+2"],["CON","+5"],["INT","+0"],["WIS","+1"],["CHA","-1"]],saves:[["STR","+7"],["DEX","+2"],["CON","+5"],["INT","+0"],["WIS","+4"],["CHA","+2"]],skills:[["Athletics","+7"],["Acrobatics","+2"],["History","+0"],["Insight","+1"],["Intimidation","-1"],["Investigation","+0"],["Medicine","+1"],["Nature","+0"],["Perception","+1"],["Religion","+0"],["Sleight of Hand","+2"],["Stealth","+2"],["Survival","+1"]]},
 derulo:{abilities:[["STR","-1"],["DEX","+2"],["CON","+1"],["INT","+0"],["WIS","+4"],["CHA","+1"]],saves:[["WIS","+7"],["CHA","+4"]],skills:[["Nature","+3"],["Animal Handling","+7"],["Survival","+7"],["Perception","+7"],["Insight","+7"]]},
-artificer:{abilities:[["STR","+0"],["DEX","+2"],["CON","+1"],["INT","+3"],["WIS","+0"],["CHA","-1"]],saves:[["CON","+3"],["INT","+5"]],skills:[["Arcana","+5"],["Investigation","+5"],["Sleight of Hand","+4"]]},
-barbarian:{abilities:[["STR","+3"],["DEX","+1"],["CON","+2"],["INT","-1"],["WIS","+0"],["CHA","+0"]],saves:[["STR","+5"],["CON","+4"]],skills:[["Athletics","+5"],["Survival","+2"],["Intimidation","+2"]]}
+haruki:{abilities:[["STR","+0"],["DEX","+2"],["CON","+1"],["INT","+3"],["WIS","+0"],["CHA","-1"]],saves:[["CON","+3"],["INT","+5"]],skills:[["Arcana","+5"],["Investigation","+5"],["Sleight of Hand","+4"]]},
+shystray:{abilities:[["STR","+3"],["DEX","+1"],["CON","+2"],["INT","-1"],["WIS","+0"],["CHA","+0"]],saves:[["STR","+5"],["CON","+4"]],skills:[["Athletics","+5"],["Survival","+2"],["Intimidation","+2"]]}
 };
 function renderChecks(){
 let players=state.actors.filter(a=>a.type==="Player");
-if(!state.dm)players=players.filter(a=>a.id==="fighter");
-if(!players.some(a=>a.id===state.selected))state.selected=players[0]?.id||"fighter";
+if(!state.dm)players=players.filter(a=>a.id==="kai");
+if(!players.some(a=>a.id===state.selected))state.selected=players[0]?.id||"kai";
 $("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join('');
-let s=checkData[state.selected]||checkData.fighter;
+let s=checkData[state.selected]||checkData.kai;
 $("check-groups").innerHTML=[["Ability checks","abilities"],["Saving throws","saves"],["Skill checks","skills"]].map(([name,field])=>'<div class="subheading" style="margin-top:13px">'+name+'</div><div class="checks">'+s[field].map(([n,val])=>'<button class="check" type="button" data-action="check" data-label="'+esc(n)+'" data-mod="'+esc(val)+'">'+esc(n)+' <strong>'+esc(val)+'</strong></button>').join("")+'</div>').join("");
 }
 function render(){queueRender();activeRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
@@ -174,8 +229,11 @@ let t=String(expr).replace(/\s/g,""),mat=t.match(/^(\d{0,2})d(4|6|8|10|12|20|100
 if(!mat){alert("Use dice notation like 1d20, 2d6+3 or 1d20-1.");return;}
 let count=Number(mat[1]||1),sides=Number(mat[2]),bonus=Number(mat[3]||0);
 if(count<1||count>30){alert("This preview accepts 1 to 30 dice per roll.");return;}
-let faces=Array.from({length:count},()=>1+Math.floor(Math.random()*sides)),total=faces.reduce((a,b)=>a+b,0)+bonus;
-let detail=faces.join(" + ")+(bonus?(bonus>0?" + ":" - ")+Math.abs(bonus):"");
+let faces=Array.from({length:count},()=>1+Math.floor(Math.random()*sides)), mode=state.rollMode||"normal";
+let extra=null;
+if(sides===20&&count===1&&mode!=="normal"){extra=1+Math.floor(Math.random()*20);faces[0]=mode==="advantage"?Math.max(faces[0],extra):Math.min(faces[0],extra);}
+let total=faces.reduce((a,b)=>a+b,0)+bonus;
+let detail=faces.join(" + ")+(bonus?(bonus>0?" + ":" - ")+Math.abs(bonus):"")+(extra!==null?" ("+mode+"; other die "+extra+")":"");
 log({kind:"roll",who:who||"You",label:label||expr,total,detail,time:clock()});
 }
 function editConditions(){
@@ -189,7 +247,7 @@ let name=$("new-name").value.trim();if(!name)return;
 let init=Number($("new-init").value),max=Number($("new-hp").value);
 if(!Number.isFinite(init)||max<1||max>99999||!Number.isFinite(max)){alert("Enter valid initiative and HP values.");return;}
 let id="preview-"+Date.now()+"-"+Math.floor(Math.random()*9999);
-state.actors.push({id,name,type:$("new-type").value,subtitle:$("new-type").value+' · Custom combatant',init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase()});
+state.actors.push({id,name,type:$("new-type").value,subtitle:$("new-type").value+' · Custom combatant',init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase(),face:($("new-type").value==="Monster"?"👹":$("new-type").value==="Creature"?"🐺":$("new-type").value==="NPC"?"🧙":"🧑")});
 state.queue.push(id);save();render();$("add-modal").close();form.reset();
 }
 document.addEventListener("click",e=>{
@@ -197,6 +255,10 @@ let b=e.target.closest("button");if(!b)return;
 if(b.dataset.close){$(b.dataset.close).close();return;}
 let action=b.dataset.action;if(!action)return;
 if(action==="next")next();
+if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();activeRender();}
+if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description);
+if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
+if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
 if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
 if(action==="conditions")editConditions();
 if(action==="check"){
@@ -231,6 +293,7 @@ roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
 });
 $("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
 render();
+document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
 })();
 </script>
 </body>
