@@ -1,5 +1,12 @@
 # Terravale Living Codex — Public Preview
 
+## v0.12.3 — Navigation, character privacy controls and Ael'Vaen compatibility
+- Sidebar labels restored to compact 12px separate from 15px icons, fixing accidental oversized navigation text.
+- Expanded sidebar uses 208px on desktop; collapsing reduces it to a 58px icon rail and actually expands sheet content instead of applying another maximum width cap.
+- Top navigation is sticky and reorganised with compact controls and a clearer page breadcrumb.
+- Owner information, party sharing, and DM/player visual perspective move to the character's Character settings dialog, leaving gameplay panels uncluttered.
+- Database and creator agree: Ael'Vaen are Elves, and Echo-Bearer can use ancestry Elf (legacy AelVaen remains supported). Other class restrictions are unchanged.
+
 ## v0.12.2 — Echo-Bearer eligibility, clearer class sheets & focus-mode navigation
 - Fixed Echo-Bearer being unselectable: the class had been restricted to AelVaen, an ancestry name not offered by character creation. Base Elf now exposes Echo-Bearer, with Ael’Vaen lineage confirmation left to the DM. Kharithen and Thalassari remain restricted without an explicit exception.
 - Six structural class-sheet families replace one-size-fits-all overview composition: Bloodforger, Shaman, Echo-Bearer, defensive, arcane and martial layouts. Information follows approved rules; the styles do not invent powers.
