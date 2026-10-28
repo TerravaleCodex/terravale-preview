@@ -1,0 +1,30 @@
+/* Embedded character-sheet themes inherit the website's selected palette. */
+html[data-codex-theme='dark'] body{color-scheme:dark;--bg:#101720;--sidebar:#151e29;--surface:#1b2631;--paper:#1b2733;--paper2:#23313f;--line:#354353;--line2:#354353;--ink:#f1e9dd;--sub:#a8b4c0;--muted:#a8b4c0;--gold:#d7b579;--accent:#d7b579;--accent-deep:#a88550;--accent-glow:color-mix(in srgb,#d7b579 14%,transparent);}
+html[data-codex-theme='night-sky'] body{color-scheme:dark;--bg:#091225;--sidebar:#101a2f;--surface:#17233a;--paper:#17253d;--paper2:#233455;--line:#465479;--line2:#465479;--ink:#f4ecff;--sub:#c0c4db;--muted:#c0c4db;--gold:#cfb7fa;--accent:#cfb7fa;--accent-deep:#927abf;--accent-glow:color-mix(in srgb,#cfb7fa 14%,transparent);}
+html[data-codex-theme='shotxo'] body{color-scheme:dark;--bg:#090713;--sidebar:#110c1d;--surface:#171025;--paper:#20132d;--paper2:#241834;--line:#55446c;--line2:#55446c;--ink:#f1eaff;--sub:#b9aacf;--muted:#b9aacf;--gold:#c1a3ff;--accent:#c1a3ff;--accent-deep:#9671d0;--accent-glow:color-mix(in srgb,#c1a3ff 14%,transparent);}
+html[data-codex-theme='shady'] body{color-scheme:dark;--bg:#050506;--sidebar:#09090b;--surface:#111113;--paper:#131315;--paper2:#1a191a;--line:#49443e;--line2:#49443e;--ink:#ded5c6;--sub:#a69e92;--muted:#a69e92;--gold:#c5b8a4;--accent:#c5b8a4;--accent-deep:#8d806d;--accent-glow:color-mix(in srgb,#c5b8a4 14%,transparent);}
+html[data-codex-theme='absolute-zero'] body{color-scheme:dark;--bg:#000000;--sidebar:#000000;--surface:#020202;--paper:#030303;--paper2:#070707;--line:#161616;--line2:#161616;--ink:#cdcdcd;--sub:#858585;--muted:#858585;--gold:#ababab;--accent:#ababab;--accent-deep:#777777;--accent-glow:color-mix(in srgb,#ababab 14%,transparent);box-shadow:none;}
+html[data-codex-theme='sanguine'] body{color-scheme:dark;--bg:#13080c;--sidebar:#1a0b11;--surface:#231017;--paper:#2a101b;--paper2:#321820;--line:#66414c;--line2:#66414c;--ink:#f6e4e1;--sub:#c3a5ad;--muted:#c3a5ad;--gold:#d6a48c;--accent:#d6a48c;--accent-deep:#9a675b;--accent-glow:color-mix(in srgb,#d6a48c 14%,transparent);}
+html[data-codex-theme='verdant'] body{color-scheme:dark;--bg:#07150e;--sidebar:#0c1d12;--surface:#12251a;--paper:#172c1e;--paper2:#20372a;--line:#3d5d49;--line2:#3d5d49;--ink:#e5efe2;--sub:#b3c8b7;--muted:#b3c8b7;--gold:#bad098;--accent:#bad098;--accent-deep:#779d75;--accent-glow:color-mix(in srgb,#bad098 14%,transparent);}
+html[data-codex-theme='dragonforge'] body{color-scheme:dark;--bg:#15110e;--sidebar:#1d1714;--surface:#231b17;--paper:#2a201b;--paper2:#362921;--line:#68503e;--line2:#68503e;--ink:#f1e2d0;--sub:#c1a993;--muted:#c1a993;--gold:#e6ab78;--accent:#e6ab78;--accent-deep:#9c643d;--accent-glow:color-mix(in srgb,#e6ab78 14%,transparent);}
+html[data-codex-theme='astral'] body{color-scheme:dark;--bg:#0b1020;--sidebar:#11182a;--surface:#161e33;--paper:#1c2740;--paper2:#202e47;--line:#425375;--line2:#425375;--ink:#ebe9e4;--sub:#aebed1;--muted:#aebed1;--gold:#d8bd84;--accent:#d8bd84;--accent-deep:#a68d62;--accent-glow:color-mix(in srgb,#d8bd84 14%,transparent);}
+html[data-codex-theme='null-meridian'] body{color-scheme:dark;--bg:#0b0d0d;--sidebar:#111414;--surface:#171a1a;--paper:#1a1f1e;--paper2:#232829;--line:#47504c;--line2:#47504c;--ink:#d9ddd4;--sub:#a2aa9f;--muted:#a2aa9f;--gold:#c3b07b;--accent:#c3b07b;--accent-deep:#8f8664;--accent-glow:color-mix(in srgb,#c3b07b 14%,transparent);}
+
+html[data-codex-theme] body .panel,
+html[data-codex-theme] body .class-wiki-card,
+html[data-codex-theme] body .equip-slot,
+html[data-codex-theme] body .backpack-row{
+  border-color:var(--line);color:var(--ink);
+}
+html[data-codex-theme] body .equip-slot{background:var(--paper);}
+html[data-codex-theme] body .equip-slot:not(.occupied){background:var(--surface);}
+html[data-codex-theme] body .class-wiki-crest,
+html[data-codex-theme] body .class-wiki-chevron{color:var(--accent);}
+html[data-codex-theme='shady'] body .panel,
+html[data-codex-theme='shady'] body .equip-slot,
+html[data-codex-theme='shady'] body .class-wiki-card{box-shadow:none;}
+html[data-codex-theme='absolute-zero'] body .panel,
+html[data-codex-theme='absolute-zero'] body .equip-slot,
+html[data-codex-theme='absolute-zero'] body .class-wiki-card{
+ background-image:none!important;box-shadow:none!important;border-color:#191919!important;
+}
