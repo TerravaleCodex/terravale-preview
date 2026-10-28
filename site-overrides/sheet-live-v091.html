@@ -635,17 +635,37 @@ function readableRules(raw){
  }
  flush();return html||'<p class="meta">No published rules text is available for this feature.</p>';
 }
+/* Supplemental rules are exact excerpts from the player-safe published class wiki,
+ * not replacement or invented game mechanics. The parent may supply a more
+ * current description; those entries retain precedence over the bundled data. */
+let publishedRulesPromise=null;
+function loadPublishedRulesFor(characterId,className){
+ if(!publishedRulesPromise)publishedRulesPromise=fetch('./class-feature-rules.json')
+  .then(res=>{if(!res.ok)throw Error('Rules unavailable');return res.json()})
+  .catch(()=>({classes:{}}));
+ publishedRulesPromise.then(data=>{
+  if(!LIVE.loaded||LIVE.charId!==characterId||p().label.toLowerCase()!==className.toLowerCase())return;
+  const published=data.classes?.[className.toLowerCase()];if(!published)return;
+  LIVE.featureDescriptions={...published.descriptions,...LIVE.featureDescriptions};
+  LIVE.featureLevels={...published.levels,...LIVE.featureLevels};
+  renderPage();notifyHeight();
+ });
+}
 function featureRuleCard(name){
  const raw=LIVE.featureDescriptions[name]||'',level=LIVE.featureLevels[name],hasRules=raw.trim().length>0;
- const snippet=hasRules?raw.replace(/[#*\n-]/g,' ').replace(/\s+/g,' ').trim().slice(0,110):'Official rules available in the class reference';
+ const compact=hasRules?raw.replace(/[#*\n-]/g,' ').replace(/\s+/g,' ').trim():'';
+ const snippet=hasRules?compact.slice(0,124)+(compact.length>124?'…':''):'Read the complete published class reference';
  const path=location.pathname.split('/characters/sheet-live')[0]+'/classes/?focus='+encodeURIComponent(p().label);
- return '<details class="class-wiki-card"><summary><span class="class-wiki-crest" aria-hidden="true">✦</span><span class="class-wiki-title"><strong>'+esc(name)+'</strong><small>'+(level?'Level '+level+' · ':'')+esc(snippet)+'</small></span><span class="class-wiki-status">Unlocked</span><span class="class-wiki-chevron" aria-hidden="true">⌄</span></summary><div class="class-wiki-expanded"><div class="class-wiki-kicker">'+(level?'LEVEL '+level+' · ':'')+'APPROVED FEATURE</div>'+(hasRules?readableRules(raw):'<p>This feature has no independently matched published description yet. No substitute mechanics have been invented.</p>')+'<a class="class-rule-link" href="'+esc(path)+'" target="_parent" rel="noopener">Read the full '+esc(p().label)+' class reference ↗</a></div></details>';
+ return '<details class="class-wiki-card"><summary><span class="class-wiki-crest" aria-hidden="true">✦</span><span class="class-wiki-title"><strong>'+esc(name)+'</strong><small>'+(level?'Level '+level+' · ':'')+esc(snippet)+'</small></span><span class="class-wiki-status">Unlocked</span><span class="class-wiki-chevron" aria-hidden="true">⌄</span></summary><div class="class-wiki-expanded"><div class="class-wiki-kicker">'+(level?'LEVEL '+level+' · ':'')+'PUBLISHED CLASS RULES</div>'+(hasRules?readableRules(raw):'<p>This feature has no independently indexed excerpt. Consult the published class reference for its exact effects.</p>')+'<a class="class-rule-link" href="'+esc(path)+'" target="_parent" rel="noopener">Read the full '+esc(p().label)+' class reference ↗</a></div></details>';
 }
 function classTab(){if(LIVE.enabled){
- const names=(p().features||[]).filter(x=>!/(?:^feat\s*\/\s*asi$|^ability score improvement$|^asi\s*\/\s*feat$)/i.test(x.trim()));
+ const allNames=(p().features||[]).filter(x=>!/(?:^feat\s*\/\s*asi$|^ability score improvement$|^asi\s*\/\s*feat$|^feat or asi$|^asi or feat$)/i.test(x.trim()));
+ const names=allNames.filter(name=>!(Number(LIVE.featureLevels[name])>Number(p().level)));
+ const future=allNames.filter(name=>Number(LIVE.featureLevels[name])>Number(p().level));
  return section('Class & Abilities','II · Character record','Level '+p().level+' · '+p().label)+
  '<div class="dashboard class-live-layout">'+
  panel('Unlocked class features','Published mechanics · expand to read',names.length?'<div class="class-wiki-list">'+names.map(featureRuleCard).join('')+'</div>':'<div class="empty-box">No unlocked class features recorded.</div>','wide')+
+ (future.length?panel('Future class features','Not yet unlocked · kept separate from playable abilities','<div class="featurelist">'+future.map(name=>'<div class="feature"><b>'+esc(name)+'</b><span class="tag">Level '+esc(String(LIVE.featureLevels[name]))+' · Locked</span></div>').join('')+'</div>','wide'):'')+
  '</div>';
 }
 const feat=p().features,sh=showcase();const shown=sh?feat:feat.slice(0,3);return section('Class & Abilities','II · Character record',sh?'Filled character · unlocked feature list':'Class-focused')+`<div class="dashboard">${panel('Unlocked class features','Level-aware · details once',`<div class="featurelist">${shown.map(f=>`<div class="feature"><div><b>${esc(f)}</b><small>${esc(sh?.features?.[f]||'Unlocked feature · consult the published class rules for full mechanics.')}</small></div><span class="tag">Unlocked</span></div>`).join('')}</div>`, 'seven')}${panel('Class snapshot','Character build · example',`<div class="statline"><span>Class</span><strong>${esc(p().label)}</strong></div><div class="statline"><span>Specialisation</span><strong>${esc(p().subclass)}</strong></div><div class="statline"><span>Hit die</span><strong>${esc(p().hitdie)}</strong></div><div class="statline"><span>Saving throws</span><strong>${esc(p().saves.join(' / '))}</strong></div><div class="statline"><span>Level</span><strong>${p().level}</strong></div>${sh?`<div class="statline"><span>Character theme</span><strong>${esc(sh.role)}</strong></div><div class="statline"><span>Tools</span><strong>${esc(sh.tools.join(', '))}</strong></div>`:''}<details class="rules-drawer"><summary>Complete published rules · placeholder</summary><p>The standalone preview does not contain the full live class catalog; live integration should display the exact rules from the Codex rather than duplicate them here.</p></details>`, 'five')}${sh?panel('Player-configured loadout','Filled-content layout test',`<p>${esc(sh.background)}</p><div class="statline"><span>Chosen proficiencies</span><strong>${esc(p().skills.join(', '))}</strong></div>${(p().expertise||[]).length?`<div class="statline"><span>Expertise</span><strong>${esc(p().expertise.join(', '))}</strong></div>`:''}<div class="hint">Illustrative build choices. Open a score above for calculated check bonuses. Real characters must use approved class, ancestry and subclass choices.</div>`):''}</div>`}
@@ -683,13 +703,50 @@ const EQUIP_SLOTS=[
  ['neck','Neck','Accessories'],['ring1','Ring I','Accessories'],['ring2','Ring II','Accessories'],['accessory1','Accessory I','Accessories'],['accessory2','Accessory II','Accessories'],['focus','Focus / tool','Accessories']
 ];
 const SLOT_NAMES=Object.fromEntries(EQUIP_SLOTS.map(([id,name])=>[id,name]));
-const CATEGORY_CHOICES=['Weapon','Shield','Armour','Cloak','Accessory','Focus / tool','Consumable','Material','Quest item','Other'];
-function identifyGear(name,type){const low=name.toLowerCase(),twoHanded=/(greataxe|greatsword|maul|greatclub|longbow|heavy crossbow|halberd|glaive|pike|two.hand)/i.test(name);
- if(type)return {category:type,twoHanded:type==='Weapon'&&twoHanded};
- let category=/(letter|journal|notes|map)/.test(low)?'Quest item':/(cloak|cape|mantle)/.test(low)?'Cloak':/(shield)/.test(low)?'Shield':/(helmet|hood|cap|helm|armour|armor|leather|mail|coat|greaves|boots|gloves)/.test(low)?'Armour':/(sword|blade|rapier|\baxe\b|greataxe|dagger|bow|staff|mace|spear)/.test(low)?'Weapon':/(ring|badge|charm|seal|talisman|pendant|brooch)/.test(low)?'Accessory':/(kit|focus|lute|quill|tools|supplies|instrument)/.test(low)?'Focus / tool':/(potion|ration|tincture|waterskin|bandage|salts|herb)/.test(low)?'Consumable':'Other';
- return {category,twoHanded};
+const CATEGORY_CHOICES=['Weapon','Shield','Armour','Head','Chest','Gloves','Legs','Feet','Cloak','Neck','Ring','Accessory','Focus / tool','Consumable','Material','Quest item','Other'];
+function identifyGear(name,type){
+ const low=String(name||'').toLowerCase();
+ const twoHanded=/(greataxe|greatsword|maul|greatclub|longbow|heavy crossbow|halberd|glaive|pike|two.hand)/i.test(low);
+ if(type&&type!=='Other')return {category:type,twoHanded:type==='Weapon'&&twoHanded};
+ const category=/(letter|journal|notes|map)/.test(low)?'Quest item'
+  :/(cloak|cape|mantle)/.test(low)?'Cloak'
+  :/(shield|buckler)/.test(low)?'Shield'
+  :/(helmet|hood|cap|helm|hat|headpiece|circlet)/.test(low)?'Head'
+  :/(glove|gauntlet|mitten|bracer)/.test(low)?'Gloves'
+  :/(boots?|shoes?|sandals?|sabatons?|slippers?|socks?)/.test(low)?'Feet'
+  :/(jeans?|trousers?|pants?|leggings?|greaves?|cuisses|skirt|kilt|shorts|breeches)/.test(low)?'Legs'
+  :/(coat|armour|armor|leather|mail|tunic|shirt|chestplate|breastplate|robe|jacket|vest|cuirass)/.test(low)?'Chest'
+  :/(sword|blade|rapier|\baxe\b|greataxe|dagger|bow|staff|mace|spear|scythe)/.test(low)?'Weapon'
+  :/(ring|signet)/.test(low)?'Ring'
+  :/(necklace|amulet|pendant|collar|gorget)/.test(low)?'Neck'
+  :/(badge|charm|seal|talisman|brooch)/.test(low)?'Accessory'
+  :/(kit|focus|lute|quill|tools|supplies|instrument)/.test(low)?'Focus / tool'
+  :/(potion|ration|tincture|waterskin|bandage|salts|herb)/.test(low)?'Consumable':'Other';
+ return {category,twoHanded:category==='Weapon'&&twoHanded};
 }
-function suitableSlots(item){if(item.twoHanded)return ['main'];switch(item.category){case 'Weapon':return ['main','off'];case 'Shield':return ['off'];case 'Armour':{const n=item.name.toLowerCase();return /helm|hood|cap/.test(n)?['head']:/gloves|gauntlet/.test(n)?['hands']:/boot|shoe/.test(n)?['feet']:/greave|trouser|pant|legging/.test(n)?['legs']:['chest']}case 'Cloak':return ['cloak'];case 'Accessory':return ['neck','ring1','ring2','accessory1','accessory2'];case 'Focus / tool':return ['focus','main','off'];default:return []}}
+function suitableSlots(item){
+ const category=item.equipmentKind||item.category;
+ if(item.twoHanded)return category==='Weapon'||category==='Focus / tool'?['main']:[];
+ const slots={Weapon:['main','off'],Shield:['off'],Head:['head'],Chest:['chest'],Gloves:['hands'],Legs:['legs'],Feet:['feet'],
+  Cloak:['cloak'],Neck:['neck'],Ring:['ring1','ring2'],Accessory:['accessory1','accessory2'],
+  'Focus / tool':['focus','main','off']};
+ // Legacy "Armour" lacks a dedicated body location. Resolve by precise garment
+ // name, not a fallback to Chest which wrongly equips jeans as chest armour.
+ if(category==='Armour'){
+  const inferred=identifyGear(item.name).category;
+  return slots[inferred]||[];
+ }
+ return slots[category]||[];
+}
+function normalizedLiveItem(it){
+ const normalized={...it,slot:it.slot==='gloves'?'hands':it.slot,
+   category:it.category||identifyGear(it.name).category,twoHanded:!!it.twoHanded};
+ if(normalized.slot&&!suitableSlots(normalized).includes(normalized.slot)){
+  // The old slot was incorrect, but the item stays safely in the backpack.
+  normalized.slot=undefined;
+ }
+ return normalized;
+}
 function seededSlot(name){const k=name.toLowerCase();return k.includes('main')?'main':k.includes('off')?'off':k==='armour'?'chest':k.includes('accessory')?'accessory1':k.includes('focus')?'focus':null}
 function ensureGear(){const state=s(),gearKey=isFilled()?'gearV08Filled':'gearV08Outline';if(state[gearKey])return state[gearKey];
  const rows=activeItems().map((name,i)=>{const text=String(name),parsed=text.match(/^(.*?)(?:\s*[×x]\s*(\d+))$/);const cleaned=parsed?parsed[1].trim():text;return {id:'initial-'+i,name:cleaned,qty:parsed?Math.max(1,Number(parsed[2])):1,...identifyGear(cleaned)}});const slots={};
@@ -905,7 +962,7 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  const x=profiles[kind];
  const resource={},current={};(payload.resources||[]).forEach(r=>{const key=r.id==='class:blood-reserve'?'reserve':r.name?.toLowerCase().includes('exertion')?'exertion':r.id.replace(/[^a-z0-9]/gi,'_');resource[key]={label:r.name,current:r.current,max:r.max,note:''};current[key]=r.current;});
  if(kind==='bloodforger'&&!resource.exertion){resource.exertion={label:'Exertion',current:0,max:0,note:'No Exertion pool configured'};current.exertion=0}
- const realInventory=(payload.inventory||[]).map(it=>({...it,slot:it.slot==='gloves'?'hands':it.slot,category:it.category||identifyGear(it.name).category,twoHanded:!!it.twoHanded}));
+ const realInventory=(payload.inventory||[]).map(normalizedLiveItem);
  LIVE.featureDescriptions=payload.featureDescriptions||{};LIVE.featureLevels=payload.featureLevels||{};
  LIVE.realInventory=realInventory;const slots={};realInventory.forEach(it=>{if(it.slot){slots[it.slot]=it.id;if(it.twoHanded&&it.slot==='main')slots.off=it.id}});
  const approvedFeatures=(payload.features||[]).map(x=>typeof x==='string'?x:x.name);
@@ -916,6 +973,8 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  const st=app.data[kind],snapshot={hp:hp(),tempHp:tempHp(),bloodState:bloodState(),reserve:value('reserve'),exertion:value('exertion'),inventory:realInventory,notes:st.notes||''};
  LIVE.last=JSON.stringify(snapshot);
  render();LIVE.loaded=true;LIVE.syncing=false;document.documentElement.classList.add('live-loaded');
+ loadPublishedRulesFor(LIVE.charId,String(payload.className||'Unassigned'));
+
  if(LIVE.readOnly)document.querySelectorAll('#page input,#page textarea,#page select,#page [data-note]').forEach(el=>{el.disabled=true});
  notifyHeight();
 }
