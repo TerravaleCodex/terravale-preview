@@ -337,6 +337,7 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 @media(max-width:550px){.class-wiki-card summary{gap:8px;padding:12px}.class-wiki-status{font-size:9px}.class-wiki-expanded{padding:12px 14px}}
 
 </style>
+<link rel="stylesheet" href="./live-sheet-theme-fix.css">
 </head>
 <body class="theme-night dense">
 <div class="app">
@@ -374,6 +375,18 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 (()=>{'use strict';
 const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{}};
 if(LIVE.enabled)document.documentElement.classList.add('live-embedded');
+function syncPublishedSiteTheme(){
+ if(!LIVE.enabled)return;
+ let theme='';
+ try{if(window.parent!==window)theme=window.parent.document.documentElement.dataset.appTheme||'';}catch(e){}
+ if(!theme)try{theme=localStorage.getItem('terravale.cosmetic.site.v1')||'';}catch(e){}
+ const allowed=['dark','night-sky','shotxo','shady','absolute-zero','sanguine','verdant','dragonforge','astral','null-meridian'];
+ if(allowed.includes(theme))document.documentElement.dataset.codexTheme=theme;
+}
+if(LIVE.enabled){
+ syncPublishedSiteTheme();
+ try{if(window.parent!==window)new MutationObserver(syncPublishedSiteTheme).observe(window.parent.document.documentElement,{attributes:true,attributeFilter:['data-app-theme']});}catch(e){}
+}
 const iconDrop='<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 1C8 5.7 2 10.3 2 15.6a8 8 0 0 0 16 0C18 10.3 12 5.7 10 1Z"/></svg>';
 const profiles={
  bloodforger:{label:'Bloodforger',name:'Kael Veyr',ancestry:'Crimsonborn',level:7,hitdie:'d10',role:'Blood shaping · martial',subclass:'Discipline paths',glyph:'✧',stats:[10,14,15,16,12,8],ac:16,speed:30,hp:53,pb:3,skills:['Arcana','Intimidation','Perception','Survival'],saves:['CON','INT'],features:['Bloodforging','Crimson Recall','Flowing Bloodforms'],resource:{reserve:{label:'Blood Reserve',current:5,max:7,note:'Level 7 cap = 7. Reserve grows with class level and reaches 14 at level 20.'},exertion:{label:'Exertion',current:1,max:0,note:'Exertion is not capped at five. Threshold penalties apply at 3, 6 and 9.'}},anchors:2,anchorMax:3,crimsonStage:3,bloodState:7,focus:'Blood shaping, anchors and discipline actions occupy the first screen.',items:['Coagulation kit','Iron-edged shortblade'],notes:'A sample Bloodforger used for layout tests. No lore or mechanics here are final.'},
@@ -646,7 +659,10 @@ function loadPublishedRulesFor(characterId,className){
  publishedRulesPromise.then(data=>{
   if(!LIVE.loaded||LIVE.charId!==characterId||p().label.toLowerCase()!==className.toLowerCase())return;
   const published=data.classes?.[className.toLowerCase()];if(!published)return;
-  LIVE.featureDescriptions={...published.descriptions,...LIVE.featureDescriptions};
+  for(const [name,rule] of Object.entries(published.descriptions)){
+   const prior=LIVE.featureDescriptions[name];
+   if(!prior||prior.trim().length<rule.trim().length)LIVE.featureDescriptions[name]=rule;
+  }
   LIVE.featureLevels={...published.levels,...LIVE.featureLevels};
   renderPage();notifyHeight();
  });
