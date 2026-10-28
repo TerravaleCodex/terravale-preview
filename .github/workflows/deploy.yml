@@ -64,7 +64,47 @@ jobs:
         run: |
           mkdir -p site/characters/sheet-live
           cp site-overrides/sheet-live-v091.html site/characters/sheet-live/index.html
+          cp site-overrides/class-feature-rules.json site/characters/sheet-live/class-feature-rules.json
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
+          test -s site/characters/sheet-live/class-feature-rules.json
+      - name: Apply unified theme to compiled character creator
+        shell: bash
+        run: |
+          cp site-overrides/creator-theme-fix.css site/creator-theme-fix.css
+          python3 - <<'PY'
+          from pathlib import Path
+          # The currently published website is a validated prebuilt archive.
+          # Load theme corrections as a separate stylesheet rather than
+          # replacing the archive and losing the current character-sheet UI.
+          link='<link rel="stylesheet" href="/terravale-preview/creator-theme-fix.css">'
+          count=0
+          for page in Path('site').rglob('*.html'):
+              html=page.read_text()
+              if '</head>' in html and link not in html:
+                  page.write_text(html.replace('</head>',link+'</head>',1))
+                  count+=1
+          if count<10:
+              raise SystemExit('Expected to inject theme styling into published Next pages')
+          print('Theme styles linked on',count,'pages')
+          PY
+      - name: Verify class rule descriptions and equipment-slot protections
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          data=json.loads(Path('site/characters/sheet-live/class-feature-rules.json').read_text())
+          sham=data['classes']['shaman']['descriptions']
+          assert '7 days' in sham['Prepare the Dead']
+          assert 'Presence' in sham['Ember']
+          assert len(sham)>=30
+          live=Path('site/characters/sheet-live/index.html').read_text()
+          assert 'normalizedLiveItem' in live and 'jeans?' in live and 'future.length' in live
+          assert 'Wallet · placeholder' in live and 'gear-slot-grid' in live
+          theme=Path('site/creator-theme-fix.css').read_text()
+          assert '.creator-choice.selected' in theme and '.creator-step.current' in theme
+          print('PASS: Shaman rules, equipment and creator theme assertions')
+          PY
       - name: Publish isolated Session Room V2 workshop
         shell: bash
         run: |
