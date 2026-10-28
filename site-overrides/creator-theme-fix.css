@@ -1,0 +1,85 @@
+/* Terravale live creator palette compatibility layer. Works with the bundled v0.12.4 site. */
+/* Character creator palette parity · 2026-10-28
+ * The original creator uses literal blue colours; this final layer follows
+ * the same user-selected colour variables as the navigation and character sheet.
+ */
+html[data-app-theme] .creator-layout .creator-main,
+html[data-app-theme] .creator-layout .creator-preview{
+ background:var(--theme-card,var(--panel));border-color:var(--line);color:var(--text);
+}
+html[data-app-theme] .creator-step,
+html[data-app-theme] .creator-choice,
+html[data-app-theme] .creator-feat-skip,
+html[data-app-theme] .creator-preview-stats>div,
+html[data-app-theme] .creator-ability-list>div,
+html[data-app-theme] .creator-summary,
+html[data-app-theme] .creator-stat-final,
+html[data-app-theme] .creator-selected{
+ background:var(--panel2);border-color:var(--line);color:var(--text);
+}
+html[data-app-theme] .creator-step.current,
+html[data-app-theme] .creator-choice.selected,
+html[data-app-theme] .creator-feat-skip.selected{
+ background:color-mix(in srgb,var(--gold) 16%,var(--panel2));
+ border-color:var(--gold);color:var(--text);
+}
+html[data-app-theme] .creator-step>span{
+ background:var(--bg);color:var(--gold);border:1px solid var(--line);
+}
+html[data-app-theme] .creator-step.current>span{
+ background:var(--gold);color:var(--theme-action-ink);
+}
+html[data-app-theme] .creator-choice:hover,
+html[data-app-theme] .creator-step:hover,
+html[data-app-theme] .creator-feat-skip:hover{
+ border-color:var(--gold2);filter:brightness(1.06);
+}
+html[data-app-theme] .creator-choice:focus-visible,
+html[data-app-theme] .creator-step:focus-visible,
+html[data-app-theme] .creator-feat-skip:focus-visible{
+ outline:2px solid var(--gold);outline-offset:2px;
+}
+html[data-app-theme] .creator-choice small,
+html[data-app-theme] .creator-preview>p,
+html[data-app-theme] .creator-ability-list small,
+html[data-app-theme] .creator-selected p,
+html[data-app-theme] .creator-step:not(.current){
+ color:var(--muted);
+}
+html[data-app-theme] .creator-preview-stats span,
+html[data-app-theme] .creator-ability-list span,
+html[data-app-theme] .creator-layout .eyebrow{
+ color:var(--gold);
+}
+html[data-app-theme] .creator-controls,
+html[data-app-theme] .creator-summary>div,
+html[data-app-theme] .creator-unlocks p{border-color:var(--line);}
+html[data-app-theme] .creator-feat-workspace,
+html[data-app-theme] .creator-layout .feat-detail,
+html[data-app-theme] .creator-layout .feat-list,
+html[data-app-theme] .creator-layout .rule-detail,
+html[data-app-theme] .creator-layout .rule-explorer-list{
+ background:var(--panel);border-color:var(--line);color:var(--text);
+}
+html[data-app-theme] .creator-layout input,
+html[data-app-theme] .creator-layout select,
+html[data-app-theme] .creator-layout textarea{
+ background:var(--panel2);border-color:var(--line);color:var(--text);
+}
+html[data-app-theme='absolute-zero'] .creator-step,
+html[data-app-theme='absolute-zero'] .creator-choice,
+html[data-app-theme='absolute-zero'] .creator-preview-stats>div,
+html[data-app-theme='absolute-zero'] .creator-ability-list>div{
+ box-shadow:none;background:#070707;
+}
+html[data-app-theme='shady'] .creator-step,
+html[data-app-theme='shady'] .creator-choice,
+html[data-app-theme='shady'] .creator-preview-stats>div,
+html[data-app-theme='shady'] .creator-ability-list>div{
+ box-shadow:none;background:#1a191a;
+}
+html[data-app-theme='shady'] .creator-choice.selected,
+html[data-app-theme='shady'] .creator-step.current{
+ background:#302b24;border-color:#c5b8a4;color:#ded5c6;
+}
+
