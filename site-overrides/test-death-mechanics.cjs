@@ -34,4 +34,5 @@ new vm.Script(script);
 for(const needle of ["LIVE.postTimer=setTimeout","deathSaves:TVDeath.normal(state.deathSaves)","function deathPanel()","function rollDeathSave()","LIVE.survivalHints","function useRescue(name)","function resetDeathByDM()"]){
  assert(html.includes(needle),'Missing live integration '+needle);
 }
+assert(html.includes('data-death-critical=')&&html.includes('UNCONSCIOUS · DYING'),'All character tabs must communicate the zero-HP state and expose critical damage');
 console.log('PASS: death saves, rescue state, zero HP damage, critical outcomes, rapid damage, and live integration');
