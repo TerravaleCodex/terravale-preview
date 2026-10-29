@@ -72,12 +72,13 @@ jobs:
         shell: bash
         run: |
           cp site-overrides/creator-theme-fix.css site/creator-theme-fix.css
+          cp site-overrides/dm-editor-theme-fix.css site/dm-editor-theme-fix.css
           python3 - <<'PY'
           from pathlib import Path
           # The currently published website is a validated prebuilt archive.
           # Load theme corrections as a separate stylesheet rather than
           # replacing the archive and losing the current character-sheet UI.
-          link='<link rel="stylesheet" href="/terravale-preview/creator-theme-fix.css">'
+          link='<link rel="stylesheet" href="/terravale-preview/creator-theme-fix.css"><link rel="stylesheet" href="/terravale-preview/dm-editor-theme-fix.css">'
           count=0
           for page in Path('site').rglob('*.html'):
               html=page.read_text()
@@ -107,7 +108,11 @@ jobs:
           assert "data-codex-theme='shady'" in embedded_theme and "data-codex-theme='night-sky'" in embedded_theme
           theme=Path('site/creator-theme-fix.css').read_text()
           assert '.creator-choice.selected' in theme and '.creator-step.current' in theme
-          print('PASS: Shaman rules, equipment and creator theme assertions')
+          dmtheme=Path('site/dm-editor-theme-fix.css').read_text()
+          assert '.dm-roster-choice.selected' in dmtheme and '.dm-dashboard-navitem.active' in dmtheme
+          assert '.advancement-workspace .choice-tile' in dmtheme
+          assert 'function hpColor(current,maximum)' in live and 'background:${hpColor(hp(),p().hp)}' in live
+          print('PASS: Shaman rules, HP colours, equipment and DM/creator themes')
           PY
       - name: Publish isolated Session Room V2 workshop
         shell: bash
