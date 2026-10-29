@@ -321,7 +321,7 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 .class-wiki-crest{font-size:18px;color:var(--accent);flex:0 0 18px}
 .class-wiki-title{flex:1;min-width:0}
 .class-wiki-title strong{display:block;color:var(--ink);font-size:13px;line-height:1.35}
-.class-wiki-title small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:5px}
+.class-wiki-title small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--muted);font-size:11px;line-height:1.5;margin-top:5px}
 .class-wiki-status{font-size:10px;color:var(--accent);white-space:nowrap}
 .class-wiki-chevron{color:var(--accent);font-size:19px}
 .class-wiki-card[open] .class-wiki-chevron{transform:rotate(180deg)}
@@ -373,7 +373,7 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 <dialog class="dialog" id="dialog"><div id="dialogBody"></div><div class="row-actions"><button class="action" id="closeDialog">Close</button></div></dialog>
 <script>
 (()=>{'use strict';
-const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{}};
+const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{},featureGroups:{},published:null,publishedPending:false};
 if(LIVE.enabled)document.documentElement.classList.add('live-embedded');
 function syncPublishedSiteTheme(){
  if(!LIVE.enabled)return;
@@ -658,7 +658,9 @@ function loadPublishedRulesFor(characterId,className){
   .catch(()=>({classes:{}}));
  publishedRulesPromise.then(data=>{
   if(!LIVE.loaded||LIVE.charId!==characterId||p().label.toLowerCase()!==className.toLowerCase())return;
-  const published=data.classes?.[className.toLowerCase()];if(!published)return;
+  const published=data.classes?.[className.toLowerCase()];
+  LIVE.published=published||null;LIVE.publishedPending=false;
+  if(!published){renderPage();notifyHeight();return;}
   for(const [name,rule] of Object.entries(published.descriptions)){
    const prior=LIVE.featureDescriptions[name];
    if(!prior||prior.trim().length<rule.trim().length)LIVE.featureDescriptions[name]=rule;
@@ -667,22 +669,68 @@ function loadPublishedRulesFor(characterId,className){
   renderPage();notifyHeight();
  });
 }
+function liveFeatureKind(name){
+ const declared=LIVE.featureGroups?.[name];
+ if(declared)return declared;
+ const published=LIVE.published;
+ if(published?.traditions?.[name])return 'tradition';
+ if(published?.rites?.some(rite=>rite.name===name))return 'rite';
+ if(published?.spirits?.includes(name))return 'bond';
+ return 'class';
+}
+function visibleTraditionAbilities(name){
+ const record=LIVE.published?.traditions?.[name];
+ if(!record)return null;
+ return {intro:record.intro||'',tiers:record.tiers.filter(tier=>Number(tier.level)<=Number(p().level))};
+}
 function featureRuleCard(name){
+ const kind=liveFeatureKind(name),tradition=kind==='tradition'?visibleTraditionAbilities(name):null;
  const raw=LIVE.featureDescriptions[name]||'',level=LIVE.featureLevels[name],hasRules=raw.trim().length>0;
- const compact=hasRules?raw.replace(/[#*\n-]/g,' ').replace(/\s+/g,' ').trim():'';
- const snippet=hasRules?compact.slice(0,124)+(compact.length>124?'…':''):'Read the complete published class reference';
+ const cleaned=raw.replace(/[#*]/g,'').replace(/\s+/g,' ').trim();
+ const escapedName=name.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
+ const repeated=new RegExp('^'+escapedName+'\\s*[—–-]\\s*','i');
+ const concise=cleaned.replace(repeated,'');
+ const leading=tradition?.tiers?.length?tradition.tiers[tradition.tiers.length-1]:null;
+ const subtitle=leading?'Level '+leading.level+' · '+leading.name+' — '+leading.description:
+  concise?((kind==='rite'?'Rite · ':kind==='bond'?'Bond · ':'')+concise):
+  'Rules not yet indexed in the published reference';
+ const snippet=subtitle.length>136?subtitle.slice(0,133).trimEnd()+'…':subtitle;
+ const kinds={class:'Unlocked',rite:'Known rite',bond:'Spirit bond',tradition:'Tradition',selection:'Approved choice',dm:'DM-granted'};
+ const status=kinds[kind]||'Approved';
  const path=location.pathname.split('/characters/sheet-live')[0]+'/classes/?focus='+encodeURIComponent(p().label);
- return '<details class="class-wiki-card"><summary><span class="class-wiki-crest" aria-hidden="true">✦</span><span class="class-wiki-title"><strong>'+esc(name)+'</strong><small>'+(level?'Level '+level+' · ':'')+esc(snippet)+'</small></span><span class="class-wiki-status">Unlocked</span><span class="class-wiki-chevron" aria-hidden="true">⌄</span></summary><div class="class-wiki-expanded"><div class="class-wiki-kicker">'+(level?'LEVEL '+level+' · ':'')+'PUBLISHED CLASS RULES</div>'+(hasRules?readableRules(raw):'<p>This feature has no independently indexed excerpt. Consult the published class reference for its exact effects.</p>')+'<a class="class-rule-link" href="'+esc(path)+'" target="_parent" rel="noopener">Read the full '+esc(p().label)+' class reference ↗</a></div></details>';
+ const tierText=tradition?
+  '<p>'+esc(tradition.intro)+'</p>'+tradition.tiers.map(t=>
+   '<h4>Level '+esc(String(t.level))+' · '+esc(t.name)+'</h4><p>'+esc(t.description)+'</p>').join(''):
+  hasRules?readableRules(raw):
+  '<p>The approved character record lists this selection, but no matching published mechanics have been indexed. Refer to the full class rules or ask the DM.</p>';
+ const levelTag=kind==='rite'?'RITE · AVAILABLE FROM LEVEL '+(level||2):
+  kind==='bond'?'BONDED SPIRIT':kind==='tradition'?'APPROVED TRADITION':
+  level?'LEVEL '+level+' · CLASS FEATURE':'APPROVED CHARACTER FEATURE';
+ return '<details class="class-wiki-card"><summary><span class="class-wiki-crest" aria-hidden="true">✦</span><span class="class-wiki-title"><strong>'+esc(name)+'</strong><small>'+esc(snippet)+'</small></span><span class="class-wiki-status">'+esc(status)+'</span><span class="class-wiki-chevron" aria-hidden="true">⌄</span></summary><div class="class-wiki-expanded"><div class="class-wiki-kicker">'+levelTag+'</div>'+tierText+'<a class="class-rule-link" href="'+esc(path)+'" target="_parent" rel="noopener">Read the full '+esc(p().label)+' class reference ↗</a></div></details>';
 }
 function classTab(){if(LIVE.enabled){
- const allNames=(p().features||[]).filter(x=>!/(?:^feat\s*\/\s*asi$|^ability score improvement$|^asi\s*\/\s*feat$|^feat or asi$|^asi or feat$)/i.test(x.trim()));
+ const isShaman=p().label.toLowerCase()==='shaman';
+ const allNames=(p().features||[]).filter(x=>!/(?:^feat\s*\/\s*asi$|^ability score improvement$|^asi\s*\/\s*feat$|^feat or asi$|^asi or feat$)/i.test(x.trim()))
+  .filter(name=>!(isShaman&&name==='Tradition'));
  const names=allNames.filter(name=>!(Number(LIVE.featureLevels[name])>Number(p().level)));
  const future=allNames.filter(name=>Number(LIVE.featureLevels[name])>Number(p().level));
+ if(LIVE.publishedPending){
+  return section('Class & Abilities','II · Character record','Level '+p().level+' · '+p().label)+
+   '<div class="dashboard class-live-layout">'+panel('Loading approved class mechanics','Reading published Codex rules','<p class="meta">Matching class features, rites, spirit bonds and selected traditions with the published rules…</p>','wide')+'</div>';
+ }
+ const groups=[
+  ['Class features','Automatically unlocked at the approved level',names.filter(name=>liveFeatureKind(name)==='class')],
+  ['Known spirit rites','Chosen and approved rites only',names.filter(name=>liveFeatureKind(name)==='rite')],
+  ['Spirit bonds','Approved bonds · actual spiritual relationships',names.filter(name=>liveFeatureKind(name)==='bond')],
+  ['Shaman tradition','Your selected tradition · only reached level milestones',names.filter(name=>liveFeatureKind(name)==='tradition')],
+  ['Other approved abilities','Selected options and DM-granted abilities',names.filter(name=>!['class','rite','bond','tradition'].includes(liveFeatureKind(name)))]
+ ];
+ let sections=groups.filter(([title,subtitle,items])=>items.length).map(([title,subtitle,items])=>
+  panel(title,subtitle,'<div class="class-wiki-list">'+items.map(featureRuleCard).join('')+'</div>','wide')).join('');
+ if(!sections)sections=panel('Class features','Approved character record','<div class="empty-box">No class features recorded at this level.</div>','wide');
+ if(future.length)sections+=panel('Future class features','Not currently unlocked','<div class="featurelist">'+future.map(name=>'<div class="feature"><b>'+esc(name)+'</b><span class="tag">Level '+esc(String(LIVE.featureLevels[name]))+' · Locked</span></div>').join('')+'</div>','wide');
  return section('Class & Abilities','II · Character record','Level '+p().level+' · '+p().label)+
- '<div class="dashboard class-live-layout">'+
- panel('Unlocked class features','Published mechanics · expand to read',names.length?'<div class="class-wiki-list">'+names.map(featureRuleCard).join('')+'</div>':'<div class="empty-box">No unlocked class features recorded.</div>','wide')+
- (future.length?panel('Future class features','Not yet unlocked · kept separate from playable abilities','<div class="featurelist">'+future.map(name=>'<div class="feature"><b>'+esc(name)+'</b><span class="tag">Level '+esc(String(LIVE.featureLevels[name]))+' · Locked</span></div>').join('')+'</div>','wide'):'')+
- '</div>';
+  '<div class="dashboard class-live-layout">'+sections+'</div>';
 }
 const feat=p().features,sh=showcase();const shown=sh?feat:feat.slice(0,3);return section('Class & Abilities','II · Character record',sh?'Filled character · unlocked feature list':'Class-focused')+`<div class="dashboard">${panel('Unlocked class features','Level-aware · details once',`<div class="featurelist">${shown.map(f=>`<div class="feature"><div><b>${esc(f)}</b><small>${esc(sh?.features?.[f]||'Unlocked feature · consult the published class rules for full mechanics.')}</small></div><span class="tag">Unlocked</span></div>`).join('')}</div>`, 'seven')}${panel('Class snapshot','Character build · example',`<div class="statline"><span>Class</span><strong>${esc(p().label)}</strong></div><div class="statline"><span>Specialisation</span><strong>${esc(p().subclass)}</strong></div><div class="statline"><span>Hit die</span><strong>${esc(p().hitdie)}</strong></div><div class="statline"><span>Saving throws</span><strong>${esc(p().saves.join(' / '))}</strong></div><div class="statline"><span>Level</span><strong>${p().level}</strong></div>${sh?`<div class="statline"><span>Character theme</span><strong>${esc(sh.role)}</strong></div><div class="statline"><span>Tools</span><strong>${esc(sh.tools.join(', '))}</strong></div>`:''}<details class="rules-drawer"><summary>Complete published rules · placeholder</summary><p>The standalone preview does not contain the full live class catalog; live integration should display the exact rules from the Codex rather than duplicate them here.</p></details>`, 'five')}${sh?panel('Player-configured loadout','Filled-content layout test',`<p>${esc(sh.background)}</p><div class="statline"><span>Chosen proficiencies</span><strong>${esc(p().skills.join(', '))}</strong></div>${(p().expertise||[]).length?`<div class="statline"><span>Expertise</span><strong>${esc(p().expertise.join(', '))}</strong></div>`:''}<div class="hint">Illustrative build choices. Open a score above for calculated check bonuses. Real characters must use approved class, ancestry and subclass choices.</div>`):''}</div>`}
 
@@ -980,6 +1028,7 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  if(kind==='bloodforger'&&!resource.exertion){resource.exertion={label:'Exertion',current:0,max:0,note:'No Exertion pool configured'};current.exertion=0}
  const realInventory=(payload.inventory||[]).map(normalizedLiveItem);
  LIVE.featureDescriptions=payload.featureDescriptions||{};LIVE.featureLevels=payload.featureLevels||{};
+ LIVE.featureGroups=payload.featureGroups||{};LIVE.published=null;LIVE.publishedPending=true;
  LIVE.realInventory=realInventory;const slots={};realInventory.forEach(it=>{if(it.slot){slots[it.slot]=it.id;if(it.twoHanded&&it.slot==='main')slots.off=it.id}});
  const approvedFeatures=(payload.features||[]).map(x=>typeof x==='string'?x:x.name);
  const featDetails={};approvedFeatures.forEach(name=>featDetails[name]='Approved class feature. Open the Class & Abilities tab for the complete rules.');
