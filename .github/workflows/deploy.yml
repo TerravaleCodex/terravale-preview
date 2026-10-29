@@ -140,6 +140,9 @@ jobs:
       - name: Test Shaman published class rules and level-appropriate feature cards
         shell: bash
         run: node site-overrides/test-shaman-rules.cjs
+      - name: Test dynamic HP bar colours
+        shell: bash
+        run: node site-overrides/test-health-colors.cjs
       - name: Check live sheet JavaScript syntax
         shell: bash
         run: |
