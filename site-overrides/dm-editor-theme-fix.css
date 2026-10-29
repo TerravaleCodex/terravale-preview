@@ -1,0 +1,106 @@
+/* DM Chronicle and character editing: all interactive surfaces follow the active site theme.
+ * This stylesheet intentionally uses shared palette tokens rather than fixed navy/purple tiles. */
+html[data-app-theme] :is(
+ .dm-stat-card,.dm-action-tile,.dm-notification,.dm-empty-queue,
+ .dm-roster-choice,.dm-campaign-select,.dm-generated-code,
+ .dm-dashboard-navitem,.dm-player-result,.dm-invite-row,
+ .dm-workbench .nested-panel,.dm-workbench .stat,
+ .advancement-workspace .progression-summary>div,
+ .advancement-workspace .choice-tile,.advancement-workspace .choice-with-preview,
+ .advancement-workspace .choice-inspector,
+ .asi-proposal .asi-milestone,.asi-proposal .asi-kind-choices button,
+ .asi-proposal .feat-stat-choice,.ancestry-feats .feat-stat-choice,
+ .saving-throw-set
+){background:var(--theme-interactive,var(--panel2));border-color:var(--line);color:var(--text)}
+html[data-app-theme] :is(
+ .dm-dashboard-layout .panel,.dm-workbench .panel,.dm-campaign-columns .panel,
+ .dm-drafts-panel,.dm-character-rail,.dm-pending-panel,
+ .character-portrait-editor,.class-planner,.asi-proposal,.ancestry-feats
+){background-color:var(--theme-card,var(--panel));border-color:var(--line);color:var(--text)}
+html[data-app-theme] :is(.dm-dashboard-main,.dm-editor-stack,.dm-notification-rail,.dm-workbench,.dm-campaign-columns){
+ color:var(--text)
+}
+html[data-app-theme] :is(
+ .dm-stat-card,.dm-action-tile,.dm-notification,.dm-roster-choice,
+ .dm-campaign-select,.dm-dashboard-navitem,.dm-invite-row,
+ .advancement-workspace .choice-tile,.asi-kind-choices button
+):is(:hover,:focus-visible){
+ border-color:var(--gold);color:var(--text);
+ background:var(--theme-select,color-mix(in srgb,var(--gold) 12%,var(--panel2)));
+}
+html[data-app-theme] :is(
+ .dm-roster-choice.selected,.dm-campaign-select.selected,.dm-dashboard-navitem.active,
+ .advancement-workspace .choice-tile.selected,.asi-proposal .asi-kind-choices button.selected,
+ .dm-workbench .feat-entry.focused
+){
+ background:var(--theme-select,color-mix(in srgb,var(--gold) 14%,var(--panel2)));
+ border-color:var(--gold);color:var(--text)
+}
+html[data-app-theme] :is(.dm-roster-choice,.dm-campaign-select,.dm-dashboard-navitem,.dm-notification,.dm-action-tile):focus-visible{
+ outline:2px solid var(--gold);outline-offset:2px
+}
+html[data-app-theme] :is(
+ .dm-stat-card strong,.dm-action-tile strong,.dm-notification strong,
+ .dm-roster-choice strong,.dm-dashboard-navitem.active,
+ .dm-workbench .stat strong,.dm-workbench h2,.dm-workbench h3,
+ .asi-proposal h2,.class-planner h2
+){color:var(--text)}
+html[data-app-theme] :is(
+ .dm-stat-card small,.dm-action-tile small,.dm-notification small,
+ .dm-roster-choice small,.dm-campaign-select small,.dm-dashboard-navitem:not(.active),
+ .dm-empty-queue p,.dm-workbench .subtle,.dm-workbench .field-label,
+ .class-planner .subtle,.asi-proposal .subtle,.ancestry-feats .subtle,
+ .advancement-workspace .progression-summary small
+){color:var(--muted)}
+html[data-app-theme] :is(
+ .dm-dashboard-layout,.dm-workbench,.dm-campaign-columns,.dm-drafts-panel,
+ .advancement-workspace,.asi-proposal,.ancestry-feats,.class-planner
+) :is(input:not([type=checkbox]):not([type=radio]),textarea,select){
+ color:var(--text);background:var(--panel2);border-color:var(--line);color-scheme:dark
+}
+html[data-app-theme] :is(
+ .dm-dashboard-layout,.dm-workbench,.dm-campaign-columns,.dm-drafts-panel,
+ .advancement-workspace,.asi-proposal,.ancestry-feats,.class-planner
+) :is(input,textarea,select):focus-visible{
+ outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)
+}
+html[data-app-theme] :is(.dm-workbench,.dm-campaign-columns,.asi-proposal,.ancestry-feats,.class-planner)
+ input[type=checkbox]{accent-color:var(--gold)}
+html[data-app-theme] :is(
+ .dm-roster-monogram,.dm-pending-counter,.dm-notification-kind,
+ .dm-generated-code,.dm-workbench .stat span,
+ .advancement-workspace .progression-summary strong,
+ .advancement-workspace .choice-info-button,.saving-throw-set legend
+){color:var(--gold)}
+html[data-app-theme] :is(.dm-pending-counter,.dm-notification-kind){
+ background:var(--theme-select,color-mix(in srgb,var(--gold) 14%,var(--panel2)));border:1px solid var(--line)
+}
+html[data-app-theme] .dm-notification{box-shadow:none}
+html[data-app-theme] .dm-workbench .nested-panel{background:var(--theme-reading,var(--theme-card,var(--panel)))}
+html[data-app-theme] .dm-workbench .saving-throw-set{color:var(--text)}
+html[data-app-theme] .dm-workbench .stats-grid .stat{background:var(--panel2);border-color:var(--line)}
+html[data-app-theme] .dm-workbench .stats-grid .stat input{background:var(--panel);border-color:var(--line);color:var(--text)}
+html[data-app-theme] .advancement-workspace .choice-info-button{
+ background:var(--panel2);border-color:var(--line);color:var(--gold)
+}
+html[data-app-theme] .asi-proposal .asi-feat-preview,
+html[data-app-theme] :is(.asi-proposal,.ancestry-feats) .feat-stat-options .btn{
+ background:var(--panel2);border-color:var(--line);color:var(--text)
+}
+html[data-app-theme='absolute-zero'] :is(
+ .dm-stat-card,.dm-action-tile,.dm-notification,.dm-roster-choice,.dm-campaign-select,
+ .dm-dashboard-navitem,.dm-workbench .nested-panel,.dm-workbench .stat,
+ .advancement-workspace .choice-tile,.advancement-workspace .choice-inspector,
+ .asi-proposal .asi-milestone,.asi-proposal .asi-kind-choices button
+){
+ background:#050505!important;border-color:#202020!important;color:#d5d5d5!important;
+ background-image:none!important;box-shadow:none!important;border-radius:3px
+}
+html[data-app-theme='absolute-zero'] :is(
+ .dm-roster-choice.selected,.dm-campaign-select.selected,.dm-dashboard-navitem.active,
+ .advancement-workspace .choice-tile.selected
+){background:#111!important;border-color:#666!important}
+html[data-app-theme='shady'] :is(
+ .dm-stat-card,.dm-action-tile,.dm-roster-choice,.dm-dashboard-navitem,
+ .dm-workbench .stat,.advancement-workspace .choice-tile
+){box-shadow:none}
