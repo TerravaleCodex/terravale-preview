@@ -336,6 +336,21 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 .reference-tableline{border-bottom:1px solid var(--line2);padding:5px 0}
 @media(max-width:550px){.class-wiki-card summary{gap:8px;padding:12px}.class-wiki-status{font-size:9px}.class-wiki-expanded{padding:12px 14px}}
 
+
+/* Unconscious/death-save controls remain legible independently of the selected cosmetic theme. */
+.death-tracker{border:1px solid #bc5961!important;background:color-mix(in srgb,#59232b 22%,var(--surface))!important;display:flex;flex-direction:column;gap:12px;padding:18px;margin-top:12px}
+.death-title{font-weight:800;letter-spacing:.1em;font-size:13px;color:#ffa7a7}
+.death-counts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.death-counts span{border-radius:7px;padding:9px 12px;background:var(--paper);border:1px solid var(--line);font-size:13px}
+.death-success{color:#9de0bd}.death-failure{color:#ff9292}
+.death-controls{display:flex;flex-wrap:wrap;align-items:end;gap:9px}
+.death-controls label{flex:1;min-width:145px;display:flex;flex-direction:column;gap:5px;color:var(--sub);font-size:11px}
+.death-controls select,.death-controls input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);padding:9px;border-radius:7px;min-height:36px}
+.death-rescues{display:flex;flex-wrap:wrap;gap:9px}.death-rescues>strong,.death-rescues>p{flex:1 0 100%}
+.death-hints{border-top:1px solid var(--line);padding-top:10px}.death-hints summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:700}
+.death-hint{margin-top:9px;padding:11px;background:var(--paper);border:1px solid var(--line);border-radius:7px;font-size:12px}
+.death-hint p{margin:6px 0 0;white-space:pre-wrap;line-height:1.6}
+@media(max-width:600px){.death-counts{grid-template-columns:1fr}.death-controls .action{width:100%}}
 </style>
 <link rel="stylesheet" href="./live-sheet-theme-fix.css">
 </head>
@@ -371,9 +386,10 @@ html.live-embedded .live-spend-hint{font-size:11px;color:var(--muted);padding:9p
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="dialog" id="dialog"><div id="dialogBody"></div><div class="row-actions"><button class="action" id="closeDialog">Close</button></div></dialog>
+<script src="./death-mechanics.js"></script>
 <script>
 (()=>{'use strict';
-const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{},featureGroups:{},published:null,publishedPending:false};
+const LIVE={enabled:new URLSearchParams(location.search).has('live'),loaded:false,syncing:false,readOnly:true,last:'',charId:'',actions:[],generic:false,realInventory:[],portraitUrl:'',featureDescriptions:{},featureLevels:{},featureGroups:{},published:null,publishedPending:false,survivalHints:[],conditions:[],canDM:false,pendingSave:null};
 if(LIVE.enabled)document.documentElement.classList.add('live-embedded');
 function syncPublishedSiteTheme(){
  if(!LIVE.enabled)return;
@@ -457,8 +473,18 @@ function p(){return profiles[app.profile]}function s(){return app.data[app.profi
  catch(e){}
  if(!LIVE.enabled||!LIVE.loaded||LIVE.syncing||LIVE.readOnly)return;
  const state=s(),gear=state.gearV08Filled,inv=gear?gear.items.map(item=>({...item,slot:Object.keys(gear.slots).find(k=>gear.slots[k]===item.id&&k!=='off')||(gear.slots.off===item.id?'off':undefined)})):LIVE.realInventory;
- const out={hp:hp(),tempHp:tempHp(),bloodState:bloodState(),reserve:value('reserve'),exertion:value('exertion'),inventory:inv,notes:state.notes||''};
- const signature=JSON.stringify(out);if(signature!==LIVE.last){LIVE.last=signature;window.parent.postMessage({type:'TV_SHEET_PATCH',id:LIVE.charId,patch:out},location.origin)}
+ const out={hp:hp(),tempHp:tempHp(),bloodState:bloodState(),reserve:value('reserve'),exertion:value('exertion'),inventory:inv,deathSaves:TVDeath.normal(state.deathSaves),notes:state.notes||''};
+ const signature=JSON.stringify(out);if(signature!==LIVE.last){
+  LIVE.last=signature;LIVE.pendingSave=out;
+  // Rapid clicks accumulate in local state; send one complete snapshot after a short
+  // quiet period instead of forcing a network refresh for every +1 / -1 click.
+  clearTimeout(LIVE.postTimer);
+  LIVE.postTimer=setTimeout(()=>{
+   if(!LIVE.pendingSave||!LIVE.loaded||LIVE.readOnly)return;
+   const latest=LIVE.pendingSave;LIVE.pendingSave=null;
+   window.parent.postMessage({type:'TV_SHEET_PATCH',id:LIVE.charId,patch:latest},location.origin);
+  },110);
+}
 }
 
 function isFilled(){return app.contentMode==='filled'&&!!p().showcase}
@@ -480,16 +506,78 @@ function flag(k){return s()[k]??p()[k]??false}
 function setFlag(k,v){s()[k]=v;save();renderPage()}
 function count(k){return s()[k]??p()[k]??0}function setCount(k,num,cap){s()[k]=Math.max(0,Math.min(cap,Math.round(num)));save();if(k==='tempHp')renderEssentials();if(k==='anchors'&&app.profile==='bloodforger'&&app.tab==='Overview'){syncBloodforgerUI()}else renderPage()}
 function hp(){return s().hp??p().hp}
-function setHp(v){s().hp=Math.max(0,Math.min(p().hp,v));save();renderEssentials();if(app.tab==='Overview')renderPage()}
+function deathState(){s().deathSaves=TVDeath.normal(s().deathSaves);return s().deathSaves}
+function refreshVitals(){save();renderEssentials();if(app.tab==='Overview')renderPage();notifyHeight()}
+function setHp(v){
+ const before=hp(),after=Math.max(0,Math.min(p().hp,Math.floor(Number(v)||0)));
+ if(deathState().dead&&after>0){toast('A dead character requires DM resolution or an approved resurrection effect.');return}
+ s().hp=after;
+ if(after>0)s().deathSaves=TVDeath.healed(deathState());
+ else if(before>0)s().deathSaves=TVDeath.healed(deathState());
+ refreshVitals();
+}
 function tempHp(){return count('tempHp')}
-function applyDamage(v){v=Math.max(0,Math.round(v));const before=tempHp(),absorbed=Math.min(before,v);s().tempHp=before-absorbed;s().hp=Math.max(0,hp()-(v-absorbed));save();renderEssentials();if(app.tab==='Overview')renderPage();toast(absorbed?`${v} damage · ${absorbed} absorbed by temporary HP`:`${v} damage taken`)}
-function applyHealing(v){setHp(hp()+Math.max(0,Math.round(v)));toast(`Healed ${v} HP · up to maximum`)}
+function applyDamage(v,critical=false){
+ const amount=Math.max(0,Math.round(Number(v)||0));
+ const old=hp(),r=TVDeath.damaged(deathState(),old,p().hp,amount,tempHp(),critical);
+ s().hp=r.hp;s().tempHp=r.tempHp;s().deathSaves=r.death;
+ refreshVitals();
+ if(old>0&&r.hp===0)toast(r.death.dead?'Massive damage — death. DM adjudication required.':'0 HP — unconscious. Resolve any eligible rescue before death saves.');
+ else if(old===0&&amount-r.absorbed>0)toast('Damage while dying — '+(critical?'two failures':'one death-save failure'));
+ else toast(r.absorbed?amount+' damage · '+r.absorbed+' absorbed by temporary HP':amount+' damage');
+}
+function applyHealing(v){
+ if(deathState().dead){toast('Death requires a qualifying rescue or resurrection, not ordinary healing.');return}
+ setHp(hp()+Math.max(0,Math.round(Number(v)||0)));
+}
+function rollDeathSave(){
+ if(hp()>0||deathState().dead||deathState().stable||LIVE.readOnly)return;
+ const choice=document.querySelector('[data-death-mode]');
+ const modInput=document.querySelector('[data-death-bonus]');
+ const mode=['normal','advantage','disadvantage'].includes(choice?.value)?choice.value:'normal';
+ const bonus=Math.max(-20,Math.min(20,Math.floor(Number(modInput?.value)||0)));
+ const dice=Array.from({length:mode==='normal'?1:2},()=>Math.floor(Math.random()*20)+1);
+ try{
+  const result=TVDeath.rolled(deathState(),hp(),dice,mode,bonus);
+  s().deathSaves=result.state;s().hp=result.hp;
+  refreshVitals();
+  const diceLabel=result.dice.join(' / ');
+  toast('Death save '+diceLabel+' → '+result.selected+(result.critical==='twenty'?' · NAT 20: regain 1 HP':result.critical==='one'?' · NAT 1: two failures':result.success?' · success':' · failure'));
+ }catch(error){toast(error.message||'Death save unavailable')}
+}
+function markStable(){
+ try{s().deathSaves=TVDeath.stable(deathState(),LIVE.conditions);refreshVitals();toast('Stabilised at 0 HP');}
+ catch(error){toast(error.message||'Cannot stabilise')}
+}
+function useRescue(name){
+ const rule=LIVE.survivalHints.find(x=>x.name===name&&x.canRescueAtZero&&!deathState().rescueUses[name]);
+ if(!rule||hp()!==0||deathState().dead){toast('This rescue is not currently available.');return}
+ if(!confirm('Apply '+name+' to remain at 1 HP? Confirm the published trigger, uses, and Rescue Limit with your DM.'))return;
+ try{const result=TVDeath.prevented(deathState(),name);s().hp=result.hp;s().deathSaves=result.death;refreshVitals();toast(name+' applied · 1 HP');}
+ catch(error){toast(error.message||'Rescue unavailable')}
+}
+function resetDeathByDM(){
+ if(!LIVE.canDM||!confirm('DM override: clear death saves and restore 1 HP? Use only after an approved rescue, resurrection, or correction.'))return;
+ s().hp=1;s().deathSaves=TVDeath.healed(deathState());refreshVitals();toast('DM death-state override applied');
+}
+function deathPanel(){
+ if(!LIVE.enabled||hp()>0)return '';
+ const d=deathState(),status=d.dead?'DEAD · DM RESOLUTION REQUIRED':d.stable?'STABLE AT 0 HP · UNCONSCIOUS':'0 HP · UNCONSCIOUS & DYING';
+ const hints=LIVE.survivalHints||[],rescue=hints.filter(x=>x.canRescueAtZero&&!d.rescueUses[x.name]);
+ const summary='<div class="death-counts"><span class="death-success">Successes '+d.successes+' / 3</span><span class="death-failure">Failures '+d.failures+' / 3</span></div>';
+ const controls=!d.dead&&!d.stable?'<div class="death-controls"><label>Roll mode<select data-death-mode><option value="normal">Normal</option><option value="advantage">Advantage (approved ability)</option><option value="disadvantage">Disadvantage (DM effect)</option></select></label><label>Approved bonus<input type="number" data-death-bonus min="-20" max="20" step="1" value="0" aria-label="Death save modifier"/></label><button class="action primary" data-death-roll="1">Roll death save · d20</button><button class="action" data-death-stable="1">Mark stable (DM/Medicine)</button></div>':'';
+ const rescueUI=!d.dead&&rescue.length?'<div class="death-rescues"><strong>Possible prevent-0 HP effects</strong><p class="meta">Apply only if your approved feature is available and its exact trigger is met. Rescue Limit: only one rescue effect can respond to this drop to 0 HP.</p>'+rescue.map(x=>'<button class="action" data-death-rescue="'+esc(x.name)+'">Use '+esc(x.name)+' · remain at 1 HP</button>').join('')+'</div>':'';
+ const hintUI=hints.length?'<details class="death-hints"><summary>Review relevant approved survival abilities ('+hints.length+')</summary>'+hints.map(x=>'<div class="death-hint"><strong>'+esc(x.name)+' <small>· '+esc(x.source)+'</small></strong><p>'+esc(x.description)+'</p>'+(d.rescueUses[x.name]?'<small>Used since last long rest</small>':'')+'</div>').join('')+'</details>':'';
+ const pain=TVDeath.painWracked(LIVE.conditions)?'<p class="invalid">Pain-Wracked: cannot be stabilised until the condition ends.</p>':'';
+ const dm=d.dead&&LIVE.canDM?'<button class="action" data-death-dm-reset="1">DM override · resolve death</button>':'';
+ return '<section class="panel death-tracker" role="status" aria-live="polite"><div class="death-title">☠ '+status+'</div><p class="meta">'+(d.dead?'Three failed saves or massive damage. Ordinary healing does not revive the dead.':d.stable?'No further death saves while stable. Damage may make you unstable again.':'Death saves are d20 rolls: 10+ success, 9 or less failure. Natural 1 adds two failures, natural 20 restores 1 HP. Three successes stabilise; three failures mean death.')+'</p>'+summary+controls+pain+rescueUI+hintUI+dm+'</section>';
+}
 function hpColor(current,maximum){
  const ratio=Math.max(0,Math.min(1,Number(current)/Math.max(1,Number(maximum)||1)));
  const hue=ratio<=0.2?4:ratio<=0.5?4+(ratio-0.2)/0.3*46:50+(ratio-0.5)/0.5*80;
  return 'hsl('+Math.round(hue)+' 76% 43%)';
 }
-function healthPanel(){return `<section class="panel health-main"><div class="panel-head"><div><div class="panel-sub">Always accessible · combat essentials</div><h3>Health &amp; survival</h3></div><span class="panel-mark">Live controls</span></div><div class="health-topline"><div><strong class="health-big">${hp()} <span>/ ${p().hp}</span></strong><div class="meta">Current hit points</div></div><div><span class="health-temp-number">+${tempHp()}</span><div class="meta">Temporary HP</div></div></div><div class="meter" role="progressbar" aria-label="Current hit points" aria-valuemin="0" aria-valuemax="${p().hp}" aria-valuenow="${hp()}"><span style="width:${Math.round(hp()/Math.max(1,p().hp)*100)}%;background:${hpColor(hp(),p().hp)}"></span></div><div class="health-actions"><button class="action damage" data-damage="5">−5 damage</button><button class="action damage" data-damage="1">−1</button><button class="action heal" data-heal="1">+1</button><button class="action heal" data-heal="5">+5 heal</button></div><div class="health-temp-controls"><span class="meta">Temporary HP</span><div><button class="mini" data-count="tempHp" data-delta="-1" data-max="99" aria-label="Remove temporary HP">−</button><strong>${tempHp()}</strong><button class="mini" data-count="tempHp" data-delta="1" data-max="99" aria-label="Add temporary HP">+</button></div><button class="action" data-action="openRest">☾ Rest</button></div><div class="hint">Damage consumes temporary HP first. Healing cannot exceed maximum HP. Rest does not change Crimsonborn Blood State.</div></section>`}
+function healthPanel(){return `<section class="panel health-main"><div class="panel-head"><div><div class="panel-sub">Always accessible · combat essentials</div><h3>Health &amp; survival</h3></div><span class="panel-mark">Live controls</span></div><div class="health-topline"><div><strong class="health-big">${hp()} <span>/ ${p().hp}</span></strong><div class="meta">Current hit points</div></div><div><span class="health-temp-number">+${tempHp()}</span><div class="meta">Temporary HP</div></div></div><div class="meter" role="progressbar" aria-label="Current hit points" aria-valuemin="0" aria-valuemax="${p().hp}" aria-valuenow="${hp()}"><span style="width:${Math.round(hp()/Math.max(1,p().hp)*100)}%;background:${hpColor(hp(),p().hp)}"></span></div><div class="health-actions"><button class="action damage" data-damage="5">−5 damage</button><button class="action damage" data-damage="1">−1</button><button class="action heal" data-heal="1">+1</button><button class="action heal" data-heal="5">+5 heal</button></div><div class="health-temp-controls"><span class="meta">Temporary HP</span><div><button class="mini" data-count="tempHp" data-delta="-1" data-max="99" aria-label="Remove temporary HP">−</button><strong>${tempHp()}</strong><button class="mini" data-count="tempHp" data-delta="1" data-max="99" aria-label="Add temporary HP">+</button></div><button class="action" data-action="openRest">☾ Rest</button></div><div class="hint">Damage consumes temporary HP first. Healing cannot exceed maximum HP. Rest does not change Crimsonborn Blood State.</div></section>${deathPanel()}`}
 
 function mod(v){const n=Math.floor((v-10)/2);return (n>=0?'+':'')+n}
 function section(title,kicker='Living codex · character record',extra=''){return `<div class="sectionbar"><div><small>${esc(kicker)}</small><h2>${esc(title)}</h2></div><div class="overview-toolbox"><span class="chip">${esc(extra||'Level '+p().level+' · '+p().label)}</span><button type="button" id="layoutSettingsBtn" class="layout-cog" aria-label="Customise ${esc(title)} tab layout" aria-haspopup="true" aria-controls="layoutPopover" aria-expanded="false" title="Customise this tab">${layoutGearSVG}</button><div id="layoutPopover" class="layout-popover" role="region" aria-label="${esc(title)} tab layout settings" hidden></div></div></div>`}
@@ -962,6 +1050,9 @@ $('exportBtn').addEventListener('click',()=>{const payload={prototype:'Terravale
 document.addEventListener('click',e=>{
  if(!LIVE.enabled)return;
  const button=e.target.closest('button');if(!button)return;
+ if(button.dataset.deathRoll!==undefined||button.dataset.deathStable!==undefined||button.dataset.deathRescue!==undefined||button.dataset.deathDmReset!==undefined){
+  if(LIVE.readOnly){e.preventDefault();e.stopImmediatePropagation();return}
+ }
  if(button.dataset.liveAction){e.preventDefault();e.stopImmediatePropagation();if(!LIVE.readOnly)window.parent.postMessage({type:'TV_SHEET_ABILITY',id:LIVE.charId,key:button.dataset.liveAction},location.origin);return;}
  if(button.dataset.rest!==undefined||button.dataset.action==='rest'||button.dataset.action==='restShort'||button.dataset.action==='restLong'){
  e.preventDefault();e.stopImmediatePropagation();if(!LIVE.readOnly)window.parent.postMessage({type:'TV_SHEET_REST',id:LIVE.charId,kind:button.dataset.rest||'short'},location.origin);const d=$('dialog');if(d.open)d.close();return;}
@@ -981,6 +1072,10 @@ document.addEventListener('click',e=>{const button=e.target.closest('button');if
  if(button.hasAttribute('data-layout-reset')){delete app.layouts[app.profile];for(const [id,def] of Object.entries(layoutDefinitions)){const st=getLayoutState();st[id]={zone:def.defaultZone,hidden:false,order:def.index}}refreshPersonalBoard();return}
  if(button.hasAttribute('data-layout-all')){const st=getLayoutState();for(const id of Object.keys(layoutDefinitions))st[id].hidden=false;refreshPersonalBoard();return}
  if(button.dataset.stat){app.expandedStat=app.expandedStat===button.dataset.stat?null:button.dataset.stat;renderAbilityStrip();save();return}if(button.dataset.closeStat){app.expandedStat=null;renderAbilityStrip();save();return}if(button.hasAttribute('data-tab')){app.tab=button.dataset.tab;openLayout=false;renderPage();save();return}if(button.dataset.bloodDelta){setBloodState(bloodState()+Number(button.dataset.bloodDelta));return}
+if(button.dataset.deathRoll!==undefined){rollDeathSave();return}
+if(button.dataset.deathStable!==undefined){markStable();return}
+if(button.dataset.deathRescue!==undefined){useRescue(button.dataset.deathRescue);return}
+if(button.dataset.deathDmReset!==undefined){resetDeathByDM();return}
 if(button.dataset.damage){applyDamage(Number(button.dataset.damage));return}
 if(button.dataset.heal){applyHealing(Number(button.dataset.heal));return}
 if(button.dataset.techCost && button.dataset.action!=='confirmTechnique'){requestTechnique(Number(button.dataset.techCost),button.dataset.techLabel||'Example discipline technique');return}
@@ -1022,6 +1117,8 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  LIVE.readOnly=!!payload.readOnly;LIVE.portraitUrl=typeof payload.portraitUrl==='string'?payload.portraitUrl:'';LIVE.actions=Array.isArray(payload.actions)?payload.actions:[];
  LIVE.feats=Array.isArray(payload.feats)?payload.feats:[];
  LIVE.disciplineNames=Array.isArray(payload.disciplines)?payload.disciplines:[];
+ LIVE.survivalHints=Array.isArray(payload.survivalHints)?payload.survivalHints:[];
+ LIVE.conditions=Array.isArray(payload.conditions)?payload.conditions:[];LIVE.canDM=!!payload.canDM;
  const clazz=String(payload.className||'Unassigned').toLowerCase().trim();
  const kind=clazz==='bloodforger'||clazz==='crimson conduit'?'bloodforger':clazz==='shaman'?'shaman':clazz==='gatewarden'||clazz==='seal-maintainer'?'gatewarden':clazz==='echo-bearer'?'echo':clazz==='bard'?'bard':clazz==='barbarian'?'barbarian':clazz==='summoner'?'summoner':'barbarian';
  LIVE.generic=!['bloodforger','shaman','gatewarden'].includes(clazz);
@@ -1038,9 +1135,9 @@ function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)
  const approvedFeatures=(payload.features||[]).map(x=>typeof x==='string'?x:x.name);
  const featDetails={};approvedFeatures.forEach(name=>featDetails[name]='Approved class feature. Open the Class & Abilities tab for the complete rules.');
  profiles[kind]={...x,label:String(payload.className||'Unassigned'),name:String(payload.name||'Adventurer'),ancestry:String(payload.ancestry||'Unassigned'),level:Number(payload.level)||1,hitdie:String(payload.hitdie||x.hitdie),role:String(payload.role||payload.className||''),subclass:String(payload.subclass||'Approved build'),stats:payload.stats||[10,10,10,10,10,10],pb:Number(payload.pb)||2,ac:Number(payload.ac)||10,speed:Number(payload.speed)||30,hp:Number(payload.maxHp)||10,size:String(payload.size||'Not recorded'),creatureType:String(payload.creatureType||'Not recorded'),skills:payload.skills||[],expertise:payload.expertise||[],saves:payload.saves||[],features:approvedFeatures,resource,anchorMax:Number(payload.pb)||2,anchors:Number(payload.anchors)||0,bonds:payload.bonds||[],showcase:{role:String(payload.className||''),background:'Approved character record',tools:[],languages:payload.languages||[],equipment:[],items:realInventory.map(it=>it.name),coin:{},traits:[],features:featDetails,story:payload.summary||'',session:'',notes:''}};
- app.data[kind]={...app.data[kind],resources:current,hp:Number(payload.hp)||0,tempHp:Number(payload.tempHp)||0,bloodState:Number(payload.bloodState)||0,crimsonStage:Number(payload.crimsonStage)||1,anchors:Number(payload.anchors)||0,notes:'',story:payload.summary||'',gearV08Filled:{items:realInventory,slots,wallet:[],selectedItem:null}};
+ app.data[kind]={...app.data[kind],resources:current,hp:Number(payload.hp)||0,tempHp:Number(payload.tempHp)||0,bloodState:Number(payload.bloodState)||0,crimsonStage:Number(payload.crimsonStage)||1,anchors:Number(payload.anchors)||0,notes:'',story:payload.summary||'',gearV08Filled:{items:realInventory,slots,wallet:[],selectedItem:null},deathSaves:TVDeath.normal(payload.deathSaves)};
  if(firstLoad){app.data[kind].battleNotes='';app.data[kind].hungerChecks=[];}
- const st=app.data[kind],snapshot={hp:hp(),tempHp:tempHp(),bloodState:bloodState(),reserve:value('reserve'),exertion:value('exertion'),inventory:realInventory,notes:st.notes||''};
+ const st=app.data[kind],snapshot={hp:hp(),tempHp:tempHp(),bloodState:bloodState(),reserve:value('reserve'),exertion:value('exertion'),inventory:realInventory,deathSaves:TVDeath.normal(st.deathSaves),notes:st.notes||''};
  LIVE.last=JSON.stringify(snapshot);
  render();LIVE.loaded=true;LIVE.syncing=false;document.documentElement.classList.add('live-loaded');
  loadPublishedRulesFor(LIVE.charId,String(payload.className||'Unassigned'));
