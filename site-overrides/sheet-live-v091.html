@@ -1113,6 +1113,16 @@ document.addEventListener('keydown',e=>{if(e.target.id==='gearName'&&e.key==='En
 document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();toast('Navigation is visual only in this offline prototype')}));
 
 function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)return;
+ // Compiled parent apps can re-send the approved sheet after each HP write.
+ // Ignore same-build echoes rather than overwriting more recent rapid local clicks.
+ const buildFingerprint=JSON.stringify([payload.id,payload.className,payload.ancestry,payload.level,payload.maxHp,payload.stats,
+  payload.ac,payload.speed,payload.features,payload.featureGroups,payload.subclass,payload.readOnly,payload.survivalHints]);
+ if(LIVE.loaded&&LIVE.charId===String(payload.id)&&LIVE.buildFingerprint===buildFingerprint){
+  LIVE.portraitUrl=typeof payload.portraitUrl==='string'?payload.portraitUrl:LIVE.portraitUrl;
+  LIVE.conditions=Array.isArray(payload.conditions)?payload.conditions:LIVE.conditions;
+  return;
+ }
+ LIVE.buildFingerprint=buildFingerprint;
  LIVE.syncing=true;const oldId=LIVE.charId;LIVE.charId=String(payload.id);LIVE.loaded=false;
  LIVE.readOnly=!!payload.readOnly;LIVE.portraitUrl=typeof payload.portraitUrl==='string'?payload.portraitUrl:'';LIVE.actions=Array.isArray(payload.actions)?payload.actions:[];
  LIVE.feats=Array.isArray(payload.feats)?payload.feats:[];
