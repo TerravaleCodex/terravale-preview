@@ -1010,7 +1010,10 @@ function renderLivePortrait(){
  const slot=document.querySelector('.hero .portrait');
  if(!slot)return;
  const url=validLivePortrait(LIVE.portraitUrl)?LIVE.portraitUrl:'';
- if(slot.dataset.livePortraitUrl===url)return;
+ // A previously failed image is not a successfully rendered portrait.
+ // Preserve the error UI until a new signed URL arrives or Retry is pressed.
+ if(slot.dataset.livePortraitUrl===url&&slot.querySelector('.live-portrait-trigger'))return;
+ if(slot.dataset.livePortraitUrl===url&&slot.querySelector('.live-portrait-error'))return;
  slot.dataset.livePortraitUrl=url;
  slot.querySelector('.live-portrait-trigger')?.remove();
  slot.querySelector('.live-portrait-error')?.remove();
@@ -1030,9 +1033,17 @@ function renderLivePortrait(){
  img.addEventListener('error',()=>{
   if(slot.dataset.livePortraitUrl!==url)return;
   trigger.remove();slot.classList.remove('has-live-portrait');
+  // The failed signed URL must not remain marked as displayed.
+  slot.dataset.livePortraitUrl='';
+  if(glyph)glyph.hidden=false;
+  if(label)label.textContent='Portrait unavailable';
   const retry=document.createElement('button');retry.type='button';retry.className='live-portrait-error';
   retry.textContent='Portrait could not load · Tap to retry';
-  retry.addEventListener('click',()=>window.parent.postMessage({type:'TV_SHEET_PORTRAIT_RETRY',id:LIVE.charId},location.origin));
+  retry.addEventListener('click',()=>{
+   // Immediately make a subsequent signed link eligible for rerender.
+   slot.dataset.livePortraitUrl='';
+   window.parent.postMessage({type:'TV_SHEET_PORTRAIT_RETRY',id:LIVE.charId},location.origin);
+  });
   slot.append(retry);
  });
  trigger.append(img);trigger.addEventListener('click',()=>openPortraitViewer(url,p().name));
@@ -1114,13 +1125,22 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openLayout){openLay
 document.addEventListener('keydown',e=>{if(e.target.id==='gearName'&&e.key==='Enter'){$('gearAdd')?.click();return}if(e.target.id==='walletLabel'&&e.key==='Enter'){$('walletAdd')?.click();return}if(e.target.id==='itemInput'&&e.key==='Enter'){$('addItem').click()}});
 document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();toast('Navigation is visual only in this offline prototype')}));
 
+function applyLivePortraitUpdate(portraitUrl){
+ // Signed links are asynchronous and may be renewed during an existing session.
+ // Updating the in-memory URL alone does not update the actual <img>.
+ if(typeof portraitUrl!=='string')return false;
+ const changed=LIVE.portraitUrl!==portraitUrl;
+ LIVE.portraitUrl=portraitUrl;
+ if(changed&&LIVE.loaded)renderLivePortrait();
+ return changed;
+}
 function loadApprovedCharacter(payload){if(!LIVE.enabled||!payload||!payload.id)return;
  // Compiled parent apps can re-send the approved sheet after each HP write.
  // Ignore same-build echoes rather than overwriting more recent rapid local clicks.
  const buildFingerprint=JSON.stringify([payload.id,payload.className,payload.ancestry,payload.level,payload.maxHp,payload.stats,
   payload.ac,payload.speed,payload.features,payload.featureGroups,payload.subclass,payload.readOnly,payload.survivalHints]);
  if(LIVE.loaded&&LIVE.charId===String(payload.id)&&LIVE.buildFingerprint===buildFingerprint){
-  LIVE.portraitUrl=typeof payload.portraitUrl==='string'?payload.portraitUrl:LIVE.portraitUrl;
+  applyLivePortraitUpdate(payload.portraitUrl);
   LIVE.conditions=Array.isArray(payload.conditions)?payload.conditions:LIVE.conditions;
   return;
  }
