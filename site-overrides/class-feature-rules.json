@@ -486,7 +486,12 @@
         "Storm": "Presence: advantage severe wind/weather; jump +PB ft.\nInvocation: target 60 ft, Dex save; fail = Favour + Wis lightning/thunder + 10-ft push, success half/no push.\nDeep: 30-ft line or 10-ft burst, 2 Favour damage, push 15 ft.\nEmbodiment: choose lightning/thunder resistance; Speed +10; hover 5 ft while moving.\nGreater: fly = Speed during turn; unsupported at end → safely descend up to 60 ft.",
         "Veil": "Presence: advantage detecting illusions/concealment/spiritual disguise; dim light does not disadvantage Perception.\nInvocation: Bonus Action self/ally 30 ft; until next turn attacks from >10 ft have disadvantage.\nDeep: Invisible until next turn; ends on attack/damage/overt spell.\nEmbodiment: see Invisible 10 ft; pass through one creature/turn; opportunity attacks against you disadvantage.\nGreater: see spiritual overlap 30 ft; once/turn teleport 10 ft between dim/obscured spaces.",
         "Memory": "Presence: advantage History/recalling witnessed details; perfect recall while channelled.\nInvocation: Reaction when a creature you can perceive within 30 ft fails an Int/Wis/Cha check/save; add Favour die if it can perceive you and remembered knowledge/identity could help.\nDeep: if success is created, advantage on next related check/save within 1 min.\nEmbodiment: proficiency all Intelligence checks; if already proficient add half PB again; memory cannot be read/altered without save.\nGreater: once/round replace you/ally's Int/Wis/Cha d20 within 30 ft with 10 before modifiers, free.",
-        "Moon": "Presence: darkvision 60 ft or +30 existing; advantage Navigation/Survival at night.\nInvocation: target 60 ft: temp HP Favour + Wis, OR Wis save or disadvantage on next attack before your next turn.\nDeep: affect 2 targets, or one target gets double Favour dice.\nEmbodiment: choose radiant/psychic resistance; dim light 10 ft; Bonus Action teleport 15 ft in dim light PB times per Embodiment.\nGreater: teleport 30 ft and bring one willing adjacent creature."
+        "Moon": "Presence: darkvision 60 ft or +30 existing; advantage Navigation/Survival at night.\nInvocation: target 60 ft: temp HP Favour + Wis, OR Wis save or disadvantage on next attack before your next turn.\nDeep: affect 2 targets, or one target gets double Favour dice.\nEmbodiment: choose radiant/psychic resistance; dim light 10 ft; Bonus Action teleport 15 ft in dim light PB times per Embodiment.\nGreater: teleport 30 ft and bring one willing adjacent creature.",
+        "The Vessel": "\n\nLevel 3 — Open Vessel: Bonus Action deepen channel 1 min, PB uses/recovery. Numerical Presence improves by PB or one Favour die as appropriate; nonnumerical gets advantage on directly supported checks. Once/turn after Invocation gain temp HP = Wis.\n\nLevel 6 — Shared Flesh: while Deepened choose one approved trait: climb/swim/fly during turn; +1 AC; darkvision/blindsight 10 ft; elemental resistance; natural weapon using Favour die.\n\nLevel 10 — Safe Possession: Embodiment costs 1 fewer die, min 1; advantage vs involuntary possession/identity alteration; once/Embodiment turn one failed such save into success.\n\nLevel 14 — Two Voices, One Body: during Embodiment keep second Bond's Presence; once/turn after embodied Invocation, use second Bond's basic Invocation as Bonus Action for 1 Favour.",
+        "The Warden": "\n\nLevel 3 — Warding Sigils: learn Threshold Ward and Anchor Ward in addition to normal Rites. Anchor Ward: Action, creature within 30 ft gains advantage vs possession/forced teleport until next turn. Either Ward used in combat costs 1 Favour die.\n\nLevel 6 — Exorcist's Rebuke: Reaction when a spirit, possessor, curse-manifestation, summoned or incorporeal entity within 30 ft uses a supernatural feature. Spend/roll 1 Favour die to subtract from its attack/save-DC outcome or deal 2× die result force/spirit damage. If subtraction causes failure, push the manifestation 10 ft.\n\nLevel 10 — Circle of Refusal: Action + 2 Favour, 15-ft aura, 1 min. Hostile spirits/summons entering/starting: Wis save; fail = Speed 0 and cannot possess/teleport that turn. Allies advantage vs Charm/Fear/Possession.\n\nLevel 14 — Seal the Unwelcome: once/recovery, qualifying entity 60 ft below half HP or failing your Rite save → Cha save vs Shaman DC; fail = expelled/suppressed 1 min or returned to proper local layer. Does not uninstall gods/bosses.",
+        "The Ancestor Keeper": "\n\nLevel 3 — Keeper of Names: History or Religion proficiency (expertise if already proficient). 10-min rite at grave/relic/community record: ask one question of residual ancestral memory if soul law permits; no soul summoning. Ancestral Counsel: PB times/recovery, add Favour die after an ally's skill/save roll when memory, duty, lineage, craft or survival is relevant.\n\nLevel 6 — Inherited Skill: after recovery, choose one justified ancestral/community/taught skill, tool or weapon tradition; gain proficiency, or expertise if already proficient in the skill. Change after a meaningful ancestral rite.\n\nLevel 10 — Stand Behind Me: Reaction, ally 30 ft takes damage → 1 Favour reduces by die + Wis + half Shaman level; ally advantage on next save before your next turn.\n\nLevel 14 — Procession of the Remembered: once/recovery; 1 min; 20-ft aura. Chosen allies gain +PB to death saves and checks vs fear/charm; once/round add 1 Favour die free to an ally's missed attack/failed save. Uses legitimate ancestral echoes where available, otherwise memory-imprints/resonance, never involuntary soul summoning.",
+        "The Spiritwalker": "\n\nLevel 3 — Between-Step: Bonus Action + 1 Favour teleport 5 × die result ft to visible space; instead pass through one occupied square/5 ft non-warded solid material and emerge adjacent. No Null/Seals.\n\nLevel 6 — Far Hearing: while Channeling, sense bonded spirits/major spirit activity within 1 mile on the same local spiritual layer. 10-min rite: project senses to a known spirit-path location within 1 mile for up to 10 min; body is unaware of its surroundings.\n\nLevel 10 — Escort the Living: Spirit Crossing may bring up to PB willing creatures touching you; each uses its Reaction and arrives adjacent. Spiritual-layer stay lasts at most 10 min; party returns together unless local rules permit otherwise.\n\nLevel 14 — Path Without Road: once/recovery, 1-min rite; travel with up to 8 creatures between known spirit-thresholds within 10 miles. Wards, Null, hostile territory or disconnected cosmology may redirect or prevent travel.",
+        "The Wild Speaker": "Ordinary natural/local spirits and ecologies, not true Primals by default.\n\nLevel 3 — Local Kinship: Nature/Survival proficiency/expertise; communicate simple ideas with Beasts, aware plants and ordinary nature spirits. After 10 min in a new natural region, learn one truthful environmental fact.\n\nLevel 6 — Borrowed Adaptation: while Channeling choose climb Speed; swim + water breathing; darkvision 60 ft; +10 Speed; or one supported environmental damage resistance. 1 Favour gives it to ally for 10 min.\n\nLevel 10 — Land Answers: Action + 2 Favour, 20-ft area, 1 min. Enemy difficult terrain; allies ignore natural difficult terrain + gain half cover from natural features. Once/turn move one ally 10 ft via environment.\n\nLevel 14 — Great Local Pact: after 10-min Petition gain one Regional Boon until leaving region or next recovery: safe-passage signs, weather warning, hidden route, enhanced forage, or +1 AC / +10 Speed in region. Bigger asks remain Petitions."
       },
       "levels": {
         "Spirit Sense": 1,
@@ -520,8 +525,203 @@
         "Binding Circle": 2,
         "Spirit Lantern": 2,
         "Soothe the Possessed": 2,
-        "Road of Safe Return": 13
-      }
+        "Road of Safe Return": 13,
+        "The Vessel": 3,
+        "The Warden": 3,
+        "The Ancestor Keeper": 3,
+        "The Spiritwalker": 3,
+        "The Wild Speaker": 3
+      },
+      "traditions": {
+        "The Vessel": {
+          "intro": "",
+          "tiers": [
+            {
+              "level": 3,
+              "name": "Open Vessel",
+              "description": "Bonus Action deepen channel 1 min, PB uses/recovery. Numerical Presence improves by PB or one Favour die as appropriate; nonnumerical gets advantage on directly supported checks. Once/turn after Invocation gain temp HP = Wis."
+            },
+            {
+              "level": 6,
+              "name": "Shared Flesh",
+              "description": "while Deepened choose one approved trait: climb/swim/fly during turn; +1 AC; darkvision/blindsight 10 ft; elemental resistance; natural weapon using Favour die."
+            },
+            {
+              "level": 10,
+              "name": "Safe Possession",
+              "description": "Embodiment costs 1 fewer die, min 1; advantage vs involuntary possession/identity alteration; once/Embodiment turn one failed such save into success."
+            },
+            {
+              "level": 14,
+              "name": "Two Voices, One Body",
+              "description": "during Embodiment keep second Bond's Presence; once/turn after embodied Invocation, use second Bond's basic Invocation as Bonus Action for 1 Favour."
+            }
+          ]
+        },
+        "The Warden": {
+          "intro": "",
+          "tiers": [
+            {
+              "level": 3,
+              "name": "Warding Sigils",
+              "description": "learn Threshold Ward and Anchor Ward in addition to normal Rites. Anchor Ward: Action, creature within 30 ft gains advantage vs possession/forced teleport until next turn. Either Ward used in combat costs 1 Favour die."
+            },
+            {
+              "level": 6,
+              "name": "Exorcist's Rebuke",
+              "description": "Reaction when a spirit, possessor, curse-manifestation, summoned or incorporeal entity within 30 ft uses a supernatural feature. Spend/roll 1 Favour die to subtract from its attack/save-DC outcome or deal 2× die result force/spirit damage. If subtraction causes failure, push the manifestation 10 ft."
+            },
+            {
+              "level": 10,
+              "name": "Circle of Refusal",
+              "description": "Action + 2 Favour, 15-ft aura, 1 min. Hostile spirits/summons entering/starting: Wis save; fail = Speed 0 and cannot possess/teleport that turn. Allies advantage vs Charm/Fear/Possession."
+            },
+            {
+              "level": 14,
+              "name": "Seal the Unwelcome",
+              "description": "once/recovery, qualifying entity 60 ft below half HP or failing your Rite save → Cha save vs Shaman DC; fail = expelled/suppressed 1 min or returned to proper local layer. Does not uninstall gods/bosses."
+            }
+          ]
+        },
+        "The Ancestor Keeper": {
+          "intro": "",
+          "tiers": [
+            {
+              "level": 3,
+              "name": "Keeper of Names",
+              "description": "History or Religion proficiency (expertise if already proficient). 10-min rite at grave/relic/community record: ask one question of residual ancestral memory if soul law permits; no soul summoning. Ancestral Counsel: PB times/recovery, add Favour die after an ally's skill/save roll when memory, duty, lineage, craft or survival is relevant."
+            },
+            {
+              "level": 6,
+              "name": "Inherited Skill",
+              "description": "after recovery, choose one justified ancestral/community/taught skill, tool or weapon tradition; gain proficiency, or expertise if already proficient in the skill. Change after a meaningful ancestral rite."
+            },
+            {
+              "level": 10,
+              "name": "Stand Behind Me",
+              "description": "Reaction, ally 30 ft takes damage → 1 Favour reduces by die + Wis + half Shaman level; ally advantage on next save before your next turn."
+            },
+            {
+              "level": 14,
+              "name": "Procession of the Remembered",
+              "description": "once/recovery; 1 min; 20-ft aura. Chosen allies gain +PB to death saves and checks vs fear/charm; once/round add 1 Favour die free to an ally's missed attack/failed save. Uses legitimate ancestral echoes where available, otherwise memory-imprints/resonance, never involuntary soul summoning."
+            }
+          ]
+        },
+        "The Spiritwalker": {
+          "intro": "",
+          "tiers": [
+            {
+              "level": 3,
+              "name": "Between-Step",
+              "description": "Bonus Action + 1 Favour teleport 5 × die result ft to visible space; instead pass through one occupied square/5 ft non-warded solid material and emerge adjacent. No Null/Seals."
+            },
+            {
+              "level": 6,
+              "name": "Far Hearing",
+              "description": "while Channeling, sense bonded spirits/major spirit activity within 1 mile on the same local spiritual layer. 10-min rite: project senses to a known spirit-path location within 1 mile for up to 10 min; body is unaware of its surroundings."
+            },
+            {
+              "level": 10,
+              "name": "Escort the Living",
+              "description": "Spirit Crossing may bring up to PB willing creatures touching you; each uses its Reaction and arrives adjacent. Spiritual-layer stay lasts at most 10 min; party returns together unless local rules permit otherwise."
+            },
+            {
+              "level": 14,
+              "name": "Path Without Road",
+              "description": "once/recovery, 1-min rite; travel with up to 8 creatures between known spirit-thresholds within 10 miles. Wards, Null, hostile territory or disconnected cosmology may redirect or prevent travel."
+            }
+          ]
+        },
+        "The Wild Speaker": {
+          "intro": "Ordinary natural/local spirits and ecologies, not true Primals by default.",
+          "tiers": [
+            {
+              "level": 3,
+              "name": "Local Kinship",
+              "description": "Nature/Survival proficiency/expertise; communicate simple ideas with Beasts, aware plants and ordinary nature spirits. After 10 min in a new natural region, learn one truthful environmental fact."
+            },
+            {
+              "level": 6,
+              "name": "Borrowed Adaptation",
+              "description": "while Channeling choose climb Speed; swim + water breathing; darkvision 60 ft; +10 Speed; or one supported environmental damage resistance. 1 Favour gives it to ally for 10 min."
+            },
+            {
+              "level": 10,
+              "name": "Land Answers",
+              "description": "Action + 2 Favour, 20-ft area, 1 min. Enemy difficult terrain; allies ignore natural difficult terrain + gain half cover from natural features. Once/turn move one ally 10 ft via environment."
+            },
+            {
+              "level": 14,
+              "name": "Great Local Pact",
+              "description": "after 10-min Petition gain one Regional Boon until leaving region or next recovery: safe-passage signs, weather warning, hidden route, enhanced forage, or +1 AC / +10 Speed in region. Bigger asks remain Petitions."
+            }
+          ]
+        }
+      },
+      "rites": [
+        {
+          "name": "Read the Trace",
+          "level": 2
+        },
+        {
+          "name": "Invite the Local",
+          "level": 2
+        },
+        {
+          "name": "Threshold Ward",
+          "level": 2
+        },
+        {
+          "name": "Quiet the Haunting",
+          "level": 2
+        },
+        {
+          "name": "Cleanse Spiritual Contamination",
+          "level": 2
+        },
+        {
+          "name": "Prepare the Dead",
+          "level": 2
+        },
+        {
+          "name": "Dream Shelter",
+          "level": 2
+        },
+        {
+          "name": "Omen Casting",
+          "level": 2
+        },
+        {
+          "name": "Binding Circle",
+          "level": 2
+        },
+        {
+          "name": "Spirit Lantern",
+          "level": 2
+        },
+        {
+          "name": "Soothe the Possessed",
+          "level": 2
+        },
+        {
+          "name": "Road of Safe Return",
+          "level": 13
+        }
+      ],
+      "spirits": [
+        "Ember",
+        "River",
+        "Stone",
+        "Hunt",
+        "Hearth",
+        "Grave",
+        "Grove",
+        "Storm",
+        "Veil",
+        "Memory",
+        "Moon"
+      ]
     }
   }
 }
