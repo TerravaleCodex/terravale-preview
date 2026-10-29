@@ -142,6 +142,9 @@ jobs:
       - name: Test Shaman published class rules and level-appropriate feature cards
         shell: bash
         run: node site-overrides/test-shaman-rules.cjs
+      - name: Test signed character portraits and URL renewal
+        shell: bash
+        run: node site-overrides/test-portrait-refresh.cjs
       - name: Test dynamic HP bar colours
         shell: bash
         run: node site-overrides/test-health-colors.cjs
