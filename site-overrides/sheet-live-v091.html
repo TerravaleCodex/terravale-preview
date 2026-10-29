@@ -687,7 +687,7 @@ function featureRuleCard(name){
  const kind=liveFeatureKind(name),tradition=kind==='tradition'?visibleTraditionAbilities(name):null;
  const raw=LIVE.featureDescriptions[name]||'',level=LIVE.featureLevels[name],hasRules=raw.trim().length>0;
  const cleaned=raw.replace(/[#*]/g,'').replace(/\s+/g,' ').trim();
- const escapedName=name.replace(/[^a-z0-9 ]/gi,'\$&');
+ const escapedName=name.replace(/[^a-z0-9 ]/gi,'\\$&');
  const repeated=new RegExp('^'+escapedName+'\\s*[—–-]\\s*','i');
  const concise=cleaned.replace(repeated,'');
  const leading=tradition?.tiers?.length?tradition.tiers[tradition.tiers.length-1]:null;
