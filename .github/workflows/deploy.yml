@@ -132,6 +132,9 @@ jobs:
           pathlib.Path('/tmp/terravale-room-v2.js').write_text(scripts[0])
           PY
           node --check /tmp/terravale-room-v2.js
+      - name: Test Shaman published class rules and level-appropriate feature cards
+        shell: bash
+        run: node site-overrides/test-shaman-rules.cjs
       - name: Check live sheet JavaScript syntax
         shell: bash
         run: |
