@@ -87,7 +87,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><a class="btn small" href="./encounter-library/">Encounter Library ↗</a><button class="btn small" id="live-roster-button" type="button">Use Live Roster</button><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose your campaign" hidden></select><span id="live-roster-status" class="meta live-roster-status" role="status">Sample characters · not signed in</span><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
 <div class="preview"><div><strong>Independent design test.</strong> Sample combatants, simulated rolls and local-only chat. Nothing here changes your live campaign, characters or existing Session Room.</div><div id="mode-label">DM preview</div></div>
 <section class="panel initiative" aria-label="Initiative order">
- <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="initiative-manager-open" type="button">Manage initiative</button><button class="btn small" id="initiative-clear" type="button">Clear queue</button><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
+ <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="existing-character-open" type="button">＋ Existing character</button><button class="btn small" id="initiative-manager-open" type="button">Manage initiative</button><button class="btn small" id="initiative-clear" type="button">Clear queue</button><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
 </section>
 <section class="panel active" id="active-combatant" aria-label="Active combatant, full width"></section>
@@ -119,6 +119,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <div class="foot">Terravale Codex · Session Room V2 design workshop · No production data connections</div>
 </main>
 </div></div>
+<dialog class="modal existing-character-dialog" id="existing-character-modal" aria-labelledby="existing-character-title"><div class="modal-top"><h2 id="existing-character-title">Add Existing Character</h2><button class="btn small" type="button" data-close="existing-character-modal" aria-label="Close existing character picker">✕</button></div><div class="modal-body"><p class="initiative-notice" id="existing-character-context">Choose an approved character to join this encounter. This does not change the campaign roster.</p><div class="existing-character-list" id="existing-character-list"></div><p id="existing-character-feedback" class="subtle" role="status"></p><div class="modal-actions"><button class="btn" type="button" data-close="existing-character-modal">Cancel</button><button class="btn" id="existing-character-add" type="button">Add selected to queue</button><button class="btn primary" id="existing-character-roll" type="button">⚄ Roll &amp; add selected</button></div></div></dialog>
 <dialog class="modal initiative-dialog" id="initiative-modal" aria-labelledby="initiative-modal-title">
  <div class="modal-top"><h2 id="initiative-modal-title">Initiative Setup</h2><button class="btn small" type="button" data-close="initiative-modal" aria-label="Close initiative setup">✕</button></div>
  <div class="modal-body">
@@ -270,6 +271,7 @@ conditions+'</button>';
 $("next-turn").disabled=!state.dm||!state.queue.length;
 $("add-actor").disabled=!state.dm;
 $("initiative-manager-open").hidden=!state.dm;
+$("existing-character-open").hidden=!state.dm;
 $("initiative-clear").hidden=!state.dm;
 $("initiative-clear").disabled=!state.queue.length;
 const own=actor(state.own);
@@ -585,6 +587,59 @@ function rollInitiativeFor(ids,asPlayer=false){
  }
  if($("initiative-modal").open)renderInitiativeRoster();
 }
+/* Standalone V2 picker: new campaign records may join the local queue
+ * without being inserted into the production party_room_roster table. */
+let existingCandidates=new Map();
+function existingCandidateView(record){
+ const item=state.actors.find(a=>a.id===record.id)||record;
+ const queued=state.queue.includes(record.id);
+ return '<label class="existing-character-row '+(queued?'already-queued':'')+'">'+
+ '<input type="checkbox" data-existing-id="'+esc(record.id)+'" '+(queued?'disabled':'')+'>'+
+ portrait(item)+
+ '<span class="existing-character-desc"><strong>'+esc(item.name)+'</strong><small>'+esc(item.subtitle||"Player character")+'</small></span>'+
+ '<span class="existing-character-state">'+(queued?'Already in queue':'Available')+'</span></label>';
+}
+function openExistingPicker(records,context){
+ if(!state.dm)return;
+ const safe=(Array.isArray(records)?records:[]).filter(x=>x&&x.type==="Player"&&typeof x.id==="string");
+ existingCandidates=new Map(safe.map(x=>[x.id,x]));
+ $("existing-character-context").textContent=context||"Choose approved characters to add. Their character sheets and party roster will not be changed.";
+ $("existing-character-list").innerHTML=safe.length?safe.map(existingCandidateView).join(""):'<p class="subtle">No approved characters were found in this campaign.</p>';
+ $("existing-character-feedback").textContent=safe.length?safe.filter(x=>!state.queue.includes(x.id)).length+" characters available":"Nothing to add";
+ $("existing-character-modal").showModal();
+}
+function addExistingSelected(shouldRoll){
+ if(!state.dm)return;
+ const checked=Array.from($("existing-character-list").querySelectorAll('input[data-existing-id]:checked'));
+ const selected=checked.map(x=>existingCandidates.get(x.dataset.existingId)).filter(Boolean);
+ if(!selected.length){
+  $("existing-character-feedback").textContent="Choose at least one available character.";
+  return;
+ }
+ const added=[];
+ for(const incoming of selected){
+   if(!state.actors.some(x=>x.id===incoming.id))state.actors.push(incoming);
+   if(!state.queue.includes(incoming.id)){
+     putInQueue(incoming.id);
+     added.push(incoming.id);
+   }
+ }
+ if(shouldRoll&&added.length)rollInitiativeFor(added);
+ else{save();render();}
+ $("existing-character-modal").close();
+}
+function openExistingCharacters(){
+ if(!state.dm)return;
+ if(liveMode){
+  const loader=window.TerravaleV2LiveCharacters;
+  if(loader&&typeof loader.openPicker==="function"){
+   void loader.openPicker();
+  }else alert("Live campaign character lookup is not ready. Reload the preview and try again.");
+  return;
+ }
+ openExistingPicker(state.actors.filter(a=>a.type==="Player"),"Demo characters available in this local preview. Choose one or more to add to initiative.");
+}
+
 function initiativeRow(id){
  const a=actor(id);
  if(!a)return "";
@@ -754,6 +809,9 @@ if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("a
 if(action==="inspect"){alert("This is a standalone layout preview. The real character sheet link will be connected during integration.");}
 });
 $("next-turn").addEventListener("click",next);
+$("existing-character-open").addEventListener("click",openExistingCharacters);
+$("existing-character-add").addEventListener("click",()=>addExistingSelected(false));
+$("existing-character-roll").addEventListener("click",()=>addExistingSelected(true));
 $("initiative-manager-open").addEventListener("click",showInitiativeManager);
 $("initiative-clear").addEventListener("click",clearInitiative);
 $("initiative-clear-modal").addEventListener("click",clearInitiative);
@@ -930,6 +988,7 @@ if(!state.exampleFullAdded){
 }
 /* Authorized live roster data remains transient and never reaches localStorage. */
 window.TerravaleRoomPreview=Object.freeze({
+  openExistingPicker(records,context){openExistingPicker(records,context);},
   useRoster({actors,ownId,isDm,campaignName}){
     if(!Array.isArray(actors)||!actors.length)throw Error("No authorized roster entries");
     if(!liveMode)demoSnapshot=state;
