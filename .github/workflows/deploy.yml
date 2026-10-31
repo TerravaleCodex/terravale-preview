@@ -138,6 +138,7 @@ jobs:
         run: |
           mkdir -p site/session-room-v2
           cp site-overrides/session-room-v2.html site/session-room-v2/index.html
+          cp site-overrides/session-room-v2-redirect.js site/session-room-v2/session-room-v2-redirect.js
           cp site-overrides/session-room-v2-live-roster.js site/session-room-v2/session-room-v2-live-roster.js
           cp site-overrides/session-room-v2-fidelity.css site/session-room-v2/session-room-v2-fidelity.css
           cp site-overrides/session-room-v2-wireframe.css site/session-room-v2/session-room-v2-wireframe.css
@@ -150,6 +151,7 @@ jobs:
           mkdir -p site/session-room-v2/encounter-library
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-redirect.js
           test -s site/session-room-v2/session-room-v2-live-roster.js
           grep -q 'live-roster-button' site/session-room-v2/index.html
           grep -q 'Initiative Queue' site/session-room-v2/index.html
