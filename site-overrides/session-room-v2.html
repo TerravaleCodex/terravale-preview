@@ -291,8 +291,8 @@ let stateType=a.type==="Player"?"Player character":a.statBlock?"Saved stat block
 $("active-combatant").innerHTML=
 '<div class="active-bar-head"><span class="micro">CURRENT TURN · ROUND '+state.round+'</span><span class="meta">'+esc(stateType)+' · Initiative '+a.init+'</span></div>'+
 '<div class="combatant-overview">'+
-'<div class="combatant-portrait">'+portrait(a)+'<div class="combatant-name">'+esc(a.name)+'</div><div class="combatant-sub">'+esc(a.subtitle)+'</div></div>'+
-'<div class="combatant-dashboard">'+activeDetails(a)+
+'<div class="combatant-portrait">'+portrait(a)+'</div>'+
+'<div class="combatant-dashboard"><div class="combatant-identity"><div><h3 class="combatant-name">'+esc(a.name)+'</h3><div class="combatant-sub">'+esc(a.subtitle)+' · '+esc(a.type)+'</div></div><div class="combatant-marker">'+(a.type==="Player"?"Player character":a.statBlock?"Saved stat block":"Quick encounter")+'</div></div>'+activeDetails(a)+
 '<div class="combatant-bottom"><div class="combatant-hp"><div class="subheading">Hit Points</div>'+hpContent+hpbuttons+'</div><div class="combatant-condition"><div class="subheading">Conditions <span class="meta">hover for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+condEdit+'</div></div></div>'+
 '<div class="combatant-controls">'+hideHP+(state.dm?'<button class="btn primary end-turn-large" data-action="next">End Turn →</button>':'<div class="muted">The DM advances the turn.</div>')+'</div>'+
 '</div>';
