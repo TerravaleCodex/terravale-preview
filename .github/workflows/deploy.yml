@@ -130,7 +130,7 @@ jobs:
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
           grep -q 'Initiative Queue' site/session-room-v2/index.html
-          grep -q 'Character-specific quick checks' site/session-room-v2/index.html
+          grep -q 'Character Quick Checks' site/session-room-v2/index.html
           test -s site/session-room-v2/session-room-v2-fidelity.css
           grep -q 'my-character-content' site/session-room-v2/index.html
           grep -q 'combatant-overview' site/session-room-v2/index.html
