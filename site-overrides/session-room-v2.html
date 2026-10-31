@@ -360,14 +360,19 @@ $("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div cl
 '<div class="own-sheet-body">'+ownTabContents(a,tab)+'</div>'+
 '<div class="own-footer"><span>Sample values · not linked to live sheets</span><button class="btn small" data-action="inspect">Full sheet ↗</button></div>';
 }
+let lastRenderedChatTab=null;
 function feedRender(){
+let el=$("feed");
+const previousTop=el.scrollTop;
+const distanceFromBottom=el.scrollHeight-el.clientHeight-previousTop;
+const followLatest=lastRenderedChatTab!==state.tab||distanceFromBottom<=80;
 let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.tab==="messages"?state.messages.filter(m=>m.kind==="text"):state.messages;
 for(let [id,key] of [["tab-chat","chat"],["tab-messages","messages"],["tab-rolls","rolls"]]){
 $(id).classList.toggle("current",state.tab===key);$(id).setAttribute("aria-pressed",String(state.tab===key));
 }
-let el=$("feed");
 el.innerHTML=list.length?list.slice(-120).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle roll-label">'+esc(m.label)+'</div><div class="roll-number"><strong class="roll-total">'+m.total+'</strong><span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">Nothing in this channel yet.</div>';
-el.scrollTop=el.scrollHeight;
+if(followLatest)el.scrollTop=el.scrollHeight;else el.scrollTop=previousTop;
+lastRenderedChatTab=state.tab;
 }
 function bonusFor(a,kind,key){
 let data=previewScores(a),ability=abilities.find(x=>x.code===key||x.skills.includes(key));
