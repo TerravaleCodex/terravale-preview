@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Room — Terravale Codex</title>
+<style>
+:root{color-scheme:dark;--bg:#08090c;--panel:#0e1117;--panel2:#11151d;--line:#252a35;--line2:#383044;--ink:#e4e5eb;--muted:#8d91a1;--purple:#b58aeb;--purple2:#7e5cae;--green:#7fc7a3;--red:#eb8b90;--gold:#d7b77b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--purple);outline-offset:2px}a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:176px minmax(0,1fr);min-height:100vh}.side{border-right:1px solid #1f2430;background:#07090c;display:flex;flex-direction:column;min-width:0;position:sticky;top:0;height:100vh}.brand{padding:20px 18px 24px;border-bottom:1px solid #171a22;display:flex;gap:10px;align-items:center}.brand-star{font-size:24px;color:#f0f2f9}.brand strong{font:600 15px Georgia,serif;letter-spacing:1.1px}.brand small{display:block;letter-spacing:1.5px;font-size:8px;color:#9a9cac}.nav-head,.micro{color:#8c91a1;font-size:10px;font-weight:750;letter-spacing:1.5px;text-transform:uppercase}.nav-head{padding:22px 17px 10px}.menu{display:grid;gap:4px;padding:0 9px}.menu a{padding:10px 11px;border-radius:6px;color:#aaaeb9;display:flex;align-items:center;gap:10px}.menu a:hover{background:#151923;color:#fff}.menu a.active{border:1px solid #48365e;background:#1b1726;color:#f3e7ff}.nav-ic{display:inline-grid;place-items:center;width:17px;font-size:15px}.campaign{margin-top:auto;padding:16px 12px 18px;border-top:1px solid #252a35}.campaign select{width:100%;margin-top:8px;padding:10px;background:#101319;color:#eee;border:1px solid #333745;border-radius:6px}
+.main{min-width:0}.topbar{height:43px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid #222731;background:#090b10;position:sticky;top:0;z-index:30}.breadcrumbs{font-size:12px;color:#b2b5be}.topright{display:flex;align-items:center;gap:9px}.tiny{font-size:11px;color:#9ba0ac}.cloud{border:1px solid #2f765c;color:#83dbb4;border-radius:14px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:1px}
+main{padding:23px 24px 30px;max-width:1900px;margin:auto}.head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}.head h1{font:normal 34px/1 Georgia,serif;margin:0 0 8px}.subtitle{color:#a3a7b4;font-size:12px}.head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #3b404e;border-radius:6px;background:#141821;padding:9px 13px;min-height:34px}.btn:hover{border-color:#75618f;background:#1b1d28}.btn.primary{background:#604389;border-color:#8461b5;color:white}.btn.primary:hover{background:#73509f}.btn.danger{border-color:#663c47;color:#ffb9c0;background:#26171b}.btn.small{padding:5px 9px;min-height:29px}.btn.ghost{background:transparent;border-color:#303440}.btn.is-on{border-color:#9473bf;color:#d7bdfc;background:#241d30}
+.preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border:1px solid #4b3b50;background:#17121d;border-radius:8px;margin-bottom:14px;color:#ddc9ed;font-size:12px}.preview strong{color:#f2e4ff}
+.panel{border:1px solid #242a35;background:linear-gradient(180deg,#10131a,#0c0f15);border-radius:9px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid #252a35;min-height:45px}.panel-head h2{font:normal 16px Georgia,serif;margin:0}.meta{color:#888d9b;font-size:11px}.status{color:#7dceaa;font-weight:700}.initiative{padding:13px 13px 14px;margin-bottom:12px}.section-top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:11px}.section-top h2{font:normal 17px Georgia,serif;margin:0}.section-top span{color:#a7a7b5;font-size:12px}.controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.track{display:flex;gap:10px;overflow-x:auto;padding:3px 2px 6px;scrollbar-color:#4f435e transparent;scrollbar-width:thin}.actor{border:1px solid #2f3440;background:#11141b;border-radius:8px;padding:10px;flex:1 0 134px;min-width:134px;max-width:185px;min-height:172px;text-align:left;position:relative;transition:background .15s,border .15s}.actor.front{border-color:#a97cdd;background:#211a2c;box-shadow:inset 0 0 0 1px #4a2e68}.actor .tag{font-size:10px;color:#aa99c4;letter-spacing:1.1px;text-transform:uppercase;height:16px}.actor .portrait{width:43px;height:43px;margin:4px 0 8px;border-radius:7px}.portrait{display:inline-grid;place-items:center;border:1px solid #594d6d;background:linear-gradient(135deg,#473956,#171622);font:600 18px Georgia,serif;color:#eee4fa;flex:none}.portrait.npc{border-color:#715744;background:linear-gradient(135deg,#443527,#171311);color:#eed3b6}.actor .initiative-num{position:absolute;right:9px;top:11px;font-weight:750;border:1px solid #353540;border-radius:5px;padding:2px 6px;font-size:13px}.actor .name{font-weight:750;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.actor .type{font-size:10px;color:#969bab;min-height:16px}.hp-track{height:6px;border-radius:20px;background:#29303b;overflow:hidden;margin:8px 0 4px}.hp-track i{display:block;height:100%;border-radius:20px;background:#6cbf99}.hp-track i.low{background:#da837f}.hp-text{color:#a9b3be;font-size:11px}.conditions{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px;min-height:22px}.pill{border-radius:5px;padding:2px 6px;border:1px solid #56466d;background:#272034;color:#d9c6ec;font-size:10px;cursor:help}.pill.harm{border-color:#80474e;background:#2a1b22;color:#ffc0c6}.pill.none{border-color:#293540;color:#9199a6;background:transparent}.turn-arrow{color:#caa2f9;font-size:10px;margin:4px 0 0;font-weight:800}
+.active{padding:14px 17px;margin-bottom:13px;border-color:#47315f;background:linear-gradient(100deg,#1d1726 0%,#0f1219 65%)}.active-flex{display:grid;grid-template-columns:180px minmax(0,1fr) auto;gap:18px;align-items:center}.active-person{display:flex;align-items:center;gap:12px}.active-person .portrait{width:56px;height:62px;font-size:26px}.active-person h3{margin:2px 0 2px;font:normal 21px Georgia,serif}.active-person p{font-size:11px;color:#afb1bf;margin:0}.active-stats{display:grid;grid-template-columns:minmax(175px,1fr) minmax(175px,1.25fr);gap:18px}.subheading{font-size:11px;color:#a8acb9;font-weight:700;margin-bottom:7px}.hprow{display:flex;align-items:center;gap:8px}.hpbar{height:11px;border-radius:9px;background:#2b313e;overflow:hidden;flex:1;min-width:50px}.hpbar i{display:block;background:#70c4a2;height:100%;border-radius:9px}.hpbar i.low{background:#d78187}.number{font-size:12px;font-weight:700;white-space:nowrap}.hpbuttons{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.active-commands{display:flex;align-items:center;flex-direction:column;gap:6px;justify-content:center}.active-commands .btn{min-width:113px}
+.details{margin-top:12px;border-top:1px solid #312b3a;padding-top:10px;color:#a9a9b6;font-size:11px;display:flex;gap:20px;justify-content:space-between;flex-wrap:wrap}
+.room{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,1fr);gap:12px;min-height:470px}.chat{display:flex;flex-direction:column;min-height:470px;height:min(570px,calc(100vh - 385px));height:max(470px,min(570px,calc(100vh - 385px)))}.tabs{display:flex;gap:1px}.tab{padding:10px 12px;border:0;background:transparent;border-bottom:2px solid transparent;color:#999da8}.tab.current{border-color:#b58aeb;background:#211a2b;color:#eadbfc}.feed{padding:13px 14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:9px;scrollbar-color:#4f455c transparent}.msg{display:flex;gap:9px;align-items:flex-start;padding:5px 0}.msg-avatar{width:29px;height:29px;border-radius:7px;background:#272034;color:#d4c2e8;display:grid;place-items:center;flex:none;font-weight:800;border:1px solid #5b4576}.msg-body{min-width:0;flex:1}.msg-top{display:flex;gap:9px;align-items:baseline}.msg-top b{color:#d4c3ee;font-size:11px}.msg time{font-size:10px;color:#737d8c}.msg p{margin:4px 0;color:#c9cbd4;white-space:pre-wrap;overflow-wrap:anywhere}.msg.roll{padding:10px;border:1px solid #423352;background:#1c1723;border-radius:8px}.roll-total{font-size:21px;color:#ebd0ff;font-weight:700}.chat-compose{padding:10px;border-top:1px solid #282b35;display:flex;gap:8px}.chat-compose input,.field{background:#080b11;border:1px solid #313541;border-radius:6px;color:#f3f3fa;padding:10px;width:100%;min-width:0}.chat-compose input:focus,.field:focus{outline:1px solid #926cbd}.right{display:flex;flex-direction:column;gap:12px}.dicebox{flex:1}.inner{padding:13px}.dice-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:15px}.die{border:1px solid #353347;background:#151520;border-radius:8px;min-width:0;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:3px}.die:hover{border-color:#a681d7}.die-icon{font-size:18px;color:#cba6ff}.die small{color:#bcbfc7}.roll-row{display:grid;grid-template-columns:minmax(0,1fr) 67px auto;gap:7px}.roll-row .field{text-align:center}.check-title{display:flex;align-items:center;justify-content:space-between;gap:9px}.check-title h3{font-size:12px;margin:0}.check-title select{max-width:180px}.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}.check{border:1px solid #323644;border-radius:6px;background:#151922;padding:9px 6px;min-height:36px;text-align:left;font-size:11px;display:flex;justify-content:space-between;gap:4px}.check:hover{border-color:#8565af;background:#201b2b}.check strong{color:#dbbafe;white-space:nowrap}
+details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cursor:pointer;color:#d6d1dc;font-weight:700;font-size:12px;user-select:none}summary:hover{color:#e3c9fa}.subtle{font-size:11px;color:#89909e;margin:8px 0}.tip{position:relative;cursor:help}.tip:hover:after,.tip:focus-visible:after{content:attr(data-tip);position:absolute;z-index:60;left:0;top:calc(100% + 9px);width:240px;max-width:70vw;background:#231d2d;border:1px solid #8061a2;color:#f1e4ff;padding:10px;border-radius:7px;font-size:11px;font-weight:400;line-height:1.45;white-space:normal;box-shadow:0 12px 25px #0009;pointer-events:none}.cond-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}.cond-label{display:flex;align-items:center;gap:9px;border:1px solid #313542;padding:8px;border-radius:6px;font-size:11px}.cond-label input{accent-color:#b58aeb}.modal{border:1px solid #6f588c;border-radius:10px;padding:0;background:#0f1218;color:#e9e9ef;max-width:min(480px,calc(100vw - 30px));width:100%;box-shadow:0 22px 90px #000}.modal::backdrop{background:#000b}.modal-top{padding:17px;border-bottom:1px solid #303343;display:flex;justify-content:space-between;align-items:center}.modal h2{font:normal 19px Georgia,serif;margin:0}.modal-body{padding:18px}.field-label{display:block;font-weight:700;color:#b5b4c0;font-size:11px;margin:12px 0 5px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkboxline{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:12px}input[type=checkbox]{accent-color:#a47aca}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.empty{color:#969aaa;font-size:12px;padding:18px}.foot{margin-top:13px;text-align:right;color:#777c89;font-size:10px}
+@media(max-width:1270px){.app{grid-template-columns:132px minmax(0,1fr)}.brand{padding:15px 9px}.brand strong{font-size:11px}.menu a{font-size:11px;padding:9px 5px}.nav-ic{width:11px}.active-flex{grid-template-columns:155px 1fr}.active-commands{grid-column:1/-1;flex-direction:row}.room{grid-template-columns:1.2fr 1fr}main{padding:18px 15px}}
+@media(max-width:950px){.app{grid-template-columns:56px minmax(0,1fr)}.brand{padding:14px 8px;justify-content:center}.brand .brand-text,.side .nav-head,.menu a .nav-label,.campaign{display:none}.menu a{justify-content:center}.nav-ic{font-size:18px}.active-flex{grid-template-columns:1fr}.active-stats{grid-template-columns:1fr 1fr}.room{grid-template-columns:1fr}.chat{height:470px}.right{display:grid;grid-template-columns:1fr 1fr}.head h1{font-size:27px}}
+@media(max-width:660px){.topbar{padding:0 8px}.topright .tiny{display:none}main{padding:13px 9px}.head{align-items:start;flex-direction:column}.head-actions{justify-content:flex-start}.preview{align-items:flex-start;flex-direction:column}.active-stats{grid-template-columns:1fr}.right{display:flex}.section-top{align-items:start;flex-direction:column}.actor{flex-basis:130px}.roll-row{grid-template-columns:1fr 65px auto}.checks{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="stylesheet" href="./session-room-v2-fidelity.css">
+<link rel="stylesheet" href="./session-room-v2-wireframe.css">
+<link rel="stylesheet" href="./session-room-v2-encounters.css">
+<link rel="stylesheet" href="./session-room-v2-sheet-style.css">
+<link rel="stylesheet" href="./session-room-v2-bottom.css?v=20261031-scroll-fix-2">
+<link rel="stylesheet" href="./session-room-v2-codex.css?v=20261031-style-unification-1">
+<link rel="stylesheet" href="./session-room-v2-portrait-cards.css?v=20261031-tall-cards">
+<link rel="stylesheet" href="./session-room-v2-initiative.css?v=20261031-initiative-controls">
+<style id="fixed-chat-scroll-guard">
+/* V2 critical height constraints: content must never determine chat panel height. */
+#workspace-grid{min-height:0}
+#workspace-grid>.chat{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#workspace-grid>.chat>.panel-head{flex:0 0 auto}
+#workspace-grid>.chat>#feed{
+  display:flex;flex-direction:column;flex:1 1 0%;
+  height:0;min-height:0;max-height:100%;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+}
+#workspace-grid>.chat>#feed>.msg{flex:0 0 auto}
+#workspace-grid>.chat>.chat-compose{flex:0 0 auto}
+@media(min-width:1061px){
+  #workspace-grid{height:clamp(610px,72dvh,760px)!important;max-height:clamp(610px,72dvh,760px)!important;min-height:clamp(610px,72dvh,760px)!important;flex:0 0 clamp(610px,72dvh,760px)!important;grid-template-rows:minmax(0,1fr)!important}
+  #workspace-grid>.chat,#workspace-grid>.dicebox,#workspace-grid>.mine{height:100%!important;max-height:100%!important;min-height:0!important}
+}
+@media(min-width:731px) and (max-width:1060px){
+  #workspace-grid>.chat{height:520px!important;max-height:520px!important;min-height:0!important}
+}
+@media(max-width:730px){
+  #workspace-grid>.chat{height:430px!important;max-height:430px!important;min-height:0!important;flex:0 0 430px!important}
+}
+</style>
+<link rel="stylesheet" href="./session-room-live.css"></head>
+<body data-room-production="1">
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="brand-star">✧</span><span class="brand-text"><strong>TERRAVALE</strong><small>THE LIVING CODEX</small></span></div>
+  <div class="nav-head">Navigation</div>
+  <nav class="menu" aria-label="Site navigation">
+    <a href="../"><span class="nav-ic">◇</span><span class="nav-label">Dashboard</span></a>
+    <a href="../campaigns/"><span class="nav-ic">♧</span><span class="nav-label">Campaigns</span></a>
+    <a href="../characters/"><span class="nav-ic">♙</span><span class="nav-label">Characters</span></a>
+    <a href="../characters/create/"><span class="nav-ic">＋</span><span class="nav-label">Create Character</span></a>
+    <a href="../session-room/" class="active"><span class="nav-ic">⚔</span><span class="nav-label">Session Room V2</span></a>
+    <a href="../classes/"><span class="nav-ic">⚒</span><span class="nav-label">Classes</span></a>
+    <a href="../ancestries/"><span class="nav-ic">⌛</span><span class="nav-label">Ancestries & Feats</span></a>
+    <a href="../journal/"><span class="nav-ic">✎</span><span class="nav-label">Journal</span></a>
+    <a href="../dm/"><span class="nav-ic">✦</span><span class="nav-label">DM Chronicle</span></a>
+    <a href="../appearance/"><span class="nav-ic">✧</span><span class="nav-label">Appearance</span></a>
+  </nav>
+  <div class="campaign"><div class="micro">Campaign</div><select aria-label="Campaign"><option>Shady Test (preview)</option></select><p class="tiny">Local design preview</p></div>
+</aside>
+<div class="main">
+<header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp;</div><div class="topright"><label class="codex-theme-control" for="codex-theme-select">Theme <select id="codex-theme-select" aria-label="Website and character-sheet theme">
+<option value="dark">Old Faithful</option>
+<option value="night-sky">Stargazer's Delusion</option>
+<option value="shotxo">Guildie</option>
+<option value="shady">Shady's Bone Zone</option>
+<option value="absolute-zero">Void.exe</option>
+<option value="sanguine">Blood Money</option>
+<option value="verdant">Moss Boss</option>
+<option value="dragonforge">Forged &amp; Furious</option>
+<option value="astral">Starstruck</option>
+<option value="null-meridian">404: Magic Not Found</option>
+</select></label><span class="cloud">LIVE</span></div></header>
+<main>
+<section class="head"><div><h1>Session Room</h1><div class="subtitle" id="live-campaign-caption">Loading approved campaign characters…</div></div><div class="head-actions"><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose campaign"></select><span id="live-roster-status" class="meta live-roster-status">Connecting…</span><button id="view-mode" hidden disabled>Debug view</button><button id="live-roster-button" hidden disabled>Roster</button><button id="reset" hidden disabled>Reset</button></div></section>
+<div class="preview"><div><strong>Live campaign session.</strong> Shared chat, rolls and initiative. Encounter management is in the DM Desk.</div><div id="mode-label">Authenticating…</div></div>
+<section class="panel initiative" aria-label="Initiative order">
+ <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><div id="initiative-dm-controls" hidden><button id="existing-character-open">Add existing character</button><button id="initiative-manager-open">Manage initiative</button><button id="initiative-clear">Clear queue</button><button id="add-actor">Add combatant</button><button id="next-turn">Advance turn</button></div></div></div>
+ <div class="track" id="queue" aria-live="polite"></div>
+</section>
+<section class="panel active" id="active-combatant" aria-label="Active combatant, full width"></section>
+<section class="room" id="workspace-grid" aria-label="Session workspace">
+ <section class="panel chat" aria-label="Party chat">
+  <div class="panel-head chat-head"><div class="chat-heading"><h2>Party Chat</h2><span class="meta">Live campaign</span></div><div class="chat-filters"><button class="tab current" id="tab-chat" type="button">All</button><button class="tab" id="tab-messages" type="button">Messages</button><button class="tab" id="tab-rolls" type="button">Rolls</button></div></div>
+  <div class="feed" id="feed" role="log" aria-label="Chat messages" aria-live="polite"></div>
+  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message or /roll 1d20+5…" autocomplete="off"><button class="btn primary" type="submit">Send ➤</button></form>
+ </section>
+ <div class="room-resizer" id="resize-chat" role="separator" tabindex="0" aria-label="Resize chat and dice panels" aria-orientation="vertical" title="Drag to resize, or use arrow keys"><span></span></div>
+ <section class="panel dicebox" aria-label="Dice roller and character checks">
+   <div class="panel-head dice-head"><div><h2>Dice & Checks</h2><span class="meta">Rolls from approved character scores</span></div><span class="dice-hint">⚄</span></div>
+   <div class="inner dice-main">
+     <div class="subheading">Quick Dice</div><div class="dice-grid" id="dice-grid"></div>
+     <div class="subheading">Custom Roll</div>
+     <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Additional roll modifier"><button class="btn primary" type="submit">Roll</button></form>
+     <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
+     <div class="check-shell"><div class="check-heading"><h3>Character Quick Checks</h3><span class="meta">Click to roll</span></div><div class="check-title"><label for="roller" class="subtle">Rolling as</label><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></div>
+     <details id="dice-help"><summary>Roll notation & privacy</summary><p class="subtle">Examples: 1d20, 2d6+3 or /roll 1d20+5. All rolls are local demo results, not secure hidden rolls.</p></details>
+   </div>
+ </section>
+ <div class="room-resizer" id="resize-character" role="separator" tabindex="0" aria-label="Resize dice and character panels" aria-orientation="vertical" title="Drag to resize, or use arrow keys"><span></span></div>
+ <section class="panel mine" aria-label="My character and DM tools">
+  <div class="panel-head mine-head"><div><h2 id="right-heading">My Character</h2><span class="meta" id="right-subheading">Personal sheet</span></div><div class="panel-switch" id="panel-switch"></div></div>
+  <div id="my-character-content"></div>
+ </section>
+</section>
+<div id="session-tools" hidden></div>
+<div class="foot">Terravale Codex · Shared campaign Session Room</div>
+</main>
+</div></div>
+<dialog class="modal existing-character-dialog" id="existing-character-modal" aria-labelledby="existing-character-title"><div class="modal-top"><h2 id="existing-character-title">Add Existing Character</h2><button class="btn small" type="button" data-close="existing-character-modal" aria-label="Close existing character picker">✕</button></div><div class="modal-body"><p class="initiative-notice" id="existing-character-context">Choose an approved character to join this encounter. This does not delete or change its sheet.</p><div class="existing-character-list" id="existing-character-list"></div><p id="existing-character-feedback" class="subtle" role="status"></p><div class="modal-actions"><button class="btn" type="button" data-close="existing-character-modal">Cancel</button><button class="btn" id="existing-character-add" type="button">Add selected to queue</button><button class="btn primary" id="existing-character-roll" type="button">⚄ Roll &amp; add selected</button></div></div></dialog>
+<dialog class="modal initiative-dialog" id="initiative-modal" aria-labelledby="initiative-modal-title">
+ <div class="modal-top"><h2 id="initiative-modal-title">Initiative Setup</h2><button class="btn small" type="button" data-close="initiative-modal" aria-label="Close initiative setup">✕</button></div>
+ <div class="modal-body">
+   <p class="initiative-notice">Manage the shared initiative queue. Removing a character does not delete it.</p>
+   <div class="initiative-tools">
+     <button class="btn small" type="button" id="initiative-select-players">Select players</button>
+     <button class="btn small" type="button" id="initiative-select-all">Select everyone</button>
+     <button class="btn small" type="button" id="initiative-select-none">Deselect all</button>
+   </div>
+   <div class="initiative-columns"><span>Combatant</span><span>Modifier</span><span>Result</span><span>Queue</span></div>
+   <div id="initiative-roster-list" class="initiative-roster-list"></div>
+   <div class="initiative-notice">Default initiative is d20 + Dexterity modifier where known. Adjust the modifier for class features, equipment, or other bonuses. You can also set a result manually.</div>
+   <div class="modal-actions initiative-modal-actions">
+     <button class="btn small" id="initiative-remove-selected" type="button">Remove selected</button>
+     <button class="btn small" id="initiative-queue-selected" type="button">Queue selected</button>
+     <button class="btn small" id="initiative-clear-modal" type="button">Clear queue</button>
+     <button class="btn primary" id="initiative-roll-selected" type="button">⚄ Roll selected &amp; sort</button>
+   </div>
+ </div>
+</dialog>
+<dialog class="modal" id="add-modal">
+ <form method="dialog" id="add-form">
+ <div class="modal-top"><h2>Add to Initiative</h2><button type="button" class="btn small" data-close="add-modal" aria-label="Close">✕</button></div>
+ <div class="modal-body"><p class="subtle">Add an NPC, monster, creature or person to the local combat preview.</p>
+  <label class="field-label" for="new-template">Start from the Encounter Library (optional)</label>
+ <select class="field" id="new-template"><option value="">Create a quick creature</option></select>
+ <p id="template-hint" class="subtle">Quick creatures need no complete stat block. Saved entries can be added repeatedly as separate combatants.</p>
+ <label class="field-label" for="new-name">Name</label><input class="field" id="new-name" maxlength="50" required placeholder="e.g. Pale Warden">
+  <label class="field-label" for="new-type">Combatant type</label><select class="field" id="new-type"><option value="Monster">Monster</option><option value="NPC">NPC</option><option value="Creature">Creature</option><option value="Person">Person</option></select>
+  <div class="two"><div><label class="field-label" for="new-init">Initiative result</label><input class="field" id="new-init" type="number" min="-20" max="99" value="12" required></div><div><label class="field-label" for="new-hp">Maximum HP</label><input class="field" id="new-hp" type="number" min="1" max="99999" value="20" required></div></div>
+  <label class="checkboxline"><input id="new-hidden" type="checkbox" checked> Hide HP from players</label>
+  <div class="modal-actions"><button class="btn" type="button" data-close="add-modal">Cancel</button><button class="btn primary" type="submit">Add to queue</button></div>
+ </div></form>
+</dialog>
+<dialog class="modal" id="attach-modal">
+ <div class="modal-top"><h2>Attach a Saved Stat Block</h2><button class="btn small" type="button" data-close="attach-modal">✕</button></div>
+ <div class="modal-body"><p class="subtle">Choose a full stat block from the local Encounter Library. The current combatant's name, initiative, conditions and HP stay unchanged.</p>
+ <label class="field-label" for="attach-template">Saved stat block</label>
+ <select class="field" id="attach-template"></select>
+ <div class="modal-actions"><a class="btn" href="./encounter-library/">Create a stat block ↗</a><button class="btn primary" id="attach-confirm" type="button">Attach to combatant</button></div></div>
+</dialog>
+<dialog class="modal" id="condition-modal">
+ <div class="modal-top"><h2>Manage Conditions</h2><button class="btn small" type="button" data-close="condition-modal">✕</button></div>
+ <div class="modal-body"><p class="subtle" id="condition-who">Select conditions</p><div id="condition-options" class="cond-list"></div><div class="modal-actions"><button class="btn" type="button" data-close="condition-modal">Close</button><button class="btn primary" type="button" id="save-conditions">Save conditions</button></div></div>
+</dialog>
+<script>
+(function(){
+"use strict";
+/* The V2 workshop uses the *same* preference as the production Codex.
+ * It never modifies live character/campaign records. */
+const THEME_KEY="terravale.unified.theme.v2",SITE_THEME_KEY="terravale.cosmetic.site.v1";
+const themes=new Set(["dark","night-sky","shotxo","shady","absolute-zero","sanguine","verdant","dragonforge","astral","null-meridian"]);
+function setCodexTheme(theme,persist=false){
+ const id=themes.has(theme)?theme:"dark";
+ document.documentElement.dataset.codexTheme=id;
+ document.documentElement.dataset.appTheme=id;
+ const menu=document.getElementById("codex-theme-select");
+ if(menu&&menu.value!==id)menu.value=id;
+ if(persist){try{localStorage.setItem(THEME_KEY,id);localStorage.setItem(SITE_THEME_KEY,id);}catch(e){}}
+}
+function initialCodexTheme(){
+ try{
+  const stored=localStorage.getItem(THEME_KEY)||localStorage.getItem(SITE_THEME_KEY)||"dark";
+  return themes.has(stored)?stored:"dark";
+ }catch(e){return "dark";}
+}
+setCodexTheme(initialCodexTheme());
+document.getElementById("codex-theme-select").addEventListener("change",e=>setCodexTheme(e.target.value,true));
+window.addEventListener("storage",e=>{
+ if(e.key===THEME_KEY||e.key===SITE_THEME_KEY)setCodexTheme(initialCodexTheme());
+});
+const key="terravale-room-v2-workshop-v3";
+const definitions={
+"Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
+"Charmed":"Cannot attack the charmer or target them with harmful abilities. The charmer has advantage on social interaction checks with it.",
+"Deafened":"Cannot hear and automatically fails ability checks requiring hearing.",
+"Frightened":"Has disadvantage on ability checks and attack rolls while the source of fear is in sight; cannot willingly move closer to the source.",
+"Grappled":"Speed becomes 0 and cannot benefit from bonuses to speed. Ends if the grappler is incapacitated or moved out of reach.",
+"Incapacitated":"Cannot take actions or reactions.",
+"Invisible":"Cannot be seen without special senses or magic. Attacks against it usually have disadvantage; its attacks usually have advantage.",
+"Paralyzed":"Incapacitated, cannot move or speak; automatically fails Strength and Dexterity saves. Attacks against it have advantage, and close hits are critical.",
+"Petrified":"Transformed to stone or solid substance; incapacitated, unaware and unable to move or speak. Has resistance to damage and fails Strength and Dexterity saves.",
+"Poisoned":"Has disadvantage on attack rolls and ability checks.",
+"Prone":"Can crawl or spend movement to stand. Has disadvantage on attacks. Close attacks have advantage; attacks from more than 5 feet away have disadvantage.",
+"Restrained":"Speed becomes 0; attacks against it have advantage, its attacks have disadvantage, and it has disadvantage on Dexterity saves.",
+"Stunned":"Incapacitated, cannot move, can only speak falteringly; fails Strength and Dexterity saves. Attacks against it have advantage.",
+"Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
+"Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
+};
+const base=()=>({dm:false,round:1,steps:0,selected:"",own:"",userId:"",turnAbility:null,sheetTab:"Combat",sidePanel:"character",layout:{chat:23,dice:35},activeCollapsed:true,rollMode:"normal",tab:"chat",queue:[],actors:[],messages:[],version:0});
+let liveMode=true, demoSnapshot=null;
+let state=base();
+const $=(id)=>document.getElementById(id);
+const esc=(value)=>String(value).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const actor=(id)=>state.actors.find(a=>a.id===id);
+const current=()=>actor(state.queue[0]);
+const clock=()=>new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+const save=()=>{window.TerravaleLiveHooks?.persistState?.(state);};
+const hp=(a)=>{
+if(a.hidden&&!state.dm)return '<div class="hp-track"></div><div class="hp-text">HP hidden by DM</div>';
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
+return '<div class="hp-track"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><div class="hp-text">'+a.hp+' / '+a.max+' HP'+(a.hidden?' · DM only':'')+'</div>';
+};
+const tokens=(a)=>a.conditions.length?a.conditions.map(c=>'<span class="pill harm tip" tabindex="0" role="note" data-tip="'+esc(definitions[c]||'Campaign condition')+'">'+esc(c)+'</span>').join(""):'<span class="pill none">No conditions</span>';
+/* An authentic Codex star crest is the no-picture placeholder.
+ * Emoji from old local sample actors are intentionally ignored.
+ * Real images can be supplied later through the approved character upload. */
+const emptyCrest='<svg class="codex-missing-portrait" viewBox="0 0 100 100" focusable="false" aria-hidden="true"><path d="M50 13 L59 40 L87 50 L59 59 L50 87 L41 59 L13 50 L41 40 Z" fill="var(--c-accent)" opacity=".9"/><path d="M50 26 L56 43 L74 50 L56 56 L50 74 L44 56 L26 50 L44 43 Z" fill="var(--c-paper)" opacity=".62"/></svg>';
+function portrait(a,clazz){
+const path=typeof a.imageUrl==="string"?a.imageUrl.trim():"";
+const allowed=path.startsWith("/terravale-preview/")||/^https:\/\/[^\s"'<>]+$/i.test(path);
+return '<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-label="'+(allowed?'Portrait of '+esc(a.name):'No image for '+esc(a.name))+'">'+emptyCrest+(allowed?'<img class="codex-portrait-image" src="'+esc(path)+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span>';
+}
+function queueRender(){
+const available=state.queue.filter(id=>!!actor(id));
+if(available.length!==state.queue.length)state.queue=available;
+$("round-info").textContent=state.queue.length?'Round '+state.round+' · '+state.queue.length+' combatants · turn ends move the front card to the back':'No encounter running · add combatants or roll initiative';
+$("queue").innerHTML=state.queue.length?state.queue.map((id,i)=>{
+const a=actor(id);if(!a)return '';
+const conditions=a.conditions?.length?'<div class="card-conditions">'+tokens(a)+'</div>':'<div class="card-conditions card-conditions-empty" aria-hidden="true"></div>';
+const initDisplay=Number.isFinite(a.init)?a.init:"—";
+return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+initDisplay+(i===0?', acting now':'')+'">'+
+'<span class="card-eyebrow">'+(i===0?'● CURRENT TURN':esc(a.type))+'</span>'+
+portrait(a)+
+'<span class="name">'+esc(a.name)+'</span>'+
+'<span class="card-initiative"><span>INITIATIVE</span><strong>'+initDisplay+'</strong></span>'+
+'<span class="type">'+esc(a.subtitle)+'</span>'+
+'<span class="card-hp">'+hp(a)+'</span>'+
+conditions+'</button>';
+}).join(''):'<div class="initiative-empty"><span class="initiative-empty-mark">✦</span><strong>The initiative queue is empty</strong><span>Characters stay on the roster. Use Manage initiative to select who joins the next encounter.</span></div>';
+$("next-turn").disabled=!state.dm||!state.queue.length;
+$("add-actor").disabled=!state.dm;
+$("initiative-manager-open").hidden=!state.dm;
+$("existing-character-open").hidden=!state.dm;
+$("initiative-clear").hidden=!state.dm;
+$("initiative-clear").disabled=!state.queue.length;
+const own=actor(state.own);
+$("initiative-roll-mine").hidden=!!state.dm||!own||own.type!=="Player";
+$("initiative-roll-mine").textContent=own&&Number.isFinite(own.init)&&state.queue.includes(own.id)?"⚄ Reroll my initiative":"⚄ Roll my initiative";
+}
+const sampleFeatures={
+"Fighter":[
+["Attacks",[["⚔","Longsword","Melee weapon attack · +7 to hit · Reach 5 ft · 1d8+4 slashing"],["🪓","Handaxe","Melee or thrown attack · damage depends on equipment"]]],
+["Class Features",[["✺","Fighting Style — Great Weapon","A sample feature description for the visual preview; refer to the approved character sheet for actual rules."],["♧","Action Surge (1/1)","Take one additional action on your turn."],["✚","Second Wind (1/1)","Regain 1d10 + your Fighter level hit points."]]],
+["Reactions",[["↪","Opportunity Attack","Make a reaction attack when a creature you can see leaves your reach."]]]
+],
+"Shaman":[["Spirit Techniques",[["✧","Spirit Bond","Your approved bonded spirit techniques appear here in the connected version."],["✦","Spirit Rite","Spend a resource to invoke a prepared rite, if available."]]],["Actions",[["⚔","Weapon Attack","Character-specific attack options appear here."]]]],
+"Artificer":[["Attacks",[["⚙","Tool Attack","Sample class-based action, pending character-sheet integration."]]],["Class Features",[["✧","Infusions & Devices","Expandable character-linked class details will appear here."]]]],
+"Barbarian":[["Attacks",[["⚔","Weapon Attack","Preview attack; actual values will come from the character sheet."]]],["Class Features",[["🔥","Rage","Class resource and status in the final connected room."],["✺","Reckless Attack","Attack with advantage at the cost of exposing yourself."]]]],
+"NPC":[["Actions",[["⚔","Weapon Attack","DM-authored attack and damage."],["✦","Special Action","Optional DM-authored special ability."]]],["Reactions",[["↪","Opportunity Attack","Reaction when the rules allow."]]]]
+};
+function actorClass(a){
+let t=a.subtitle.toLowerCase();
+if(t.includes("fighter"))return "Fighter";
+if(t.includes("shaman"))return "Shaman";
+if(t.includes("artificer"))return "Artificer";
+if(t.includes("barbarian"))return "Barbarian";
+return "NPC";
+}
+function sheetContents(a,tab){
+if(tab==="Abilities"){
+let groups=sampleFeatures[actorClass(a)]||sampleFeatures.NPC;
+return groups.map(([heading,entries])=>'<div class="sheet-subtitle">'+esc(heading)+'</div><div class="feature-list">'+entries.map(([icon,name,detail])=>'<div class="feature"><span class="feature-icon">'+esc(icon)+'</span><div><h4>'+esc(name)+'</h4><p>'+esc(detail)+'</p></div><button type="button" aria-label="Read '+esc(name)+'" data-action="feature-info" data-feature="'+esc(name)+'" data-description="'+esc(detail)+'">◇</button></div>').join("")+'</div>').join("");
+}
+if(tab==="Conditions")return '<div class="sheet-subtitle">Current Conditions</div><p class="subtle">Hover or focus a condition to read its mechanical effects.</p><div class="conditions" style="margin:12px 0">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">＋ Manage conditions</button>':'');
+if(tab==="Resources")return '<div class="sheet-subtitle">Character Resources</div><p class="subtle">This preview shows illustrative resource cards. Real values will be linked to the approved character sheet.</p>'+([["Primary Resource","3 / 3"],["Short Rest Recovery","1 / 1"],["Reaction","1 / round"]].map(([n,v])=>'<div class="feature"><span class="feature-icon">✦</span><div><h4>'+esc(n)+'</h4><p>'+esc(v)+'</p></div><span class="meta">Preview</span></div>').join(""));
+if(tab==="Actions")return '<div class="sheet-subtitle">Actions & Reactions</div>'+sheetContents(a,"Abilities")+'<p class="subtle">Action controls will be connected to the character sheet and DM approvals in the integrated version.</p>';
+if(tab==="Inventory")return '<div class="sheet-subtitle">Equipped Items</div><p class="subtle">Inventory and item usage will come from the character sheet. No sample item will modify your actual inventory.</p>';
+return '<div class="sheet-subtitle">Combat Notes</div><p class="subtle">Notes and tracking will be added after we confirm the layout. This preview has no shared notes.</p>';
+}
+
+const LIBRARY_KEY="terravale-v2-encounter-templates-v1";
+function getLibrary(){
+try{let v=JSON.parse(localStorage.getItem(LIBRARY_KEY)||"[]");
+return Array.isArray(v)?v.filter(x=>x&&typeof x.id==="string"&&typeof x.name==="string"):[];}catch{return [];}
+}
+function statModifier(value){
+if(value==null||!Number.isFinite(Number(value)))return "—";
+let n=Math.floor((Number(value)-10)/2);return n>=0?"+"+n:String(n);
+}
+function abilityGrid(items,label){
+return '<div class="compact-stat-group"><span class="stat-group-label">'+esc(label)+'</span><div class="compact-stats">'+items.map(([name,val])=>'<div class="compact-stat"><span>'+esc(name)+'</span><strong>'+esc(val==null?"—":val)+'</strong></div>').join("")+'</div></div>';
+}
+function getExamplePlayerChecks(a){
+return (checkData[a.id]||{abilities:[],saves:[]});
+}
+function fullBlockGrid(a,block){
+let stats=["str","dex","con","int","wis","cha"].map(k=>[k.toUpperCase(),block.stats?.[k]==null?"—":block.stats[k]+" ("+statModifier(block.stats[k])+")"]);
+let baseInfo='<div class="encounter-core"><span>AC <strong>'+esc(block.ac??"—")+'</strong></span><span>Speed <strong>'+esc(block.speed==null?"—":block.speed+" ft")+'</strong></span><span>'+esc(a.type)+' · Saved stat block</span></div>';
+let actionText=(block.attacks||"").trim(),traits=(block.traits||"").trim();
+return baseInfo+abilityGrid(stats,"Ability scores")+
+'<details class="stat-more"><summary>Actions, traits & additional details</summary><div class="stat-detail"><b>Actions</b><p>'+esc(actionText||"No actions recorded").replace(/\n/g,"<br>")+'</p><b>Traits / resistances / resources</b><p>'+esc(traits||"No traits recorded").replace(/\n/g,"<br>")+'</p></div></details>';
+}
+const abilities=[
+{code:"STR",name:"Strength",skills:["Athletics"]},
+{code:"DEX",name:"Dexterity",skills:["Acrobatics","Sleight of Hand","Stealth"]},
+{code:"CON",name:"Constitution",skills:[]},
+{code:"INT",name:"Intelligence",skills:["Arcana","History","Investigation","Nature","Religion"]},
+{code:"WIS",name:"Wisdom",skills:["Animal Handling","Insight","Medicine","Perception","Survival"]},
+{code:"CHA",name:"Charisma",skills:["Deception","Intimidation","Performance","Persuasion"]}
+];
+/* Illustrative scores/proficiencies only. In production they come from the approved sheet. */
+const sampleCharacters={
+kai:{scores:{STR:15,DEX:8,CON:10,INT:12,WIS:13,CHA:14},proficiency:3,saves:["STR","CON"],skills:["Athletics","Intimidation"],expertise:[]},
+derulo:{scores:{STR:8,DEX:14,CON:12,INT:10,WIS:18,CHA:12},proficiency:3,saves:["WIS","CHA"],skills:["Nature","Animal Handling","Survival","Perception"],expertise:[]},
+haruki:{scores:{STR:10,DEX:14,CON:12,INT:16,WIS:10,CHA:8},proficiency:3,saves:["CON","INT"],skills:["Arcana","Investigation","Sleight of Hand"],expertise:[]},
+shystray:{scores:{STR:16,DEX:12,CON:14,INT:8,WIS:10,CHA:10},proficiency:3,saves:["STR","CON"],skills:["Athletics","Survival","Intimidation"],expertise:[]}
+};
+const prettyMod=n=>n>=0?"+"+n:String(n);
+function previewScores(a){
+return a?.liveScores||sampleCharacters[a.id]||{scores:{STR:null,DEX:null,CON:null,INT:null,WIS:null,CHA:null},proficiency:0,saves:[],skills:[],expertise:[]};
+}
+function playerAbilityView(a){
+const data=previewScores(a),chosen=state.turnAbility===undefined?"DEX":state.turnAbility;
+let tiles=abilities.map(d=>{
+let score=data.scores[d.code];let bonus=score==null?null:Math.floor((score-10)/2),selected=chosen===d.code;
+return '<button class="sheet-ability-tile '+(selected?"selected":"")+'" type="button" data-action="turn-ability" data-ability="'+d.code+'" aria-expanded="'+selected+'" title="Show '+d.name+' checks and saving throw">'+
+'<span class="sheet-ability-name">'+d.code+'</span><span class="sheet-score">'+(score??"—")+'</span><strong class="sheet-modifier">'+(bonus==null?"—":prettyMod(bonus))+'</strong><span class="sheet-chevron">'+(selected?"⌃":"⌄")+'</span></button>';
+}).join("");
+let ability=abilities.find(d=>d.code===chosen);
+let expanded="";
+if(ability){
+let score=data.scores[ability.code],modifier=score==null?null:Math.floor((score-10)/2),prof=data.proficiency||0;
+let saveProf=data.saves.includes(ability.code),saveMod=modifier==null?null:modifier+(saveProf?prof:0);
+let oneSkill=name=>{
+let trained=data.skills.includes(name),expert=data.expertise.includes(name);
+let skillMod=modifier==null?null:modifier+(expert?prof*2:trained?prof:0);
+let suffix=expert?"Expertise":trained?"Proficient":"Untrained";
+return '<button class="sheet-skill" data-action="turn-check" data-id="'+esc(a.id)+'" data-check="'+esc(name)+'" data-bonus="'+(skillMod??0)+'" '+(skillMod==null?"disabled":"")+'>'+
+'<span class="sheet-dot">'+(trained?"●":"○")+'</span><span class="sheet-skill-name">'+esc(name)+'</span><span class="sheet-proficiency">'+suffix+'</span><strong>'+ (skillMod==null?"—":prettyMod(skillMod))+'</strong></button>';
+};
+expanded='<div class="sheet-ability-expanded"><div class="sheet-expanded-header"><div><h4>'+ability.code+' · '+ability.name+'</h4><p>Ability modifier '+(modifier==null?"—":prettyMod(modifier))+' · calculated skill checks & saving throw <span class="sheet-demo-note">· sample sheet values</span></p></div><button class="btn small" type="button" data-action="turn-ability-close">Close ×</button></div>'+
+'<button class="sheet-saving" data-action="turn-check" data-id="'+esc(a.id)+'" data-check="'+esc(ability.name)+' saving throw" data-bonus="'+(saveMod??0)+'" '+(saveMod==null?"disabled":"")+'><span>Saving throw</span><strong>'+ (saveMod==null?"—":prettyMod(saveMod))+'</strong><span>'+ (saveProf?"● Proficient":"○ Not proficient")+'</span></button>'+
+(ability.skills.length?'<div class="sheet-skills">'+ability.skills.map(oneSkill).join("")+'</div>':'<p class="sheet-no-skills">No skills use '+ability.name+'.</p>')+
+'<div class="sheet-rules-note">● Proficient = ability modifier + proficiency bonus · Expertise = ability modifier + twice proficiency bonus. These are sample character choices, not automatically assigned class skills.</div></div>';
+}
+return '<div class="sheet-stats"><div class="sheet-ability-grid">'+tiles+'</div>'+expanded+'</div>';
+}
+function activeDetails(a){
+if(a.type==="Player"){
+return playerAbilityView(a);
+}
+if(!state.dm){
+return '<div class="encounter-notes"><div class="subheading">Encounter overview</div><p>'+esc(a.type)+' · '+esc(a.subtitle)+'</p><p>Detailed creature information is DM-only.</p></div>';
+}
+if(a.statBlock?.mode==="full"||a.statBlock?.ac!=null||a.statBlock?.attacks){
+return fullBlockGrid(a,a.statBlock);
+}
+return '<div class="encounter-notes"><div class="subheading">Encounter overview</div><p>'+esc(a.notes||"No stat block assigned. Use this as an improvised combatant.")+'</p>'+
+'<div class="encounter-inline"><span class="tag">Unconfigured '+esc(a.type)+'</span><button class="btn small" data-action="attach" type="button">Attach stat block</button><a class="btn small" href="./encounter-library/">Open library ↗</a></div></div>';
+}
+function activeRender(){
+let a=current();
+if(!a){
+ $("active-combatant").classList.add("is-collapsed");
+ $("active-combatant").innerHTML='<div class="active-bar-head"><div class="turn-identity"><span class="micro">INITIATIVE</span><span class="turn-summary-name">Awaiting combatants</span></div>'+'<span class="meta">Awaiting initiative</span>'+'</div>';
+ return;
+}
+let canhp=state.dm||!a.hidden;
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
+let hpContent=canhp?'<div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><strong class="number">'+a.hp+' / '+a.max+'</strong></div>':
+'<div class="hprow"><div class="hpbar hidden-hp"></div><span class="number">Hidden HP</span></div>';
+let hpbuttons='';
+let condEdit='';
+let hideHP='';
+let stateType=a.type==="Player"?"Player character":a.statBlock?"Saved stat block":"Quick encounter";
+let collapsed=!!state.activeCollapsed;
+let mayEnd=!!state.userId&&a.type==="Player"&&a.ownerId===state.userId;
+$("active-combatant").classList.toggle("is-collapsed",collapsed);
+$("active-combatant").innerHTML=
+'<div class="active-bar-head"><div class="turn-identity"><span class="micro">CURRENT TURN · ROUND '+state.round+'</span><span class="turn-summary-name">'+esc(a.name)+'</span><span class="turn-summary-init">Initiative '+a.init+'</span><span class="turn-summary-hp">'+(canhp?'HP '+a.hp+' / '+a.max:'HP hidden')+'</span></div>'+
+'<div class="turn-header-actions">'+(collapsed?'<button class="btn small" data-action="next" '+(!mayEnd?'disabled title="Not your turn"':'')+'>End Turn →</button>':'')+
+'<button class="btn small turn-collapse-toggle" type="button" data-action="active-collapse" aria-expanded="'+!collapsed+'" aria-controls="active-expanded-content">'+(collapsed?'Expand details ▾':'Collapse details ▴')+'</button></div></div>'+
+'<div id="active-expanded-content" class="active-expanded-content" '+(collapsed?'hidden':'')+'>'+
+'<div class="combatant-overview">'+
+'<div class="combatant-portrait">'+portrait(a)+'</div>'+
+'<div class="combatant-dashboard"><div class="combatant-identity"><div><h3 class="combatant-name">'+esc(a.name)+'</h3><div class="combatant-sub">'+esc(a.subtitle)+' · '+esc(a.type)+'</div></div><div class="combatant-marker">'+esc(stateType)+'</div></div>'+activeDetails(a)+
+'<div class="combatant-bottom"><div class="combatant-hp"><div class="subheading">Hit Points</div>'+hpContent+hpbuttons+'</div><div class="combatant-condition"><div class="subheading">Conditions <span class="meta">hover for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+condEdit+'</div></div></div>'+
+'<div class="combatant-controls">'+hideHP+'<button class="btn primary end-turn-large" data-action="next" '+(!mayEnd?'disabled title="Not your turn"':'')+'>End Turn →</button>'+'</div>'+
+'</div></div>';
+}
+
+function sampleActions(a){
+let groups=sampleFeatures[actorClass(a)]||[];
+return groups.map(([group,rows])=>'<div class="own-section-title">'+esc(group)+'</div><div class="own-action-list">'+rows.map(([ico,name,description])=>{
+let hit=(description.match(/([+-]\d+)\s+to hit/i)||[])[1];
+return '<div class="own-action"><span class="own-action-icon">'+esc(ico)+'</span><div class="own-action-main"><strong>'+esc(name)+'</strong><p>'+esc(description)+'</p></div><div class="own-action-controls">'+(hit?'<button class="btn small" data-action="own-attack" data-char="'+esc(a.id)+'" data-bonus="'+esc(hit)+'" data-name="'+esc(name)+'">Roll attack</button>':'')+'<button class="btn small" data-action="feature-info" data-feature="'+esc(name)+'" data-description="'+esc(description)+'">Details</button></div></div>';
+}).join("")+'</div>').join("");
+}
+function ownAbilityCards(a){
+let data=previewScores(a);
+return '<p class="own-help">Sample ability scores. Click to roll an ability check in chat.</p><div class="own-ability-grid">'+abilities.map(x=>{
+let v=data.scores[x.code],m=v==null?null:Math.floor((v-10)/2);
+return '<button class="own-ability-card" type="button" data-action="own-check" data-char="'+esc(a.id)+'" data-name="'+x.name+' ability check" data-bonus="'+(m??0)+'" '+(m==null?'disabled':'')+'><span>'+x.code+'</span><span class="own-score">'+(v??"—")+'</span><strong>'+(m==null?"—":prettyMod(m))+'</strong></button>';
+}).join("")+'</div><div class="own-section-title">Saving throws</div><div class="own-minichecks">'+abilities.map(x=>{
+let v=data.scores[x.code],mod=v==null?null:Math.floor((v-10)/2)+(data.saves.includes(x.code)?data.proficiency:0);
+return '<button class="own-mini" data-action="own-check" data-char="'+esc(a.id)+'" data-name="'+x.name+' saving throw" data-bonus="'+(mod??0)+'" '+(mod==null?'disabled':'')+'>'+x.code+' <strong>'+(mod==null?"—":prettyMod(mod))+'</strong></button>';
+}).join("")+'</div>';
+}
+function sampleResourceList(a){
+let kind=actorClass(a),defs=kind==="Fighter"?[["Action Surge",1],["Second Wind",1]]:kind==="Barbarian"?[["Rage",3]]:kind==="Shaman"?[["Spirit Charges",3]]:kind==="Artificer"?[["Device Charges",3]]:[["Class Resource",2]];
+state.sampleResources=state.sampleResources||{};state.sampleResources[a.id]=state.sampleResources[a.id]||{};
+return '<p class="own-help">Interactive demonstration charges. Does not deduct resources from the real sheet.</p><div class="resource-cards">'+defs.map(([name,max])=>{
+let value=state.sampleResources[a.id][name]??max;
+return '<div class="resource-card"><div><strong>'+esc(name)+'</strong><small>'+value+' / '+max+' remaining · demo</small></div><div class="resource-pips">'+Array.from({length:max},(_,i)=>'<button type="button" class="resource-pip '+(i<value?'filled':'')+'" data-action="own-resource" data-char="'+esc(a.id)+'" data-resource="'+esc(name)+'" data-index="'+i+'" data-max="'+max+'" aria-label="'+esc(name)+' charge '+(i+1)+'"></button>').join("")+'</div></div>';
+}).join("")+'</div><button class="btn small" data-action="restore-resources" data-char="'+esc(a.id)+'">Restore demo resources</button>';
+}
+function ownTabContents(a,tab){
+if(tab==="Combat")return '<div class="own-section-title">Combat actions</div><div class="own-empty"><strong>Approved character sheet</strong><p>Use the full sheet for class actions and equipment; no sample attacks are displayed here.</p><a class="btn small" href="../characters/sheet-live/?character='+encodeURIComponent(a.id)+'">Open sheet ↗</a></div>';
+if(tab==="Abilities")return ownAbilityCards(a);
+if(tab==="Resources")return '<div class="own-section-title">Class resources</div><p class="own-help">Resources are managed on your live character sheet.</p>';
+if(tab==="Inventory")return '<div class="own-section-title">Equipment & inventory</div><div class="own-empty"><strong>Inventory not connected</strong><p>Equipped weapons and item charges will mirror the approved character sheet after integration. No invented gear.</p></div>';
+if(tab==="Conditions")return '<div class="own-section-title">Conditions</div><div class="conditions">'+tokens(a)+'</div><p class="own-help">Hover or focus conditions for rule descriptions.</p>'+(state.dm?'<button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Manage conditions</button>':'');
+return '<div class="own-section-title">Notes</div><p class="own-help">Notes stay on your real character sheet. Shared editing is not connected in this workshop.</p>';
+}
+function dmDeskRender(){
+let a=current(),library=getLibrary();
+$("my-character-content").innerHTML='<div class="desk-body"><div class="desk-intro"><span class="desk-eyebrow">DM WORKSPACE · LIVE</span><h3>Encounter Controls</h3><p>Shared campaign encounter controls.</p></div><div class="desk-buttons"><button class="btn primary" data-action="manage-initiative">Manage initiative</button><button class="btn" data-action="add-existing">＋ Existing character</button><button class="btn" data-action="dm-add">＋ Creature / NPC</button><button class="btn" data-action="clear-initiative">Clear queue</button><button class="btn" data-action="next">Advance turn · DM</button><a class="btn" href="./encounter-library/">Encounter Library ↗</a></div>'+
+'<div class="desk-section"><div class="own-section-title">Current turn</div>'+(a?'<div class="desk-active">'+portrait(a)+'<div><strong>'+esc(a.name)+'</strong><small>'+esc(a.subtitle)+' · Initiative '+a.init+'</small></div></div><div class="desk-actions"><button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Conditions</button><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button><button class="btn small" data-action="next">End Turn →</button></div>':'<p class="subtle">No combatant is currently in initiative.</p>')+'</div>'+
+'<div class="desk-section"><div class="own-section-title">Encounter status</div><div class="desk-summary"><div><strong>'+state.queue.length+'</strong><span>Combatants</span></div><div><strong>'+state.round+'</strong><span>Round</span></div><div><strong>'+library.length+'</strong><span>Templates</span></div></div></div>'+
+'<div class="desk-section"><div class="own-section-title">Initiative roster</div><div class="desk-roster">'+state.queue.map((id,i)=>{let c=actor(id);return c?'<div class="desk-roster-entry"><span class="desk-order">'+(i+1)+'</span>'+portrait(c)+'<div><strong>'+esc(c.name)+'</strong><small>'+esc(c.type)+'</small></div><span class="desk-hp">'+c.hp+'/'+c.max+'</span></div>':'';}).join("")+'</div></div></div>';
+}
+function myCharacterRender(){
+let showDesk=state.dm&&state.sidePanel==="dm";
+$("right-heading").textContent=showDesk?"DM Desk":"My Character";
+$("right-subheading").textContent=showDesk?"Encounter controls · preview":"Independent of initiative order";
+$("panel-switch").innerHTML=state.dm?'<button class="btn small '+(!showDesk?'is-on':'')+'" data-action="right-panel" data-panel="character" aria-pressed="'+!showDesk+'">Character</button><button class="btn small '+(showDesk?'is-on':'')+'" data-action="right-panel" data-panel="dm" aria-pressed="'+showDesk+'">DM Desk</button>':'';
+if(showDesk){dmDeskRender();return;}
+let players=state.actors.filter(a=>a.type==="Player");
+if(!players.some(a=>a.id===state.own))state.own=players.find(a=>a.ownerId===state.userId)?.id||"";
+let a=actor(state.own);if(!a){$("my-character-content").innerHTML='<div class="empty">No personal character assigned.</div>';return;}
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1))),tab=state.sheetTab||"Combat";
+let selector=state.dm?'<label class="own-selector">Preview character <select id="my-character-choice" class="field" aria-label="Choose preview character">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
+let tabs=["Combat","Abilities","Resources","Inventory","Conditions","Notes"];
+$("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">MY CHARACTER · QUICK SHEET</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><span class="own-connected">'+(liveMode?"● Approved campaign character":"● Demo character")+'</span></div></div>'+
+'<div class="own-initiative-action"><span>Initiative: <strong>'+(Number.isFinite(a.init)?a.init:"Not rolled")+'</strong></span><button class="btn small" type="button" data-action="roll-my-initiative">⚄ Roll initiative</button></div>'+
+'<div class="own-vitals"><div class="own-hp"><div class="subheading">Hit Points</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':pct<60?'mid':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+' / '+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
+'<div class="own-condition-row"><span class="micro">STATUS</span><div class="conditions">'+tokens(a)+'</div></div>'+selector+
+'<div class="own-tabs" role="tablist" aria-label="My character quick sheet">'+tabs.map(t=>'<button role="tab" type="button" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
+'<div class="own-sheet-body">'+ownTabContents(a,tab)+'</div>'+
+'<div class="own-footer"><span>Sample values · not linked to live sheets</span><button class="btn small" data-action="inspect">Full sheet ↗</button></div>';
+}
+let lastRenderedChatTab=null;
+function feedRender(){
+let el=$("feed");
+const previousTop=el.scrollTop;
+const distanceFromBottom=el.scrollHeight-el.clientHeight-previousTop;
+const followLatest=lastRenderedChatTab!==state.tab||distanceFromBottom<=80;
+let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.tab==="messages"?state.messages.filter(m=>m.kind==="text"):state.messages;
+for(let [id,key] of [["tab-chat","chat"],["tab-messages","messages"],["tab-rolls","rolls"]]){
+$(id).classList.toggle("current",state.tab===key);$(id).setAttribute("aria-pressed",String(state.tab===key));
+}
+el.innerHTML=list.length?list.slice(-120).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle roll-label">'+esc(m.label)+'</div><div class="roll-number"><strong class="roll-total">'+m.total+'</strong><span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">Nothing in this channel yet.</div>';
+if(followLatest)el.scrollTop=el.scrollHeight;else el.scrollTop=previousTop;
+lockChatHeight();
+lastRenderedChatTab=state.tab;
+}
+function bonusFor(a,kind,key){
+let data=previewScores(a),ability=abilities.find(x=>x.code===key||x.skills.includes(key));
+if(!ability)return null;
+let value=data.scores?.[ability.code];if(value==null)return null;
+let mod=Math.floor((Number(value)-10)/2),prof=data.proficiency||0;
+if(kind==="save"&&data.saves.includes(ability.code))mod+=prof;
+if(kind==="skill")mod+=data.expertise.includes(key)?2*prof:data.skills.includes(key)?prof:0;
+return mod;
+}
+function renderChecks(){
+let players=state.actors.filter(a=>a.type==="Player");
+if(!state.dm)players=players.filter(a=>a.id===state.own);
+if(!players.length){$("roller").innerHTML="";$("check-groups").innerHTML='<p class="own-help">No player character is assigned.</p>';return;}
+if(!players.some(a=>a.id===state.selected))state.selected=players[0].id;
+$("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join("");
+let a=actor(state.selected),data=previewScores(a);
+let section=(name,key,rows)=>'<details class="check-group" data-check-section="'+key+'" '+(state.checkSections?.[key]?'open':'')+'><summary><span>'+esc(name)+'</span><span class="check-count">'+rows.length+'</span></summary><div class="checks">'+rows.map(([label,mod,proficient])=>{
+let disabled=mod==null;
+return '<button class="check" type="button" '+(disabled?'disabled':'')+' data-action="check" data-label="'+esc(label)+'" data-mod="'+(mod??0)+'"><span>'+esc(label)+'</span><span class="check-result">'+(disabled?'—':prettyMod(mod))+'</span>'+(proficient?'<span class="check-trained" title="Proficient or expert">●</span>':'')+'</button>';
+}).join("")+'</div></details>';
+let abilityRows=abilities.map(x=>[x.code,bonusFor(a,"ability",x.code),false]);
+let saveRows=abilities.map(x=>[x.code,bonusFor(a,"save",x.code),data.saves.includes(x.code)]);
+let skillRows=abilities.flatMap(x=>x.skills.map(name=>[name,bonusFor(a,"skill",name),data.skills.includes(name)||data.expertise.includes(name)]));
+state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true};
+$("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
+}
+function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
+
+/* Initiative management operates exclusively on V2's local state.
+ * state.actors is the reusable roster; state.queue is only encounter order.
+ * No production campaign state is written, including in live-roster mode. */
+let initiativeSelected=new Set();
+function initiativeModifier(a){
+ const override=state.initiativeModifiers?.[a.id];
+ if(Number.isInteger(override))return override;
+ if(Number.isFinite(a.liveScores?.initiativeModifier))return Number(a.liveScores.initiativeModifier);
+ if(a.type==="Player"){
+  const dex=previewScores(a).scores?.DEX;
+  return Number.isFinite(dex)?Math.floor((dex-10)/2):0;
+ }
+ const dex=a.statBlock?.stats?.dex;
+ return dex!=null&&Number.isFinite(Number(dex))?Math.floor((Number(dex)-10)/2):0;
+}
+function validInitiative(n){return Number.isInteger(n)&&n>=-40&&n<=100;}
+function sortInitiative(){
+ const previous=new Map(state.queue.map((id,i)=>[id,i]));
+ state.queue=Array.from(new Set(state.queue)).filter(id=>!!actor(id)).sort((x,y)=>{
+  const a=actor(x).init,b=actor(y).init;
+  const aa=Number.isFinite(a)?a:-999,bb=Number.isFinite(b)?b:-999;
+  return bb-aa||(previous.get(x)??999)-(previous.get(y)??999);
+ });
+ state.round=1;state.steps=0;
+}
+function putInQueue(id){
+ if(!actor(id))return;
+ if(!state.queue.includes(id))state.queue.push(id);
+}
+function removeFromQueue(id){
+ if(!state.queue.includes(id))return;
+ state.queue=state.queue.filter(x=>x!==id);
+ if(!state.queue.length){state.round=1;state.steps=0;}
+ else state.steps=Math.min(state.steps,state.queue.length-1);
+ save();render();
+}
+function clearInitiative(){
+ if(!state.dm)return;
+ if(!state.queue.length)return;
+ if(!confirm("Clear the entire initiative queue and reset the round? This keeps all characters and saved creatures available for the next encounter."))return;
+ state.queue=[];
+ state.round=1;state.steps=0;
+ for(const a of state.actors)a.init=null;
+ save();render();renderInitiativeRoster();
+}
+function rollInitiativeFor(ids,asPlayer=false){if(asPlayer&&window.TerravaleLiveHooks?.rollMine)return void window.TerravaleLiveHooks.rollMine();
+ if(!ids.length)return;
+ const rolls=[];
+ for(const id of new Set(ids)){
+  let a=actor(id);if(!a)continue;
+  if(asPlayer&&(!state.own||a.id!==state.own||a.type!=="Player"))continue;
+  let bonus=initiativeModifier(a);
+  if(!validInitiative(bonus)){alert("Initiative modifier must be between -40 and +100.");return;}
+  let die=1+Math.floor(Math.random()*20);
+  a.init=die+bonus;
+  putInQueue(id);
+  rolls.push({actor:a,die,bonus,total:a.init});
+ }
+ if(!rolls.length)return;
+ sortInitiative();save();render();
+ for(const result of rolls){
+  log({kind:"roll",who:result.actor.name,label:"Initiative · 1d20"+prettyMod(result.bonus),total:result.total,detail:result.die+(result.bonus?" "+prettyMod(result.bonus):""),time:clock()});
+ }
+ if($("initiative-modal").open)renderInitiativeRoster();
+}
+/* Standalone V2 picker: new campaign records may join the local queue
+ * without being inserted into the production party_room_roster table. */
+let existingCandidates=new Map();
+function existingCandidateView(record){
+ const item=state.actors.find(a=>a.id===record.id)||record;
+ const queued=state.queue.includes(record.id);
+ return '<label class="existing-character-row '+(queued?'already-queued':'')+'">'+
+ '<input type="checkbox" data-existing-id="'+esc(record.id)+'" '+(queued?'disabled':'')+'>'+
+ portrait(item)+
+ '<span class="existing-character-desc"><strong>'+esc(item.name)+'</strong><small>'+esc(item.subtitle||"Player character")+'</small></span>'+
+ '<span class="existing-character-state">'+(queued?'Already in queue':'Available')+'</span></label>';
+}
+function openExistingPicker(records,context){
+ if(!state.dm)return;
+ const safe=(Array.isArray(records)?records:[]).filter(x=>x&&x.type==="Player"&&typeof x.id==="string");
+ existingCandidates=new Map(safe.map(x=>[x.id,x]));
+ $("existing-character-context").textContent=context||"Choose approved characters to add. Their character sheets and party roster will not be changed.";
+ $("existing-character-list").innerHTML=safe.length?safe.map(existingCandidateView).join(""):'<p class="subtle">No approved characters were found in this campaign.</p>';
+ $("existing-character-feedback").textContent=safe.length?safe.filter(x=>!state.queue.includes(x.id)).length+" characters available":"Nothing to add";
+ $("existing-character-modal").showModal();
+}
+function addExistingSelected(shouldRoll){
+ if(!state.dm)return;
+ const checked=Array.from($("existing-character-list").querySelectorAll('input[data-existing-id]:checked'));
+ const selected=checked.map(x=>existingCandidates.get(x.dataset.existingId)).filter(Boolean);
+ if(!selected.length){
+  $("existing-character-feedback").textContent="Choose at least one available character.";
+  return;
+ }
+ const added=[];
+ for(const incoming of selected){
+   if(!state.actors.some(x=>x.id===incoming.id))state.actors.push(incoming);
+   if(!state.queue.includes(incoming.id)){
+     putInQueue(incoming.id);
+     added.push(incoming.id);
+   }
+ }
+ if(shouldRoll&&added.length)rollInitiativeFor(added);
+ else{save();render();}
+ $("existing-character-modal").close();
+}
+function openExistingCharacters(){
+ if(!state.dm)return;
+ if(liveMode){
+  const loader=window.TerravaleV2LiveCharacters;
+  if(loader&&typeof loader.openPicker==="function"){
+   void loader.openPicker();
+  }else alert("Live campaign character lookup is not ready. Reload the preview and try again.");
+  return;
+ }
+ openExistingPicker(state.actors.filter(a=>a.type==="Player"),"Demo characters available in this local preview. Choose one or more to add to initiative.");
+}
+
+function initiativeRow(id){
+ const a=actor(id);
+ if(!a)return "";
+ const queued=state.queue.includes(id),value=Number.isFinite(a.init)?a.init:"";
+ return '<div class="initiative-roster-entry" data-init-row="'+esc(id)+'">'+
+ '<label class="initiative-roster-name"><input type="checkbox" data-init-select="'+esc(id)+'" '+(initiativeSelected.has(id)?"checked":"")+'>'+portrait(a)+
+ '<span><strong>'+esc(a.name)+'</strong><small>'+esc(a.type)+' · '+(queued?"In queue":"Available")+'</small></span></label>'+
+ '<input type="number" class="field initiative-number" aria-label="Initiative modifier for '+esc(a.name)+'" data-init-mod="'+esc(id)+'" min="-40" max="100" step="1" value="'+initiativeModifier(a)+'">'+
+ '<div class="initiative-result-editor"><input type="number" class="field initiative-number" aria-label="Manual initiative result for '+esc(a.name)+'" data-init-value="'+esc(id)+'" min="-40" max="100" step="1" placeholder="—" value="'+value+'"><button type="button" class="btn small" data-action="initiative-set" data-id="'+esc(id)+'" title="Set manual initiative result">Set</button></div>'+
+ '<button type="button" class="btn small '+(queued?"initiative-remove":"")+'" data-action="initiative-toggle" data-id="'+esc(id)+'">'+(queued?"Remove":"Add")+'</button></div>';
+}
+function renderInitiativeRoster(){
+ const list=$("initiative-roster-list");
+ if(!list)return;
+ list.innerHTML=state.actors.length?state.actors.map(a=>initiativeRow(a.id)).join(""):'<p class="subtle">No characters or creatures are available. Add a combatant first.</p>';
+}
+function showInitiativeManager(){
+ if(!state.dm)return;
+ initiativeSelected=new Set(state.actors.filter(a=>a.type==="Player").map(a=>a.id));
+ renderInitiativeRoster();
+ $("initiative-modal").showModal();
+}
+function selectedInitiativeIds(){
+ return Array.from(initiativeSelected).filter(id=>!!actor(id));
+}
+function saveInitiativeModifiers(ids){
+ const overrides={...state.initiativeModifiers};
+ for(const id of ids){
+  const input=Array.from($("initiative-roster-list").querySelectorAll("[data-init-mod]")).find(el=>el.dataset.initMod===id);
+  if(!input)continue;
+  const n=Number(input.value);
+  if(input.value.trim()===""||!validInitiative(n)){alert("Enter an initiative modifier between -40 and +100.");return false;}
+  overrides[id]=n;
+ }
+ state.initiativeModifiers=overrides;
+ return true;
+}
+
+function next(){if(window.TerravaleLiveHooks?.advance)return void window.TerravaleLiveHooks.advance();if(!state.dm||!state.queue.length)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
+function log(m){if(window.TerravaleLiveHooks?.sendLog)return void window.TerravaleLiveHooks.sendLog(m);state.messages.push(m);state.messages=state.messages.slice(-180);save();feedRender();}
+function roll(expr,label,who){if(window.TerravaleLiveHooks?.roll)return void window.TerravaleLiveHooks.roll(expr);
+let t=String(expr).replace(/\s/g,""),mat=t.match(/^(\d{0,2})d(4|6|8|10|12|20|100)([+-]\d{1,3})?$/i);
+if(!mat){alert("Use dice notation like 1d20, 2d6+3 or 1d20-1.");return;}
+let count=Number(mat[1]||1),sides=Number(mat[2]),bonus=Number(mat[3]||0);
+if(count<1||count>30){alert("This preview accepts 1 to 30 dice per roll.");return;}
+let faces=Array.from({length:count},()=>1+Math.floor(Math.random()*sides)), mode=state.rollMode||"normal";
+let extra=null;
+if(sides===20&&count===1&&mode!=="normal"){extra=1+Math.floor(Math.random()*20);faces[0]=mode==="advantage"?Math.max(faces[0],extra):Math.min(faces[0],extra);}
+let total=faces.reduce((a,b)=>a+b,0)+bonus;
+let detail=faces.join(" + ")+(bonus?(bonus>0?" + ":" - ")+Math.abs(bonus):"")+(extra!==null?" ("+mode+"; other die "+extra+")":"");
+log({kind:"roll",who:who||"You",label:label||expr,total,detail,time:clock()});
+}
+let conditionTargetId=null;
+function editConditions(targetId){
+if(!state.dm)return;let a=actor(targetId)||current();conditionTargetId=a.id;
+$("condition-who").textContent='Editing '+a.name+' · Changes are local to this preview.';
+$("condition-options").innerHTML=Object.keys(definitions).map(c=>'<label class="cond-label tip" tabindex="0" data-tip="'+esc(definitions[c])+'" title="'+esc(definitions[c])+'"><input type="checkbox" data-condition="'+esc(c)+'" '+(a.conditions.includes(c)?'checked':'')+'>'+esc(c)+'</label>').join("");
+$("condition-modal").showModal();
+}
+
+function populateTemplates(){
+let library=getLibrary(),options=library.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+(t.mode==="full"?"Full block":"Quick")+'</option>').join("");
+$("new-template").innerHTML='<option value="">Create a quick creature (no stat block)</option>'+options;
+$("attach-template").innerHTML='<option value="">Choose a full stat block</option>'+library.filter(t=>t.mode==="full").map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join("");
+}
+function selectedTemplate(){
+return getLibrary().find(x=>x.id===$("new-template").value)||null;
+}
+function updateAddFields(){
+let x=selectedTemplate();
+$("template-hint").textContent=x?((x.mode==="full"?"Full stat block":"Quick creature")+" · Default "+x.hp+" HP. Each copy has separate HP and conditions."):"Enter a name and HP, or choose a reusable saved creature.";
+if(!x)return;
+$("new-name").value=x.name;$("new-type").value=x.type;
+$("new-hp").value=x.hp;$("new-hidden").checked=!!x.hidden;
+}
+function addActor(form){if(!state.dm)return;
+let name=$("new-name").value.trim();if(!name)return;
+let init=Number($("new-init").value),max=Number($("new-hp").value);
+if(!Number.isInteger(init)||init< -20||init>99||!Number.isInteger(max)||max<1||max>99999){alert("Enter a valid initiative result and HP.");return;}
+let x=selectedTemplate(),type=$("new-type").value;
+let id="preview-"+Date.now()+"-"+Math.floor(Math.random()*9999);
+let newActor={id,name,type,subtitle:x?(type+" · Encounter Library"):(type+" · Quick encounter"),init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase(),
+face:null,
+notes:x?.notes||"",templateId:x?.id||null,statBlock:x?.mode==="full"?structuredClone(x):null};
+state.actors.push(newActor);state.queue.push(id);save();render();$("add-modal").close();form.reset();populateTemplates();
+}
+function startAttach(){
+if(!state.dm)return;
+populateTemplates();
+if($("attach-template").options.length<=1){alert("No full stat blocks saved yet. Use Encounter Library to build one first.");return;}
+$("attach-modal").showModal();
+}
+function attachToCurrent(){
+if(!state.dm)return;
+let x=getLibrary().find(t=>t.id===$("attach-template").value&&t.mode==="full");
+if(!x){alert("Choose a saved full stat block.");return;}
+let a=current();if(!a||a.type==="Player")return;
+a.statBlock=structuredClone(x);a.templateId=x.id;
+a.notes=a.notes||x.notes||"";
+save();render();$("attach-modal").close();
+}
+
+document.addEventListener("click",e=>{
+let b=e.target.closest("button");if(!b)return;
+if(b.dataset.close){$(b.dataset.close).close();return;}
+let action=b.dataset.action;if(!action)return;
+if(action==="next")next();
+if(action==="add-existing"&&state.dm)openExistingCharacters();
+if(action==="clear-initiative"&&state.dm)clearInitiative();
+if(action==="manage-initiative")showInitiativeManager();
+if(action==="roll-my-initiative"){
+ const a=actor(state.own);
+ if(a?.type==="Player")rollInitiativeFor([a.id],true);
+}
+if(action==="initiative-toggle"&&state.dm){
+ const id=b.dataset.id;
+ if(state.queue.includes(id))removeFromQueue(id);
+ else{putInQueue(id);sortInitiative();save();render();}
+ renderInitiativeRoster();
+}
+if(action==="initiative-set"&&state.dm){
+ const id=b.dataset.id;
+ if(!saveInitiativeModifiers([id]))return;
+ const input=Array.from($("initiative-roster-list").querySelectorAll("[data-init-value]")).find(el=>el.dataset.initValue===id);
+ const value=Number(input?.value);
+ if(!input||input.value.trim()===""||!validInitiative(value)){alert("Enter a whole-number initiative result from -40 to 100.");return;}
+ actor(id).init=value;
+ putInQueue(id);sortInitiative();save();render();renderInitiativeRoster();
+}
+
+if(action==="active-collapse"){state.activeCollapsed=!state.activeCollapsed;save();activeRender();}
+if(action==="turn-ability"){state.turnAbility=state.turnAbility===b.dataset.ability?null:b.dataset.ability;save();activeRender();}
+if(action==="turn-ability-close"){state.turnAbility=null;save();activeRender();}
+if(action==="turn-check"){let a=actor(b.dataset.id),bonus=Number(b.dataset.bonus||0),notation="1d20"+prettyMod(bonus);roll(notation,b.dataset.check+" · "+notation,a?.name||"You");}
+if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();myCharacterRender();}
+if(action==="right-panel"&&state.dm){state.sidePanel=b.dataset.panel==="dm"?"dm":"character";save();myCharacterRender();}
+if(action==="dm-add"&&state.dm){populateTemplates();$("add-modal").showModal();}
+if(action==="own-check"||action==="own-attack"){
+let a=actor(b.dataset.char),mod=Number(b.dataset.bonus)||0;
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)){
+let notation="1d20"+prettyMod(mod);
+roll(notation,(b.dataset.name||"Check")+" · "+notation,a.name);
+}}
+if(action==="own-resource"){
+let a=actor(b.dataset.char),name=b.dataset.resource,max=Number(b.dataset.max),index=Number(b.dataset.index);
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)&&Number.isInteger(max)&&max>=1&&max<=30){
+state.sampleResources=state.sampleResources||{};
+let holder=state.sampleResources[a.id]=state.sampleResources[a.id]||{};
+let curr=holder[name]??max;
+holder[name]=index<curr?index:index+1;
+save();myCharacterRender();
+}}
+if(action==="restore-resources"){
+let a=actor(b.dataset.char);
+if(a&&(state.dm||a.id===state.own)){state.sampleResources=state.sampleResources||{};state.sampleResources[a.id]={};save();myCharacterRender();}
+}
+if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description);
+if(action==="attach"&&state.dm)startAttach();
+if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
+if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
+if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
+if(action==="conditions")editConditions(b.dataset.targetId);
+if(action==="check"){
+let a=actor(state.selected),mod=Number(b.dataset.mod)||0;
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)){
+let notation="1d20"+prettyMod(mod);roll(notation,(b.dataset.label||"Check")+" · "+notation,a.name);
+}}
+if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("active-combatant").scrollIntoView({behavior:"smooth",block:"nearest"});}}
+if(action==="inspect"){let a=actor(state.own);if(a)location.href="../characters/sheet-live/?character="+encodeURIComponent(a.id);}
+});
+$("next-turn").addEventListener("click",next);
+$("existing-character-open").addEventListener("click",openExistingCharacters);
+$("existing-character-add").addEventListener("click",()=>addExistingSelected(false));
+$("existing-character-roll").addEventListener("click",()=>addExistingSelected(true));
+$("initiative-manager-open").addEventListener("click",showInitiativeManager);
+$("initiative-clear").addEventListener("click",clearInitiative);
+$("initiative-clear-modal").addEventListener("click",clearInitiative);
+$("initiative-roll-mine").addEventListener("click",()=>{let a=actor(state.own);if(a?.type==="Player")rollInitiativeFor([a.id],true);});
+$("initiative-select-players").addEventListener("click",()=>{initiativeSelected=new Set(state.actors.filter(a=>a.type==="Player").map(a=>a.id));renderInitiativeRoster();});
+$("initiative-select-all").addEventListener("click",()=>{initiativeSelected=new Set(state.actors.map(a=>a.id));renderInitiativeRoster();});
+$("initiative-select-none").addEventListener("click",()=>{initiativeSelected.clear();renderInitiativeRoster();});
+$("initiative-roster-list").addEventListener("change",e=>{
+ const id=e.target.dataset.initSelect;
+ if(id){if(e.target.checked)initiativeSelected.add(id);else initiativeSelected.delete(id);}
+});
+$("initiative-roll-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ const ids=selectedInitiativeIds();
+ if(!ids.length){alert("Select at least one combatant first.");return;}
+ if(!saveInitiativeModifiers(ids))return;
+ rollInitiativeFor(ids);
+});
+$("initiative-queue-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ const ids=selectedInitiativeIds();
+ if(!ids.length){alert("Select combatants first.");return;}
+ for(const id of ids)putInQueue(id);
+ sortInitiative();save();render();renderInitiativeRoster();
+});
+$("initiative-remove-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ for(const id of selectedInitiativeIds())state.queue=state.queue.filter(x=>x!==id);
+ if(!state.queue.length){state.round=1;state.steps=0;}
+ else state.steps=Math.min(state.steps,state.queue.length-1);
+ save();render();renderInitiativeRoster();
+});
+$("add-actor").addEventListener("click",()=>{if(state.dm){populateTemplates();$("add-modal").showModal();}});
+$("new-template").addEventListener("change",updateAddFields);
+$("attach-confirm").addEventListener("click",attachToCurrent);
+$("add-form").addEventListener("submit",e=>{e.preventDefault();addActor(e.currentTarget);});
+$("save-conditions").addEventListener("click",()=>{
+let a=actor(conditionTargetId)||current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
+save();render();$("condition-modal").close();
+});
+$("view-mode").addEventListener("click",()=>{});
+$("reset").addEventListener("click",()=>{});
+$("tab-chat").addEventListener("click",()=>{state.tab="chat";save();feedRender();});
+$("tab-messages").addEventListener("click",()=>{state.tab="messages";save();feedRender();});
+$("tab-rolls").addEventListener("click",()=>{state.tab="rolls";save();feedRender();});
+$("chat-form").addEventListener("submit",e=>{
+e.preventDefault();let input=$("chat-input"),msg=input.value.trim();if(!msg)return;
+if(/^\/roll?\s+/i.test(msg)){let notation=msg.replace(/^\/roll?\s+/i,"");roll(notation,"Chat command · "+notation,state.dm?"DM":"Fighter Test");}
+else log({kind:"text",who:state.dm?"DM":"Fighter Test",message:msg,time:clock()});
+input.value="";
+});
+const dicePolygons={
+4:"50,7 94,88 6,88",6:"25,10 75,10 90,25 90,75 75,90 25,90 10,75 10,25",8:"50,5 94,50 50,95 6,50",10:"50,5 85,26 90,69 50,95 10,69 15,26",12:"50,5 73,12 89,28 95,50 89,72 73,88 50,95 27,88 11,72 5,50 11,28 27,12",20:"50,5 82,17 95,50 82,83 50,95 18,83 5,50 18,17"};
+function dieGlyph(n){
+let points=dicePolygons[n]||dicePolygons[10];
+let stroke=n===20?"#b58cfa":"#8d69d6";
+let textsize=n===100?19:28;
+return '<svg viewBox="0 0 100 100" role="img" aria-label="'+n+' sided die"><polygon points="'+points+'" fill="#20172f" stroke="'+stroke+'" stroke-width="4" stroke-linejoin="round"/><path d="M50 7L50 22M10 50L25 50M90 50L75 50" stroke="#635080" stroke-width="2" opacity=".6"/><text x="50" y="59" fill="#dfc1ff" font-family="Georgia, serif" text-anchor="middle" font-weight="bold" font-size="'+textsize+'">'+n+'</text></svg>';
+}
+$("dice-grid").innerHTML=[4,6,8,10,12,20,100].map(n=>'<button class="die" type="button" data-die="'+n+'" aria-label="Roll d'+n+'"><span class="die-icon">'+dieGlyph(n)+'</span><small>d'+n+'</small></button>').join("");
+$("dice-grid").addEventListener("click",e=>{let b=e.target.closest("[data-die]");if(b)roll("1d"+b.dataset.die,"Quick roll · 1d"+b.dataset.die,state.dm?"DM":"Fighter Test");});
+$("roll-form").addEventListener("submit",e=>{
+e.preventDefault();let x=$("notation").value.trim(),bonus=parseInt($("bonus").value,10)||0;
+if(bonus!==0){let m=x.replace(/\s/g,"").match(/^(\d{0,2}d(?:4|6|8|10|12|20|100))([+-]\d+)?$/i);if(m)x=m[1]+((Number(m[2]||0)+bonus)>=0?"+":"")+(Number(m[2]||0)+bonus);}
+roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
+});
+$("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
+document.addEventListener("change",e=>{if(e.target.id==="my-character-choice"){
+state.own=e.target.value;state.selected=e.target.value;save();myCharacterRender();renderChecks();
+}});
+document.addEventListener("toggle",e=>{if(e.target.matches?.("details[data-check-section]")){
+state.checkSections=state.checkSections||{};
+state.checkSections[e.target.dataset.checkSection]=e.target.open;save();
+}},true);
+
+function lockChatHeight(){
+  const room=$("workspace-grid"),chat=room?.querySelector(".chat"),feed=$("feed");
+  if(!room||!chat||!feed)return;
+  const wide=window.innerWidth>1060;
+  const height=window.innerWidth<=730?430:wide?Math.round(Math.min(760,Math.max(610,window.innerHeight*.72))):520;
+  // The explicit pixel sizing is independent of cached stylesheets and stops
+  // auto-sized CSS grid tracks from expanding to fit hundreds of messages.
+  if(wide){
+    for(const prop of ["height","min-height","max-height"]){
+      room.style.setProperty(prop,height+"px","important");
+    }
+    room.style.setProperty("flex","0 0 "+height+"px","important");
+    room.style.setProperty("grid-template-rows","minmax(0,1fr)","important");
+    for(const pane of room.querySelectorAll(".chat,.dicebox,.mine")){
+      pane.style.setProperty("height",height+"px","important");
+      pane.style.setProperty("max-height",height+"px","important");
+      pane.style.setProperty("min-height","0","important");
+    }
+  }else{
+    for(const prop of ["height","min-height","max-height","flex","grid-template-rows"]){
+      room.style.removeProperty(prop);
+    }
+    for(const pane of room.querySelectorAll(".chat,.dicebox,.mine")){
+      pane.style.removeProperty("height");
+      pane.style.removeProperty("max-height");
+      pane.style.removeProperty("min-height");
+    }
+    chat.style.setProperty("height",height+"px","important");
+    chat.style.setProperty("max-height",height+"px","important");
+    chat.style.setProperty("min-height","0","important");
+  }
+  for(const [name,value] of Object.entries({
+    display:"flex","flex-direction":"column","flex":"1 1 0%","height":"0px",
+    "min-height":"0px","overflow-y":"auto","overflow-x":"hidden"
+  })){feed.style.setProperty(name,value,"important");}
+  for(const item of feed.children)item.style.flex="0 0 auto";
+}
+function setupPanelResizers(){
+const room=$("workspace-grid"),handles=[["resize-chat","chat"],["resize-character","character"]];
+function geometry(){return {usable:room.clientWidth-48,enabled:window.innerWidth>1060&&room.clientWidth>=850};}
+function limit(v,min,max){return Math.max(min,Math.min(max,v));}
+function apply(){
+let {usable,enabled}=geometry();
+if(!enabled){room.style.removeProperty("grid-template-columns");room.classList.add("resize-disabled");return;}
+room.classList.remove("resize-disabled");
+state.layout=state.layout||{chat:23,dice:35};
+let minChat=190/usable*100,minDice=285/usable*100,minRight=270/usable*100;
+let chat=limit(Number(state.layout.chat)||23,minChat,100-minDice-minRight);
+let dice=limit(Number(state.layout.dice)||35,minDice,100-chat-minRight);
+state.layout.chat=chat;state.layout.dice=dice;
+room.style.gridTemplateColumns=Math.round(usable*chat/100)+"px 8px "+Math.round(usable*dice/100)+"px 8px minmax(0,1fr)";
+}
+function nudge(which,amount){
+const {usable,enabled}=geometry();if(!enabled)return;
+let chat=Number(state.layout.chat)||23,dice=Number(state.layout.dice)||35;
+let delta=amount/usable*100,minChat=190/usable*100,minDice=285/usable*100,minRight=270/usable*100;
+if(which==="chat"){let n=limit(chat+delta,minChat,chat+dice-minDice);dice-=n-chat;chat=n;}
+else{dice=limit(dice+delta,minDice,100-chat-minRight);}
+state.layout={chat,dice};apply();
+}
+for(const [id,which] of handles){
+let handle=$(id);
+handle.addEventListener("keydown",ev=>{
+if(ev.key!=="ArrowLeft"&&ev.key!=="ArrowRight")return;
+ev.preventDefault();nudge(which,ev.key==="ArrowRight"?22:-22);save();
+});
+handle.addEventListener("pointerdown",ev=>{
+if(ev.button!==0||!geometry().enabled)return;
+ev.preventDefault();let startX=ev.clientX,old={...state.layout},width=geometry().usable;
+handle.setPointerCapture(ev.pointerId);room.classList.add("resizing");
+const move=e=>{
+let delta=(e.clientX-startX)/width*100;
+state.layout={...old};
+if(which==="chat"){
+let minChat=190/width*100,minDice=285/width*100;
+let n=limit(old.chat+delta,minChat,old.chat+old.dice-minDice);
+state.layout.chat=n;state.layout.dice=old.dice-(n-old.chat);
+}else{
+state.layout.dice=limit(old.dice+delta,285/width*100,100-old.chat-270/width*100);
+}
+apply();
+};
+const stop=()=>{
+handle.removeEventListener("pointermove",move);handle.removeEventListener("pointerup",stop);
+handle.removeEventListener("pointercancel",stop);room.classList.remove("resizing");save();
+};
+handle.addEventListener("pointermove",move);handle.addEventListener("pointerup",stop);handle.addEventListener("pointercancel",stop);
+});
+}
+window.addEventListener("resize",apply);apply();
+}
+
+if(!state.exampleFullAdded){
+  let sample=actor("goblin");
+  if(sample&&!sample.statBlock){
+    sample.statBlock={mode:"full",name:"Goblin Scout (sample)",ac:14,speed:30,stats:{str:8,dex:16,con:10,int:10,wis:8,cha:8},attacks:"Shortbow: +5 to hit, 1d6+3 piercing",traits:"Nimble Escape: disengage or hide as a bonus action.",notes:"Sample monster statistics for testing the UI."};
+  }
+  state.exampleFullAdded=true;save();
+}
+/* Authorized live roster data remains transient and never reaches localStorage. */
+window.TerravaleRoomPreview=Object.freeze({
+ openExistingPicker(records,context){openExistingPicker(records,context);},
+ isLive(){return true;},
+ useRoster({actors,ownId,isDm,campaignName,userId}){
+ const old=state;
+ state={...base(),actors:Array.isArray(actors)?actors:[],dm:!!isDm,userId:userId||"",own:ownId||"",selected:ownId||"",
+  sidePanel:isDm?"dm":"character",activeCollapsed:old.activeCollapsed,layout:old.layout,sheetTab:old.sheetTab};
+ $("mode-label").textContent=isDm?"DM":"Player";
+ $("live-campaign-caption").textContent=campaignName+" · Shared session";
+ render();
+ },
+ applyServer(payload){
+ if(!payload)return;
+ const prev=new Map(state.actors.map(x=>[x.id,x]));
+ const server=Array.isArray(payload.actors)?payload.actors:[];
+ const extras=state.actors.filter(x=>x.type==="Player"&&!server.some(y=>y.id===x.id));
+ state.actors=[...server.map(x=>({...prev.get(x.id),...x,imageUrl:prev.get(x.id)?.imageUrl||x.imageUrl||"",
+ liveScores:prev.get(x.id)?.liveScores||x.liveScores})),...extras];
+ state.queue=Array.isArray(payload.queue)?payload.queue.filter(id=>state.actors.some(x=>x.id===id)):[];
+ state.round=Number(payload.round)||1;state.steps=Number(payload.steps)||0;
+ state.version=Number(payload.version)||0;render();
+ },
+ applyMessages(messages){state.messages=Array.isArray(messages)?messages:[];feedRender();},
+ refreshPortraits(rows){for(const x of rows||[]){let a=actor(x.id);if(a)a.imageUrl=x.imageUrl||"";}render();}
+});
+render();
+setupPanelResizers();
+lockChatHeight();
+window.addEventListener("resize",lockChatHeight);
+document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
+})();
+</script>
+<script src="./session-room-live.js" defer></script>
+</body>
+</html>
