@@ -147,6 +147,7 @@ jobs:
           test -s site/session-room-v2/session-room-v2-portrait-cards.css
           test -s site/session-room-v2/session-room-v2-initiative.css
           grep -q 'initiative-manager-open' site/session-room-v2/index.html
+          grep -q 'existing-character-open' site/session-room-v2/index.html
           grep -q 'active-collapse' site/session-room-v2/index.html
           grep -q 'codex-missing-portrait' site/session-room-v2/index.html
           grep -q 'codex-theme-select' site/session-room-v2/index.html
@@ -174,6 +175,9 @@ jobs:
         run: |
           node --check site/session-room-v2/session-room-v2-live-roster.js
           node site-overrides/test-v2-live-roster.cjs
+      - name: Regression check V2 add existing characters
+        shell: bash
+        run: node site-overrides/test-v2-existing-character.cjs
       - name: Regression check V2 initiative setup and player roll
         shell: bash
         run: node site-overrides/test-v2-initiative.cjs
