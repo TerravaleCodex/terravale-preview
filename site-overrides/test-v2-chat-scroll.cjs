@@ -18,7 +18,8 @@ try{
  feed.scrollTop=0;
  const after={...measure(),feedClient:feed.clientHeight,feedScroll:feed.scrollHeight};
  feed.scrollTop=feed.scrollHeight;after.scrolled=feed.scrollTop;
- const pass=after.chat>=425&&after.chat<=522&&after.feedScroll>after.feedClient+100&&after.scrolled>100&&Math.abs(after.body-before.body)<10&&after.panels.every((h,j)=>Math.abs(h-before.panels[j])<10);
+ const target=Math.round(Math.min(760,Math.max(610,window.innerHeight*.72)));
+ const pass=Math.abs(after.chat-target)<=2&&Math.abs(after.room-target)<=2&&after.feedScroll>after.feedClient+100&&after.scrolled>100&&Math.abs(after.body-before.body)<10&&after.panels.every((h,j)=>Math.abs(h-before.panels[j])<10);
  document.body.dataset.chatRegression=encodeURIComponent(JSON.stringify({pass,before,after}));
 }catch(err){document.body.dataset.chatRegression=encodeURIComponent(JSON.stringify({pass:false,error:String(err)}));}
  }.toString()+')();</scr'+'ipt>';
