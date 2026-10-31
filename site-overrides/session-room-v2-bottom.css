@@ -312,9 +312,9 @@
 @media(min-width:1061px){
   .room#workspace-grid{
     flex:0 0 auto;
-    height:clamp(465px, calc(100dvh - 655px), 670px);
+    height:clamp(610px, 72dvh, 760px);
     min-height:0;
-    max-height:670px;
+    max-height:760px;
     grid-template-rows:minmax(0,1fr);
     align-items:stretch;
   }
