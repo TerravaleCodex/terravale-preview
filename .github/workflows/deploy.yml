@@ -201,7 +201,7 @@ jobs:
           cp site-overrides/session-room-live.css site/session-room/session-room-live.css
           cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
           for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
-            cp "site-overrides/session-room-v2-\${style}.css" "site/session-room/session-room-v2-\${style}.css"
+            cp "site-overrides/session-room-v2-${style}.css" "site/session-room/session-room-v2-${style}.css"
           done
           python3 - <<'PY'
           from pathlib import Path
