@@ -83,7 +83,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <option value="null-meridian">404: Magic Not Found</option>
 </select></label><span class="cloud">PREVIEW</span></div></header>
 <main>
-<section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><a class="btn small" href="./encounter-library/">Encounter Library ↗</a><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
+<section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><a class="btn small" href="./encounter-library/">Encounter Library ↗</a><button class="btn small" id="live-roster-button" type="button">Use Live Roster</button><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose your campaign" hidden></select><span id="live-roster-status" class="meta live-roster-status" role="status">Sample characters · not signed in</span><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
 <div class="preview"><div><strong>Independent design test.</strong> Sample combatants, simulated rolls and local-only chat. Nothing here changes your live campaign, characters or existing Session Room.</div><div id="mode-label">DM preview</div></div>
 <section class="panel initiative" aria-label="Initiative order">
  <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
@@ -206,13 +206,14 @@ messages:[
 {kind:"roll",who:"shadyStray",label:"1d20+7",total:12,detail:"5 + 7",time:"01:30"},
 {kind:"text",who:"Derulo",message:"we can try to sneak around",time:"01:31"}
 ]});
+let liveMode=false, demoSnapshot=null;
 let state;try{state=JSON.parse(localStorage.getItem(key)||"null")||base();if(!Array.isArray(state.queue)||!Array.isArray(state.actors))state=base();}catch(e){state=base()}
 const $=(id)=>document.getElementById(id);
 const esc=(value)=>String(value).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const actor=(id)=>state.actors.find(a=>a.id===id);
 const current=()=>actor(state.queue[0]);
 const clock=()=>new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-const save=()=>{try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}};
+const save=()=>{if(liveMode)return;try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}};
 const hp=(a)=>{
 if(a.hidden&&!state.dm)return '<div class="hp-track"></div><div class="hp-text">HP hidden by DM</div>';
 let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
@@ -316,7 +317,7 @@ shystray:{scores:{STR:16,DEX:12,CON:14,INT:8,WIS:10,CHA:10},proficiency:3,saves:
 };
 const prettyMod=n=>n>=0?"+"+n:String(n);
 function previewScores(a){
-return sampleCharacters[a.id]||{scores:{STR:null,DEX:null,CON:null,INT:null,WIS:null,CHA:null},proficiency:0,saves:[],skills:[],expertise:[]};
+return a?.liveScores||sampleCharacters[a.id]||{scores:{STR:null,DEX:null,CON:null,INT:null,WIS:null,CHA:null},proficiency:0,saves:[],skills:[],expertise:[]};
 }
 function playerAbilityView(a){
 const data=previewScores(a),chosen=state.turnAbility===undefined?"DEX":state.turnAbility;
@@ -434,7 +435,7 @@ let a=actor(state.own);if(!a){$("my-character-content").innerHTML='<div class="e
 let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1))),tab=state.sheetTab||"Combat";
 let selector=state.dm?'<label class="own-selector">Preview character <select id="my-character-choice" class="field" aria-label="Choose preview character">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
 let tabs=["Combat","Abilities","Resources","Inventory","Conditions","Notes"];
-$("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">MY CHARACTER · QUICK SHEET</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><span class="own-connected">● Demo character</span></div></div>'+
+$("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">MY CHARACTER · QUICK SHEET</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><span class="own-connected">'+(liveMode?"● Signed-in campaign · read-only":"● Demo character")+'</span></div></div>'+
 '<div class="own-vitals"><div class="own-hp"><div class="subheading">Hit Points</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':pct<60?'mid':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+' / '+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
 '<div class="own-condition-row"><span class="micro">STATUS</span><div class="conditions">'+tokens(a)+'</div></div>'+selector+
 '<div class="own-tabs" role="tablist" aria-label="My character quick sheet">'+tabs.map(t=>'<button role="tab" type="button" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
@@ -602,7 +603,7 @@ let a=actor(conditionTargetId)||current();a.conditions=Array.from($("condition-o
 save();render();$("condition-modal").close();
 });
 $("view-mode").addEventListener("click",()=>{state.dm=!state.dm;if(!state.dm)state.sidePanel="character";state.selected=state.own;save();render();});
-$("reset").addEventListener("click",()=>{if(confirm("Reset all sample combatants and chat to the original demonstration state?")){state=base();save();render();}});
+$("reset").addEventListener("click",()=>{if(confirm("Reset the current local workshop state?")){if(liveMode){window.TerravaleRoomPreview?.switchToDemo();}state=base();save();render();}});
 $("tab-chat").addEventListener("click",()=>{state.tab="chat";save();feedRender();});
 $("tab-messages").addEventListener("click",()=>{state.tab="messages";save();feedRender();});
 $("tab-rolls").addEventListener("click",()=>{state.tab="rolls";save();feedRender();});
@@ -735,6 +736,41 @@ if(!state.exampleFullAdded){
   }
   state.exampleFullAdded=true;save();
 }
+/* Authorized live roster data remains transient and never reaches localStorage. */
+window.TerravaleRoomPreview=Object.freeze({
+  useRoster({actors,ownId,isDm,campaignName}){
+    if(!Array.isArray(actors)||!actors.length)throw Error("No authorized roster entries");
+    if(!liveMode)demoSnapshot=state;
+    const safe=actors.filter(a=>a&&typeof a.id==="string"&&a.type==="Player");
+    if(!safe.length)throw Error("No approved characters could be read");
+    liveMode=true;
+    const own=safe.find(a=>a.id===ownId);
+    state={...base(),dm:!!isDm,round:1,steps:0,actors:safe,
+      queue:safe.map(a=>a.id),own:own?.id||"",selected:own?.id||safe[0].id,
+      sidePanel:own?"character":isDm?"dm":"character",turnAbility:null,
+      activeCollapsed:demoSnapshot?.activeCollapsed||false,messages:[],
+      sheetTab:"Combat",layout:demoSnapshot?.layout||{chat:23,dice:35}};
+    $("mode-label").textContent="Authorized roster · read-only preview";
+    $("live-roster-status").textContent=campaignName+" · "+safe.length+" active characters";
+    $("live-roster-button").textContent="Use Demo Roster";
+    render();
+  },
+  switchToDemo(){
+    if(!liveMode)return;
+    liveMode=false;state=demoSnapshot||base();demoSnapshot=null;
+    $("mode-label").textContent="Sample-data workshop";
+    $("live-roster-button").textContent="Use Live Roster";
+    $("live-roster-status").textContent="Sample characters · no account data";
+    render();
+  },
+  isLive(){return liveMode;},
+  refreshPortraits(entries){
+    if(!liveMode||!Array.isArray(entries))return;
+    for(const row of entries){const a=actor(row.id);if(a&&typeof row.imageUrl==="string")a.imageUrl=row.imageUrl;}
+    render();
+  }
+});
+
 render();
 setupPanelResizers();
 lockChatHeight();
@@ -742,5 +778,6 @@ window.addEventListener("resize",lockChatHeight);
 document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
 })();
 </script>
+<script src="./session-room-v2-live-roster.js" defer></script>
 </body>
 </html>
