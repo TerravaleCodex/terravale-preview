@@ -25,6 +25,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-sheet-style.css">
 <link rel="stylesheet" href="./session-room-v2-bottom.css?v=20261031-scroll-fix-2">
 <link rel="stylesheet" href="./session-room-v2-codex.css?v=20261031-style-unification-1">
+<link rel="stylesheet" href="./session-room-v2-portrait-cards.css?v=20261031-tall-cards">
 <style id="fixed-chat-scroll-guard">
 /* V2 critical height constraints: content must never determine chat panel height. */
 #workspace-grid{min-height:0}
@@ -186,7 +187,7 @@ const definitions={
 "Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
 "Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
 };
-const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",turnAbility:"DEX",sheetTab:"Combat",sidePanel:"character",layout:{chat:23,dice:35},rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
+const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",turnAbility:"DEX",sheetTab:"Combat",sidePanel:"character",layout:{chat:23,dice:35},activeCollapsed:false,rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
 {id:"kai",name:"Kai",type:"Player",subtitle:"Lv 5 · Fighter",init:24,hp:42,max:42,hidden:false,conditions:[],initial:"K",face:"🧑🏻‍🎤"},
 {id:"derulo",name:"Derulo",type:"Player",subtitle:"Lv 5 · Shaman",init:19,hp:28,max:34,hidden:false,conditions:[],initial:"D",face:"🐺"},
 {id:"haruki",name:"Haruki",type:"Player",subtitle:"Lv 5 · Artificer",init:17,hp:31,max:31,hidden:false,conditions:[],initial:"H",face:"🧝🏻"},
@@ -218,12 +219,29 @@ let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
 return '<div class="hp-track"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><div class="hp-text">'+a.hp+' / '+a.max+' HP'+(a.hidden?' · DM only':'')+'</div>';
 };
 const tokens=(a)=>a.conditions.length?a.conditions.map(c=>'<span class="pill harm tip" tabindex="0" role="note" data-tip="'+esc(definitions[c]||'Campaign condition')+'">'+esc(c)+'</span>').join(""):'<span class="pill none">No conditions</span>';
-const portrait=(a,clazz)=>'<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-hidden="true">'+esc(a.face||a.initial||a.name.slice(0,1))+'</span>';
+/* An authentic Codex star crest is the no-picture placeholder.
+ * Emoji from old local sample actors are intentionally ignored.
+ * Real images can be supplied later through the approved character upload. */
+const emptyCrest='<svg class="codex-missing-portrait" viewBox="0 0 100 100" focusable="false" aria-hidden="true"><path d="M50 13 L59 40 L87 50 L59 59 L50 87 L41 59 L13 50 L41 40 Z" fill="var(--c-accent)" opacity=".9"/><path d="M50 26 L56 43 L74 50 L56 56 L50 74 L44 56 L26 50 L44 43 Z" fill="var(--c-paper)" opacity=".62"/></svg>';
+function portrait(a,clazz){
+const path=typeof a.imageUrl==="string"?a.imageUrl.trim():"";
+const allowed=path.startsWith("/terravale-preview/")||/^https:\/\/[^\s"'<>]+$/i.test(path);
+return '<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-label="'+(allowed?'Portrait of '+esc(a.name):'No image for '+esc(a.name))+'">'+emptyCrest+(allowed?'<img class="codex-portrait-image" src="'+esc(path)+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span>';
+}
 function queueRender(){
-$("round-info").textContent='Round '+state.round+' · '+state.queue.length+' combatants · End turn moves the first card to the back →';
+$("round-info").textContent='Round '+state.round+' · '+state.queue.length+' combatants · first card returns to the end after its turn';
 $("queue").innerHTML=state.queue.map((id,i)=>{
-let a=actor(id);if(!a)return '';
-return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+a.init+(i===0?', acting now':'')+'"><div class="tag">'+(i===0?'● CURRENT TURN':a.type)+'</div><span class="initiative-num">'+a.init+'</span>'+portrait(a)+'<div class="name">'+esc(a.name)+'</div><div class="type">'+esc(a.subtitle)+'</div>'+hp(a)+'<div class="conditions">'+tokens(a)+'</div>'+(i===0?'<div class="turn-arrow">▲ ACTING NOW</div>':'')+'</button>';
+const a=actor(id);if(!a)return '';
+const conditions=a.conditions?.length?'<div class="card-conditions">'+tokens(a)+'</div>':'<div class="card-conditions card-conditions-empty" aria-hidden="true"></div>';
+return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+a.init+(i===0?', acting now':'')+'">'+
+'<span class="card-eyebrow">'+(i===0?'● CURRENT TURN':esc(a.type))+'</span>'+
+portrait(a)+
+'<span class="name">'+esc(a.name)+'</span>'+
+'<span class="card-initiative"><span>INITIATIVE</span><strong>'+a.init+'</strong></span>'+
+'<span class="type">'+esc(a.subtitle)+'</span>'+
+'<span class="card-hp">'+hp(a)+'</span>'+
+conditions+
+'</button>';
 }).join('');
 $("next-turn").disabled=!state.dm;$("add-actor").disabled=!state.dm;
 }
@@ -349,14 +367,19 @@ let hpbuttons=state.dm?'<div class="hpbuttons"><button class="btn small" data-ac
 let condEdit=state.dm?'<button type="button" class="btn small" data-action="conditions">Edit conditions</button>':'';
 let hideHP=state.dm&&a.type!=="Player"?'<button class="btn small" data-action="toggle-hidden">'+(a.hidden?'Reveal HP':'Hide HP')+'</button>':'';
 let stateType=a.type==="Player"?"Player character":a.statBlock?"Saved stat block":"Quick encounter";
+let collapsed=!!state.activeCollapsed;
+$("active-combatant").classList.toggle("is-collapsed",collapsed);
 $("active-combatant").innerHTML=
-'<div class="active-bar-head"><span class="micro">CURRENT TURN · ROUND '+state.round+'</span><span class="meta">'+esc(stateType)+' · Initiative '+a.init+'</span></div>'+
+'<div class="active-bar-head"><div class="turn-identity"><span class="micro">CURRENT TURN · ROUND '+state.round+'</span><span class="turn-summary-name">'+esc(a.name)+'</span><span class="turn-summary-init">Initiative '+a.init+'</span><span class="turn-summary-hp">'+(canhp?'HP '+a.hp+' / '+a.max:'HP hidden')+'</span></div>'+
+'<div class="turn-header-actions">'+(collapsed&&state.dm?'<button class="btn small" data-action="next">End Turn →</button>':'')+
+'<button class="btn small turn-collapse-toggle" type="button" data-action="active-collapse" aria-expanded="'+!collapsed+'" aria-controls="active-expanded-content">'+(collapsed?'Expand details ▾':'Collapse details ▴')+'</button></div></div>'+
+'<div id="active-expanded-content" class="active-expanded-content" '+(collapsed?'hidden':'')+'>'+
 '<div class="combatant-overview">'+
 '<div class="combatant-portrait">'+portrait(a)+'</div>'+
-'<div class="combatant-dashboard"><div class="combatant-identity"><div><h3 class="combatant-name">'+esc(a.name)+'</h3><div class="combatant-sub">'+esc(a.subtitle)+' · '+esc(a.type)+'</div></div><div class="combatant-marker">'+(a.type==="Player"?"Player character":a.statBlock?"Saved stat block":"Quick encounter")+'</div></div>'+activeDetails(a)+
+'<div class="combatant-dashboard"><div class="combatant-identity"><div><h3 class="combatant-name">'+esc(a.name)+'</h3><div class="combatant-sub">'+esc(a.subtitle)+' · '+esc(a.type)+'</div></div><div class="combatant-marker">'+esc(stateType)+'</div></div>'+activeDetails(a)+
 '<div class="combatant-bottom"><div class="combatant-hp"><div class="subheading">Hit Points</div>'+hpContent+hpbuttons+'</div><div class="combatant-condition"><div class="subheading">Conditions <span class="meta">hover for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+condEdit+'</div></div></div>'+
 '<div class="combatant-controls">'+hideHP+(state.dm?'<button class="btn primary end-turn-large" data-action="next">End Turn →</button>':'<div class="muted">The DM advances the turn.</div>')+'</div>'+
-'</div>';
+'</div></div>';
 }
 
 function sampleActions(a){
@@ -504,7 +527,7 @@ if(!Number.isInteger(init)||init< -20||init>99||!Number.isInteger(max)||max<1||m
 let x=selectedTemplate(),type=$("new-type").value;
 let id="preview-"+Date.now()+"-"+Math.floor(Math.random()*9999);
 let newActor={id,name,type,subtitle:x?(type+" · Encounter Library"):(type+" · Quick encounter"),init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase(),
-face:x?.portrait||(type==="Monster"?"👹":type==="Creature"?"🐺":type==="NPC"?"🧙":"🧑"),
+face:null,
 notes:x?.notes||"",templateId:x?.id||null,statBlock:x?.mode==="full"?structuredClone(x):null};
 state.actors.push(newActor);state.queue.push(id);save();render();$("add-modal").close();form.reset();populateTemplates();
 }
@@ -529,6 +552,7 @@ let b=e.target.closest("button");if(!b)return;
 if(b.dataset.close){$(b.dataset.close).close();return;}
 let action=b.dataset.action;if(!action)return;
 if(action==="next")next();
+if(action==="active-collapse"){state.activeCollapsed=!state.activeCollapsed;save();activeRender();}
 if(action==="turn-ability"){state.turnAbility=state.turnAbility===b.dataset.ability?null:b.dataset.ability;save();activeRender();}
 if(action==="turn-ability-close"){state.turnAbility=null;save();activeRender();}
 if(action==="turn-check"){let a=actor(b.dataset.id),bonus=Number(b.dataset.bonus||0),notation="1d20"+prettyMod(bonus);roll(notation,b.dataset.check+" · "+notation,a?.name||"You");}
