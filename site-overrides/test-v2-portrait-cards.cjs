@@ -13,7 +13,7 @@ try{
 const all=s=>Array.from(document.querySelectorAll(s)),sel=s=>document.querySelector(s),rect=e=>e.getBoundingClientRect();
 const cards=all("#queue>.actor"),card=cards[0],portrait=card?.querySelector(".portrait"),name=card?.querySelector(".name"),ini=card?.querySelector(".card-initiative");
 const conditions=card?.querySelector(".card-conditions"),crest=card?.querySelector(".codex-missing-portrait");
-const cardBox=card&&rect(card),photoBox=portrait&&rect(portrait);
+const cardBox=card&&rect(card),photoBox=portrait&&rect(portrait),nameBox=name&&rect(name),initiativeBox=ini&&rect(ini);
 const before=rect(sel("#active-combatant")).height;
 const toggle=sel("[data-action='active-collapse']");
 toggle?.click();
@@ -26,10 +26,10 @@ const persists=sel("#active-combatant").classList.contains("is-collapsed");
 sel("[data-action='active-collapse']")?.click();
 const expanded=rect(sel("#active-combatant")).height;
 const score={cards:cards.length,cardWidth:cardBox?.width,cardHeight:cardBox?.height,photoWidth:photoBox?.width,photoHeight:photoBox?.height,
-nameY:name&&rect(name).top,initiativeY:ini&&rect(ini).top,crest:!!crest,portraitText:portrait?.textContent,
+nameY:nameBox?.top,initiativeY:initiativeBox?.top,crest:!!crest,portraitText:portrait?.textContent,
 before,collapsed,hidden,afterRotation:next,persists,expanded,conditions:!!conditions};
-const pass=cards.length>=7&&cardBox.height>cardBox.width*1.75&&photoBox.height>=photoBox.width*.85&&rect(ini).top>=rect(name).bottom-1&&
-!!crest&&portrait.textContent.trim()===""&&before>150&&collapsed<90&&collapsed<before*.45&&hidden&&prev!==next&&persists&&expanded>150&&conditions;
+const pass=cards.length>=7&&cardBox.height>cardBox.width*1.75&&photoBox.height>=photoBox.width*.85&&initiativeBox.top>=nameBox.bottom-1&&
+!!crest&&portrait.textContent.trim()===""&&before>150&&collapsed<90&&collapsed<before*.45&&hidden&&prev!==next&&persists&&expanded>150&&!!conditions;
 document.body.dataset.cardRegression=encodeURIComponent(JSON.stringify({pass,...score}));
 }catch(e){document.body.dataset.cardRegression=encodeURIComponent(JSON.stringify({pass:false,error:String(e)}));}
 }.toString()+")();</scr"+"ipt>";
