@@ -240,7 +240,7 @@ function previewScores(a){
 return sampleCharacters[a.id]||{scores:{STR:null,DEX:null,CON:null,INT:null,WIS:null,CHA:null},proficiency:0,saves:[],skills:[],expertise:[]};
 }
 function playerAbilityView(a){
-const data=previewScores(a),chosen=state.turnAbility||"DEX";
+const data=previewScores(a),chosen=state.turnAbility===undefined?"DEX":state.turnAbility;
 let tiles=abilities.map(d=>{
 let score=data.scores[d.code];let bonus=score==null?null:Math.floor((score-10)/2),selected=chosen===d.code;
 return '<button class="sheet-ability-tile '+(selected?"selected":"")+'" type="button" data-action="turn-ability" data-ability="'+d.code+'" aria-expanded="'+selected+'" title="Show '+d.name+' checks and saving throw">'+
