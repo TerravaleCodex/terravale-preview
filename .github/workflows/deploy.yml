@@ -214,6 +214,11 @@ jobs:
           # Session Room route only after V2 prototype tests are successful.
           mkdir -p site/session-room/encounter-library
           cp site-overrides/session-room-live.html site/session-room/index.html
+          # Next static export may also include /session-room.html. Overwrite
+          # that route too so slashless navigation cannot serve old content.
+          cp site-overrides/session-room-live.html site/session-room.html
+          test -s site/session-room.html
+          grep -q 'data-room-production="1"' site/session-room.html
           cp site-overrides/session-room-live.js site/session-room/session-room-live.js
           cp site-overrides/session-room-live.css site/session-room/session-room-live.css
           cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
@@ -290,3 +295,31 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Public smoke test — real Session Room replaces old route
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://terravalecodex.github.io/terravale-preview"
+          # Verify the public site, not only the generated GitHub Actions artifact.
+          for route in "/session-room/" "/session-room" "/session-room.html"; do
+            passed=0
+            for attempt in $(seq 1 18); do
+              html=$(curl --fail --silent --show-error --location --max-time 15                 --header 'Cache-Control: no-cache'                 "${base}${route}?verify=${GITHUB_SHA}-${attempt}" || true)
+              if grep -q 'data-room-production="1"' <<< "$html" &&
+                 grep -q 'session-room-live.js' <<< "$html" &&
+                 ! grep -q 'Campaign chat</h' <<< "$html"; then
+                 passed=1
+                 break
+              fi
+              sleep 5
+            done
+            if [[ "$passed" != "1" ]]; then
+              echo "::error::Production Session Room is not being served at $route"
+              exit 1
+            fi
+            echo "PASS public route $route serves new Session Room"
+          done
+          for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
+            curl --fail --silent --show-error --location --max-time 15               "${base}${asset}?verify=${GITHUB_SHA}" -o /dev/null
+            echo "PASS public asset $asset"
+          done
