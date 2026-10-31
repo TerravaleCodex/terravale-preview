@@ -127,7 +127,13 @@ async function loadRoster(id){
   viewer=campaigns;
   picker.innerHTML=campaigns.map(x=>'<option value="'+x.id+'">'+x.name.replace(/[<>&"']/g,"")+'</option>').join("");
   picker.hidden=campaigns.length<2;
-  let active=campaigns.find(x=>x.id===id)||campaigns.find(x=>x.id===previewCampaignId)||campaigns[0];
+  let active=campaigns.find(x=>x.id===id)||campaigns.find(x=>x.id===previewCampaignId);
+  if(!active){
+   const rosterRows=result(await c.from("party_room_roster").select("campaign_id")
+     .in("campaign_id",campaigns.map(x=>x.id)),"Party roster selection");
+   const activeSet=new Set((rosterRows||[]).map(row=>row.campaign_id));
+   active=campaigns.find(x=>activeSet.has(x.id))||campaigns[0];
+  }
   picker.value=active.id;
   const data=await rosterForCampaign(c,active);
   if(sequence!==loadCounter)return;
