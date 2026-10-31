@@ -202,7 +202,19 @@ async function refreshRoom(){
  let r=await sb.rpc("session_room_get",{target_campaign:roomId});
  if(r.error){show("Room sync failed: "+safeMessage(r.error.message),true);return;}
  roomVersion=Number(r.data?.version)||0;roomReady=true;
- window.TerravaleRoomPreview.applyServer(r.data||{});
+ // Refresh player HP/conditions from the approved sheet to avoid stale copies.
+ const loaded=r.data||{};
+ const players=(loaded.actors||[]).filter(a=>a.type==="Player"&&/^[0-9a-f-]{36}$/i.test(a.id));
+ if(players.length){
+  const current=await sb.from("character_state").select("character_id,hp,conditions").in("character_id",players.map(x=>x.id));
+  if(!current.error){
+   const byId=new Map((current.data||[]).map(x=>[x.character_id,x]));
+   loaded.actors=loaded.actors.map(x=>{const row=byId.get(x.id);return row?{...x,
+    hp:Number.isInteger(row.hp)?row.hp:x.hp,
+    conditions:Array.isArray(row.conditions)?row.conditions:x.conditions}:x;});
+  }
+ }
+ window.TerravaleRoomPreview.applyServer(loaded);
  lastSignature=signature(window.TerravaleRoomPreview.readState());
 }
 async function pushRoom(){
@@ -272,7 +284,16 @@ async function refreshEvents(){
  }catch(e){show("Chat unavailable: "+safeMessage(e.message),true);}
  finally{fetchingEvents=false;}
 }
-window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll});
+async function updateSheetState(characterId,patch){
+ if(!roomDm||!roomId||!characterId)return;
+ const safe={};
+ if(Number.isInteger(patch.hp)&&patch.hp>=0&&patch.hp<=99999)safe.hp=patch.hp;
+ if(Array.isArray(patch.conditions))safe.conditions=patch.conditions.filter(x=>typeof x==="string"&&x.length<=64).slice(0,20);
+ if(!Object.keys(safe).length)return;
+ const r=await sb.from("character_state").update(safe).eq("character_id",characterId);
+ if(r.error)show("Character sheet update failed: "+safeMessage(r.error.message),true);
+}
+window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,updateSheetState});
 setInterval(()=>{if(!document.hidden&&roomId){void refreshRoom();void refreshEvents();}},4500);
 
 button.addEventListener("click",()=>{
