@@ -369,19 +369,31 @@ let el=$("feed");
 el.innerHTML=list.length?list.slice(-120).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle roll-label">'+esc(m.label)+'</div><div class="roll-number"><strong class="roll-total">'+m.total+'</strong><span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">Nothing in this channel yet.</div>';
 el.scrollTop=el.scrollHeight;
 }
-const checkData={
-kai:{abilities:[["STR","+7"],["DEX","+2"],["CON","+5"],["INT","+0"],["WIS","+1"],["CHA","-1"]],saves:[["STR","+7"],["DEX","+2"],["CON","+5"],["INT","+0"],["WIS","+4"],["CHA","+2"]],skills:[["Athletics","+7"],["Acrobatics","+2"],["History","+0"],["Insight","+1"],["Intimidation","-1"],["Investigation","+0"],["Medicine","+1"],["Nature","+0"],["Perception","+1"],["Religion","+0"],["Sleight of Hand","+2"],["Stealth","+2"],["Survival","+1"]]},
-derulo:{abilities:[["STR","-1"],["DEX","+2"],["CON","+1"],["INT","+0"],["WIS","+4"],["CHA","+1"]],saves:[["WIS","+7"],["CHA","+4"]],skills:[["Nature","+3"],["Animal Handling","+7"],["Survival","+7"],["Perception","+7"],["Insight","+7"]]},
-haruki:{abilities:[["STR","+0"],["DEX","+2"],["CON","+1"],["INT","+3"],["WIS","+0"],["CHA","-1"]],saves:[["CON","+3"],["INT","+5"]],skills:[["Arcana","+5"],["Investigation","+5"],["Sleight of Hand","+4"]]},
-shystray:{abilities:[["STR","+3"],["DEX","+1"],["CON","+2"],["INT","-1"],["WIS","+0"],["CHA","+0"]],saves:[["STR","+5"],["CON","+4"]],skills:[["Athletics","+5"],["Survival","+2"],["Intimidation","+2"]]}
-};
+function bonusFor(a,kind,key){
+let data=previewScores(a),ability=abilities.find(x=>x.code===key||x.skills.includes(key));
+if(!ability)return null;
+let value=data.scores?.[ability.code];if(value==null)return null;
+let mod=Math.floor((Number(value)-10)/2),prof=data.proficiency||0;
+if(kind==="save"&&data.saves.includes(ability.code))mod+=prof;
+if(kind==="skill")mod+=data.expertise.includes(key)?2*prof:data.skills.includes(key)?prof:0;
+return mod;
+}
 function renderChecks(){
 let players=state.actors.filter(a=>a.type==="Player");
 if(!state.dm)players=players.filter(a=>a.id===state.own);
-if(!players.some(a=>a.id===state.selected))state.selected=players[0]?.id||"kai";
-$("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join('');
-let s=checkData[state.selected]||checkData.kai;
-$("check-groups").innerHTML=[["Ability checks","abilities"],["Saving throws","saves"],["Skill checks","skills"]].map(([name,field])=>'<div class="subheading" style="margin-top:13px">'+name+'</div><div class="checks">'+s[field].map(([n,val])=>'<button class="check" type="button" data-action="check" data-label="'+esc(n)+'" data-mod="'+esc(val)+'">'+esc(n)+' <strong>'+esc(val)+'</strong></button>').join("")+'</div>').join("");
+if(!players.length){$("roller").innerHTML="";$("check-groups").innerHTML='<p class="own-help">No player character is assigned.</p>';return;}
+if(!players.some(a=>a.id===state.selected))state.selected=players[0].id;
+$("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join("");
+let a=actor(state.selected),data=previewScores(a);
+let section=(name,key,rows)=>'<details class="check-group" data-check-section="'+key+'" '+(state.checkSections?.[key]?'open':'')+'><summary><span>'+esc(name)+'</span><span class="check-count">'+rows.length+'</span></summary><div class="checks">'+rows.map(([label,mod,proficient])=>{
+let disabled=mod==null;
+return '<button class="check" type="button" '+(disabled?'disabled':'')+' data-action="check" data-label="'+esc(label)+'" data-mod="'+(mod??0)+'"><span>'+esc(label)+'</span><span class="check-result">'+(disabled?'—':prettyMod(mod))+'</span>'+(proficient?'<span class="check-trained" title="Proficient or expert">●</span>':'')+'</button>';
+}).join("")+'</div></details>';
+let abilityRows=abilities.map(x=>[x.code,bonusFor(a,"ability",x.code),false]);
+let saveRows=abilities.map(x=>[x.code,bonusFor(a,"save",x.code),data.saves.includes(x.code)]);
+let skillRows=abilities.flatMap(x=>x.skills.map(name=>[name,bonusFor(a,"skill",name),data.skills.includes(name)||data.expertise.includes(name)]));
+state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true};
+$("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
 }
 function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
 function next(){if(!state.dm)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
@@ -457,6 +469,27 @@ if(action==="turn-ability"){state.turnAbility=state.turnAbility===b.dataset.abil
 if(action==="turn-ability-close"){state.turnAbility=null;save();activeRender();}
 if(action==="turn-check"){let a=actor(b.dataset.id),bonus=Number(b.dataset.bonus||0),notation="1d20"+prettyMod(bonus);roll(notation,b.dataset.check+" · "+notation,a?.name||"You");}
 if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();myCharacterRender();}
+if(action==="right-panel"&&state.dm){state.sidePanel=b.dataset.panel==="dm"?"dm":"character";save();myCharacterRender();}
+if(action==="dm-add"&&state.dm){populateTemplates();$("add-modal").showModal();}
+if(action==="own-check"||action==="own-attack"){
+let a=actor(b.dataset.char),mod=Number(b.dataset.bonus)||0;
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)){
+let notation="1d20"+prettyMod(mod);
+roll(notation,(b.dataset.name||"Check")+" · "+notation,a.name);
+}}
+if(action==="own-resource"){
+let a=actor(b.dataset.char),name=b.dataset.resource,max=Number(b.dataset.max),index=Number(b.dataset.index);
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)&&Number.isInteger(max)&&max>=1&&max<=30){
+state.sampleResources=state.sampleResources||{};
+let holder=state.sampleResources[a.id]=state.sampleResources[a.id]||{};
+let curr=holder[name]??max;
+holder[name]=index<curr?index:index+1;
+save();myCharacterRender();
+}}
+if(action==="restore-resources"){
+let a=actor(b.dataset.char);
+if(a&&(state.dm||a.id===state.own)){state.sampleResources=state.sampleResources||{};state.sampleResources[a.id]={};save();myCharacterRender();}
+}
 if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description);
 if(action==="attach"&&state.dm)startAttach();
 if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
@@ -464,8 +497,10 @@ if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelec
 if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
 if(action==="conditions")editConditions(b.dataset.targetId);
 if(action==="check"){
-let a=actor(state.selected);roll("1d20"+b.dataset.mod,esc(b.dataset.label)+" check · 1d20"+b.dataset.mod,a?.name||"You");
-}
+let a=actor(state.selected),mod=Number(b.dataset.mod)||0;
+if(a&&a.type==="Player"&&(state.dm||a.id===state.own)){
+let notation="1d20"+prettyMod(mod);roll(notation,(b.dataset.label||"Check")+" · "+notation,a.name);
+}}
 if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("active-combatant").scrollIntoView({behavior:"smooth",block:"nearest"});}}
 if(action==="inspect"){alert("This is a standalone layout preview. The real character sheet link will be connected during integration.");}
 });
@@ -478,9 +513,10 @@ $("save-conditions").addEventListener("click",()=>{
 let a=actor(conditionTargetId)||current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
 save();render();$("condition-modal").close();
 });
-$("view-mode").addEventListener("click",()=>{state.dm=!state.dm;save();render();});
+$("view-mode").addEventListener("click",()=>{state.dm=!state.dm;if(!state.dm)state.sidePanel="character";state.selected=state.own;save();render();});
 $("reset").addEventListener("click",()=>{if(confirm("Reset all sample combatants and chat to the original demonstration state?")){state=base();save();render();}});
 $("tab-chat").addEventListener("click",()=>{state.tab="chat";save();feedRender();});
+$("tab-messages").addEventListener("click",()=>{state.tab="messages";save();feedRender();});
 $("tab-rolls").addEventListener("click",()=>{state.tab="rolls";save();feedRender();});
 $("chat-form").addEventListener("submit",e=>{
 e.preventDefault();let input=$("chat-input"),msg=input.value.trim();if(!msg)return;
@@ -504,7 +540,13 @@ if(bonus!==0){let m=x.replace(/\s/g,"").match(/^(\d{0,2}d(?:4|6|8|10|12|20|100))
 roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
 });
 $("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
-document.addEventListener("change",e=>{if(e.target.id==="my-character-choice"){state.own=e.target.value;save();myCharacterRender();}});
+document.addEventListener("change",e=>{if(e.target.id==="my-character-choice"){
+state.own=e.target.value;state.selected=e.target.value;save();myCharacterRender();renderChecks();
+}});
+document.addEventListener("toggle",e=>{if(e.target.matches?.("details[data-check-section]")){
+state.checkSections=state.checkSections||{};
+state.checkSections[e.target.dataset.checkSection]=e.target.open;save();
+}},true);
 if(!state.exampleFullAdded){
   let sample=actor("goblin");
   if(sample&&!sample.statBlock){
