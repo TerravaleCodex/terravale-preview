@@ -301,3 +301,104 @@
  .own-ability-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
  .desk-buttons{grid-template-columns:1fr}
 }
+
+
+/* 2026-10-31: CHAT WINDOW HEIGHT FIX
+ * The previous workspace had height:auto, so the grid's automatic row grew
+ * with the message list. Define the workspace row size, then let chat feed
+ * scroll inside a flex child rather than contribute to page height.
+ * Keep all three columns aligned and allow narrower viewports to stack.
+ */
+@media(min-width:1061px){
+  .room#workspace-grid{
+    flex:0 0 auto;
+    height:clamp(465px, calc(100dvh - 655px), 670px);
+    min-height:0;
+    max-height:670px;
+    grid-template-rows:minmax(0,1fr);
+    align-items:stretch;
+  }
+  .room#workspace-grid>.chat,
+  .room#workspace-grid>.dicebox,
+  .room#workspace-grid>.mine{
+    min-height:0;
+    max-height:100%;
+    height:100%;
+    overflow:hidden;
+  }
+}
+.room#workspace-grid>.chat{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow:hidden;
+}
+.room#workspace-grid>.chat .panel-head{
+  flex:0 0 auto;
+}
+.room#workspace-grid>.chat .feed{
+  display:flex;
+  flex-direction:column;
+  flex:1 1 0%;
+  height:0;
+  min-height:0;
+  max-height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+.room#workspace-grid>.chat .feed>.msg,
+.room#workspace-grid>.chat .feed>.empty{
+  flex:0 0 auto;
+}
+.room#workspace-grid>.chat .chat-compose{
+  flex:0 0 auto;
+  margin-top:auto;
+}
+@media(min-width:731px) and (max-width:1060px){
+  .room#workspace-grid{
+    height:auto;
+    min-height:0;
+    max-height:none;
+    grid-template-rows:520px 540px;
+    grid-auto-rows:minmax(0,1fr);
+  }
+  .room#workspace-grid>.chat,
+  .room#workspace-grid>.dicebox{
+    height:520px;
+    min-height:0;
+    max-height:520px;
+  }
+  .room#workspace-grid>.mine{
+    height:540px;
+    min-height:0;
+    max-height:540px;
+  }
+}
+@media(max-width:730px){
+  .room#workspace-grid{
+    height:auto;
+    min-height:0;
+    max-height:none;
+    align-items:stretch;
+  }
+  .room#workspace-grid>.chat{
+    height:430px;
+    min-height:0;
+    max-height:430px;
+    flex:0 0 430px;
+  }
+  .room#workspace-grid>.dicebox{
+    height:565px;
+    min-height:0;
+    max-height:565px;
+    flex:0 0 565px;
+  }
+  .room#workspace-grid>.mine{
+    height:590px;
+    min-height:0;
+    max-height:590px;
+    flex:0 0 590px;
+  }
+}
