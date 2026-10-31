@@ -1,0 +1,199 @@
+/* Session Room V2 — portrait-led initiative / collapsible active turn
+ * Following approved tall-card wireframe, staying within existing Codex palettes.
+ * Loaded after all other workshop style overrides.
+ */
+html[data-codex-theme] .initiative{
+  height:412px!important;min-height:412px!important;max-height:412px!important;
+  flex:0 0 412px!important;display:flex!important;flex-direction:column!important;
+  gap:0;padding:39px 12px 12px!important;margin-bottom:11px;
+  overflow:hidden;
+}
+html[data-codex-theme] .initiative .section-top{
+  position:absolute!important;top:5px!important;left:13px!important;right:13px!important;
+  min-height:28px;max-height:30px;margin:0!important;
+}
+html[data-codex-theme] .initiative .track{
+  display:flex!important;flex:1 1 auto!important;gap:10px!important;
+  min-height:0!important;height:auto!important;max-height:none!important;
+  align-items:stretch!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  overscroll-behavior-x:contain;
+  padding:2px 3px 7px!important;scrollbar-width:thin;
+}
+html[data-codex-theme] .initiative .actor{
+  flex:0 0 174px!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;
+  height:350px!important;min-height:350px!important;max-height:350px!important;
+  width:174px!important;min-width:174px!important;max-width:174px!important;
+  padding:9px 10px 11px!important;
+  gap:0!important;
+  border-radius:8px!important;text-align:left!important;
+  overflow:hidden!important;
+}
+html[data-codex-theme] .initiative .actor.front{
+  padding:8px 9px 10px!important;
+}
+html[data-codex-theme] .initiative .actor .card-eyebrow{
+  display:block!important;
+  font-size:9px;line-height:14px;min-height:14px;height:14px;
+  letter-spacing:.75px;font-weight:700;text-transform:uppercase;
+  color:var(--c-accent);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  margin:0 0 6px;
+}
+html[data-codex-theme] .initiative .actor .portrait{
+  position:relative!important;
+  width:100%!important;max-width:none!important;
+  height:179px!important;min-height:179px!important;max-height:179px!important;
+  margin:0 0 10px!important;
+  flex:0 0 179px!important;
+  border-radius:13px!important;
+  display:grid!important;place-items:center!important;
+}
+html[data-codex-theme] .initiative .actor .name{
+  display:block!important;flex:0 0 auto!important;
+  width:100%;height:auto!important;min-height:19px!important;
+  font:600 15px/1.25 Georgia,serif!important;
+  color:var(--c-ink)!important;margin:0 0 2px!important;
+}
+html[data-codex-theme] .initiative .actor .card-initiative{
+  display:flex;align-items:center;gap:7px;flex:0 0 24px;
+  height:24px;min-height:24px;
+  color:var(--c-sub);white-space:nowrap;
+}
+html[data-codex-theme] .initiative .actor .card-initiative span{
+  font-size:9px;letter-spacing:.65px;font-weight:700;color:var(--c-sub)
+}
+html[data-codex-theme] .initiative .actor .card-initiative strong{
+  color:var(--c-ink);font:600 16px Georgia,serif
+}
+html[data-codex-theme] .initiative .actor .type{
+  flex:0 0 auto!important;display:block!important;
+  width:100%;font-size:10px!important;min-height:15px!important;
+  height:15px!important;max-height:15px!important;line-height:15px!important;
+  color:var(--c-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+html[data-codex-theme] .initiative .actor .card-hp{
+  display:block;width:100%;flex:0 0 28px;min-height:28px;
+  margin:6px 0 0!important;
+}
+html[data-codex-theme] .initiative .actor .card-hp .hp-track{
+  width:100%;height:8px!important;min-height:8px!important;margin:0 0 4px!important;
+  border-radius:15px;overflow:hidden;
+}
+html[data-codex-theme] .initiative .actor .card-hp .hp-text{
+  font-size:10px!important;line-height:14px!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--c-sub)
+}
+html[data-codex-theme] .initiative .actor .card-conditions{
+  display:flex;gap:4px;align-items:center;justify-content:flex-start;
+  flex:0 0 17px;min-height:17px;max-height:17px;
+  margin:5px 0 0!important;overflow:visible;
+}
+html[data-codex-theme] .initiative .actor .card-conditions .pill{
+  font-size:9px;line-height:13px;border-radius:4px;
+  padding:0 5px!important;
+}
+html[data-codex-theme] .initiative .actor .card-conditions-empty{visibility:hidden}
+/* Portrait placeholders use the Terravale star shape, not emoji. */
+html[data-codex-theme] .portrait{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:grid!important;place-items:center!important;
+  color:var(--c-accent);
+}
+html[data-codex-theme] .portrait>.codex-missing-portrait{
+  width:42%;height:42%;max-width:90px;max-height:90px;display:block;
+  filter:none;flex:none;opacity:.92;
+}
+html[data-codex-theme] .portrait>.codex-portrait-image{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  z-index:1;border-radius:inherit;
+}
+/* Compact but clear turn heading, always visible even when folded. */
+html[data-codex-theme] .active{
+  display:block!important;min-height:0!important;height:auto!important;
+  max-height:none!important;
+  padding:11px 14px 14px!important;
+  overflow:visible!important;
+}
+html[data-codex-theme] .active .active-bar-head{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  margin:0!important;padding:0!important;
+  gap:12px;min-height:29px;
+}
+html[data-codex-theme] .active .turn-identity{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0
+}
+html[data-codex-theme] .active .turn-identity .micro{
+  white-space:nowrap;letter-spacing:1px!important
+}
+html[data-codex-theme] .active .turn-summary-name{
+  font:600 16px Georgia,serif;color:var(--c-ink)
+}
+html[data-codex-theme] .active .turn-summary-init,
+html[data-codex-theme] .active .turn-summary-hp{
+  font-size:11px;color:var(--c-sub);white-space:nowrap
+}
+html[data-codex-theme] .active .turn-header-actions{
+  display:flex;align-items:center;justify-content:flex-end;
+  gap:7px;flex:none
+}
+html[data-codex-theme] .active .turn-collapse-toggle{
+  min-height:30px;padding:5px 12px!important;
+  white-space:nowrap;font-size:11px!important;
+}
+html[data-codex-theme] .active .active-expanded-content{
+  margin-top:12px;overflow:visible;
+}
+html[data-codex-theme] .active .active-expanded-content[hidden]{
+  display:none!important
+}
+html[data-codex-theme] .active.is-collapsed{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  padding:9px 13px!important;
+}
+html[data-codex-theme] .active.is-collapsed .active-bar-head{
+  min-height:30px!important;
+}
+html[data-codex-theme] .active:not(.is-collapsed) .combatant-overview{
+  min-height:191px;
+}
+html[data-codex-theme] .active:not(.is-collapsed) .combatant-portrait .portrait{
+  border-radius:11px!important;
+}
+@media(max-width:1450px) and (min-width:1061px){
+  html[data-codex-theme] .initiative{height:391px!important;min-height:391px!important;max-height:391px!important;flex-basis:391px!important}
+  html[data-codex-theme] .initiative .actor{
+    flex-basis:163px!important;width:163px!important;min-width:163px!important;max-width:163px!important;
+    height:329px!important;min-height:329px!important;max-height:329px!important;
+  }
+  html[data-codex-theme] .initiative .actor .portrait{
+    height:159px!important;min-height:159px!important;max-height:159px!important;flex-basis:159px!important
+  }
+}
+@media(max-width:1060px){
+  html[data-codex-theme] .initiative{height:384px!important;min-height:384px!important;max-height:384px!important;flex-basis:384px!important}
+  html[data-codex-theme] .initiative .actor{
+    width:154px!important;min-width:154px!important;max-width:154px!important;flex-basis:154px!important;
+    height:321px!important;min-height:321px!important;max-height:321px!important;
+  }
+  html[data-codex-theme] .initiative .actor .portrait{
+    height:151px!important;min-height:151px!important;max-height:151px!important;flex-basis:151px!important;
+  }
+  html[data-codex-theme] .active .turn-identity{gap:7px}
+}
+@media(max-width:660px){
+  html[data-codex-theme] .initiative{height:369px!important;min-height:369px!important;max-height:369px!important;flex-basis:369px!important}
+  html[data-codex-theme] .initiative .section-top{gap:4px}
+  html[data-codex-theme] .initiative .section-top h2{font-size:12px}
+  html[data-codex-theme] .initiative .actor{
+    width:148px!important;min-width:148px!important;max-width:148px!important;flex-basis:148px!important;
+    height:307px!important;min-height:307px!important;max-height:307px!important;
+  }
+  html[data-codex-theme] .initiative .actor .portrait{
+    height:136px!important;min-height:136px!important;max-height:136px!important;flex-basis:136px!important;
+  }
+  html[data-codex-theme] .active .turn-identity{align-items:flex-start;flex-direction:column}
+  html[data-codex-theme] .active .active-bar-head{align-items:flex-start!important}
+}
