@@ -547,6 +547,62 @@ document.addEventListener("toggle",e=>{if(e.target.matches?.("details[data-check
 state.checkSections=state.checkSections||{};
 state.checkSections[e.target.dataset.checkSection]=e.target.open;save();
 }},true);
+
+function setupPanelResizers(){
+const room=$("workspace-grid"),handles=[["resize-chat","chat"],["resize-character","character"]];
+function geometry(){return {usable:room.clientWidth-48,enabled:window.innerWidth>1060&&room.clientWidth>=850};}
+function limit(v,min,max){return Math.max(min,Math.min(max,v));}
+function apply(){
+let {usable,enabled}=geometry();
+if(!enabled){room.style.removeProperty("grid-template-columns");room.classList.add("resize-disabled");return;}
+room.classList.remove("resize-disabled");
+state.layout=state.layout||{chat:23,dice:35};
+let minChat=190/usable*100,minDice=285/usable*100,minRight=270/usable*100;
+let chat=limit(Number(state.layout.chat)||23,minChat,100-minDice-minRight);
+let dice=limit(Number(state.layout.dice)||35,minDice,100-chat-minRight);
+state.layout.chat=chat;state.layout.dice=dice;
+room.style.gridTemplateColumns=Math.round(usable*chat/100)+"px 8px "+Math.round(usable*dice/100)+"px 8px minmax(0,1fr)";
+}
+function nudge(which,amount){
+const {usable,enabled}=geometry();if(!enabled)return;
+let chat=Number(state.layout.chat)||23,dice=Number(state.layout.dice)||35;
+let delta=amount/usable*100,minChat=190/usable*100,minDice=285/usable*100,minRight=270/usable*100;
+if(which==="chat"){let n=limit(chat+delta,minChat,chat+dice-minDice);dice-=n-chat;chat=n;}
+else{dice=limit(dice+delta,minDice,100-chat-minRight);}
+state.layout={chat,dice};apply();
+}
+for(const [id,which] of handles){
+let handle=$(id);
+handle.addEventListener("keydown",ev=>{
+if(ev.key!=="ArrowLeft"&&ev.key!=="ArrowRight")return;
+ev.preventDefault();nudge(which,ev.key==="ArrowRight"?22:-22);save();
+});
+handle.addEventListener("pointerdown",ev=>{
+if(ev.button!==0||!geometry().enabled)return;
+ev.preventDefault();let startX=ev.clientX,old={...state.layout},width=geometry().usable;
+handle.setPointerCapture(ev.pointerId);room.classList.add("resizing");
+const move=e=>{
+let delta=(e.clientX-startX)/width*100;
+state.layout={...old};
+if(which==="chat"){
+let minChat=190/width*100,minDice=285/width*100;
+let n=limit(old.chat+delta,minChat,old.chat+old.dice-minDice);
+state.layout.chat=n;state.layout.dice=old.dice-(n-old.chat);
+}else{
+state.layout.dice=limit(old.dice+delta,285/width*100,100-old.chat-270/width*100);
+}
+apply();
+};
+const stop=()=>{
+handle.removeEventListener("pointermove",move);handle.removeEventListener("pointerup",stop);
+handle.removeEventListener("pointercancel",stop);room.classList.remove("resizing");save();
+};
+handle.addEventListener("pointermove",move);handle.addEventListener("pointerup",stop);handle.addEventListener("pointercancel",stop);
+});
+}
+window.addEventListener("resize",apply);apply();
+}
+
 if(!state.exampleFullAdded){
   let sample=actor("goblin");
   if(sample&&!sample.statBlock){
@@ -555,6 +611,7 @@ if(!state.exampleFullAdded){
   state.exampleFullAdded=true;save();
 }
 render();
+setupPanelResizers();
 document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
 })();
 </script>
