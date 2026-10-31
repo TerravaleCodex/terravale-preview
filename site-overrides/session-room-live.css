@@ -1,0 +1,48 @@
+/* Production session route only: use the approved Codex theme, no demo chrome. */
+body[data-room-production="1"] #initiative-dm-controls,
+body[data-room-production="1"] #view-mode,
+body[data-room-production="1"] #reset,
+body[data-room-production="1"] #live-roster-button {display:none!important}
+body[data-room-production="1"] .head-actions{align-items:center}
+body[data-room-production="1"] .head-actions .live-campaign-select{
+ width:auto;min-width:150px;max-width:220px;padding:6px 9px;
+ background:var(--c-paper);color:var(--c-ink);
+ border:1px solid var(--c-border);border-radius:6px
+}
+body[data-room-production="1"] .preview{
+ min-height:35px;padding:8px 13px;
+ border:1px solid var(--c-border);background:var(--c-surface);
+ color:var(--c-sub);
+}
+body[data-room-production="1"] .preview strong{color:var(--c-accent)}
+body[data-room-production="1"] .cloud{
+ border-color:#3d7865;color:#8bd3b0
+}
+body[data-room-production="1"] .desk-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+body[data-room-production="1"] .desk-buttons .btn{
+ min-height:36px;white-space:normal;line-height:1.3;
+ border-color:var(--c-border)
+}
+body[data-room-production="1"] .desk-actions .btn{min-height:32px}
+body[data-room-production="1"] .initiative .controls{gap:8px}
+body[data-room-production="1"] button.end-turn-large:disabled,
+body[data-room-production="1"] .turn-header-actions button[data-action="next"]:disabled,
+body[data-room-production="1"] #initiative-roll-mine:disabled{
+ opacity:.42!important;
+ filter:grayscale(1)!important;
+ background:var(--c-paper)!important;
+ border-color:var(--c-border)!important;
+ color:var(--c-sub)!important;
+ cursor:not-allowed!important;
+ pointer-events:none!important;
+}
+body[data-room-production="1"] .own-empty a.btn{margin-top:8px;display:inline-flex}
+body[data-room-production="1"] .own-connected{color:var(--c-green)}
+body[data-room-production="1"] .room-resizer{touch-action:none}
+body[data-room-production="1"] .live-roster-status{font-size:10px;max-width:260px}
+@media(max-width:950px){body[data-room-production="1"] .head-actions .live-campaign-select{max-width:160px}}
+@media(max-width:650px){
+ body[data-room-production="1"] .head{align-items:flex-start;flex-direction:column}
+ body[data-room-production="1"] .head-actions{justify-content:flex-start}
+ body[data-room-production="1"] .desk-buttons{grid-template-columns:1fr}
+}
