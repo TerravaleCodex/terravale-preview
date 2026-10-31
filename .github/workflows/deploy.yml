@@ -160,7 +160,7 @@ jobs:
           python3 - <<'PY'
           import pathlib,re
           src=pathlib.Path('site/session-room-v2/index.html').read_text()
-          scripts=re.findall(r'<script[^>]*>(.*?)</script>',src,re.S)
+          scripts=[content for content in re.findall(r'<script[^>]*>(.*?)</script>',src,re.S) if content.strip()]
           if len(scripts)!=1:
               raise SystemExit('Unexpected preview script count')
           pathlib.Path('/tmp/terravale-room-v2.js').write_text(scripts[0])
