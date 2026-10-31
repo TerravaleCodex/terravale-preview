@@ -22,6 +22,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-fidelity.css">
 <link rel="stylesheet" href="./session-room-v2-wireframe.css">
 <link rel="stylesheet" href="./session-room-v2-encounters.css">
+<link rel="stylesheet" href="./session-room-v2-sheet-style.css">
 </head>
 <body>
 <div class="app">
@@ -124,7 +125,7 @@ const definitions={
 "Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
 "Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
 };
-const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
+const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",turnAbility:"DEX",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
 {id:"kai",name:"Kai",type:"Player",subtitle:"Lv 5 · Fighter",init:24,hp:42,max:42,hidden:false,conditions:[],initial:"K",face:"🧑🏻‍🎤"},
 {id:"derulo",name:"Derulo",type:"Player",subtitle:"Lv 5 · Shaman",init:19,hp:28,max:34,hidden:false,conditions:[],initial:"D",face:"🐺"},
 {id:"haruki",name:"Haruki",type:"Player",subtitle:"Lv 5 · Artificer",init:17,hp:31,max:31,hidden:false,conditions:[],initial:"H",face:"🧝🏻"},
@@ -219,15 +220,54 @@ let actionText=(block.attacks||"").trim(),traits=(block.traits||"").trim();
 return baseInfo+abilityGrid(stats,"Ability scores")+
 '<details class="stat-more"><summary>Actions, traits & additional details</summary><div class="stat-detail"><b>Actions</b><p>'+esc(actionText||"No actions recorded").replace(/\n/g,"<br>")+'</p><b>Traits / resistances / resources</b><p>'+esc(traits||"No traits recorded").replace(/\n/g,"<br>")+'</p></div></details>';
 }
+const abilities=[
+{code:"STR",name:"Strength",skills:["Athletics"]},
+{code:"DEX",name:"Dexterity",skills:["Acrobatics","Sleight of Hand","Stealth"]},
+{code:"CON",name:"Constitution",skills:[]},
+{code:"INT",name:"Intelligence",skills:["Arcana","History","Investigation","Nature","Religion"]},
+{code:"WIS",name:"Wisdom",skills:["Animal Handling","Insight","Medicine","Perception","Survival"]},
+{code:"CHA",name:"Charisma",skills:["Deception","Intimidation","Performance","Persuasion"]}
+];
+/* Illustrative scores/proficiencies only. In production they come from the approved sheet. */
+const sampleCharacters={
+kai:{scores:{STR:15,DEX:8,CON:10,INT:12,WIS:13,CHA:14},proficiency:3,saves:["STR","CON"],skills:["Athletics","Intimidation"],expertise:[]},
+derulo:{scores:{STR:8,DEX:14,CON:12,INT:10,WIS:18,CHA:12},proficiency:3,saves:["WIS","CHA"],skills:["Nature","Animal Handling","Survival","Perception"],expertise:[]},
+haruki:{scores:{STR:10,DEX:14,CON:12,INT:16,WIS:10,CHA:8},proficiency:3,saves:["CON","INT"],skills:["Arcana","Investigation","Sleight of Hand"],expertise:[]},
+shystray:{scores:{STR:16,DEX:12,CON:14,INT:8,WIS:10,CHA:10},proficiency:3,saves:["STR","CON"],skills:["Athletics","Survival","Intimidation"],expertise:[]}
+};
+const prettyMod=n=>n>=0?"+"+n:String(n);
+function previewScores(a){
+return sampleCharacters[a.id]||{scores:{STR:null,DEX:null,CON:null,INT:null,WIS:null,CHA:null},proficiency:0,saves:[],skills:[],expertise:[]};
+}
+function playerAbilityView(a){
+const data=previewScores(a),chosen=state.turnAbility||"DEX";
+let tiles=abilities.map(d=>{
+let score=data.scores[d.code];let bonus=score==null?null:Math.floor((score-10)/2),selected=chosen===d.code;
+return '<button class="sheet-ability-tile '+(selected?"selected":"")+'" type="button" data-action="turn-ability" data-ability="'+d.code+'" aria-expanded="'+selected+'" title="Show '+d.name+' checks and saving throw">'+
+'<span class="sheet-ability-name">'+d.code+'</span><span class="sheet-score">'+(score??"—")+'</span><strong class="sheet-modifier">'+(bonus==null?"—":prettyMod(bonus))+'</strong><span class="sheet-chevron">'+(selected?"⌃":"⌄")+'</span></button>';
+}).join("");
+let ability=abilities.find(d=>d.code===chosen);
+let expanded="";
+if(ability){
+let score=data.scores[ability.code],modifier=score==null?null:Math.floor((score-10)/2),prof=data.proficiency||0;
+let saveProf=data.saves.includes(ability.code),saveMod=modifier==null?null:modifier+(saveProf?prof:0);
+let oneSkill=name=>{
+let trained=data.skills.includes(name),expert=data.expertise.includes(name);
+let skillMod=modifier==null?null:modifier+(expert?prof*2:trained?prof:0);
+let suffix=expert?"Expertise":trained?"Proficient":"Untrained";
+return '<button class="sheet-skill" data-action="turn-check" data-id="'+esc(a.id)+'" data-check="'+esc(name)+'" data-bonus="'+(skillMod??0)+'" '+(skillMod==null?"disabled":"")+'>'+
+'<span class="sheet-dot">'+(trained?"●":"○")+'</span><span class="sheet-skill-name">'+esc(name)+'</span><span class="sheet-proficiency">'+suffix+'</span><strong>'+ (skillMod==null?"—":prettyMod(skillMod))+'</strong></button>';
+};
+expanded='<div class="sheet-ability-expanded"><div class="sheet-expanded-header"><div><h4>'+ability.code+' · '+ability.name+'</h4><p>Ability modifier '+(modifier==null?"—":prettyMod(modifier))+' · calculated skill checks & saving throw <span class="sheet-demo-note">· sample sheet values</span></p></div><button class="btn small" type="button" data-action="turn-ability-close">Close ×</button></div>'+
+'<button class="sheet-saving" data-action="turn-check" data-id="'+esc(a.id)+'" data-check="'+esc(ability.name)+' saving throw" data-bonus="'+(saveMod??0)+'" '+(saveMod==null?"disabled":"")+'><span>Saving throw</span><strong>'+ (saveMod==null?"—":prettyMod(saveMod))+'</strong><span>'+ (saveProf?"● Proficient":"○ Not proficient")+'</span></button>'+
+(ability.skills.length?'<div class="sheet-skills">'+ability.skills.map(oneSkill).join("")+'</div>':'<p class="sheet-no-skills">No skills use '+ability.name+'.</p>')+
+'<div class="sheet-rules-note">● Proficient = ability modifier + proficiency bonus · Expertise = ability modifier + twice proficiency bonus. These are sample character choices, not automatically assigned class skills.</div></div>';
+}
+return '<div class="sheet-stats"><div class="sheet-ability-grid">'+tiles+'</div>'+expanded+'</div>';
+}
 function activeDetails(a){
 if(a.type==="Player"){
-let checks=getExamplePlayerChecks(a);
-let abilities=checks.abilities.length?checks.abilities:[["STR","—"],["DEX","—"],["CON","—"],["INT","—"],["WIS","—"],["CHA","—"]];
-let saves=checks.saves||[];
-return '<div class="encounter-core"><span><strong>Player sheet</strong> · Demo bonuses</span><span>AC <strong>—</strong></span><span>Speed <strong>—</strong></span></div>'+
-abilityGrid(abilities,"Ability check bonuses")+
-'<details class="stat-more"><summary>Saving throws & skill bonuses</summary><div class="stat-detail">'+abilityGrid(saves.length?saves:[["Not linked","—"]],"Proficient saves (demo)")+
-abilityGrid(checks.skills||[],"Skills (demo)")+'<p class="muted">Real values will be read from the approved character sheet during integration.</p></div></details>';
+return playerAbilityView(a);
 }
 if(!state.dm){
 return '<div class="encounter-notes"><div class="subheading">Encounter overview</div><p>'+esc(a.type)+' · '+esc(a.subtitle)+'</p><p>Detailed creature information is DM-only.</p></div>';
@@ -366,6 +406,9 @@ let b=e.target.closest("button");if(!b)return;
 if(b.dataset.close){$(b.dataset.close).close();return;}
 let action=b.dataset.action;if(!action)return;
 if(action==="next")next();
+if(action==="turn-ability"){state.turnAbility=state.turnAbility===b.dataset.ability?null:b.dataset.ability;save();activeRender();}
+if(action==="turn-ability-close"){state.turnAbility=null;save();activeRender();}
+if(action==="turn-check"){let a=actor(b.dataset.id),bonus=Number(b.dataset.bonus||0),notation="1d20"+prettyMod(bonus);roll(notation,b.dataset.check+" · "+notation,a?.name||"You");}
 if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();myCharacterRender();}
 if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description);
 if(action==="attach"&&state.dm)startAttach();
