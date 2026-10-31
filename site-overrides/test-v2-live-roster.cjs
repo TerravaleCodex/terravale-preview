@@ -9,13 +9,14 @@ src=src.replace(requireJs,'const {createClient}=window.__mockSupabase;');
 const projectId="emwlvbmnrrhxhrmlwkhs";
 function el(){return {value:"",hidden:false,disabled:false,classList:{toggle(){}},textContent:"",innerHTML:"",addEventListener(type,fn){this[type]=fn;}}}
 const byId=Object.fromEntries(["live-roster-button","live-campaign-select","live-roster-status"].map(s=>[s,el()]));
-let writes=0,read=0,signed=0,captured=null,loaded=false,live=false;
+let writes=0,read=0,signed=0,captured=null,loaded=false,live=false,approvedCandidates=null;
 const response={
  campaigns:[{id:"unrostered",name:"Inactive campaign",owner_id:"other"},{id:"camp",name:"Test campaign",owner_id:"user"}],
  campaign_members:[{campaign_id:"camp",user_id:"user",role:"player"}],
  party_room_roster:[{campaign_id:"camp",character_id:"char",added_at:"2026-01-01"}],
  characters:[{id:"char",campaign_id:"camp",owner_id:"user",name:"My Character",status:"approved",portrait_path:"char/image.png",sheet_visible_to_party:true,
-   approved_build:{stats:{STR:12,DEX:14,CON:10,INT:9,WIS:16,CHA:11},className:"Shaman",maxHp:35,level:5,details:{skills:["Perception"],savingThrows:["WIS"]}}}],
+   approved_build:{stats:{STR:12,DEX:14,CON:10,INT:9,WIS:16,CHA:11},className:"Shaman",maxHp:35,level:5,details:{skills:["Perception"],savingThrows:["WIS"]}}},
+  {id:"outside",campaign_id:"camp",owner_id:"other",name:"Extra Approved",status:"approved",portrait_path:null,sheet_visible_to_party:true,approved_build:{stats:{STR:16,DEX:11,CON:12,INT:8,WIS:10,CHA:9},maxHp:28,level:4,className:"Fighter"}}],
  character_state:[{character_id:"char",hp:22,conditions:["Poisoned"]}]
 };
 class Query{
@@ -45,7 +46,8 @@ const bridge={
  useRoster(payload){captured=payload;loaded=true;live=true;byId["live-roster-button"].textContent="Use Demo Roster";},
  isLive(){return live},
  switchToDemo(){live=false;},
- refreshPortraits(){}
+ refreshPortraits(){},
+ openExistingPicker(records){approvedCandidates=records;}
 };
 const doc={getElementById:id=>byId[id],addEventListener(){}};
 const win={TerravaleRoomPreview:bridge,__mockSupabase:{createClient(){return fakeClient;}},addEventListener(){}};
@@ -66,5 +68,11 @@ vm.runInNewContext(src,{window:win,document:doc,localStorage:loc,URL,setInterval
  assert.equal(writes,0,"No live data or signed URL must be saved to localStorage");
  assert.equal(byId["live-campaign-select"].value,"camp","Choose campaign with active roster by default");
  assert.ok(read>=6,"Roster must be loaded from authenticated tables");
- console.log("Live roster regression passed: authenticated owner, active campaign, signed portrait, zero writes");
+ assert.equal(typeof win.TerravaleV2LiveCharacters?.openPicker,"function","Live approved-character picker should be exposed");
+ await win.TerravaleV2LiveCharacters.openPicker();
+ assert.ok(approvedCandidates&&approvedCandidates.length===2,"Picker includes approved characters outside active roster");
+ assert.equal(approvedCandidates.find(a=>a.id==="outside").name,"Extra Approved");
+ assert.equal(approvedCandidates.find(a=>a.id==="outside").max,28);
+ assert.equal(writes,0,"Browsing existing approved characters must not modify live data or localStorage");
+ console.log("Live roster regression passed: signed portrait, DM-approved character outside active roster, zero writes");
 })().catch(e=>{console.error(e);process.exitCode=1;});
