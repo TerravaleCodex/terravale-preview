@@ -678,7 +678,7 @@ log({kind:"roll",who:who||"You",label:label||expr,total,detail,time:clock()});
 let conditionTargetId=null;
 function editConditions(targetId){
 if(!state.dm)return;let a=actor(targetId)||current();conditionTargetId=a.id;
-$("condition-who").textContent='Editing '+a.name+' · Changes are local to this preview.';
+$("condition-who").textContent='Editing '+a.name+' · Changes update the live campaign session.';
 $("condition-options").innerHTML=Object.keys(definitions).map(c=>'<label class="cond-label tip" tabindex="0" data-tip="'+esc(definitions[c])+'" title="'+esc(definitions[c])+'"><input type="checkbox" data-condition="'+esc(c)+'" '+(a.conditions.includes(c)?'checked':'')+'>'+esc(c)+'</label>').join("");
 $("condition-modal").showModal();
 }
@@ -703,7 +703,7 @@ let name=$("new-name").value.trim();if(!name)return;
 let init=Number($("new-init").value),max=Number($("new-hp").value);
 if(!Number.isInteger(init)||init< -20||init>99||!Number.isInteger(max)||max<1||max>99999){alert("Enter a valid initiative result and HP.");return;}
 let x=selectedTemplate(),type=$("new-type").value;
-let id="preview-"+Date.now()+"-"+Math.floor(Math.random()*9999);
+let id="creature-"+Date.now()+"-"+Math.floor(Math.random()*9999);
 let newActor={id,name,type,subtitle:x?(type+" · Encounter Library"):(type+" · Quick encounter"),init,hp:max,max,hidden:$("new-hidden").checked,conditions:[],initial:name.charAt(0).toUpperCase(),
 face:null,
 notes:x?.notes||"",templateId:x?.id||null,statBlock:x?.mode==="full"?structuredClone(x):null};
@@ -783,7 +783,7 @@ if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description)
 if(action==="attach"&&state.dm)startAttach();
 if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
 if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
-if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
+if(action==="hp"&&state.dm&&current()){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();if(a.type==="Player")window.TerravaleLiveHooks?.updateSheetState?.(a.id,{hp:a.hp});render();}
 if(action==="conditions")editConditions(b.dataset.targetId);
 if(action==="check"){
 let a=actor(state.selected),mod=Number(b.dataset.mod)||0;
@@ -834,8 +834,8 @@ $("new-template").addEventListener("change",updateAddFields);
 $("attach-confirm").addEventListener("click",attachToCurrent);
 $("add-form").addEventListener("submit",e=>{e.preventDefault();addActor(e.currentTarget);});
 $("save-conditions").addEventListener("click",()=>{
-let a=actor(conditionTargetId)||current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
-save();render();$("condition-modal").close();
+let a=actor(conditionTargetId)||current();if(!a)return;a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
+save();if(a.type==="Player")window.TerravaleLiveHooks?.updateSheetState?.(a.id,{conditions:a.conditions});render();$("condition-modal").close();
 });
 $("view-mode").addEventListener("click",()=>{});
 $("reset").addEventListener("click",()=>{});
