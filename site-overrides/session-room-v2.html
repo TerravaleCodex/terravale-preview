@@ -24,6 +24,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-encounters.css">
 <link rel="stylesheet" href="./session-room-v2-sheet-style.css">
 <link rel="stylesheet" href="./session-room-v2-bottom.css?v=20261031-scroll-fix-2">
+<link rel="stylesheet" href="./session-room-v2-codex.css?v=20261031-style-unification-1">
 <style id="fixed-chat-scroll-guard">
 /* V2 critical height constraints: content must never determine chat panel height. */
 #workspace-grid{min-height:0}
@@ -68,7 +69,18 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
   <div class="campaign"><div class="micro">Campaign</div><select aria-label="Campaign"><option>Shady Test (preview)</option></select><p class="tiny">Local design preview</p></div>
 </aside>
 <div class="main">
-<header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp; / &nbsp; V2 Preview</div><div class="topright"><span class="tiny">Theme&nbsp; Void.exe</span><span class="cloud">PREVIEW</span></div></header>
+<header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp; / &nbsp; V2 Preview</div><div class="topright"><label class="codex-theme-control" for="codex-theme-select">Theme <select id="codex-theme-select" aria-label="Website and character-sheet theme">
+<option value="dark">Old Faithful</option>
+<option value="night-sky">Stargazer's Delusion</option>
+<option value="shotxo">Guildie</option>
+<option value="shady">Shady's Bone Zone</option>
+<option value="absolute-zero">Void.exe</option>
+<option value="sanguine">Blood Money</option>
+<option value="verdant">Moss Boss</option>
+<option value="dragonforge">Forged &amp; Furious</option>
+<option value="astral">Starstruck</option>
+<option value="null-meridian">404: Magic Not Found</option>
+</select></label><span class="cloud">PREVIEW</span></div></header>
 <main>
 <section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><a class="btn small" href="./encounter-library/">Encounter Library ↗</a><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
 <div class="preview"><div><strong>Independent design test.</strong> Sample combatants, simulated rolls and local-only chat. Nothing here changes your live campaign, characters or existing Session Room.</div><div id="mode-label">DM preview</div></div>
@@ -133,6 +145,29 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <script>
 (function(){
 "use strict";
+/* The V2 workshop uses the *same* preference as the production Codex.
+ * It never modifies live character/campaign records. */
+const THEME_KEY="terravale.unified.theme.v2",SITE_THEME_KEY="terravale.cosmetic.site.v1";
+const themes=new Set(["dark","night-sky","shotxo","shady","absolute-zero","sanguine","verdant","dragonforge","astral","null-meridian"]);
+function setCodexTheme(theme,persist=false){
+ const id=themes.has(theme)?theme:"dark";
+ document.documentElement.dataset.codexTheme=id;
+ document.documentElement.dataset.appTheme=id;
+ const menu=document.getElementById("codex-theme-select");
+ if(menu&&menu.value!==id)menu.value=id;
+ if(persist){try{localStorage.setItem(THEME_KEY,id);localStorage.setItem(SITE_THEME_KEY,id);}catch(e){}}
+}
+function initialCodexTheme(){
+ try{
+  const stored=localStorage.getItem(THEME_KEY)||localStorage.getItem(SITE_THEME_KEY)||"dark";
+  return themes.has(stored)?stored:"dark";
+ }catch(e){return "dark";}
+}
+setCodexTheme(initialCodexTheme());
+document.getElementById("codex-theme-select").addEventListener("change",e=>setCodexTheme(e.target.value,true));
+window.addEventListener("storage",e=>{
+ if(e.key===THEME_KEY||e.key===SITE_THEME_KEY)setCodexTheme(initialCodexTheme());
+});
 const key="terravale-room-v2-workshop-v3";
 const definitions={
 "Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
