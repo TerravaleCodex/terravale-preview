@@ -296,23 +296,15 @@ async function updateSheetState(characterId,patch){
 window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,updateSheetState});
 setInterval(()=>{if(!document.hidden&&roomId){void refreshRoom();void refreshEvents();}},4500);
 
-button.addEventListener("click",()=>{
- if(window.TerravaleRoomPreview.isLive()){
-  ++loadCounter;rosterMode=false;currentPortraits=[];
-  window.TerravaleRoomPreview.switchToDemo();
-  picker.hidden=true;show("Sample characters · no account data");return;
- }
- void loadRoster(previewCampaignId);
-});
+// Production has no demo roster; always authenticate and read real campaigns.
+button.addEventListener("click",()=>{void loadRoster(previewCampaignId);});
 picker.addEventListener("change",()=>{if(picker.value)void loadRoster(picker.value)});
 window.addEventListener("focus",()=>{if(window.TerravaleRoomPreview.isLive())void refreshImages()});
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&window.TerravaleRoomPreview.isLive())void refreshImages();
 });
 setInterval(()=>{if(!document.hidden)void refreshImages()},6*60*1000);
-if(hasLocalSession()){
- // Automatically use the signed-in player's active character without making
- // the user manually choose among other people's sample characters.
- void loadRoster(null);
-}else show("Sample characters · sign in on the Codex to load your campaign");
+// The main Codex may use a different session storage implementation. Always
+// ask Supabase for the current user instead of relying on a storage-key guess.
+void loadRoster(null);
 })();
