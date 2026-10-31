@@ -974,6 +974,8 @@ if(!state.exampleFullAdded){
 /* Authorized live roster data remains transient and never reaches localStorage. */
 window.TerravaleRoomPreview=Object.freeze({
  openExistingPicker(records,context){openExistingPicker(records,context);},
+ readState(){return state;},
+ getCurrent(){return current();},
  isLive(){return true;},
  useRoster({actors,ownId,isDm,campaignName,userId}){
  const old=state;
