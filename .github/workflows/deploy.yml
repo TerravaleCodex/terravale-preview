@@ -62,7 +62,7 @@ jobs:
           for p in Path('site').rglob('*.js'):
               try: data=p.read_text(errors='ignore')
               except Exception: continue
-              for host in re.findall(r'([a-z0-9]{20,32})\\.supabase\\.co',data):
+              for host in re.findall(r'([a-z0-9]{20,32})\.supabase\.co',data):
                   detected.add(host)
           print("Compiled client Supabase project identifiers:", sorted(detected))
           if detected and 'emwlvbmnrrhxhrmlwkhs' not in detected:
