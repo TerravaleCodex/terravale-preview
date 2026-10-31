@@ -104,8 +104,9 @@ html[data-codex-theme] .menu{
  align-items:stretch!important;gap:3px;padding:0 7px
 }
 html[data-codex-theme] .menu a{
- flex:0 0 auto!important;min-height:30px!important;
- width:100%;padding:7px 9px!important;margin:0;
+ flex:0 0 33px!important;min-height:33px!important;max-height:33px!important;
+ height:33px!important;box-sizing:border-box;overflow:hidden;
+ width:100%;padding:0 9px!important;margin:0;
  border:1px solid transparent!important;border-radius:5px!important;
  font-size:11px!important;color:var(--c-ink);
 }
