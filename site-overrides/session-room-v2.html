@@ -26,6 +26,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-bottom.css?v=20261031-scroll-fix-2">
 <link rel="stylesheet" href="./session-room-v2-codex.css?v=20261031-style-unification-1">
 <link rel="stylesheet" href="./session-room-v2-portrait-cards.css?v=20261031-tall-cards">
+<link rel="stylesheet" href="./session-room-v2-initiative.css?v=20261031-initiative-controls">
 <style id="fixed-chat-scroll-guard">
 /* V2 critical height constraints: content must never determine chat panel height. */
 #workspace-grid{min-height:0}
@@ -86,7 +87,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <section class="head"><div><h1>Session Room <span style="font:normal 11px system-ui;color:#bb95ec;vertical-align:middle">V2 · WORKSHOP</span></h1><div class="subtitle">Shady Test &nbsp; · &nbsp; Initiative, party chat and player-specific dice checks</div></div><div class="head-actions"><button class="btn small" id="view-mode" type="button">View as Player</button><a class="btn small" href="./encounter-library/">Encounter Library ↗</a><button class="btn small" id="live-roster-button" type="button">Use Live Roster</button><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose your campaign" hidden></select><span id="live-roster-status" class="meta live-roster-status" role="status">Sample characters · not signed in</span><button class="btn small" id="reset" type="button">Reset preview</button><a class="btn small ghost" href="../session-room/">Original room ↗</a></div></section>
 <div class="preview"><div><strong>Independent design test.</strong> Sample combatants, simulated rolls and local-only chat. Nothing here changes your live campaign, characters or existing Session Room.</div><div id="mode-label">DM preview</div></div>
 <section class="panel initiative" aria-label="Initiative order">
- <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
+ <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="initiative-manager-open" type="button">Manage initiative</button><button class="btn small" id="initiative-clear" type="button">Clear queue</button><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
 </section>
 <section class="panel active" id="active-combatant" aria-label="Active combatant, full width"></section>
@@ -118,6 +119,26 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <div class="foot">Terravale Codex · Session Room V2 design workshop · No production data connections</div>
 </main>
 </div></div>
+<dialog class="modal initiative-dialog" id="initiative-modal" aria-labelledby="initiative-modal-title">
+ <div class="modal-top"><h2 id="initiative-modal-title">Initiative Setup</h2><button class="btn small" type="button" data-close="initiative-modal" aria-label="Close initiative setup">✕</button></div>
+ <div class="modal-body">
+   <p class="initiative-notice">Manage a local encounter: removing someone from initiative does not delete their character or saved creature. Player rolls in V2 are not yet multiplayer-synchronised.</p>
+   <div class="initiative-tools">
+     <button class="btn small" type="button" id="initiative-select-players">Select players</button>
+     <button class="btn small" type="button" id="initiative-select-all">Select everyone</button>
+     <button class="btn small" type="button" id="initiative-select-none">Deselect all</button>
+   </div>
+   <div class="initiative-columns"><span>Combatant</span><span>Modifier</span><span>Result</span><span>Queue</span></div>
+   <div id="initiative-roster-list" class="initiative-roster-list"></div>
+   <div class="initiative-notice">Default initiative is d20 + Dexterity modifier where known. Adjust the modifier for class features, equipment, or other bonuses. You can also set a result manually.</div>
+   <div class="modal-actions initiative-modal-actions">
+     <button class="btn small" id="initiative-remove-selected" type="button">Remove selected</button>
+     <button class="btn small" id="initiative-queue-selected" type="button">Queue selected</button>
+     <button class="btn small" id="initiative-clear-modal" type="button">Clear queue</button>
+     <button class="btn primary" id="initiative-roll-selected" type="button">⚄ Roll selected &amp; sort</button>
+   </div>
+ </div>
+</dialog>
 <dialog class="modal" id="add-modal">
  <form method="dialog" id="add-form">
  <div class="modal-top"><h2>Add to Initiative</h2><button type="button" class="btn small" data-close="add-modal" aria-label="Close">✕</button></div>
@@ -230,23 +251,31 @@ const allowed=path.startsWith("/terravale-preview/")||/^https:\/\/[^\s"'<>]+$/i.
 return '<span class="portrait '+(a.type!=="Player"?"npc ":"")+(clazz||"")+'" aria-label="'+(allowed?'Portrait of '+esc(a.name):'No image for '+esc(a.name))+'">'+emptyCrest+(allowed?'<img class="codex-portrait-image" src="'+esc(path)+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span>';
 }
 function queueRender(){
-$("round-info").textContent='Round '+state.round+' · '+state.queue.length+' combatants · first card returns to the end after its turn';
-$("queue").innerHTML=state.queue.map((id,i)=>{
+const available=state.queue.filter(id=>!!actor(id));
+if(available.length!==state.queue.length)state.queue=available;
+$("round-info").textContent=state.queue.length?'Round '+state.round+' · '+state.queue.length+' combatants · turn ends move the front card to the back':'No encounter running · add combatants or roll initiative';
+$("queue").innerHTML=state.queue.length?state.queue.map((id,i)=>{
 const a=actor(id);if(!a)return '';
 const conditions=a.conditions?.length?'<div class="card-conditions">'+tokens(a)+'</div>':'<div class="card-conditions card-conditions-empty" aria-hidden="true"></div>';
-return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+a.init+(i===0?', acting now':'')+'">'+
+const initDisplay=Number.isFinite(a.init)?a.init:"—";
+return '<button class="actor '+(!i?'front':'')+'" data-action="select" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+', initiative '+initDisplay+(i===0?', acting now':'')+'">'+
 '<span class="card-eyebrow">'+(i===0?'● CURRENT TURN':esc(a.type))+'</span>'+
 portrait(a)+
 '<span class="name">'+esc(a.name)+'</span>'+
-'<span class="card-initiative"><span>INITIATIVE</span><strong>'+a.init+'</strong></span>'+
+'<span class="card-initiative"><span>INITIATIVE</span><strong>'+initDisplay+'</strong></span>'+
 '<span class="type">'+esc(a.subtitle)+'</span>'+
 '<span class="card-hp">'+hp(a)+'</span>'+
-conditions+
-'</button>';
-}).join('');
-$("next-turn").disabled=!state.dm;$("add-actor").disabled=!state.dm;
+conditions+'</button>';
+}).join(''):'<div class="initiative-empty"><span class="initiative-empty-mark">✦</span><strong>The initiative queue is empty</strong><span>Characters stay on the roster. Use Manage initiative to select who joins the next encounter.</span></div>';
+$("next-turn").disabled=!state.dm||!state.queue.length;
+$("add-actor").disabled=!state.dm;
+$("initiative-manager-open").hidden=!state.dm;
+$("initiative-clear").hidden=!state.dm;
+$("initiative-clear").disabled=!state.queue.length;
+const own=actor(state.own);
+$("initiative-roll-mine").hidden=!!state.dm||!own||own.type!=="Player";
+$("initiative-roll-mine").textContent=own&&Number.isFinite(own.init)&&state.queue.includes(own.id)?"⚄ Reroll my initiative":"⚄ Roll my initiative";
 }
-
 const sampleFeatures={
 "Fighter":[
 ["Attacks",[["⚔","Longsword","Melee weapon attack · +7 to hit · Reach 5 ft · 1d8+4 slashing"],["🪓","Handaxe","Melee or thrown attack · damage depends on equipment"]]],
@@ -359,7 +388,12 @@ return '<div class="encounter-notes"><div class="subheading">Encounter overview<
 '<div class="encounter-inline"><span class="tag">Unconfigured '+esc(a.type)+'</span><button class="btn small" data-action="attach" type="button">Attach stat block</button><a class="btn small" href="./encounter-library/">Open library ↗</a></div></div>';
 }
 function activeRender(){
-let a=current();if(!a)return;
+let a=current();
+if(!a){
+ $("active-combatant").classList.add("is-collapsed");
+ $("active-combatant").innerHTML='<div class="active-bar-head"><div class="turn-identity"><span class="micro">INITIATIVE</span><span class="turn-summary-name">Awaiting combatants</span></div>'+(state.dm?'<button class="btn small" type="button" data-action="manage-initiative">Manage initiative</button>':'<span class="meta">Roll initiative to join the encounter</span>')+'</div>';
+ return;
+}
 let canhp=state.dm||!a.hidden;
 let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
 let hpContent=canhp?'<div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><strong class="number">'+a.hp+' / '+a.max+'</strong></div>':
@@ -418,8 +452,8 @@ return '<div class="own-section-title">Notes</div><p class="own-help">Notes stay
 }
 function dmDeskRender(){
 let a=current(),library=getLibrary();
-$("my-character-content").innerHTML='<div class="desk-body"><div class="desk-intro"><span class="desk-eyebrow">DM WORKSPACE · DEMO</span><h3>Encounter Controls</h3><p>No player character required.</p></div><div class="desk-buttons"><button class="btn primary" data-action="dm-add">＋ Add combatant</button><a class="btn" href="./encounter-library/">Encounter Library ↗</a></div>'+
-'<div class="desk-section"><div class="own-section-title">Current turn</div><div class="desk-active">'+portrait(a)+'<div><strong>'+esc(a.name)+'</strong><small>'+esc(a.subtitle)+' · Initiative '+a.init+'</small></div></div><div class="desk-actions"><button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Conditions</button><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button><button class="btn small" data-action="next">End Turn →</button></div></div>'+
+$("my-character-content").innerHTML='<div class="desk-body"><div class="desk-intro"><span class="desk-eyebrow">DM WORKSPACE · DEMO</span><h3>Encounter Controls</h3><p>No player character required.</p></div><div class="desk-buttons"><button class="btn primary" data-action="manage-initiative">Manage initiative</button><button class="btn" data-action="dm-add">＋ Add combatant</button><a class="btn" href="./encounter-library/">Encounter Library ↗</a></div>'+
+'<div class="desk-section"><div class="own-section-title">Current turn</div>'+(a?'<div class="desk-active">'+portrait(a)+'<div><strong>'+esc(a.name)+'</strong><small>'+esc(a.subtitle)+' · Initiative '+a.init+'</small></div></div><div class="desk-actions"><button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Conditions</button><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button><button class="btn small" data-action="next">End Turn →</button></div>':'<p class="subtle">No combatant is currently in initiative.</p>')+'</div>'+
 '<div class="desk-section"><div class="own-section-title">Encounter status</div><div class="desk-summary"><div><strong>'+state.queue.length+'</strong><span>Combatants</span></div><div><strong>'+state.round+'</strong><span>Round</span></div><div><strong>'+library.length+'</strong><span>Templates</span></div></div></div>'+
 '<div class="desk-section"><div class="own-section-title">Initiative roster</div><div class="desk-roster">'+state.queue.map((id,i)=>{let c=actor(id);return c?'<div class="desk-roster-entry"><span class="desk-order">'+(i+1)+'</span>'+portrait(c)+'<div><strong>'+esc(c.name)+'</strong><small>'+esc(c.type)+'</small></div><span class="desk-hp">'+c.hp+'/'+c.max+'</span></div>':'';}).join("")+'</div></div></div>';
 }
@@ -436,6 +470,7 @@ let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1))),tab=state.sheetTab||"Comba
 let selector=state.dm?'<label class="own-selector">Preview character <select id="my-character-choice" class="field" aria-label="Choose preview character">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
 let tabs=["Combat","Abilities","Resources","Inventory","Conditions","Notes"];
 $("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">MY CHARACTER · QUICK SHEET</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><span class="own-connected">'+(liveMode?"● Signed-in campaign · read-only":"● Demo character")+'</span></div></div>'+
+'<div class="own-initiative-action"><span>Initiative: <strong>'+(Number.isFinite(a.init)?a.init:"Not rolled")+'</strong></span><button class="btn small" type="button" data-action="roll-my-initiative">⚄ Roll initiative</button></div>'+
 '<div class="own-vitals"><div class="own-hp"><div class="subheading">Hit Points</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':pct<60?'mid':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+' / '+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
 '<div class="own-condition-row"><span class="micro">STATUS</span><div class="conditions">'+tokens(a)+'</div></div>'+selector+
 '<div class="own-tabs" role="tablist" aria-label="My character quick sheet">'+tabs.map(t=>'<button role="tab" type="button" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
@@ -484,7 +519,7 @@ state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true
 $("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
 }
 function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
-function next(){if(!state.dm)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
+function next(){if(!state.dm||!state.queue.length)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
 function log(m){state.messages.push(m);state.messages=state.messages.slice(-180);save();feedRender();}
 function roll(expr,label,who){
 let t=String(expr).replace(/\s/g,""),mat=t.match(/^(\d{0,2})d(4|6|8|10|12|20|100)([+-]\d{1,3})?$/i);
