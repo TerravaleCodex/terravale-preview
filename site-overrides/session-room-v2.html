@@ -179,7 +179,7 @@ if(tab==="Abilities"){
 let groups=sampleFeatures[actorClass(a)]||sampleFeatures.NPC;
 return groups.map(([heading,entries])=>'<div class="sheet-subtitle">'+esc(heading)+'</div><div class="feature-list">'+entries.map(([icon,name,detail])=>'<div class="feature"><span class="feature-icon">'+esc(icon)+'</span><div><h4>'+esc(name)+'</h4><p>'+esc(detail)+'</p></div><button type="button" aria-label="Read '+esc(name)+'" data-action="feature-info" data-feature="'+esc(name)+'" data-description="'+esc(detail)+'">◇</button></div>').join("")+'</div>').join("");
 }
-if(tab==="Conditions")return '<div class="sheet-subtitle">Current Conditions</div><p class="subtle">Hover or focus a condition to read its mechanical effects.</p><div class="conditions" style="margin:12px 0">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" data-action="conditions">＋ Manage conditions</button>':'');
+if(tab==="Conditions")return '<div class="sheet-subtitle">Current Conditions</div><p class="subtle">Hover or focus a condition to read its mechanical effects.</p><div class="conditions" style="margin:12px 0">'+tokens(a)+'</div>'+(state.dm?'<button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">＋ Manage conditions</button>':'');
 if(tab==="Resources")return '<div class="sheet-subtitle">Character Resources</div><p class="subtle">This preview shows illustrative resource cards. Real values will be linked to the approved character sheet.</p>'+([["Primary Resource","3 / 3"],["Short Rest Recovery","1 / 1"],["Reaction","1 / round"]].map(([n,v])=>'<div class="feature"><span class="feature-icon">✦</span><div><h4>'+esc(n)+'</h4><p>'+esc(v)+'</p></div><span class="meta">Preview</span></div>').join(""));
 if(tab==="Actions")return '<div class="sheet-subtitle">Actions & Reactions</div>'+sheetContents(a,"Abilities")+'<p class="subtle">Action controls will be connected to the character sheet and DM approvals in the integrated version.</p>';
 if(tab==="Inventory")return '<div class="sheet-subtitle">Equipped Items</div><p class="subtle">Inventory and item usage will come from the character sheet. No sample item will modify your actual inventory.</p>';
@@ -236,7 +236,7 @@ shystray:{abilities:[["STR","+3"],["DEX","+1"],["CON","+2"],["INT","-1"],["WIS",
 };
 function renderChecks(){
 let players=state.actors.filter(a=>a.type==="Player");
-if(!state.dm)players=players.filter(a=>a.id==="kai");
+if(!state.dm)players=players.filter(a=>a.id===state.own);
 if(!players.some(a=>a.id===state.selected))state.selected=players[0]?.id||"kai";
 $("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===state.selected?'selected':'')+'>'+esc(a.name)+'</option>').join('');
 let s=checkData[state.selected]||checkData.kai;
@@ -257,8 +257,9 @@ let total=faces.reduce((a,b)=>a+b,0)+bonus;
 let detail=faces.join(" + ")+(bonus?(bonus>0?" + ":" - ")+Math.abs(bonus):"")+(extra!==null?" ("+mode+"; other die "+extra+")":"");
 log({kind:"roll",who:who||"You",label:label||expr,total,detail,time:clock()});
 }
-function editConditions(){
-if(!state.dm)return;let a=current();
+let conditionTargetId=null;
+function editConditions(targetId){
+if(!state.dm)return;let a=actor(targetId)||current();conditionTargetId=a.id;
 $("condition-who").textContent='Editing '+a.name+' · Changes are local to this preview.';
 $("condition-options").innerHTML=Object.keys(definitions).map(c=>'<label class="cond-label tip" tabindex="0" data-tip="'+esc(definitions[c])+'" title="'+esc(definitions[c])+'"><input type="checkbox" data-condition="'+esc(c)+'" '+(a.conditions.includes(c)?'checked':'')+'>'+esc(c)+'</label>').join("");
 $("condition-modal").showModal();
@@ -281,7 +282,7 @@ if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description)
 if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
 if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
 if(action==="hp"&&state.dm){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();render();}
-if(action==="conditions")editConditions();
+if(action==="conditions")editConditions(b.dataset.targetId);
 if(action==="check"){
 let a=actor(state.selected);roll("1d20"+b.dataset.mod,esc(b.dataset.label)+" check · 1d20"+b.dataset.mod,a?.name||"You");
 }
@@ -292,7 +293,7 @@ $("next-turn").addEventListener("click",next);
 $("add-actor").addEventListener("click",()=>{if(state.dm)$("add-modal").showModal();});
 $("add-form").addEventListener("submit",e=>{e.preventDefault();addActor(e.currentTarget);});
 $("save-conditions").addEventListener("click",()=>{
-let a=current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
+let a=actor(conditionTargetId)||current();a.conditions=Array.from($("condition-options").querySelectorAll("input:checked")).map(e=>e.dataset.condition);
 save();render();$("condition-modal").close();
 });
 $("view-mode").addEventListener("click",()=>{state.dm=!state.dm;save();render();});
