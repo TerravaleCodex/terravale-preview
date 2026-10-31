@@ -20,6 +20,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 @media(max-width:660px){.topbar{padding:0 8px}.topright .tiny{display:none}main{padding:13px 9px}.head{align-items:start;flex-direction:column}.head-actions{justify-content:flex-start}.preview{align-items:flex-start;flex-direction:column}.active-stats{grid-template-columns:1fr}.right{display:flex}.section-top{align-items:start;flex-direction:column}.actor{flex-basis:130px}.roll-row{grid-template-columns:1fr 65px auto}.checks{grid-template-columns:1fr 1fr}}
 </style>
 <link rel="stylesheet" href="./session-room-v2-fidelity.css">
+<link rel="stylesheet" href="./session-room-v2-wireframe.css">
 </head>
 <body>
 <div class="app">
@@ -49,32 +50,30 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
  <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="add-actor">＋ Add combatant</button><button class="btn small primary" id="next-turn">End turn →</button></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
 </section>
-<section class="room">
+<section class="panel active" id="active-combatant" aria-label="Active combatant, full width"></section>
+<section class="room" aria-label="Session workspace">
  <section class="panel chat" aria-label="Campaign chat">
-  <div class="panel-head"><div class="tabs"><button class="tab current" id="tab-chat">Campaign chat</button><button class="tab" id="tab-rolls">Dice results</button></div><span class="meta">● Preview activity</span></div>
+  <div class="panel-head"><div class="tabs"><button class="tab current" id="tab-chat">Campaign chat</button><button class="tab" id="tab-rolls">Dice results</button></div><span class="meta">● Live</span></div>
   <div class="feed" id="feed"></div>
-  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message the party or type /roll 1d20+5" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
+  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message the party or /roll 1d20+5" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
  </section>
- <section class="panel active" id="active-combatant" aria-label="Active combatant expanded"></section>
- <div class="right">
-  <section class="panel dicebox" aria-label="Dice roller">
-    <div class="panel-head"><h2>Dice Roller</h2><span class="meta">One-click rolls · posted to chat</span></div>
-    <div class="inner">
-      <div class="subheading">Quick Dice</div><div class="dice-grid" id="dice-grid"></div>
-      <div class="subheading">Custom Roll</div>
-      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20+5" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form><div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
+ <section class="panel dicebox" aria-label="Dice roller and quick checks">
+    <div class="panel-head"><h2>Dice & Checks</h2><span class="meta">Rolls posted to chat</span></div>
+    <div class="inner dice-main">
+      <div class="subheading">Quick dice</div><div class="dice-grid" id="dice-grid"></div>
+      <div class="subheading">Custom roll</div>
+      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20+5" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form>
+      <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
+      <details open id="quick-checks"><summary>Character-specific quick checks</summary><div class="check-title"><span class="subtle">Roll as</span><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></details>
+      <details id="dice-help"><summary>Roll format</summary><p class="subtle">Try 1d20, 2d6+3 or /roll 1d20+5. Preview rolls are local only.</p></details>
     </div>
-  </section>
-  <section class="panel checks-panel" aria-label="Character-specific quick checks">
-    <div class="panel-head"><h2>Character Quick Checks</h2><span class="meta">Expandable · character-specific</span></div>
-    <div class="inner">
-      <details open id="quick-checks"><summary>Ability Checks · Saving Throws · Skills</summary><div class="check-title"><span class="subtle">Rolling character</span><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></details>
-      <details id="dice-help"><summary>Roll format & visibility</summary><p class="subtle">Try 1d20, 2d6+3 or /roll 1d20+5 in chat. This preview rolls locally, with no shared dice history or secure DM-hidden rolls.</p></details>
-    </div>
-  </section>
-  <section class="panel" aria-label="Session controls"><div class="panel-head"><h2>Session Controls</h2><span class="meta">Current combatant</span></div><div class="inner" id="session-tools"></div></section>
- </div>
+ </section>
+ <section class="panel mine" aria-label="My character overview">
+  <div class="panel-head"><h2>My Character</h2><span class="meta">Personal sheet · not the active turn</span></div>
+  <div id="my-character-content"></div>
+ </section>
 </section>
+<div id="session-tools" hidden></div>
 <div class="foot">Terravale Codex · Session Room V2 design workshop · No production data connections</div>
 </main>
 </div></div>
@@ -96,7 +95,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <script>
 (function(){
 "use strict";
-const key="terravale-room-v2-workshop-v2";
+const key="terravale-room-v2-workshop-v3";
 const definitions={
 "Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
 "Charmed":"Cannot attack the charmer or target them with harmful abilities. The charmer has advantage on social interaction checks with it.",
@@ -114,7 +113,7 @@ const definitions={
 "Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
 "Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
 };
-const base=()=>({dm:true,round:2,steps:0,selected:"kai",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
+const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
 {id:"kai",name:"Kai",type:"Player",subtitle:"Lv 5 · Fighter",init:24,hp:42,max:42,hidden:false,conditions:[],initial:"K",face:"🧑🏻‍🎤"},
 {id:"derulo",name:"Derulo",type:"Player",subtitle:"Lv 5 · Shaman",init:19,hp:28,max:34,hidden:false,conditions:[],initial:"D",face:"🐺"},
 {id:"haruki",name:"Haruki",type:"Player",subtitle:"Lv 5 · Artificer",init:17,hp:31,max:31,hidden:false,conditions:[],initial:"H",face:"🧝🏻"},
@@ -190,20 +189,37 @@ function activeRender(){
 let a=current();if(!a)return;
 let canhp=state.dm||!a.hidden;
 let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
-let shown=canhp?(a.hp+" / "+a.max):"Hidden";
-let hpbar='<div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+(canhp?pct:0)+'%"></i></div><span class="number">'+shown+'</span></div>';
-let hpbuttons=state.dm?'<div class="hpbuttons"><button class="btn small" data-action="hp" data-value="-10">−10</button><button class="btn small" data-action="hp" data-value="-5">−5</button><button class="btn small" data-action="hp" data-value="-1">−1</button><button class="btn small" data-action="hp" data-value="1">+1</button><button class="btn small" data-action="hp" data-value="5">+5</button><button class="btn small" data-action="hp" data-value="10">+10</button></div>':'';
-let condControls=state.dm?'<button type="button" class="btn small" style="margin-top:6px" data-action="conditions">＋ Edit</button>':'';
-let tabs=["Abilities","Conditions","Resources","Actions","Inventory","Notes"];
+let hpContent=canhp?'<div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><strong class="number">'+a.hp+' / '+a.max+'</strong></div>':'<div class="subtle">HP hidden by DM</div>';
+let editHP=state.dm?'<div class="hpbuttons"><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="-1">−1 HP</button><button class="btn small" data-action="hp" data-value="1">+1 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button></div>':'';
+let hideHP=state.dm&&a.type!=="Player"?'<button class="btn small" data-action="toggle-hidden">'+(a.hidden?'Show HP':'Hide HP')+'</button>':'';
+let condEdit=state.dm?'<button class="btn small" data-action="conditions">＋ Conditions</button>':'';
+$("active-combatant").innerHTML=
+'<div class="active-bar-head"><span class="micro">NOW ACTING · ROUND '+state.round+'</span><span class="meta">Moves to the back of the queue after the turn</span></div>'+
+'<div class="active-bar-content">'+
+  '<div class="active-profile">'+portrait(a)+'<div class="active-profile-text"><h3>'+esc(a.name)+'</h3><span>'+esc(a.subtitle)+'</span><span>'+esc(a.type)+'</span></div></div>'+
+  '<div class="active-block active-hp"><div class="subheading">Hit Points</div>'+hpContent+editHP+'</div>'+
+  '<div class="active-block active-status"><div class="subheading">Conditions <span class="meta">hover for effects</span></div><div class="conditions">'+tokens(a)+'</div>'+condEdit+'</div>'+
+  '<div class="active-block active-initiative"><div class="subheading">Initiative</div><div class="large-number">'+a.init+'</div><div class="meta">Current turn</div></div>'+
+  '<div class="active-actions">'+hideHP+(state.dm?'<button class="btn primary" data-action="next">End turn →</button>':'<div class="meta">DM advances turns</div>')+'</div>'+
+'</div>';
+}
+function myCharacterRender(){
+let players=state.actors.filter(a=>a.type==="Player");
+if(!players.some(a=>a.id===state.own))state.own=players[0]?.id||"kai";
+let a=actor(state.own);if(!a)return;
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
 let tab=state.sheetTab||"Abilities";
-let visibility=(a.type!=="Player"&&state.dm?'<button type="button" class="btn small" data-action="toggle-hidden">'+(a.hidden?'Reveal HP to players':'Hide HP from players')+'</button>':'');
-$("active-combatant").innerHTML='<div class="hero">'+portrait(a)+
-'<div class="identity"><div class="micro">Current Turn</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><div class="hp-details"><div class="subheading">HP</div>'+hpbar+hpbuttons+'</div><div class="active-cond"><div class="subheading">Conditions</div><div class="conditions">'+tokens(a)+'</div>'+condControls+'</div></div>'+
-'<div class="initiative-square">Initiative<strong>'+a.init+'</strong></div></div>'+
-'<div class="sheet-tabs" role="tablist" aria-label="Active combatant detail tabs">'+tabs.map(t=>'<button type="button" role="tab" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
-'<div class="sheet-body">'+sheetContents(a,tab)+'</div>'+
-'<div class="active-foot"><span>'+(a.hidden?'Private HP · ':'')+esc(a.type)+' · Round '+state.round+'</span><div class="controls">'+visibility+'<button class="btn small" type="button" data-action="inspect">↗ Open Sheet</button></div></div>';
-$("session-tools").innerHTML='<div class="subheading">Combat & Status</div><p class="subtle">Selected: <b>'+esc(a.name)+'</b>. Conditions are explained on hover and keyboard focus.</p><div class="controls">'+(state.dm?'<button class="btn small" data-action="conditions">Manage conditions</button><button class="btn small" data-action="hp" data-value="-5">Deal 5 damage</button><button class="btn small" data-action="hp" data-value="5">Heal 5 HP</button><button class="btn small" data-action="next">Next turn</button>':'<span class="subtle">Only the DM can adjust the shared turn order, HP and conditions.</span>')+'</div>';
+let selector=state.dm?
+'<label class="own-selector">Preview player: <select id="my-character-choice" class="field" aria-label="Choose player to preview">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
+let tabs=["Abilities","Conditions","Resources","Actions","Inventory","Notes"];
+$("my-character-content").innerHTML=
+'<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">PERSONAL CHARACTER OVERVIEW</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><p class="meta">This stays on your own character when initiative advances.</p></div></div>'+
+'<div class="own-vitals"><div class="own-hp"><div class="subheading">HP</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+'/'+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
+'<div class="own-resources"><div class="subheading">Status & resources</div><div class="conditions">'+tokens(a)+'</div><div class="resource-preview"><div><strong>Character resources</strong><span>Linked to your character sheet in the connected version</span></div><span>Preview</span></div></div>'+
+selector+
+'<div class="own-tabs" role="tablist" aria-label="My character details">'+tabs.map(t=>'<button type="button" role="tab" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
+'<div class="own-sheet-body">'+sheetContents(a,tab)+'</div>'+
+'<div class="own-footer"><span>Independent personal character panel</span><button class="btn small" type="button" data-action="inspect">Open full sheet ↗</button></div>';
 }
 function feedRender(){
 let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.messages;
@@ -226,7 +242,7 @@ $("roller").innerHTML=players.map(a=>'<option value="'+esc(a.id)+'" '+(a.id===st
 let s=checkData[state.selected]||checkData.kai;
 $("check-groups").innerHTML=[["Ability checks","abilities"],["Saving throws","saves"],["Skill checks","skills"]].map(([name,field])=>'<div class="subheading" style="margin-top:13px">'+name+'</div><div class="checks">'+s[field].map(([n,val])=>'<button class="check" type="button" data-action="check" data-label="'+esc(n)+'" data-mod="'+esc(val)+'">'+esc(n)+' <strong>'+esc(val)+'</strong></button>').join("")+'</div>').join("");
 }
-function render(){queueRender();activeRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
+function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
 function next(){if(!state.dm)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
 function log(m){state.messages.push(m);state.messages=state.messages.slice(-180);save();feedRender();}
 function roll(expr,label,who){
@@ -260,7 +276,7 @@ let b=e.target.closest("button");if(!b)return;
 if(b.dataset.close){$(b.dataset.close).close();return;}
 let action=b.dataset.action;if(!action)return;
 if(action==="next")next();
-if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();activeRender();}
+if(action==="sheet-tab"){state.sheetTab=b.dataset.tab;save();myCharacterRender();}
 if(action==="feature-info")alert(b.dataset.feature+"\n\n"+b.dataset.description);
 if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save();render();}
 if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
@@ -305,6 +321,7 @@ if(bonus!==0){let m=x.replace(/\s/g,"").match(/^(\d{0,2}d(?:4|6|8|10|12|20|100))
 roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
 });
 $("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
+document.addEventListener("change",e=>{if(e.target.id==="my-character-choice"){state.own=e.target.value;save();myCharacterRender();}});
 render();
 document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
 })();
