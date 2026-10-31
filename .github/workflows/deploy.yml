@@ -125,6 +125,7 @@ jobs:
           cp site-overrides/session-room-v2-wireframe.css site/session-room-v2/session-room-v2-wireframe.css
           cp site-overrides/session-room-v2-encounters.css site/session-room-v2/session-room-v2-encounters.css
           cp site-overrides/session-room-v2-sheet-style.css site/session-room-v2/session-room-v2-sheet-style.css
+          cp site-overrides/session-room-v2-bottom.css site/session-room-v2/session-room-v2-bottom.css
           mkdir -p site/session-room-v2/encounter-library
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
@@ -135,6 +136,10 @@ jobs:
           grep -q 'combatant-overview' site/session-room-v2/index.html
           test -s site/session-room-v2/session-room-v2-encounters.css
           test -s site/session-room-v2/session-room-v2-sheet-style.css
+          test -s site/session-room-v2/session-room-v2-bottom.css
+          grep -q 'workspace-grid' site/session-room-v2/index.html
+          grep -q 'dmDeskRender' site/session-room-v2/index.html
+          grep -q 'setupPanelResizers' site/session-room-v2/index.html
           grep -q 'sheet-ability-grid' site/session-room-v2/index.html
           grep -q 'turn-ability-close' site/session-room-v2/index.html
           grep -q 'Encounter Library' site/session-room-v2/encounter-library/index.html
