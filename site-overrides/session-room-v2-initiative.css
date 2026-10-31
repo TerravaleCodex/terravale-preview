@@ -1,0 +1,120 @@
+/* Terravale Codex · V2 initiative encounter setup
+ * Reuses the existing Codex dark palette and panel/button vocabulary.
+ */
+html[data-codex-theme] .initiative .section-top .controls{
+ display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;
+}
+html[data-codex-theme] #initiative-manager-open,
+html[data-codex-theme] #initiative-clear,
+html[data-codex-theme] #initiative-roll-mine{
+ font-size:10px;white-space:nowrap;
+}
+html[data-codex-theme] #initiative-clear:disabled,
+html[data-codex-theme] #next-turn:disabled{opacity:.35;cursor:not-allowed}
+html[data-codex-theme] .initiative-empty{
+ display:flex;flex:1 0 100%;flex-direction:column;justify-content:center;
+ align-items:center;gap:8px;text-align:center;padding:14px;
+ border:1px dashed var(--c-border);border-radius:8px;
+ background:var(--c-paper);color:var(--c-sub);font-size:12px;
+}
+html[data-codex-theme] .initiative-empty .initiative-empty-mark{font-size:28px;line-height:1;color:var(--c-accent)}
+html[data-codex-theme] .initiative-empty strong{
+ font:normal 19px Georgia,serif;color:var(--c-ink);
+}
+html[data-codex-theme] .initiative-empty>span:last-child{max-width:520px;line-height:1.5}
+html[data-codex-theme] .initiative-dialog{
+ width:min(860px,calc(100vw - 24px));max-width:860px;max-height:min(800px,calc(100dvh - 36px));
+ background:var(--c-surface);border:1px solid var(--c-border);
+ border-radius:9px;box-shadow:0 12px 48px #0009;
+ color:var(--c-ink);overflow:auto;
+}
+html[data-codex-theme] .initiative-dialog .modal-body{padding:15px 19px 18px}
+html[data-codex-theme] .initiative-dialog .modal-top{padding:12px 19px}
+html[data-codex-theme] .initiative-dialog .modal-top h2{font:normal 21px Georgia,serif}
+html[data-codex-theme] .initiative-notice{
+ font-size:11px;line-height:1.55;color:var(--c-sub);
+ padding:9px 10px;margin:0 0 13px;
+ background:var(--c-paper);border:1px solid var(--c-border);
+ border-radius:6px
+}
+html[data-codex-theme] .initiative-tools{
+ display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0
+}
+html[data-codex-theme] .initiative-columns{
+ display:grid;grid-template-columns:minmax(180px,1fr) 88px 133px 75px;gap:10px;
+ font-size:10px;text-transform:uppercase;letter-spacing:.7px;
+ color:var(--c-sub);padding:8px 12px;border-bottom:1px solid var(--c-border);
+}
+html[data-codex-theme] .initiative-roster-list{
+ display:grid;gap:6px;
+ max-height:340px;overflow:auto;scrollbar-color:var(--c-border) transparent;
+ padding:10px 0 13px
+}
+html[data-codex-theme] .initiative-roster-entry{
+ display:grid;grid-template-columns:minmax(180px,1fr) 88px 133px 75px;
+ align-items:center;gap:10px;
+ border:1px solid var(--c-border);border-radius:6px;
+ background:var(--c-paper);padding:8px 10px;
+}
+html[data-codex-theme] .initiative-roster-name{
+ display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer
+}
+html[data-codex-theme] .initiative-roster-name input{
+ accent-color:var(--c-accent);height:15px;width:15px;flex:none;
+}
+html[data-codex-theme] .initiative-roster-name .portrait{
+ flex:0 0 34px;width:34px;height:38px;margin:0;
+ background:var(--c-paper2);border:1px solid var(--c-border);
+ border-radius:5px
+}
+html[data-codex-theme] .initiative-roster-name .portrait svg{width:20px;height:20px}
+html[data-codex-theme] .initiative-roster-name>span:last-child{
+ display:flex;min-width:0;flex-direction:column;gap:3px
+}
+html[data-codex-theme] .initiative-roster-name strong{
+ font-size:12px;font-weight:650;
+ white-space:nowrap;text-overflow:ellipsis;overflow:hidden
+}
+html[data-codex-theme] .initiative-roster-name small{font-size:10px;color:var(--c-sub)}
+html[data-codex-theme] .initiative-number{
+ width:100%;min-width:0;max-width:100%;
+ text-align:center;font-size:12px;padding:7px 4px;
+}
+html[data-codex-theme] .initiative-result-editor{display:grid;grid-template-columns:minmax(0,1fr) 41px;align-items:center;gap:5px}
+html[data-codex-theme] .initiative-result-editor .btn{padding:4px!important;min-width:0}
+html[data-codex-theme] .initiative-roster-entry>.btn{padding:5px 7px!important;min-width:0}
+html[data-codex-theme] .initiative-roster-entry>.btn.initiative-remove{border-color:var(--c-red)!important}
+html[data-codex-theme] .initiative-modal-actions{
+ display:flex;align-items:center;justify-content:flex-end;
+ gap:7px;flex-wrap:wrap;margin-top:12px
+}
+html[data-codex-theme] #initiative-clear-modal{margin-right:auto}
+html[data-codex-theme] .own-initiative-action{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;
+ padding:10px 15px;border-bottom:1px solid var(--c-border);
+ font-size:11px;color:var(--c-sub)
+}
+html[data-codex-theme] .own-initiative-action strong{color:var(--c-ink);font-size:13px}
+html[data-codex-theme] .own-initiative-action .btn{font-size:11px;min-height:30px}
+@media(max-width:950px){
+ html[data-codex-theme] .initiative-dialog .modal-body{padding:11px}
+ html[data-codex-theme] .initiative-columns{display:none}
+ html[data-codex-theme] .initiative-roster-entry{grid-template-columns:minmax(120px,1fr) 75px 115px 65px;gap:5px;padding:7px}
+ html[data-codex-theme] .initiative-roster-list{max-height:48dvh}
+ html[data-codex-theme] .initiative .section-top .controls{gap:3px}
+ html[data-codex-theme] #initiative-manager-open,
+ html[data-codex-theme] #initiative-clear,
+ html[data-codex-theme] #initiative-roll-mine{font-size:9px;padding:5px!important}
+}
+@media(max-width:600px){
+ html[data-codex-theme] .initiative-roster-entry{
+  grid-template-columns:minmax(0,1fr) 70px 70px;
+  gap:8px
+ }
+ html[data-codex-theme] .initiative-roster-entry>.btn{grid-column:3}
+ html[data-codex-theme] .initiative-result-editor{grid-column:2;grid-row:2}
+ html[data-codex-theme] .initiative-roster-name{grid-column:1/4}
+ html[data-codex-theme] .initiative-dialog{max-height:calc(100dvh - 20px)}
+ html[data-codex-theme] .initiative .section-top h2{font-size:11px}
+ html[data-codex-theme] .initiative .section-top .controls{max-width:75%}
+}
