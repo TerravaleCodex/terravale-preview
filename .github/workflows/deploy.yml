@@ -121,6 +121,7 @@ jobs:
         run: |
           mkdir -p site/session-room-v2
           cp site-overrides/session-room-v2.html site/session-room-v2/index.html
+          cp site-overrides/session-room-v2-live-roster.js site/session-room-v2/session-room-v2-live-roster.js
           cp site-overrides/session-room-v2-fidelity.css site/session-room-v2/session-room-v2-fidelity.css
           cp site-overrides/session-room-v2-wireframe.css site/session-room-v2/session-room-v2-wireframe.css
           cp site-overrides/session-room-v2-encounters.css site/session-room-v2/session-room-v2-encounters.css
@@ -131,6 +132,8 @@ jobs:
           mkdir -p site/session-room-v2/encounter-library
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-live-roster.js
+          grep -q 'live-roster-button' site/session-room-v2/index.html
           grep -q 'Initiative Queue' site/session-room-v2/index.html
           grep -q 'Character Quick Checks' site/session-room-v2/index.html
           test -s site/session-room-v2/session-room-v2-fidelity.css
@@ -163,6 +166,11 @@ jobs:
           pathlib.Path('/tmp/terravale-room-v2.js').write_text(scripts[0])
           PY
           node --check /tmp/terravale-room-v2.js
+      - name: Test V2 authenticated roster and private character portraits
+        shell: bash
+        run: |
+          node --check site/session-room-v2/session-room-v2-live-roster.js
+          node site-overrides/test-v2-live-roster.cjs
       - name: Regression check V2 portrait cards and active turn collapse
         shell: bash
         run: node site-overrides/test-v2-portrait-cards.cjs
