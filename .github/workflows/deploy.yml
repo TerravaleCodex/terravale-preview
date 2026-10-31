@@ -91,6 +91,54 @@ jobs:
               raise SystemExit('Expected to inject theme styling into published Next pages')
           print('Theme styles linked on',count,'pages')
           PY
+      - name: Route sidebar Session Room links to replacement
+        shell: bash
+        run: |
+          cp site-overrides/session-room-navigation-bridge.js site/session-room-navigation-bridge.js
+          python3 - <<'PY'
+          from pathlib import Path
+          script='<script src="/terravale-preview/session-room-navigation-bridge.js" defer></script>'
+          updated=0
+          for p in Path('site').rglob('*.html'):
+              content=p.read_text()
+              if '</head>' in content and script not in content:
+                  p.write_text(content.replace('</head>',script+'</head>',1))
+                  updated+=1
+          assert updated>=10, 'Expected compiled site pages for live-room navigation'
+          print('Live Session Room navigation added to',updated,'pages')
+          PY
+          node --check site/session-room-navigation-bridge.js
+      - name: Publish Adblockn't-only Cabinet and approved site-wide fake ads
+        shell: bash
+        run: |
+          mkdir -p site/adblocknt/ads site/cabinet-of-curiosities site/dm/ad-controls
+          cp site-overrides/adblocknt/adblocknt.js site/adblocknt/adblocknt.js
+          cp site-overrides/adblocknt/ads/*.webp site/adblocknt/ads/
+          cp site-overrides/adblocknt/cabinet.html site/cabinet-of-curiosities/index.html
+          cp site-overrides/adblocknt/dm-ads.html site/dm/ad-controls/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          assets = list(Path('site/adblocknt/ads').glob('zip-*.webp'))
+          if len(assets) != 56:
+              raise SystemExit(f'Expected 56 approved ad creatives; found {len(assets)}')
+          injection = '<script src="/terravale-preview/adblocknt/adblocknt.js" defer></script>'
+          total = 0
+          for page in Path('site').rglob('*.html'):
+              html = page.read_text()
+              if injection in html:
+                  continue
+              if '</body>' not in html:
+                  continue
+              page.write_text(html.replace('</body>', injection + '</body>', 1))
+              total += 1
+          if total < 10:
+              raise SystemExit('Global ad delivery script was not included on all Codex pages')
+          cabinet = Path('site/cabinet-of-curiosities/index.html').read_text()
+          if 'Adblockn’t' not in cabinet or '0 / 1 discovered' not in cabinet:
+              raise SystemExit('Approved Cabinet achievement contract failed')
+          print(f'Adblockn’t is present across {total} compiled site pages, with 56 approved ads')
+          PY
+          node --check site/adblocknt/adblocknt.js
       - name: Verify class rule descriptions and equipment-slot protections
         shell: bash
         run: |
@@ -190,6 +238,33 @@ jobs:
       - name: Regression check V2 chat scroll with 200 messages
         shell: bash
         run: node site-overrides/test-v2-chat-scroll.cjs
+      - name: Build and validate live Session Room replacement
+        shell: bash
+        run: |
+          # Preserve the published compiled bundle in Git, but replace the
+          # Session Room route only after V2 prototype tests are successful.
+          mkdir -p site/session-room/encounter-library
+          cp site-overrides/session-room-live.html site/session-room/index.html
+          cp site-overrides/session-room-live.js site/session-room/session-room-live.js
+          cp site-overrides/session-room-live.css site/session-room/session-room-live.css
+          cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
+          for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
+            cp "site-overrides/session-room-v2-${style}.css" "site/session-room/session-room-v2-${style}.css"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          content=Path('site/session-room/index.html').read_text()
+          assert 'data-room-production="1"' in content
+          assert 'room-live.js' in content
+          assert 'name:"Kai"' not in content
+          js=[p for p in re.findall(r'<script[^>]*>(.*?)</script>',content,re.S) if p.strip()]
+          assert len(js)==1, f"Expected one embedded production script: {len(js)}"
+          Path('/tmp/terravale-session-live.js').write_text(js[0])
+          PY
+          node --check /tmp/terravale-session-live.js
+          node --check site/session-room/session-room-live.js
+          node site-overrides/test-session-room-live.cjs
       - name: Check Encounter Library JavaScript syntax
         shell: bash
         run: |
