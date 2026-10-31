@@ -129,6 +129,7 @@ jobs:
           cp site-overrides/session-room-v2-bottom.css site/session-room-v2/session-room-v2-bottom.css
           cp site-overrides/session-room-v2-codex.css site/session-room-v2/session-room-v2-codex.css
           cp site-overrides/session-room-v2-portrait-cards.css site/session-room-v2/session-room-v2-portrait-cards.css
+          cp site-overrides/session-room-v2-initiative.css site/session-room-v2/session-room-v2-initiative.css
           mkdir -p site/session-room-v2/encounter-library
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
@@ -144,6 +145,8 @@ jobs:
           test -s site/session-room-v2/session-room-v2-bottom.css
           test -s site/session-room-v2/session-room-v2-codex.css
           test -s site/session-room-v2/session-room-v2-portrait-cards.css
+          test -s site/session-room-v2/session-room-v2-initiative.css
+          grep -q 'initiative-manager-open' site/session-room-v2/index.html
           grep -q 'active-collapse' site/session-room-v2/index.html
           grep -q 'codex-missing-portrait' site/session-room-v2/index.html
           grep -q 'codex-theme-select' site/session-room-v2/index.html
@@ -171,6 +174,9 @@ jobs:
         run: |
           node --check site/session-room-v2/session-room-v2-live-roster.js
           node site-overrides/test-v2-live-roster.cjs
+      - name: Regression check V2 initiative setup and player roll
+        shell: bash
+        run: node site-overrides/test-v2-initiative.cjs
       - name: Regression check V2 portrait cards and active turn collapse
         shell: bash
         run: node site-overrides/test-v2-portrait-cards.cjs
