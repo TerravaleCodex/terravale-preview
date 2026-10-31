@@ -127,6 +127,7 @@ jobs:
           cp site-overrides/session-room-v2-sheet-style.css site/session-room-v2/session-room-v2-sheet-style.css
           cp site-overrides/session-room-v2-bottom.css site/session-room-v2/session-room-v2-bottom.css
           cp site-overrides/session-room-v2-codex.css site/session-room-v2/session-room-v2-codex.css
+          cp site-overrides/session-room-v2-portrait-cards.css site/session-room-v2/session-room-v2-portrait-cards.css
           mkdir -p site/session-room-v2/encounter-library
           cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
           test -s site/session-room-v2/index.html
@@ -139,6 +140,9 @@ jobs:
           test -s site/session-room-v2/session-room-v2-sheet-style.css
           test -s site/session-room-v2/session-room-v2-bottom.css
           test -s site/session-room-v2/session-room-v2-codex.css
+          test -s site/session-room-v2/session-room-v2-portrait-cards.css
+          grep -q 'active-collapse' site/session-room-v2/index.html
+          grep -q 'codex-missing-portrait' site/session-room-v2/index.html
           grep -q 'codex-theme-select' site/session-room-v2/index.html
           grep -q 'workspace-grid' site/session-room-v2/index.html
           grep -q 'dmDeskRender' site/session-room-v2/index.html
