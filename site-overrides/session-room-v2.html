@@ -23,6 +23,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-wireframe.css">
 <link rel="stylesheet" href="./session-room-v2-encounters.css">
 <link rel="stylesheet" href="./session-room-v2-sheet-style.css">
+<link rel="stylesheet" href="./session-room-v2-bottom.css">
 </head>
 <body>
 <div class="app">
@@ -53,25 +54,27 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
  <div class="track" id="queue" aria-live="polite"></div>
 </section>
 <section class="panel active" id="active-combatant" aria-label="Active combatant, full width"></section>
-<section class="room" aria-label="Session workspace">
- <section class="panel chat" aria-label="Campaign chat">
-  <div class="panel-head"><div class="tabs"><button class="tab current" id="tab-chat">Campaign chat</button><button class="tab" id="tab-rolls">Dice results</button></div><span class="meta">● Live</span></div>
-  <div class="feed" id="feed"></div>
-  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message the party or /roll 1d20+5" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
+<section class="room" id="workspace-grid" aria-label="Session workspace">
+ <section class="panel chat" aria-label="Party chat">
+  <div class="panel-head chat-head"><div class="chat-heading"><h2>Party Chat</h2><span class="meta">Local preview</span></div><div class="chat-filters"><button class="tab current" id="tab-chat" type="button">All</button><button class="tab" id="tab-messages" type="button">Messages</button><button class="tab" id="tab-rolls" type="button">Rolls</button></div></div>
+  <div class="feed" id="feed" role="log" aria-label="Chat messages" aria-live="polite"></div>
+  <form class="chat-compose" id="chat-form"><label for="chat-input" class="sr-only">Message your party</label><input id="chat-input" placeholder="Message or /roll 1d20+5…" autocomplete="off"><button class="btn primary" type="submit">Send ➤</button></form>
  </section>
- <section class="panel dicebox" aria-label="Dice roller and quick checks">
-    <div class="panel-head"><h2>Dice & Checks</h2><span class="meta">Rolls posted to chat</span></div>
-    <div class="inner dice-main">
-      <div class="subheading">Quick dice</div><div class="dice-grid" id="dice-grid"></div>
-      <div class="subheading">Custom roll</div>
-      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20+5" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Roll modifier"><button class="btn primary" type="submit">Roll</button></form>
-      <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
-      <details open id="quick-checks"><summary>Character-specific quick checks</summary><div class="check-title"><span class="subtle">Roll as</span><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></details>
-      <details id="dice-help"><summary>Roll format</summary><p class="subtle">Try 1d20, 2d6+3 or /roll 1d20+5. Preview rolls are local only.</p></details>
-    </div>
+ <div class="room-resizer" id="resize-chat" role="separator" tabindex="0" aria-label="Resize chat and dice panels" aria-orientation="vertical" title="Drag to resize, or use arrow keys"><span></span></div>
+ <section class="panel dicebox" aria-label="Dice roller and character checks">
+   <div class="panel-head dice-head"><div><h2>Dice & Checks</h2><span class="meta">All checks roll in chat · sample modifiers</span></div><span class="dice-hint">⚄</span></div>
+   <div class="inner dice-main">
+     <div class="subheading">Quick Dice</div><div class="dice-grid" id="dice-grid"></div>
+     <div class="subheading">Custom Roll</div>
+     <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Additional roll modifier"><button class="btn primary" type="submit">Roll</button></form>
+     <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
+     <div class="check-shell"><div class="check-heading"><h3>Character Quick Checks</h3><span class="meta">Click to roll</span></div><div class="check-title"><label for="roller" class="subtle">Rolling as</label><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></div>
+     <details id="dice-help"><summary>Roll notation & privacy</summary><p class="subtle">Examples: 1d20, 2d6+3 or /roll 1d20+5. All rolls are local demo results, not secure hidden rolls.</p></details>
+   </div>
  </section>
- <section class="panel mine" aria-label="My character overview">
-  <div class="panel-head"><h2>My Character</h2><span class="meta">Personal sheet · not the active turn</span></div>
+ <div class="room-resizer" id="resize-character" role="separator" tabindex="0" aria-label="Resize dice and character panels" aria-orientation="vertical" title="Drag to resize, or use arrow keys"><span></span></div>
+ <section class="panel mine" aria-label="My character and DM tools">
+  <div class="panel-head mine-head"><div><h2 id="right-heading">My Character</h2><span class="meta" id="right-subheading">Personal sheet</span></div><div class="panel-switch" id="panel-switch"></div></div>
   <div id="my-character-content"></div>
  </section>
 </section>
@@ -125,7 +128,7 @@ const definitions={
 "Unconscious":"Incapacitated, cannot move or speak and is unaware. Drops held items and falls prone. Attacks against it have advantage; close hits are critical.",
 "Exhaustion":"Exhaustion imposes cumulative penalties by level. Check the campaign rule version for exact effects."
 };
-const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",turnAbility:"DEX",sheetTab:"Abilities",rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
+const base=()=>({dm:true,round:2,steps:0,selected:"kai",own:"kai",turnAbility:"DEX",sheetTab:"Combat",sidePanel:"character",layout:{chat:23,dice:35},rollMode:"normal",tab:"chat",queue:["kai","derulo","haruki","shystray","goblin","cultist","skeleton"],actors:[
 {id:"kai",name:"Kai",type:"Player",subtitle:"Lv 5 · Fighter",init:24,hp:42,max:42,hidden:false,conditions:[],initial:"K",face:"🧑🏻‍🎤"},
 {id:"derulo",name:"Derulo",type:"Player",subtitle:"Lv 5 · Shaman",init:19,hp:28,max:34,hidden:false,conditions:[],initial:"D",face:"🐺"},
 {id:"haruki",name:"Haruki",type:"Player",subtitle:"Lv 5 · Artificer",init:17,hp:31,max:31,hidden:false,conditions:[],initial:"H",face:"🧝🏻"},
@@ -297,29 +300,73 @@ $("active-combatant").innerHTML=
 '<div class="combatant-controls">'+hideHP+(state.dm?'<button class="btn primary end-turn-large" data-action="next">End Turn →</button>':'<div class="muted">The DM advances the turn.</div>')+'</div>'+
 '</div>';
 }
+
+function sampleActions(a){
+let groups=sampleFeatures[actorClass(a)]||[];
+return groups.map(([group,rows])=>'<div class="own-section-title">'+esc(group)+'</div><div class="own-action-list">'+rows.map(([ico,name,description])=>{
+let hit=(description.match(/([+-]\d+)\s+to hit/i)||[])[1];
+return '<div class="own-action"><span class="own-action-icon">'+esc(ico)+'</span><div class="own-action-main"><strong>'+esc(name)+'</strong><p>'+esc(description)+'</p></div><div class="own-action-controls">'+(hit?'<button class="btn small" data-action="own-attack" data-char="'+esc(a.id)+'" data-bonus="'+esc(hit)+'" data-name="'+esc(name)+'">Roll attack</button>':'')+'<button class="btn small" data-action="feature-info" data-feature="'+esc(name)+'" data-description="'+esc(description)+'">Details</button></div></div>';
+}).join("")+'</div>').join("");
+}
+function ownAbilityCards(a){
+let data=previewScores(a);
+return '<p class="own-help">Sample ability scores. Click to roll an ability check in chat.</p><div class="own-ability-grid">'+abilities.map(x=>{
+let v=data.scores[x.code],m=v==null?null:Math.floor((v-10)/2);
+return '<button class="own-ability-card" type="button" data-action="own-check" data-char="'+esc(a.id)+'" data-name="'+x.name+' ability check" data-bonus="'+(m??0)+'" '+(m==null?'disabled':'')+'><span>'+x.code+'</span><span class="own-score">'+(v??"—")+'</span><strong>'+(m==null?"—":prettyMod(m))+'</strong></button>';
+}).join("")+'</div><div class="own-section-title">Saving throws</div><div class="own-minichecks">'+abilities.map(x=>{
+let v=data.scores[x.code],mod=v==null?null:Math.floor((v-10)/2)+(data.saves.includes(x.code)?data.proficiency:0);
+return '<button class="own-mini" data-action="own-check" data-char="'+esc(a.id)+'" data-name="'+x.name+' saving throw" data-bonus="'+(mod??0)+'" '+(mod==null?'disabled':'')+'>'+x.code+' <strong>'+(mod==null?"—":prettyMod(mod))+'</strong></button>';
+}).join("")+'</div>';
+}
+function sampleResourceList(a){
+let kind=actorClass(a),defs=kind==="Fighter"?[["Action Surge",1],["Second Wind",1]]:kind==="Barbarian"?[["Rage",3]]:kind==="Shaman"?[["Spirit Charges",3]]:kind==="Artificer"?[["Device Charges",3]]:[["Class Resource",2]];
+state.sampleResources=state.sampleResources||{};state.sampleResources[a.id]=state.sampleResources[a.id]||{};
+return '<p class="own-help">Interactive demonstration charges. Does not deduct resources from the real sheet.</p><div class="resource-cards">'+defs.map(([name,max])=>{
+let value=state.sampleResources[a.id][name]??max;
+return '<div class="resource-card"><div><strong>'+esc(name)+'</strong><small>'+value+' / '+max+' remaining · demo</small></div><div class="resource-pips">'+Array.from({length:max},(_,i)=>'<button type="button" class="resource-pip '+(i<value?'filled':'')+'" data-action="own-resource" data-char="'+esc(a.id)+'" data-resource="'+esc(name)+'" data-index="'+i+'" data-max="'+max+'" aria-label="'+esc(name)+' charge '+(i+1)+'"></button>').join("")+'</div></div>';
+}).join("")+'</div><button class="btn small" data-action="restore-resources" data-char="'+esc(a.id)+'">Restore demo resources</button>';
+}
+function ownTabContents(a,tab){
+if(tab==="Combat")return sampleActions(a);
+if(tab==="Abilities")return ownAbilityCards(a);
+if(tab==="Resources")return sampleResourceList(a);
+if(tab==="Inventory")return '<div class="own-section-title">Equipment & inventory</div><div class="own-empty"><strong>Inventory not connected</strong><p>Equipped weapons and item charges will mirror the approved character sheet after integration. No invented gear.</p></div>';
+if(tab==="Conditions")return '<div class="own-section-title">Conditions</div><div class="conditions">'+tokens(a)+'</div><p class="own-help">Hover or focus conditions for rule descriptions.</p>'+(state.dm?'<button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Manage conditions</button>':'');
+return '<div class="own-section-title">Notes</div><p class="own-help">Notes stay on your real character sheet. Shared editing is not connected in this workshop.</p>';
+}
+function dmDeskRender(){
+let a=current(),library=getLibrary();
+$("my-character-content").innerHTML='<div class="desk-body"><div class="desk-intro"><span class="desk-eyebrow">DM WORKSPACE · DEMO</span><h3>Encounter Controls</h3><p>No player character required.</p></div><div class="desk-buttons"><button class="btn primary" data-action="dm-add">＋ Add combatant</button><a class="btn" href="./encounter-library/">Encounter Library ↗</a></div>'+
+'<div class="desk-section"><div class="own-section-title">Current turn</div><div class="desk-active">'+portrait(a)+'<div><strong>'+esc(a.name)+'</strong><small>'+esc(a.subtitle)+' · Initiative '+a.init+'</small></div></div><div class="desk-actions"><button class="btn small" data-action="conditions" data-target-id="'+esc(a.id)+'">Conditions</button><button class="btn small" data-action="hp" data-value="-5">−5 HP</button><button class="btn small" data-action="hp" data-value="5">+5 HP</button><button class="btn small" data-action="next">End Turn →</button></div></div>'+
+'<div class="desk-section"><div class="own-section-title">Encounter status</div><div class="desk-summary"><div><strong>'+state.queue.length+'</strong><span>Combatants</span></div><div><strong>'+state.round+'</strong><span>Round</span></div><div><strong>'+library.length+'</strong><span>Templates</span></div></div></div>'+
+'<div class="desk-section"><div class="own-section-title">Initiative roster</div><div class="desk-roster">'+state.queue.map((id,i)=>{let c=actor(id);return c?'<div class="desk-roster-entry"><span class="desk-order">'+(i+1)+'</span>'+portrait(c)+'<div><strong>'+esc(c.name)+'</strong><small>'+esc(c.type)+'</small></div><span class="desk-hp">'+c.hp+'/'+c.max+'</span></div>':'';}).join("")+'</div></div></div>';
+}
 function myCharacterRender(){
+let showDesk=state.dm&&state.sidePanel==="dm";
+$("right-heading").textContent=showDesk?"DM Desk":"My Character";
+$("right-subheading").textContent=showDesk?"Encounter controls · preview":"Independent of initiative order";
+$("panel-switch").innerHTML=state.dm?'<button class="btn small '+(!showDesk?'is-on':'')+'" data-action="right-panel" data-panel="character" aria-pressed="'+!showDesk+'">Character</button><button class="btn small '+(showDesk?'is-on':'')+'" data-action="right-panel" data-panel="dm" aria-pressed="'+showDesk+'">DM Desk</button>':'';
+if(showDesk){dmDeskRender();return;}
 let players=state.actors.filter(a=>a.type==="Player");
 if(!players.some(a=>a.id===state.own))state.own=players[0]?.id||"kai";
-let a=actor(state.own);if(!a)return;
-let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1)));
-let tab=state.sheetTab||"Abilities";
-let selector=state.dm?
-'<label class="own-selector">Preview player: <select id="my-character-choice" class="field" aria-label="Choose player to preview">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
-let tabs=["Abilities","Conditions","Resources","Actions","Inventory","Notes"];
-$("my-character-content").innerHTML=
-'<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">PERSONAL CHARACTER OVERVIEW</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><p class="meta">This stays on your own character when initiative advances.</p></div></div>'+
-'<div class="own-vitals"><div class="own-hp"><div class="subheading">HP</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+'/'+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
-'<div class="own-resources"><div class="subheading">Status & resources</div><div class="conditions">'+tokens(a)+'</div><div class="resource-preview"><div><strong>Character resources</strong><span>Linked to your character sheet in the connected version</span></div><span>Preview</span></div></div>'+
-selector+
-'<div class="own-tabs" role="tablist" aria-label="My character details">'+tabs.map(t=>'<button type="button" role="tab" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
-'<div class="own-sheet-body">'+sheetContents(a,tab)+'</div>'+
-'<div class="own-footer"><span>Independent personal character panel</span><button class="btn small" type="button" data-action="inspect">Open full sheet ↗</button></div>';
+let a=actor(state.own);if(!a){$("my-character-content").innerHTML='<div class="empty">No personal character assigned.</div>';return;}
+let pct=Math.max(0,Math.min(100,100*a.hp/(a.max||1))),tab=state.sheetTab||"Combat";
+let selector=state.dm?'<label class="own-selector">Preview character <select id="my-character-choice" class="field" aria-label="Choose preview character">'+players.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===a.id?'selected':'')+'>'+esc(p.name)+'</option>').join("")+'</select></label>':'';
+let tabs=["Combat","Abilities","Resources","Inventory","Conditions","Notes"];
+$("my-character-content").innerHTML='<div class="own-top">'+portrait(a)+'<div class="own-info"><div class="micro">MY CHARACTER · QUICK SHEET</div><h3>'+esc(a.name)+'</h3><p>'+esc(a.subtitle)+'</p><span class="own-connected">● Demo character</span></div></div>'+
+'<div class="own-vitals"><div class="own-hp"><div class="subheading">Hit Points</div><div class="hprow"><div class="hpbar"><i class="'+(pct<25?'low':pct<60?'mid':'')+'" style="width:'+pct+'%"></i></div><strong>'+a.hp+' / '+a.max+'</strong></div></div><div class="own-stat"><span>Initiative</span><strong>'+a.init+'</strong></div><div class="own-stat"><span>Conditions</span><strong>'+a.conditions.length+'</strong></div></div>'+
+'<div class="own-condition-row"><span class="micro">STATUS</span><div class="conditions">'+tokens(a)+'</div></div>'+selector+
+'<div class="own-tabs" role="tablist" aria-label="My character quick sheet">'+tabs.map(t=>'<button role="tab" type="button" aria-selected="'+(t===tab)+'" class="'+(t===tab?'selected':'')+'" data-action="sheet-tab" data-tab="'+t+'">'+t+'</button>').join("")+'</div>'+
+'<div class="own-sheet-body">'+ownTabContents(a,tab)+'</div>'+
+'<div class="own-footer"><span>Sample values · not linked to live sheets</span><button class="btn small" data-action="inspect">Full sheet ↗</button></div>';
 }
 function feedRender(){
-let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.messages;
-$("tab-chat").classList.toggle("current",state.tab==="chat");$("tab-rolls").classList.toggle("current",state.tab==="rolls");
+let list=state.tab==="rolls"?state.messages.filter(m=>m.kind==="roll"):state.tab==="messages"?state.messages.filter(m=>m.kind==="text"):state.messages;
+for(let [id,key] of [["tab-chat","chat"],["tab-messages","messages"],["tab-rolls","rolls"]]){
+$(id).classList.toggle("current",state.tab===key);$(id).setAttribute("aria-pressed",String(state.tab===key));
+}
 let el=$("feed");
-el.innerHTML=list.length?list.slice(-80).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle" style="margin:3px 0">'+esc(m.label)+'</div><div><span class="roll-total">'+m.total+'</span> <span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">No activity in this tab.</div>';
+el.innerHTML=list.length?list.slice(-120).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle roll-label">'+esc(m.label)+'</div><div class="roll-number"><strong class="roll-total">'+m.total+'</strong><span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">Nothing in this channel yet.</div>';
 el.scrollTop=el.scrollHeight;
 }
 const checkData={
