@@ -519,6 +519,110 @@ state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true
 $("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
 }
 function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
+
+/* Initiative management operates exclusively on V2's local state.
+ * state.actors is the reusable roster; state.queue is only encounter order.
+ * No production campaign state is written, including in live-roster mode. */
+let initiativeSelected=new Set();
+function initiativeModifier(a){
+ const override=state.initiativeModifiers?.[a.id];
+ if(Number.isInteger(override))return override;
+ if(Number.isFinite(a.liveScores?.initiativeModifier))return Number(a.liveScores.initiativeModifier);
+ if(a.type==="Player"){
+  const dex=previewScores(a).scores?.DEX;
+  return Number.isFinite(dex)?Math.floor((dex-10)/2):0;
+ }
+ const dex=a.statBlock?.stats?.dex;
+ return dex!=null&&Number.isFinite(Number(dex))?Math.floor((Number(dex)-10)/2):0;
+}
+function validInitiative(n){return Number.isInteger(n)&&n>=-40&&n<=100;}
+function sortInitiative(){
+ const previous=new Map(state.queue.map((id,i)=>[id,i]));
+ state.queue=Array.from(new Set(state.queue)).filter(id=>!!actor(id)).sort((x,y)=>{
+  const a=actor(x).init,b=actor(y).init;
+  const aa=Number.isFinite(a)?a:-999,bb=Number.isFinite(b)?b:-999;
+  return bb-aa||(previous.get(x)??999)-(previous.get(y)??999);
+ });
+ state.round=1;state.steps=0;
+}
+function putInQueue(id){
+ if(!actor(id))return;
+ if(!state.queue.includes(id))state.queue.push(id);
+}
+function removeFromQueue(id){
+ if(!state.queue.includes(id))return;
+ state.queue=state.queue.filter(x=>x!==id);
+ if(!state.queue.length){state.round=1;state.steps=0;}
+ else state.steps=Math.min(state.steps,state.queue.length-1);
+ save();render();
+}
+function clearInitiative(){
+ if(!state.dm)return;
+ if(!state.queue.length)return;
+ if(!confirm("Clear the entire initiative queue and reset the round? This keeps all characters and saved creatures available for the next encounter."))return;
+ state.queue=[];
+ state.round=1;state.steps=0;
+ for(const a of state.actors)a.init=null;
+ save();render();renderInitiativeRoster();
+}
+function rollInitiativeFor(ids,asPlayer=false){
+ if(!ids.length)return;
+ const rolls=[];
+ for(const id of new Set(ids)){
+  let a=actor(id);if(!a)continue;
+  if(asPlayer&&(!state.own||a.id!==state.own||a.type!=="Player"))continue;
+  let bonus=initiativeModifier(a);
+  if(!validInitiative(bonus)){alert("Initiative modifier must be between -40 and +100.");return;}
+  let die=1+Math.floor(Math.random()*20);
+  a.init=die+bonus;
+  putInQueue(id);
+  rolls.push({actor:a,die,bonus,total:a.init});
+ }
+ if(!rolls.length)return;
+ sortInitiative();save();render();
+ for(const result of rolls){
+  log({kind:"roll",who:result.actor.name,label:"Initiative · 1d20"+prettyMod(result.bonus),total:result.total,detail:result.die+(result.bonus?" "+prettyMod(result.bonus):""),time:clock()});
+ }
+ if($("initiative-modal").open)renderInitiativeRoster();
+}
+function initiativeRow(id){
+ const a=actor(id);
+ if(!a)return "";
+ const queued=state.queue.includes(id),value=Number.isFinite(a.init)?a.init:"";
+ return '<div class="initiative-roster-entry" data-init-row="'+esc(id)+'">'+
+ '<label class="initiative-roster-name"><input type="checkbox" data-init-select="'+esc(id)+'" '+(initiativeSelected.has(id)?"checked":"")+'>'+portrait(a)+
+ '<span><strong>'+esc(a.name)+'</strong><small>'+esc(a.type)+' · '+(queued?"In queue":"Available")+'</small></span></label>'+
+ '<input type="number" class="field initiative-number" aria-label="Initiative modifier for '+esc(a.name)+'" data-init-mod="'+esc(id)+'" min="-40" max="100" step="1" value="'+initiativeModifier(a)+'">'+
+ '<div class="initiative-result-editor"><input type="number" class="field initiative-number" aria-label="Manual initiative result for '+esc(a.name)+'" data-init-value="'+esc(id)+'" min="-40" max="100" step="1" placeholder="—" value="'+value+'"><button type="button" class="btn small" data-action="initiative-set" data-id="'+esc(id)+'" title="Set manual initiative result">Set</button></div>'+
+ '<button type="button" class="btn small '+(queued?"initiative-remove":"")+'" data-action="initiative-toggle" data-id="'+esc(id)+'">'+(queued?"Remove":"Add")+'</button></div>';
+}
+function renderInitiativeRoster(){
+ const list=$("initiative-roster-list");
+ if(!list)return;
+ list.innerHTML=state.actors.length?state.actors.map(a=>initiativeRow(a.id)).join(""):'<p class="subtle">No characters or creatures are available. Add a combatant first.</p>';
+}
+function showInitiativeManager(){
+ if(!state.dm)return;
+ initiativeSelected=new Set(state.actors.filter(a=>a.type==="Player").map(a=>a.id));
+ renderInitiativeRoster();
+ $("initiative-modal").showModal();
+}
+function selectedInitiativeIds(){
+ return Array.from(initiativeSelected).filter(id=>!!actor(id));
+}
+function saveInitiativeModifiers(ids){
+ const overrides={...state.initiativeModifiers};
+ for(const id of ids){
+  const input=Array.from($("initiative-roster-list").querySelectorAll("[data-init-mod]")).find(el=>el.dataset.initMod===id);
+  if(!input)continue;
+  const n=Number(input.value);
+  if(input.value.trim()===""||!validInitiative(n)){alert("Enter an initiative modifier between -40 and +100.");return false;}
+  overrides[id]=n;
+ }
+ state.initiativeModifiers=overrides;
+ return true;
+}
+
 function next(){if(!state.dm||!state.queue.length)return;state.queue.push(state.queue.shift());state.steps++;if(state.steps>=state.queue.length){state.round++;state.steps=0;}save();render();}
 function log(m){state.messages.push(m);state.messages=state.messages.slice(-180);save();feedRender();}
 function roll(expr,label,who){
@@ -588,6 +692,27 @@ let b=e.target.closest("button");if(!b)return;
 if(b.dataset.close){$(b.dataset.close).close();return;}
 let action=b.dataset.action;if(!action)return;
 if(action==="next")next();
+if(action==="manage-initiative")showInitiativeManager();
+if(action==="roll-my-initiative"){
+ const a=actor(state.own);
+ if(a?.type==="Player")rollInitiativeFor([a.id],true);
+}
+if(action==="initiative-toggle"&&state.dm){
+ const id=b.dataset.id;
+ if(state.queue.includes(id))removeFromQueue(id);
+ else{putInQueue(id);sortInitiative();save();render();}
+ renderInitiativeRoster();
+}
+if(action==="initiative-set"&&state.dm){
+ const id=b.dataset.id;
+ if(!saveInitiativeModifiers([id]))return;
+ const input=Array.from($("initiative-roster-list").querySelectorAll("[data-init-value]")).find(el=>el.dataset.initValue===id);
+ const value=Number(input?.value);
+ if(!input||input.value.trim()===""||!validInitiative(value)){alert("Enter a whole-number initiative result from -40 to 100.");return;}
+ actor(id).init=value;
+ putInQueue(id);sortInitiative();save();render();renderInitiativeRoster();
+}
+
 if(action==="active-collapse"){state.activeCollapsed=!state.activeCollapsed;save();activeRender();}
 if(action==="turn-ability"){state.turnAbility=state.turnAbility===b.dataset.ability?null:b.dataset.ability;save();activeRender();}
 if(action==="turn-ability-close"){state.turnAbility=null;save();activeRender();}
@@ -629,6 +754,38 @@ if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("a
 if(action==="inspect"){alert("This is a standalone layout preview. The real character sheet link will be connected during integration.");}
 });
 $("next-turn").addEventListener("click",next);
+$("initiative-manager-open").addEventListener("click",showInitiativeManager);
+$("initiative-clear").addEventListener("click",clearInitiative);
+$("initiative-clear-modal").addEventListener("click",clearInitiative);
+$("initiative-roll-mine").addEventListener("click",()=>{let a=actor(state.own);if(a?.type==="Player")rollInitiativeFor([a.id],true);});
+$("initiative-select-players").addEventListener("click",()=>{initiativeSelected=new Set(state.actors.filter(a=>a.type==="Player").map(a=>a.id));renderInitiativeRoster();});
+$("initiative-select-all").addEventListener("click",()=>{initiativeSelected=new Set(state.actors.map(a=>a.id));renderInitiativeRoster();});
+$("initiative-select-none").addEventListener("click",()=>{initiativeSelected.clear();renderInitiativeRoster();});
+$("initiative-roster-list").addEventListener("change",e=>{
+ const id=e.target.dataset.initSelect;
+ if(id){if(e.target.checked)initiativeSelected.add(id);else initiativeSelected.delete(id);}
+});
+$("initiative-roll-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ const ids=selectedInitiativeIds();
+ if(!ids.length){alert("Select at least one combatant first.");return;}
+ if(!saveInitiativeModifiers(ids))return;
+ rollInitiativeFor(ids);
+});
+$("initiative-queue-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ const ids=selectedInitiativeIds();
+ if(!ids.length){alert("Select combatants first.");return;}
+ for(const id of ids)putInQueue(id);
+ sortInitiative();save();render();renderInitiativeRoster();
+});
+$("initiative-remove-selected").addEventListener("click",()=>{
+ if(!state.dm)return;
+ for(const id of selectedInitiativeIds())state.queue=state.queue.filter(x=>x!==id);
+ if(!state.queue.length){state.round=1;state.steps=0;}
+ else state.steps=Math.min(state.steps,state.queue.length-1);
+ save();render();renderInitiativeRoster();
+});
 $("add-actor").addEventListener("click",()=>{if(state.dm){populateTemplates();$("add-modal").showModal();}});
 $("new-template").addEventListener("change",updateAddFields);
 $("attach-confirm").addEventListener("click",attachToCurrent);
