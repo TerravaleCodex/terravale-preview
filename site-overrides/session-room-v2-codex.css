@@ -1,0 +1,429 @@
+/*
+ * TERRAVALE CODEX • SESSION ROOM V2
+ * Visual unification with the approved Character Sheet and website.
+ * Defaults are the real "Old Faithful" / dark palette used by
+ * live-sheet-theme-fix.css. Other palettes share the website's theme IDs.
+ * This file deliberately loads last: it replaces the workshop-only violet
+ * styling while keeping the existing initiative/chat/roll mechanics.
+ */
+html[data-codex-theme="dark"]{
+ --c-bg:#101720;--c-side:#151e29;--c-surface:#1b2631;--c-paper:#1b2733;
+ --c-paper2:#23313f;--c-border:#354353;--c-ink:#f1e9dd;--c-sub:#a8b4c0;
+ --c-accent:#d7b579;--c-accent-deep:#a88550;--c-glow:rgba(215,181,121,.09);
+ --c-green:#62c46b;--c-warn:#e4b85e;--c-red:#d67476;
+}
+html[data-codex-theme="night-sky"]{
+ --c-bg:#091225;--c-side:#101a2f;--c-surface:#17233a;--c-paper:#17253d;
+ --c-paper2:#233455;--c-border:#465479;--c-ink:#f4ecff;--c-sub:#c0c4db;
+ --c-accent:#cfb7fa;--c-accent-deep:#927abf;--c-glow:rgba(207,183,250,.1);
+ --c-green:#62c46b;--c-warn:#d8b45c;--c-red:#d67476;
+}
+html[data-codex-theme="shotxo"]{
+ --c-bg:#090713;--c-side:#110c1d;--c-surface:#171025;--c-paper:#20132d;
+ --c-paper2:#241834;--c-border:#55446c;--c-ink:#f1eaff;--c-sub:#b9aacf;
+ --c-accent:#c1a3ff;--c-accent-deep:#9671d0;--c-glow:rgba(193,163,255,.1);
+ --c-green:#62c46b;--c-warn:#d8b45c;--c-red:#d67476;
+}
+html[data-codex-theme="shady"]{
+ --c-bg:#050506;--c-side:#09090b;--c-surface:#111113;--c-paper:#131315;
+ --c-paper2:#1a191a;--c-border:#49443e;--c-ink:#ded5c6;--c-sub:#a69e92;
+ --c-accent:#c5b8a4;--c-accent-deep:#8d806d;--c-glow:rgba(197,184,164,.07);
+ --c-green:#79b48a;--c-warn:#c9a65a;--c-red:#ca6b76;
+}
+html[data-codex-theme="absolute-zero"]{
+ --c-bg:#000;--c-side:#000;--c-surface:#020202;--c-paper:#030303;
+ --c-paper2:#070707;--c-border:#161616;--c-ink:#cdcdcd;--c-sub:#858585;
+ --c-accent:#ababab;--c-accent-deep:#777;--c-glow:transparent;
+ --c-green:#6da77c;--c-warn:#b3a064;--c-red:#bb6a71;
+}
+html[data-codex-theme="sanguine"]{
+ --c-bg:#13080c;--c-side:#1a0b11;--c-surface:#231017;--c-paper:#2a101b;
+ --c-paper2:#321820;--c-border:#66414c;--c-ink:#f6e4e1;--c-sub:#c3a5ad;
+ --c-accent:#d6a48c;--c-accent-deep:#9a675b;--c-glow:rgba(214,164,140,.08);
+ --c-green:#82b992;--c-warn:#dbb565;--c-red:#d77783;
+}
+html[data-codex-theme="verdant"]{
+ --c-bg:#07150e;--c-side:#0c1d12;--c-surface:#12251a;--c-paper:#172c1e;
+ --c-paper2:#20372a;--c-border:#3d5d49;--c-ink:#e5efe2;--c-sub:#b3c8b7;
+ --c-accent:#bad098;--c-accent-deep:#779d75;--c-glow:rgba(186,208,152,.09);
+ --c-green:#83cb8e;--c-warn:#d2bd76;--c-red:#c87979;
+}
+html[data-codex-theme="dragonforge"]{
+ --c-bg:#15110e;--c-side:#1d1714;--c-surface:#231b17;--c-paper:#2a201b;
+ --c-paper2:#362921;--c-border:#68503e;--c-ink:#f1e2d0;--c-sub:#c1a993;
+ --c-accent:#e6ab78;--c-accent-deep:#9c643d;--c-glow:rgba(230,171,120,.09);
+ --c-green:#89b98b;--c-warn:#e2b762;--c-red:#ce7371;
+}
+html[data-codex-theme="astral"]{
+ --c-bg:#0b1020;--c-side:#11182a;--c-surface:#161e33;--c-paper:#1c2740;
+ --c-paper2:#202e47;--c-border:#425375;--c-ink:#ebe9e4;--c-sub:#aebed1;
+ --c-accent:#d8bd84;--c-accent-deep:#a68d62;--c-glow:rgba(216,189,132,.09);
+ --c-green:#7ec79b;--c-warn:#d8b45c;--c-red:#d67476;
+}
+html[data-codex-theme="null-meridian"]{
+ --c-bg:#0b0d0d;--c-side:#111414;--c-surface:#171a1a;--c-paper:#1a1f1e;
+ --c-paper2:#232829;--c-border:#47504c;--c-ink:#d9ddd4;--c-sub:#a2aa9f;
+ --c-accent:#c3b07b;--c-accent-deep:#8f8664;--c-glow:rgba(195,176,123,.09);
+ --c-green:#86b999;--c-warn:#d1b878;--c-red:#c07976;
+}
+/* Root and structural frame mirror the existing site, not the early V2 mockup. */
+html[data-codex-theme]{
+ color-scheme:dark;
+ --bg:var(--c-bg);--panel:var(--c-paper);--panel2:var(--c-paper2);
+ --line:var(--c-border);--line2:var(--c-border);
+ --ink:var(--c-ink);--muted:var(--c-sub);--purple:var(--c-accent);
+ --purple2:var(--c-accent-deep);--gold:var(--c-accent);
+}
+html[data-codex-theme] body{
+ background:var(--c-bg)!important;
+ background-image:none!important;color:var(--c-ink);
+ font-family:'Segoe UI',Inter,system-ui,-apple-system,sans-serif;
+}
+html[data-codex-theme] .app{background:var(--c-bg)}
+html[data-codex-theme] .main{background:var(--c-bg)}
+html[data-codex-theme] .side{
+ background:var(--c-side);border-right:1px solid var(--c-border);
+}
+html[data-codex-theme] .brand{
+ padding:17px 13px;border-bottom:0;min-height:54px;gap:8px;
+}
+html[data-codex-theme] .brand-star{
+ background:var(--c-paper2);border:1px solid var(--c-border);
+ color:var(--c-accent);width:30px;height:29px;border-radius:7px;
+ font-size:20px;line-height:1;display:grid;place-items:center
+}
+html[data-codex-theme] .brand strong{color:var(--c-ink);font-size:14px;letter-spacing:1px}
+html[data-codex-theme] .brand small{font-size:8px;letter-spacing:1.2px;color:var(--c-accent)}
+html[data-codex-theme] .nav-head,
+html[data-codex-theme] .micro{
+ color:var(--c-accent);font-size:10px;letter-spacing:1.2px
+}
+html[data-codex-theme] .nav-head{padding-top:23px;padding-left:14px}
+html[data-codex-theme] .menu{
+ display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+ align-items:stretch!important;gap:3px;padding:0 7px
+}
+html[data-codex-theme] .menu a{
+ flex:0 0 auto!important;min-height:30px!important;
+ width:100%;padding:7px 9px!important;margin:0;
+ border:1px solid transparent!important;border-radius:5px!important;
+ font-size:11px!important;color:var(--c-ink);
+}
+html[data-codex-theme] .menu .nav-ic{color:var(--c-accent);font-size:13px;width:15px;flex:none}
+html[data-codex-theme] .menu a:hover{background:var(--c-paper)!important}
+html[data-codex-theme] .menu a.active{
+ background:var(--c-paper)!important;border-color:var(--c-border)!important;
+ border-left:2px solid var(--c-accent)!important;color:var(--c-ink)!important;
+ box-shadow:none!important;
+}
+html[data-codex-theme] .campaign{border-top:1px solid var(--c-border);color:var(--c-sub)}
+html[data-codex-theme] .campaign select{
+ border:1px solid var(--c-border);background:var(--c-paper);
+ color:var(--c-ink);border-radius:6px;padding:8px;font-size:11px
+}
+html[data-codex-theme] .topbar{
+ background:var(--c-side)!important;backdrop-filter:none;
+ border-bottom:1px solid var(--c-border);color:var(--c-sub);
+ min-height:42px;
+}
+html[data-codex-theme] .breadcrumbs{color:var(--c-sub)}
+html[data-codex-theme] .cloud{
+ color:#88d0ae;background:transparent;border-color:#3c705a;font-size:9px
+}
+.codex-theme-control{
+ display:flex;align-items:center;gap:7px;font-size:10px;color:var(--c-sub)
+}
+.codex-theme-control select{
+ height:27px;max-width:173px;padding:4px 21px 4px 8px;
+ background:var(--c-paper);border:1px solid var(--c-border);
+ color:var(--c-ink);border-radius:6px;font-size:10px;
+}
+html[data-codex-theme] main{background:var(--c-bg)}
+html[data-codex-theme] .head{margin-bottom:11px}
+html[data-codex-theme] .head h1{
+ color:var(--c-ink);font:normal 30px Georgia,serif
+}
+html[data-codex-theme] .head h1 span{color:var(--c-accent)!important;letter-spacing:.45px}
+html[data-codex-theme] .head .subtitle{color:var(--c-sub)}
+html[data-codex-theme] .preview{
+ background:var(--c-surface)!important;border-color:var(--c-border)!important;
+ color:var(--c-sub);border-radius:6px;
+}
+html[data-codex-theme] .preview strong{color:var(--c-accent)}
+html[data-codex-theme] .panel,
+html[data-codex-theme] .room#workspace-grid>.chat,
+html[data-codex-theme] .room#workspace-grid>.dicebox,
+html[data-codex-theme] .room#workspace-grid>.mine{
+ background:var(--c-surface)!important;
+ background-image:none!important;
+ color:var(--c-ink);
+ border:1px solid var(--c-border)!important;border-radius:8px!important;
+ box-shadow:none!important;
+}
+html[data-codex-theme] .panel-head{
+ background:transparent!important;border-color:var(--c-border)!important;
+ color:var(--c-ink)
+}
+html[data-codex-theme] .panel-head h2{font:normal 17px Georgia,serif;color:var(--c-ink)}
+html[data-codex-theme] .section-top h2{color:var(--c-ink)}
+html[data-codex-theme] .meta,
+html[data-codex-theme] .subtle,
+html[data-codex-theme] .tiny{color:var(--c-sub)}
+/* The actual sheet uses quiet slate controls and antique gold for selection. */
+html[data-codex-theme] .btn,
+html[data-codex-theme] .btn.small,
+html[data-codex-theme] .check,
+html[data-codex-theme] button.sheet-skill,
+html[data-codex-theme] button.sheet-saving{
+ background:var(--c-paper)!important;
+ background-image:none!important;
+ border:1px solid var(--c-border)!important;
+ color:var(--c-ink)!important;
+ border-radius:6px!important;
+ box-shadow:none!important
+}
+html[data-codex-theme] .btn:hover,
+html[data-codex-theme] .check:hover{
+ border-color:var(--c-accent)!important;
+ background:var(--c-paper2)!important
+}
+html[data-codex-theme] .btn.primary,
+html[data-codex-theme] .btn.end-turn-large{
+ background:var(--c-accent)!important;
+ color:var(--c-bg)!important;
+ border-color:var(--c-accent-deep)!important;
+ font-weight:700;
+}
+html[data-codex-theme] .btn.primary:hover,
+html[data-codex-theme] .btn.end-turn-large:hover{
+ filter:brightness(1.075)
+}
+html[data-codex-theme] .btn.is-on{
+ background:var(--c-paper2)!important;
+ color:var(--c-accent)!important;border-color:var(--c-accent)!important
+}
+html[data-codex-theme] .field,
+html[data-codex-theme] .chat-compose input{
+ color:var(--c-ink);background:var(--c-bg)!important;
+ border:1px solid var(--c-border)!important;border-radius:6px;
+}
+html[data-codex-theme] .field:focus,
+html[data-codex-theme] .chat-compose input:focus{outline:1px solid var(--c-accent)}
+html[data-codex-theme] button:focus-visible,
+html[data-codex-theme] select:focus-visible{outline:2px solid var(--c-accent)}
+html[data-codex-theme] .subheading,
+html[data-codex-theme] .panel .micro{
+ color:var(--c-accent);font-size:10px;letter-spacing:.8px;font-weight:750
+}
+html[data-codex-theme] .pill:not(.harm){
+ background:var(--c-paper);border-color:var(--c-border);color:var(--c-sub)
+}
+/* Initiative remains portrait-shaped but is visually part of the Codex. */
+html[data-codex-theme] .initiative{background:var(--c-surface)!important}
+html[data-codex-theme] .initiative .actor{
+ background:var(--c-paper)!important;
+ border:1px solid var(--c-border)!important;
+ box-shadow:none!important;
+}
+html[data-codex-theme] .initiative .actor.front{
+ background:var(--c-paper2)!important;
+ border:2px solid var(--c-accent)!important;
+ box-shadow:inset 0 0 0 1px var(--c-accent-deep)!important
+}
+html[data-codex-theme] .initiative .actor .tag,
+html[data-codex-theme] .initiative .actor .initiative-num{color:var(--c-accent)}
+html[data-codex-theme] .initiative .actor .portrait,
+html[data-codex-theme] .combatant-portrait .portrait,
+html[data-codex-theme] .mine .own-top .portrait{
+ border-color:var(--c-border)!important;background:var(--c-paper2)!important;
+ background-image:none!important;
+}
+html[data-codex-theme] .initiative .actor .name{color:var(--c-ink)}
+html[data-codex-theme] .initiative .actor .type,
+html[data-codex-theme] .initiative .actor .hp-text{color:var(--c-sub)}
+html[data-codex-theme] .actor .hp-track,
+html[data-codex-theme] .hpbar,
+html[data-codex-theme] .hp-track{background:var(--c-border)}
+html[data-codex-theme] .hpbar i,
+html[data-codex-theme] .hp-track i{background:var(--c-green)!important}
+html[data-codex-theme] .hpbar i.mid,
+html[data-codex-theme] .hp-track i.mid{background:var(--c-warn)!important}
+html[data-codex-theme] .hpbar i.low,
+html[data-codex-theme] .hp-track i.low{background:var(--c-red)!important}
+/* Main full-width active combatant is the same sheet-shaped section family. */
+html[data-codex-theme] .active{background:var(--c-surface)!important;border-color:var(--c-border)!important}
+html[data-codex-theme] .active .active-bar-head .micro{color:var(--c-accent);font-size:10px;letter-spacing:1px}
+html[data-codex-theme] .combatant-identity h3{color:var(--c-ink)}
+html[data-codex-theme] .combatant-marker{
+ background:var(--c-paper);color:var(--c-sub);border-color:var(--c-border)
+}
+html[data-codex-theme] .sheet-ability-tile,
+html[data-codex-theme] .own-ability-card{
+ background:var(--c-paper)!important;border-color:var(--c-border)!important;
+ color:var(--c-ink);box-shadow:none!important
+}
+html[data-codex-theme] .sheet-ability-tile.selected{
+ background:var(--c-paper2)!important;
+ border:1px solid var(--c-accent)!important;
+ box-shadow:inset 0 -2px var(--c-accent)!important;padding:5px 11px
+}
+html[data-codex-theme] .sheet-ability-name,
+html[data-codex-theme] .sheet-score,
+html[data-codex-theme] .own-ability-card span:first-child{
+ color:var(--c-sub)
+}
+html[data-codex-theme] .sheet-modifier,
+html[data-codex-theme] .own-ability-card strong{color:var(--c-ink)}
+html[data-codex-theme] .sheet-ability-expanded{
+ background:var(--c-paper)!important;border-color:var(--c-border)
+}
+html[data-codex-theme] .sheet-expanded-header h4{color:var(--c-ink)}
+html[data-codex-theme] .sheet-rules-note{color:var(--c-sub)}
+/* Party chat takes the same page panel treatment, not a messenger theme. */
+html[data-codex-theme] .chat-head .tab{
+ color:var(--c-sub)!important;background:transparent!important;
+ border:1px solid transparent!important;border-radius:0!important;
+ border-bottom:2px solid transparent!important;
+}
+html[data-codex-theme] .chat-head .tab.current{
+ color:var(--c-ink)!important;
+ border-bottom:2px solid var(--c-accent)!important;
+ background:transparent!important;
+}
+html[data-codex-theme] .chat-head .tab:hover{
+ color:var(--c-ink)!important;background:var(--c-paper)!important
+}
+html[data-codex-theme] .chat .msg-avatar{
+ color:var(--c-accent);
+ background:var(--c-paper)!important;border-color:var(--c-border)!important;
+ border-radius:7px
+}
+html[data-codex-theme] .chat .msg-top b{color:var(--c-ink)}
+html[data-codex-theme] .chat .msg p{color:var(--c-sub)}
+html[data-codex-theme] .chat .msg.roll{
+ background:var(--c-paper)!important;border:1px solid var(--c-border)!important;
+ border-left:2px solid var(--c-accent)!important;
+ border-radius:5px
+}
+html[data-codex-theme] .chat .roll-total{color:var(--c-ink)}
+html[data-codex-theme] .chat .roll-label{color:var(--c-sub)}
+html[data-codex-theme] .chat .chat-compose{
+ background:var(--c-surface)!important;
+ border-top:1px solid var(--c-border)!important
+}
+/* Dice remain functional but are as restrained as other sheet actions. */
+html[data-codex-theme] .dice-main .die{
+ background:var(--c-paper)!important;
+ border-color:var(--c-border)!important;border-radius:7px
+}
+html[data-codex-theme] .dice-main .die:hover{
+ background:var(--c-paper2)!important;border-color:var(--c-accent)!important
+}
+html[data-codex-theme] .dice-main .die svg polygon{
+ fill:var(--c-paper2)!important;stroke:var(--c-accent-deep)!important
+}
+html[data-codex-theme] .dice-main .die svg text{fill:var(--c-accent)!important}
+html[data-codex-theme] .dice-main .die-icon svg{filter:none}
+html[data-codex-theme] .dice-main .die small{color:var(--c-sub)}
+html[data-codex-theme] .check-shell{border-color:var(--c-border)}
+html[data-codex-theme] .check-shell .check-heading h3{color:var(--c-ink)}
+html[data-codex-theme] .check-group{
+ border-color:var(--c-border);background:var(--c-surface)!important
+}
+html[data-codex-theme] .check-group summary{
+ background:var(--c-paper)!important;color:var(--c-ink)!important;
+ font-weight:600
+}
+html[data-codex-theme] .check-group summary:before{color:var(--c-accent)}
+html[data-codex-theme] .check-count{
+ color:var(--c-accent);background:var(--c-paper2);border-color:var(--c-border)
+}
+html[data-codex-theme] .check-group .check{
+ background:var(--c-paper)!important;
+ border-color:var(--c-border)!important
+}
+html[data-codex-theme] .check-group .check-result{color:var(--c-ink)}
+/* A miniature copy of the established sheet instead of a separate dashboard. */
+html[data-codex-theme] .mine .own-top,
+html[data-codex-theme] .mine .own-vitals,
+html[data-codex-theme] .mine .own-tabs,
+html[data-codex-theme] .mine .own-footer{border-color:var(--c-border)}
+html[data-codex-theme] .mine .own-info h3{color:var(--c-ink)}
+html[data-codex-theme] .mine .own-info .micro{color:var(--c-accent)}
+html[data-codex-theme] .mine .own-info p{color:var(--c-sub)}
+html[data-codex-theme] .mine .own-stat,
+html[data-codex-theme] .own-action,
+html[data-codex-theme] .resource-card,
+html[data-codex-theme] .own-mini,
+html[data-codex-theme] .desk-roster-entry,
+html[data-codex-theme] .desk-active{
+ background:var(--c-paper)!important;border-color:var(--c-border)!important;
+ color:var(--c-ink)
+}
+html[data-codex-theme] .mine .own-stat strong,
+html[data-codex-theme] .own-mini strong,
+html[data-codex-theme] .desk-summary strong{color:var(--c-ink)}
+html[data-codex-theme] .mine .own-tabs button{
+ color:var(--c-sub);background:transparent!important;
+ border:0;border-bottom:2px solid transparent
+}
+html[data-codex-theme] .mine .own-tabs button.selected{
+ background:transparent!important;border-bottom-color:var(--c-accent);
+ color:var(--c-ink)!important
+}
+html[data-codex-theme] .mine .own-tabs button:hover{color:var(--c-ink)}
+html[data-codex-theme] .own-section-title{color:var(--c-ink)}
+html[data-codex-theme] .own-action-icon{
+ background:var(--c-paper2);border-color:var(--c-border);color:var(--c-accent)
+}
+html[data-codex-theme] .own-action-main strong,
+html[data-codex-theme] .resource-card strong{color:var(--c-ink)}
+html[data-codex-theme] .own-action-main p,
+html[data-codex-theme] .resource-card small,
+html[data-codex-theme] .own-help{color:var(--c-sub)}
+html[data-codex-theme] .resource-pip{
+ background:var(--c-paper);border:1px solid var(--c-accent-deep);
+ border-radius:6px;box-shadow:none!important
+}
+html[data-codex-theme] .resource-pip.filled{
+ background:color-mix(in srgb,var(--c-accent) 18%,var(--c-paper));
+ border-color:var(--c-accent);
+ box-shadow:inset 0 0 0 1px var(--c-accent-deep)!important
+}
+html[data-codex-theme] .resource-pip.filled:before{
+ content:"✦";color:var(--c-accent);font-size:12px;line-height:20px
+}
+html[data-codex-theme] .mine .own-footer{background:var(--c-surface)!important}
+html[data-codex-theme] .desk-eyebrow,
+html[data-codex-theme] .desk-order{color:var(--c-accent)}
+html[data-codex-theme] .desk-summary>div{
+ background:var(--c-paper)!important;border-color:var(--c-border)!important
+}
+/* Same compact margins as live sheet, with the layout staying unchanged. */
+html[data-codex-theme] .room-resizer span{background:var(--c-border)}
+html[data-codex-theme] .room-resizer:hover span,
+html[data-codex-theme] .room-resizer:focus-visible span{background:var(--c-accent);box-shadow:none}
+html[data-codex-theme] .tip:hover:after,
+html[data-codex-theme] .tip:focus-visible:after{
+ background:var(--c-paper2)!important;
+ border-color:var(--c-accent)!important;color:var(--c-ink)!important
+}
+html[data-codex-theme] .modal{background:var(--c-surface)!important;color:var(--c-ink);border-color:var(--c-border)}
+html[data-codex-theme] .modal-top{border-bottom-color:var(--c-border)}
+html[data-codex-theme] .cond-label{background:var(--c-paper);border-color:var(--c-border)}
+html[data-codex-theme] .sheet-saving:hover,
+html[data-codex-theme] .own-mini:hover{border-color:var(--c-accent)!important}
+html[data-codex-theme="absolute-zero"] .panel,
+html[data-codex-theme="absolute-zero"] .initiative .actor,
+html[data-codex-theme="absolute-zero"] .chat .msg.roll{
+ box-shadow:none!important;background-image:none!important
+}
+@media(max-width:950px){
+ html[data-codex-theme] .brand{padding:12px 5px;justify-content:center}
+ html[data-codex-theme] .menu a{justify-content:center;min-height:33px}
+ html[data-codex-theme] .menu .nav-ic{font-size:15px}
+}
+@media(max-width:660px){
+ .codex-theme-control{font-size:0}
+ .codex-theme-control select{max-width:145px}
+}
