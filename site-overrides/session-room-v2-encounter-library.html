@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Encounter Library · Terravale Codex Workshop</title>
+<style>
+:root{color-scheme:dark;--bg:#080c13;--panel:#101722;--line:#303849;--ink:#e8e6f2;--muted:#a6a9b9;--purple:#ae88e8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 65% -10%,#161325,#080c13 60%);color:var(--ink);font:13px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--purple);outline-offset:2px}a{color:inherit;text-decoration:none}
+.header{background:#090d14;border-bottom:1px solid #293044;min-height:54px;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font:600 16px Georgia,serif;letter-spacing:1px}.logo small{display:block;font:8px system-ui;letter-spacing:1.8px;color:#a2afc3}
+.head-links{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.btn{background:#151b27;border:1px solid #40475b;color:#e4e3ed;border-radius:6px;padding:9px 13px;min-height:34px;cursor:pointer}.btn:hover{background:#231d34;border-color:#a47bd8}.btn.primary{background:#654496;border-color:#8862c1;color:#fff}.btn.danger{background:#291921;border-color:#78505c;color:#ffbdc9}.btn.small{min-height:29px;padding:6px 9px;font-size:11px}
+.page{max-width:1540px;margin:0 auto;padding:24px}.intro{display:flex;gap:18px;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap}h1{font:normal 34px Georgia,serif;margin:0 0 6px}h2{font:normal 19px Georgia,serif;margin:0 0 12px}h3{font:normal 17px Georgia,serif;margin:0}.muted{color:#a4adbe}.eyebrow{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#b9a4da}.notice{margin:0 0 16px;padding:11px 14px;border:1px solid #55436c;background:#1a1728;border-radius:7px;color:#dacde7}
+.layout{display:grid;grid-template-columns:minmax(345px,.95fr) minmax(0,1.65fr);gap:16px}.panel{border:1px solid var(--line);border-radius:9px;background:linear-gradient(165deg,#111824,#0b111a);padding:17px;min-width:0}
+.field{background:#090e16;border:1px solid #384253;border-radius:6px;color:#e7e6ed;padding:9px 10px;min-width:0;width:100%;outline:none}.field:focus{border-color:#ba8aee}
+label.caption{display:block;margin:13px 0 5px;color:#c0c0ce;font-size:11px;font-weight:700}
+fieldset{border:1px solid #293346;border-radius:7px;padding:12px 13px;margin:14px 0 0}legend{font:600 12px system-ui;color:#ddd1f1;padding:0 6px}.twos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stats label{font-size:10px;color:#a6b0c3;display:flex;flex-direction:column;gap:4px}.stats input{text-align:center}.hint{font-size:11px;color:#8e99aa;margin:9px 0}
+textarea{resize:vertical;min-height:67px}input[type=checkbox]{accent-color:#b58be9}.checkline{display:flex;gap:9px;align-items:center;margin-top:12px}
+.actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.search{display:flex;gap:8px;align-items:center;margin-bottom:14px}.search input{flex:1}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{padding:15px;border:1px solid #30394c;background:#121a28;border-radius:8px;display:flex;flex-direction:column;gap:10px;min-width:0}.card-top{display:flex;gap:11px;align-items:center}.avatar{height:53px;width:53px;flex:none;border-radius:8px;border:1px solid #6c5687;background:radial-gradient(circle at 25% 15%,#473454,#181828);display:grid;place-items:center;font-size:30px}.card .details{color:#a6b3c5;font-size:11px}.tag{border-radius:4px;background:#251d36;color:#d8b7f2;border:1px solid #594371;padding:3px 6px;font-size:10px}.tags{display:flex;gap:6px;flex-wrap:wrap}
+.card p{margin:0;color:#a1adbf;font-size:11px;overflow-wrap:anywhere;min-height:29px}.card-foot{display:flex;gap:6px;margin-top:auto;flex-wrap:wrap}
+.empty{padding:27px 18px;border:1px dashed #3b4354;color:#a4adbf;text-align:center;border-radius:8px}.mini{font-size:10px;color:#929bb0}
+#edit-id{display:none}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:580px){.page{padding:13px}.cards{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.twos{grid-template-columns:1fr}.header{padding:10px}}
+</style></head><body>
+<header class="header"><div class="logo">✧ TERRAVALE <small>THE LIVING CODEX · DM WORKSHOP</small></div><div class="head-links"><span class="tag">LOCAL PREVIEW</span><a class="btn small" href="../session-room-v2/">← Session Room V2</a></div></header>
+<main class="page">
+<div class="intro"><div><div class="eyebrow">DM Chronicle · Proposed module</div><h1>Encounter Library</h1><div class="muted">Create, save and reuse creatures, monsters, NPCs and encounter characters.</div></div><button class="btn" id="new-template">＋ New entry</button></div>
+<div class="notice"><strong>Workshop only.</strong> Entries live in this browser's local storage—not Supabase, not your campaign, and not the real DM Chronicle. The Session Room V2 preview can use these entries as independent combatants.</div>
+<div class="layout">
+<section class="panel"><h2 id="form-heading">Create encounter entry</h2>
+<form id="builder">
+<input id="edit-id" value="">
+<div class="twos"><div><label class="caption" for="name">Name *</label><input id="name" class="field" maxlength="64" required placeholder="e.g. Pale Warden"></div><div><label class="caption" for="type">Entity type</label><select id="type" class="field"><option>Monster</option><option>NPC</option><option>Creature</option><option>Person</option></select></div></div>
+<div class="twos"><div><label class="caption" for="mode">Definition</label><select id="mode" class="field"><option value="quick">Quick creature · no stat block</option><option value="full">Full stat block</option></select></div><div><label class="caption" for="portrait">Portrait symbol (preview)</label><input id="portrait" class="field" maxlength="12" placeholder="👹"></div></div>
+<div class="twos"><div><label class="caption" for="hp">Maximum HP *</label><input id="hp" class="field" required type="number" min="1" max="99999" value="20"></div><div><label class="caption" for="initiative">Default initiative modifier</label><input id="initiative" class="field" type="number" min="-20" max="30" value="0"></div></div>
+<label class="caption" for="notes">Encounter notes</label><textarea id="notes" class="field" maxlength="4000" placeholder="Roleplay notes, appearance, behaviour, tactical reminders…"></textarea>
+<label class="checkline"><input id="hidden" type="checkbox" checked> Hide HP from players by default</label>
+<fieldset id="full-fields"><legend>Full stat block · optional details</legend>
+<p class="hint">Switch the definition to “Full stat block” to use these. Leave any unknown value blank instead of guessing.</p>
+<div class="twos"><div><label class="caption" for="ac">Armour Class</label><input id="ac" class="field" type="number" min="0" max="99" placeholder="Unknown"></div><div><label class="caption" for="speed">Movement (ft.)</label><input id="speed" class="field" type="number" min="0" max="1000" placeholder="Unknown"></div></div>
+<label class="caption">Ability scores (optional)</label><div class="stats">
+<label>STR<input class="field" id="stat-str" type="number" min="1" max="99" placeholder="—"></label>
+<label>DEX<input class="field" id="stat-dex" type="number" min="1" max="99" placeholder="—"></label>
+<label>CON<input class="field" id="stat-con" type="number" min="1" max="99" placeholder="—"></label>
+<label>INT<input class="field" id="stat-int" type="number" min="1" max="99" placeholder="—"></label>
+<label>WIS<input class="field" id="stat-wis" type="number" min="1" max="99" placeholder="—"></label>
+<label>CHA<input class="field" id="stat-cha" type="number" min="1" max="99" placeholder="—"></label>
+</div>
+<label class="caption" for="attacks">Attacks / actions</label><textarea id="attacks" class="field" maxlength="5000" placeholder="One attack or action per line."></textarea>
+<label class="caption" for="traits">Special traits, resistances, spellcasting, resources</label><textarea id="traits" class="field" maxlength="5000" placeholder="Write any relevant abilities or details."></textarea>
+</fieldset>
+<div class="actions"><button class="btn" type="button" id="clear-form">Clear form</button><button class="btn primary" type="submit" id="save-entry">Save to library</button></div>
+</form>
+</section>
+<section class="panel"><div class="intro" style="margin:0 0 14px"><div><h2 style="margin:0 0 4px">Saved entries <span id="count" class="mini"></span></h2><div class="muted mini">Reusable templates, not live combatants.</div></div><button class="btn small" id="seed-demo">Add demo entries</button></div>
+<div class="search"><input id="search" class="field" placeholder="Search name, type or notes…" aria-label="Search encounter library"><select id="filter" class="field" style="width:150px" aria-label="Filter definitions"><option value="all">All entries</option><option value="full">Full stat blocks</option><option value="quick">Quick entries</option></select></div>
+<div id="cards" class="cards"></div>
+</section></div></main>
+<script>
+(()=>{"use strict";
+const KEY="terravale-v2-encounter-templates-v1";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const statNames=["str","dex","con","int","wis","cha"];
+function read(){try{let a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a.filter(x=>x&&typeof x.name==="string"):[]}catch{return[]}}
+let entries=read();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch{alert("Could not save entries to this browser. Storage may be disabled or full.");return false}}
+function num(id){let v=$(id).value;return v===""?null:Number(v)}
+function reset(){ $("builder").reset();$("edit-id").value="";$("form-heading").textContent="Create encounter entry";$("save-entry").textContent="Save to library";$("hp").value="20";$("initiative").value="0";$("hidden").checked=true;toggleFields()}
+function toggleFields(){let full=$("mode").value==="full";$("full-fields").disabled=!full;$("full-fields").style.opacity=full?"1":".52";$("full-fields").setAttribute("aria-disabled",String(!full))}
+function render(){
+let q=$("search").value.trim().toLowerCase(),mode=$("filter").value;
+let visible=entries.filter(x=>(mode==="all"||x.mode===mode)&&(!q||[x.name,x.type,x.notes].join(" ").toLowerCase().includes(q)));
+$("count").textContent="("+entries.length+")";
+$("cards").innerHTML=visible.length?visible.map(x=>{
+let extra=x.mode==="full"?"AC "+(x.ac??"—")+" · Speed "+(x.speed??"—")+" ft":"Quick entry · no stat block";
+return '<article class="card"><div class="card-top"><div class="avatar">'+esc(x.portrait||"◇")+'</div><div><h3>'+esc(x.name)+'</h3><div class="details">'+esc(x.type)+' · '+esc(extra)+'</div></div></div><div class="tags"><span class="tag">'+(x.mode==="full"?"Full stat block":"Quick creature")+'</span><span class="tag">'+esc(x.hp)+' HP</span><span class="tag">'+(x.hidden?"HP hidden":"HP visible")+'</span></div><p>'+esc(x.notes?x.notes.slice(0,155):"No encounter notes yet.")+'</p><div class="card-foot"><button class="btn small" data-do="edit" data-id="'+esc(x.id)+'">Edit</button><button class="btn small" data-do="duplicate" data-id="'+esc(x.id)+'">Duplicate</button><button class="btn small danger" data-do="delete" data-id="'+esc(x.id)+'">Delete</button></div></article>';
+}).join(""):'<div class="empty">No matching entries. Create a new creature or add the sample entries to explore the library.</div>';
+}
+function fill(x){
+$("edit-id").value=x.id;$("form-heading").textContent="Edit "+x.name;$("save-entry").textContent="Save changes";
+for(let [field,val] of Object.entries({name:x.name,type:x.type,mode:x.mode,portrait:x.portrait||"",hp:x.hp,initiative:x.initiative??0,notes:x.notes||"",ac:x.ac??"",speed:x.speed??"",attacks:x.attacks||"",traits:x.traits||""})){if($(field))$(field).value=val}
+$("hidden").checked=!!x.hidden;
+statNames.forEach(k=>$("stat-"+k).value=x.stats?.[k]??"");
+toggleFields();window.scrollTo({top:0,behavior:"smooth"});$("name").focus();
+}
+$("builder").addEventListener("submit",e=>{
+e.preventDefault();let name=$("name").value.trim(),hp=num("hp"),init=num("initiative"),mode=$("mode").value;
+if(!name||!Number.isInteger(hp)||hp<1||hp>99999||!Number.isInteger(init)||init< -20||init>30){alert("Enter a name, valid HP and an initiative modifier.");return}
+let id=$("edit-id").value||("entry-"+Date.now()+"-"+Math.random().toString(36).slice(2,8));
+let stats=Object.fromEntries(statNames.map(k=>[k,num("stat-"+k)]));
+let entry={id,name,type:$("type").value,mode,portrait:$("portrait").value.trim(),hp,initiative:init,notes:$("notes").value.trim(),hidden:$("hidden").checked,
+ac:mode==="full"?num("ac"):null,speed:mode==="full"?num("speed"):null,stats:mode==="full"?stats:{},attacks:mode==="full"?$("attacks").value.trim():"",traits:mode==="full"?$("traits").value.trim():""};
+if(mode==="full"&&[entry.ac,entry.speed,...Object.values(stats)].some(v=>v!==null&&(!Number.isInteger(v)||v<0||v>1000))){alert("Check the optional stat values.");return}
+let idx=entries.findIndex(x=>x.id===id);
+if(idx===-1)entries.unshift(entry);else entries[idx]=entry;
+if(save()){render();reset()}
+});
+$("cards").addEventListener("click",e=>{
+let b=e.target.closest("[data-do]");if(!b)return;
+let x=entries.find(v=>v.id===b.dataset.id);if(!x)return;
+if(b.dataset.do==="edit")fill(x);
+if(b.dataset.do==="duplicate"){entries.unshift({...structuredClone(x),id:"entry-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),name:x.name+" (copy)"});if(save())render()}
+if(b.dataset.do==="delete"&&confirm("Delete "+x.name+" from this browser's library? This does not remove any existing encounter instances.")){entries=entries.filter(v=>v.id!==x.id);if(save()){render();if($("edit-id").value===x.id)reset()}}
+});
+$("seed-demo").addEventListener("click",()=>{
+let seeds=[
+{id:"sample-warden",name:"Ash Warden",type:"Monster",mode:"full",portrait:"👹",hp:68,initiative:2,notes:"Demo elite guardian. Commands a ruined gate.",hidden:true,ac:16,speed:30,stats:{str:18,dex:14,con:16,int:9,wis:12,cha:10},attacks:"Ashen Blade: +6 to hit, 1d8+4 slashing\nEmber Pulse: once per encounter, fiery burst",traits:"Resistant to fire (demo).\nReactive Guard: protects an adjacent ally."},
+{id:"sample-watcher",name:"Unknown Watcher",type:"NPC",mode:"quick",portrait:"🕯️",hp:22,initiative:0,notes:"Demo quick NPC: cloaked and silent. No defined stats.",hidden:true,ac:null,speed:null,stats:{},attacks:"",traits:""}];
+let count=0;for(let entry of seeds){if(!entries.some(x=>x.id===entry.id)){entries.push(entry);count++}}if(save())render();if(!count)alert("Both demonstration entries are already in the library.");
+});
+$("mode").addEventListener("change",toggleFields);
+$("clear-form").addEventListener("click",reset);$("new-template").addEventListener("click",()=>{reset();$("name").focus()});
+$("search").addEventListener("input",render);$("filter").addEventListener("change",render);
+toggleFields();render();
+})();
+</script></body></html>
