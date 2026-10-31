@@ -86,6 +86,16 @@ async function authUser(client){
  if(error||!data?.user)throw new Error("Log in through the main Codex first, then return here.");
  currentUserId=data.user.id;return data.user;
 }
+function characterToPreviewActor(ch,row,portrait){
+ const build=ch.approved_build||{};
+ const max=Math.max(1,Math.min(99999,asNumber(build.maxHp,1)));
+ const hp=Math.max(0,Math.min(max,asNumber(row?.hp,max)));
+ const level=Math.max(1,Math.min(20,asNumber(build.level,1)));
+ return {id:ch.id,name:ch.name,type:"Player",
+  subtitle:"Lv "+level+" · "+(typeof build.className==="string"?build.className:"Adventurer"),
+  init:null,hp,max,hidden:false,conditions:asConditions(row?.conditions),
+  ownerId:ch.owner_id,liveScores:classScores(ch),imageUrl:portrait||""};
+}
 async function rosterForCampaign(client,campaign){
  const roster=result(await client.from("party_room_roster").select("character_id,added_at").eq("campaign_id",campaign.id).order("added_at",{ascending:true}),"Active roster");
  if(!roster?.length)throw new Error("No characters are currently in this campaign's active party roster.");
@@ -101,17 +111,7 @@ async function rosterForCampaign(client,campaign){
  const ordered=ids.map(id=>charMap.get(id)).filter(Boolean);
  const portraits=await signPortraits(ordered,client);
  const portraitMap=new Map(portraits.map(p=>[p.id,p.imageUrl]));
- const actors=ordered.map(ch=>{
-  const build=ch.approved_build||{},row=stateMap.get(ch.id)||{};
-  const max=Math.max(1,Math.min(99999,asNumber(build.maxHp,1)));
-  const hp=Math.max(0,Math.min(max,asNumber(row.hp,max)));
-  const level=Math.max(1,Math.min(20,asNumber(build.level,1)));
-  return {id:ch.id,name:ch.name,type:"Player",
-   subtitle:"Lv "+level+" · "+(typeof build.className==="string"?build.className:"Adventurer"),
-   // No combat has started in this preview: initiative is not rolled by the app.
-   init:null,hp,max,hidden:false,conditions:asConditions(row.conditions),
-   ownerId:ch.owner_id,liveScores:classScores(ch),imageUrl:portraitMap.get(ch.id)||""};
- });
+ const actors=ordered.map(ch=>characterToPreviewActor(ch,stateMap.get(ch.id),portraitMap.get(ch.id)));
  return {actors,portraitSources:ordered.map(c=>({id:c.id,path:c.portrait_path||""})),ownId:actors.find(a=>a.ownerId===currentUserId)?.id||""};
 }
 async function loadRoster(id){
@@ -154,6 +154,39 @@ async function refreshImages(){
  const signed=await signPortraits(withSources,sb);
  if(window.TerravaleRoomPreview.isLive())window.TerravaleRoomPreview.refreshPortraits(signed);
 }
+async function openApprovedCharacterPicker(){
+ const bridge=window.TerravaleRoomPreview;
+ if(busy){show("Campaign roster is still loading. Try again shortly.");return;}
+ if(!bridge.isLive()){show("Switch to Live Roster to choose characters from your campaign.",true);return;}
+ const campaign=viewer?.find(c=>c.id===previewCampaignId);
+ if(!campaign?.isDm){show("Only the campaign DM can add other players' characters.",true);return;}
+ try{
+  const c=await client();
+  await authUser(c);
+  const approved=result(await c.from("characters").select(
+   "id,campaign_id,owner_id,name,status,portrait_path,approved_build,sheet_visible_to_party")
+    .eq("campaign_id",campaign.id).eq("status","approved").order("name",{ascending:true}),"Approved campaign characters");
+  if(!Array.isArray(approved)||!approved.length){
+    bridge.openExistingPicker([],"No approved characters are available for your campaign.");
+    return;
+  }
+  const ids=approved.map(ch=>ch.id);
+  const stateRows=result(await c.from("character_state").select("character_id,hp,conditions")
+   .in("character_id",ids),"Character state");
+  const map=new Map((stateRows||[]).map(x=>[x.character_id,x]));
+  const portraits=await signPortraits(approved,c);
+  const images=new Map(portraits.map(x=>[x.id,x.imageUrl]));
+  // Keep renewal sources in memory only for the lifetime of this preview.
+  const existing=new Map(currentPortraits.map(x=>[x.id,x]));
+  for(const ch of approved)existing.set(ch.id,{id:ch.id,path:ch.portrait_path||""});
+  currentPortraits=Array.from(existing.values());
+  const actors=approved.map(ch=>characterToPreviewActor(ch,map.get(ch.id),images.get(ch.id)));
+  bridge.openExistingPicker(actors,"Approved campaign characters · "+campaign.name+
+    ". Adding here only changes V2 initiative, not the live campaign roster.");
+ }catch(err){show("Unable to load existing characters: "+safeMessage(err.message),true);}
+}
+window.TerravaleV2LiveCharacters=Object.freeze({openPicker:openApprovedCharacterPicker});
+
 button.addEventListener("click",()=>{
  if(window.TerravaleRoomPreview.isLive()){
   ++loadCounter;rosterMode=false;currentPortraits=[];
