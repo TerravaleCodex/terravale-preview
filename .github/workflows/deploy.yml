@@ -91,6 +91,23 @@ jobs:
               raise SystemExit('Expected to inject theme styling into published Next pages')
           print('Theme styles linked on',count,'pages')
           PY
+      - name: Route sidebar Session Room links to replacement
+        shell: bash
+        run: |
+          cp site-overrides/session-room-navigation-bridge.js site/session-room-navigation-bridge.js
+          python3 - <<'PY'
+          from pathlib import Path
+          script='<script src="/terravale-preview/session-room-navigation-bridge.js" defer></script>'
+          updated=0
+          for p in Path('site').rglob('*.html'):
+              content=p.read_text()
+              if '</head>' in content and script not in content:
+                  p.write_text(content.replace('</head>',script+'</head>',1))
+                  updated+=1
+          assert updated>=10, 'Expected compiled site pages for live-room navigation'
+          print('Live Session Room navigation added to',updated,'pages')
+          PY
+          node --check site/session-room-navigation-bridge.js
       - name: Verify class rule descriptions and equipment-slot protections
         shell: bash
         run: |
