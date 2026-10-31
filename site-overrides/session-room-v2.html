@@ -23,7 +23,30 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <link rel="stylesheet" href="./session-room-v2-wireframe.css">
 <link rel="stylesheet" href="./session-room-v2-encounters.css">
 <link rel="stylesheet" href="./session-room-v2-sheet-style.css">
-<link rel="stylesheet" href="./session-room-v2-bottom.css">
+<link rel="stylesheet" href="./session-room-v2-bottom.css?v=20261031-scroll-fix-2">
+<style id="fixed-chat-scroll-guard">
+/* V2 critical height constraints: content must never determine chat panel height. */
+#workspace-grid{min-height:0}
+#workspace-grid>.chat{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#workspace-grid>.chat>.panel-head{flex:0 0 auto}
+#workspace-grid>.chat>#feed{
+  display:flex;flex-direction:column;flex:1 1 0%;
+  height:0;min-height:0;max-height:100%;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+}
+#workspace-grid>.chat>#feed>.msg{flex:0 0 auto}
+#workspace-grid>.chat>.chat-compose{flex:0 0 auto}
+@media(min-width:1061px){
+  #workspace-grid{height:520px!important;max-height:520px!important;min-height:520px!important;flex:0 0 520px!important;grid-template-rows:minmax(0,1fr)!important}
+  #workspace-grid>.chat,#workspace-grid>.dicebox,#workspace-grid>.mine{height:520px!important;max-height:520px!important;min-height:0!important}
+}
+@media(min-width:731px) and (max-width:1060px){
+  #workspace-grid>.chat{height:520px!important;max-height:520px!important;min-height:0!important}
+}
+@media(max-width:730px){
+  #workspace-grid>.chat{height:430px!important;max-height:430px!important;min-height:0!important;flex:0 0 430px!important}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -372,6 +395,7 @@ $(id).classList.toggle("current",state.tab===key);$(id).setAttribute("aria-press
 }
 el.innerHTML=list.length?list.slice(-120).map(m=>'<article class="msg '+(m.kind==="roll"?'roll':'')+'"><div class="msg-avatar">'+(m.kind==="roll"?'⚄':esc((m.who||"?").charAt(0).toUpperCase()))+'</div><div class="msg-body"><div class="msg-top"><b>'+esc(m.who)+'</b><time>'+esc(m.time)+'</time></div>'+(m.kind==="roll"?'<div class="subtle roll-label">'+esc(m.label)+'</div><div class="roll-number"><strong class="roll-total">'+m.total+'</strong><span class="meta">['+esc(m.detail)+']</span></div>':'<p>'+esc(m.message)+'</p>')+'</div></article>').join(""):'<div class="empty">Nothing in this channel yet.</div>';
 if(followLatest)el.scrollTop=el.scrollHeight;else el.scrollTop=previousTop;
+lockChatHeight();
 lastRenderedChatTab=state.tab;
 }
 function bonusFor(a,kind,key){
@@ -553,6 +577,43 @@ state.checkSections=state.checkSections||{};
 state.checkSections[e.target.dataset.checkSection]=e.target.open;save();
 }},true);
 
+function lockChatHeight(){
+  const room=$("workspace-grid"),chat=room?.querySelector(".chat"),feed=$("feed");
+  if(!room||!chat||!feed)return;
+  const wide=window.innerWidth>1060;
+  const height=window.innerWidth<=730?430:520;
+  // The explicit pixel sizing is independent of cached stylesheets and stops
+  // auto-sized CSS grid tracks from expanding to fit hundreds of messages.
+  if(wide){
+    for(const prop of ["height","min-height","max-height"]){
+      room.style.setProperty(prop,height+"px","important");
+    }
+    room.style.setProperty("flex","0 0 "+height+"px","important");
+    room.style.setProperty("grid-template-rows","minmax(0,1fr)","important");
+    for(const pane of room.querySelectorAll(".chat,.dicebox,.mine")){
+      pane.style.setProperty("height",height+"px","important");
+      pane.style.setProperty("max-height",height+"px","important");
+      pane.style.setProperty("min-height","0","important");
+    }
+  }else{
+    for(const prop of ["height","min-height","max-height","flex","grid-template-rows"]){
+      room.style.removeProperty(prop);
+    }
+    for(const pane of room.querySelectorAll(".chat,.dicebox,.mine")){
+      pane.style.removeProperty("height");
+      pane.style.removeProperty("max-height");
+      pane.style.removeProperty("min-height");
+    }
+    chat.style.setProperty("height",height+"px","important");
+    chat.style.setProperty("max-height",height+"px","important");
+    chat.style.setProperty("min-height","0","important");
+  }
+  for(const [name,value] of Object.entries({
+    display:"flex","flex-direction":"column","flex":"1 1 0%","height":"0px",
+    "min-height":"0px","overflow-y":"auto","overflow-x":"hidden"
+  })){feed.style.setProperty(name,value,"important");}
+  for(const item of feed.children)item.style.flex="0 0 auto";
+}
 function setupPanelResizers(){
 const room=$("workspace-grid"),handles=[["resize-chat","chat"],["resize-character","character"]];
 function geometry(){return {usable:room.clientWidth-48,enabled:window.innerWidth>1060&&room.clientWidth>=850};}
@@ -617,6 +678,8 @@ if(!state.exampleFullAdded){
 }
 render();
 setupPanelResizers();
+lockChatHeight();
+window.addEventListener("resize",lockChatHeight);
 document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===(state.rollMode||"normal")));
 })();
 </script>
