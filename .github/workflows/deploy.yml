@@ -190,6 +190,33 @@ jobs:
       - name: Regression check V2 chat scroll with 200 messages
         shell: bash
         run: node site-overrides/test-v2-chat-scroll.cjs
+      - name: Build and validate live Session Room replacement
+        shell: bash
+        run: |
+          # Preserve the published compiled bundle in Git, but replace the
+          # Session Room route only after V2 prototype tests are successful.
+          mkdir -p site/session-room/encounter-library
+          cp site-overrides/session-room-live.html site/session-room/index.html
+          cp site-overrides/session-room-live.js site/session-room/session-room-live.js
+          cp site-overrides/session-room-live.css site/session-room/session-room-live.css
+          cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
+          for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
+            cp "site-overrides/session-room-v2-\${style}.css" "site/session-room/session-room-v2-\${style}.css"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          content=Path('site/session-room/index.html').read_text()
+          assert 'data-room-production="1"' in content
+          assert 'room-live.js' in content
+          assert 'name:"Kai"' not in content
+          js=[p for p in re.findall(r'<script[^>]*>(.*?)</script>',content,re.S) if p.strip()]
+          assert len(js)==1, f"Expected one embedded production script: {len(js)}"
+          Path('/tmp/terravale-session-live.js').write_text(js[0])
+          PY
+          node --check /tmp/terravale-session-live.js
+          node --check site/session-room/session-room-live.js
+          node site-overrides/test-session-room-live.cjs
       - name: Check Encounter Library JavaScript syntax
         shell: bash
         run: |
