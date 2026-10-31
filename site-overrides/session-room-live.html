@@ -62,14 +62,14 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
     <a href="../campaigns/"><span class="nav-ic">♧</span><span class="nav-label">Campaigns</span></a>
     <a href="../characters/"><span class="nav-ic">♙</span><span class="nav-label">Characters</span></a>
     <a href="../characters/create/"><span class="nav-ic">＋</span><span class="nav-label">Create Character</span></a>
-    <a href="../session-room/" class="active"><span class="nav-ic">⚔</span><span class="nav-label">Session Room V2</span></a>
+    <a href="../session-room/" class="active"><span class="nav-ic">⚔</span><span class="nav-label">Session Room</span></a>
     <a href="../classes/"><span class="nav-ic">⚒</span><span class="nav-label">Classes</span></a>
     <a href="../ancestries/"><span class="nav-ic">⌛</span><span class="nav-label">Ancestries & Feats</span></a>
     <a href="../journal/"><span class="nav-ic">✎</span><span class="nav-label">Journal</span></a>
     <a href="../dm/"><span class="nav-ic">✦</span><span class="nav-label">DM Chronicle</span></a>
     <a href="../appearance/"><span class="nav-ic">✧</span><span class="nav-label">Appearance</span></a>
   </nav>
-  <div class="campaign"><div class="micro">Campaign</div><select aria-label="Campaign"><option>Shady Test (preview)</option></select><p class="tiny">Local design preview</p></div>
+  <div class="campaign"><div class="micro">Campaign</div><div id="room-campaign-label" class="tiny" aria-live="polite">Connecting to campaign…</div><p class="tiny">Cloud · connected campaign</p></div>
 </aside>
 <div class="main">
 <header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp;</div><div class="topright"><label class="codex-theme-control" for="codex-theme-select">Theme <select id="codex-theme-select" aria-label="Website and character-sheet theme">
@@ -621,7 +621,7 @@ function openExistingCharacters(){
   }else alert("Live campaign character lookup is not ready. Reload the preview and try again.");
   return;
  }
- openExistingPicker(state.actors.filter(a=>a.type==="Player"),"Demo characters available in this local preview. Choose one or more to add to initiative.");
+ openExistingPicker(state.actors.filter(a=>a.type==="Player"),"Approved characters currently available in this campaign.");
 }
 
 function initiativeRow(id){
@@ -984,6 +984,7 @@ window.TerravaleRoomPreview=Object.freeze({
   sidePanel:isDm?"dm":"character",activeCollapsed:old.activeCollapsed,layout:old.layout,sheetTab:old.sheetTab};
  $("mode-label").textContent=isDm?"DM":"Player";
  $("live-campaign-caption").textContent=campaignName+" · Shared session";
+ $("room-campaign-label").textContent=campaignName;
  render();
  },
  applyServer(payload){
