@@ -39,8 +39,8 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 #workspace-grid>.chat>#feed>.msg{flex:0 0 auto}
 #workspace-grid>.chat>.chat-compose{flex:0 0 auto}
 @media(min-width:1061px){
-  #workspace-grid{height:520px!important;max-height:520px!important;min-height:520px!important;flex:0 0 520px!important;grid-template-rows:minmax(0,1fr)!important}
-  #workspace-grid>.chat,#workspace-grid>.dicebox,#workspace-grid>.mine{height:520px!important;max-height:520px!important;min-height:0!important}
+  #workspace-grid{height:clamp(610px,72dvh,760px)!important;max-height:clamp(610px,72dvh,760px)!important;min-height:clamp(610px,72dvh,760px)!important;flex:0 0 clamp(610px,72dvh,760px)!important;grid-template-rows:minmax(0,1fr)!important}
+  #workspace-grid>.chat,#workspace-grid>.dicebox,#workspace-grid>.mine{height:100%!important;max-height:100%!important;min-height:0!important}
 }
 @media(min-width:731px) and (max-width:1060px){
   #workspace-grid>.chat{height:520px!important;max-height:520px!important;min-height:0!important}
@@ -640,7 +640,7 @@ function lockChatHeight(){
   const room=$("workspace-grid"),chat=room?.querySelector(".chat"),feed=$("feed");
   if(!room||!chat||!feed)return;
   const wide=window.innerWidth>1060;
-  const height=window.innerWidth<=730?430:520;
+  const height=window.innerWidth<=730?430:wide?Math.round(Math.min(760,Math.max(610,window.innerHeight*.72))):520;
   // The explicit pixel sizing is independent of cached stylesheets and stops
   // auto-sized CSS grid tracks from expanding to fit hundreds of messages.
   if(wide){
