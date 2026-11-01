@@ -32,8 +32,12 @@ window.addEventListener("load",function(){
   record.sidebarHeight=Math.round(aside?.getBoundingClientRect().height||0);
   record.mainHref=active?.getAttribute("href");
   record.sameStylesheets=doc?.querySelectorAll("link[rel=stylesheet]").length||0;
+  record.navFontSize=parseFloat(iframe?.contentWindow?.getComputedStyle(nav?.[0]).fontSize)||0;
+  record.navHeight=Math.round(nav?.[0]?.getBoundingClientRect().height||0);
+  record.navTextNoWrap=iframe?.contentWindow?.getComputedStyle(nav?.[0]?.querySelector(".nav-text")).whiteSpace==="nowrap";
   record.pass=record.found&&record.links>=5&&record.current==="page"&&record.height>400&&record.width>=100&&
-    record.sidebarHeight>400&&record.sameStylesheets>=1&&record.mainHref?.includes("/party/");
+    record.sidebarHeight>400&&record.sameStylesheets>=1&&record.mainHref?.includes("/party/")&&
+    record.navFontSize>8&&record.navFontSize<=11.5&&record.navHeight<=43&&record.navTextNoWrap;
  }catch(e){record.error=String(e);record.pass=false;}
  document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
 });
