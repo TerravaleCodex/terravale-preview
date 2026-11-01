@@ -25,12 +25,12 @@ class Extractor(HTMLParser):
         self.stack = []
         self.asides = []
         self.css = []
-    def offset(self):
+    def absolute_offset(self):
         line, col = self.getpos()
         return self.lines[line-1] + col
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
-        if tag == "aside": self.stack.append(self.offset())
+        if tag == "aside": self.stack.append(self.absolute_offset())
         if tag == "link" and "stylesheet" in (attrs.get("rel") or "").split():
             href = attrs.get("href")
             if href and href.startswith(PREFIX) and href not in self.css:
@@ -38,7 +38,7 @@ class Extractor(HTMLParser):
     def handle_endtag(self, tag):
         if tag == "aside" and self.stack:
             start = self.stack.pop()
-            end = self.html.find(">", self.offset()) + 1
+            end = self.html.find(">", self.absolute_offset()) + 1
             if end > start: self.asides.append(self.html[start:end])
 
 def make_sidebar():
