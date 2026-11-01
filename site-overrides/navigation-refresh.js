@@ -32,15 +32,22 @@
    if(g.id!=="dm")return true;
    // The source shell already evaluates authenticated DM visibility. Never
    // reveal DM Chronicle merely because the user knows its URL.
-   const original=aside.querySelector('nav:not(.terr-nav) a[data-tour-nav="/dm"]');
+   const original=aside.querySelector('nav:not(.terr-nav) a[data-tour-nav="/dm"], nav:not(.terr-nav) a[href$="/dm"], nav:not(.terr-nav) a[href$="/dm/"]');
    return !!original;
  }
  function mount(){
   if(isNewSource())return;
   const aside=document.querySelector(".app-frame>.sidebar, #codex-sidebar-root>aside.sidebar, #codex-sidebar-root>aside");
-  if(!aside||aside.querySelector(":scope > .terr-nav"))return;
+  if(!aside)return;
   const p=pathNow();
+  const dmVisible=visibleGroup(groups[3],aside);
+  const existing=aside.querySelector(":scope > .terr-nav");
+  if(existing){
+   if(existing.dataset.current===p&&existing.dataset.dmVisible===String(dmVisible))return;
+   existing.remove();
+  }
   const root=make("div","terr-nav");root.setAttribute("aria-label","Codex navigation");
+  root.dataset.current=p;root.dataset.dmVisible=String(dmVisible);
   const search=make("a","terr-nav-search"+(active("/search",p)?" active":""));
   search.href=hrefOf("/search");search.setAttribute("aria-label","Search Codex");
   search.title="Search Codex";search.append(make("span","terr-nav-icon","⌕"),make("span","terr-nav-label","Search Codex"),make("span","terr-nav-search-trail","↗"));
