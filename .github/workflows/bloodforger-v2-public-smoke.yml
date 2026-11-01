@@ -1,0 +1,38 @@
+name: Verify published Bloodforger V2 route
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/bloodforger-v2-public-smoke.yml'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check actual public GitHub Pages output
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://terravalecodex.github.io/terravale-preview"
+          for attempt in $(seq 1 25); do
+            js=$(curl --fail --silent --show-error --location --max-time 15 ${base}/bloodforger-v2-live.js?check=${GITHUB_SHA}-${attempt} || true)
+            html=$(curl --fail --silent --show-error --location --max-time 15 ${base}/classes/bloodforger/trees/?check=${GITHUB_SHA}-${attempt} || true)
+            css=$(curl --fail --silent --show-error --location --max-time 15 ${base}/bloodforger-v2-live.css?check=${GITHUB_SHA}-${attempt} || true)
+            if [[ "$js" == *'BLOODFORGER_V2_GRAPHS'* ]] &&
+               [[ "$js" == *'function layoutSkillGraph('* ]] &&
+               [[ "$js" == *'MutationObserver'* ]] &&
+               [[ "$html" == *'bloodforger-v2-live.js'* ]] &&
+               [[ "$css" == *'bf2-route'* ]]; then
+              echo "PASS: live Bloodforger class-tree route loads V2 layout JS and CSS"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Live Bloodforger V2 was not served by GitHub Pages"
+          exit 1
