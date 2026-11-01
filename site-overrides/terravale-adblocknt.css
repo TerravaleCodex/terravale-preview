@@ -1,0 +1,50 @@
+/* Terravale Codex: separate ad + achievement layer; does not style underlying app */
+#tv-ad-layer{position:fixed;inset:0;pointer-events:none;z-index:20000;overflow:hidden}
+.tv-ad-popup{position:absolute;pointer-events:auto;border:1px solid #b981ad;border-radius:8px;background:#100a16;box-shadow:0 15px 55px #000d,0 0 20px #c93d8c44;animation:tv-ad-pop .42s cubic-bezier(.15,1.55,.32,1) both;transform-origin:center;line-height:0}
+.tv-ad-popup.tv-ad-swarm{border-color:#f2a1d3;box-shadow:0 15px 45px #000d,0 0 17px #f26cc255}
+.tv-ad-art{width:100%;height:auto;display:block;border-radius:7px;user-select:none;-webkit-user-select:none;pointer-events:none}
+.tv-ad-dismiss{position:absolute;right:-10px;top:-10px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:1px solid #e6afd3;border-radius:50%;color:#fff;background:#221228;cursor:pointer;font-size:23px;line-height:1;box-shadow:0 2px 10px #0009}
+.tv-ad-dismiss:hover{background:#aa3c79}
+@keyframes tv-ad-pop{0%{opacity:0;transform:translateY(33px) scale(.69) rotate(-6deg)}65%{opacity:1;transform:translateY(-8px) scale(1.07) rotate(2deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+.tv-ad-close-all{position:fixed;bottom:18px;left:18px;z-index:30005;border-radius:8px;border:1px solid #ebb4d4;background:#25132d;color:#fff;font-size:12px;padding:11px 15px;cursor:pointer;box-shadow:0 8px 35px #000a;font-weight:700}
+.tv-ad-close-all[hidden]{display:none!important}.tv-ad-close-all b{margin-left:5px;border-radius:5px;padding:4px 7px;background:#ffffff22}
+.tv-ach-widget{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:20001;border:1px solid #70617d;background:#171321;color:#e7d8f2;box-shadow:0 10px 27px #0008;border-radius:999px;padding:11px 16px;font-size:12px;font-family:inherit;font-weight:750;cursor:pointer}
+.tv-ach-widget:hover{border-color:#c4a4f5;background:#291d39}
+.tv-ach-backdrop{position:fixed;inset:0;z-index:35000;background:#000b;backdrop-filter:blur(5px);display:grid;place-items:center;padding:18px;color:#ece4f3;font:13px/1.6 Inter,system-ui,sans-serif}
+.tv-ach-backdrop[hidden]{display:none!important}.tv-ach-window{width:min(900px,100%);max-height:min(92dvh,900px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #51435c;border-radius:15px;background:linear-gradient(140deg,#15111d,#0b0910);box-shadow:0 24px 90px #000d}
+.tv-ach-window>header{display:flex;align-items:center;justify-content:space-between;padding:17px 25px;border-bottom:1px solid #35293f;font-family:Georgia,serif;font-size:15px;letter-spacing:.12em}
+.tv-ach-window>header span small{display:block;font:9px/1.5 Inter,system-ui,sans-serif;letter-spacing:.18em;color:#a89ab7;margin-top:4px}
+.tv-ach-window>header button{background:none;border:1px solid #51435c;border-radius:6px;color:#eee;width:34px;height:34px;font-size:20px;cursor:pointer}
+.tv-ach-window nav{padding:10px 23px;display:flex;gap:10px;overflow:auto;border-bottom:1px solid #35293f}
+.tv-ach-window nav button{border:1px solid transparent;background:transparent;color:#9d8ead;border-radius:7px;padding:8px 13px;cursor:pointer;white-space:nowrap;font-size:12px}
+.tv-ach-window nav button.selected{background:#332644;color:#e5ccff;border-color:#69517f}
+.tv-ach-window nav button[hidden]{display:none!important}.tv-ach-window main{padding:clamp(18px,3vw,32px);overflow-y:auto;flex:1;min-height:260px}
+.tv-ach-window h1{font:normal clamp(29px,3.5vw,46px)/1.1 Georgia,serif;margin:9px 0 14px;letter-spacing:-.045em}
+.tv-ach-window h1 em{color:#c2a2f0;font-style:normal}.tv-ach-window h2{font:normal 24px/1.2 Georgia,serif;margin:4px 0 8px}
+.tv-eyebrow{color:#bda0e4;font-size:10px;font-weight:750;letter-spacing:.18em}.tv-small{font-size:12px;line-height:1.8;color:#aa9cb8;max-width:700px}
+.tv-stats{display:flex;justify-content:space-between;align-items:center;gap:15px;background:#1b1626;border:1px solid #43344e;border-radius:9px;padding:15px 18px;margin:24px 0 15px}
+.tv-stats strong{font-size:15px}.tv-stats span{font-size:9px;color:#9388a2;letter-spacing:.16em}
+#tv-ach-card{display:flex;gap:19px;align-items:center;background:#15111e;border:1px solid #44334f;padding:23px 20px;border-radius:11px}
+#tv-ach-card.unlocked{border-color:#aa83df;background:linear-gradient(115deg,#29183d,#17111f)}
+.tv-medal{width:68px;height:68px;flex:0 0 68px;border-radius:12px;background:#30213b;border:1px solid #694b80;display:grid;place-items:center;color:#c69bea;font-size:36px}
+#tv-ach-card p{margin:0 0 7px;color:#aaa0b9;font-size:12px}#tv-ach-card small{font-size:10px;font-weight:750;color:#c5a0eb;letter-spacing:.12em}
+.tv-progress-label{display:flex;justify-content:space-between;gap:8px;margin:20px 0 7px;color:#aaa0b9;font-size:12px}.tv-progress-label strong{color:#cdb1f2}
+.tv-progress-track{height:8px;overflow:hidden;border-radius:12px;background:#30253d}.tv-progress-track i{display:block;background:#b389e5;width:0;height:100%;transition:width .25s}
+.tv-ach-window button.tv-primary{border:1px solid #b99bdc;background:#c4a4ed;color:#180e23;padding:12px 17px;font-weight:800;border-radius:8px;cursor:pointer}
+.tv-ach-window button.tv-primary:disabled{opacity:.48;cursor:not-allowed}.tv-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}
+.tv-actions button{padding:11px 16px;border:1px solid #665375;border-radius:8px;background:#231a2c;color:#eee;cursor:pointer}
+.tv-actions button:disabled{opacity:.4;cursor:not-allowed}.tv-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:24px}
+.tv-gallery-item{min-width:0;background:#1a1321;border:1px solid #43344e;border-radius:8px;cursor:pointer;padding:7px;display:grid;gap:6px;color:#c0afc9;text-align:left}
+.tv-gallery-item img{width:100%;height:130px;object-fit:contain}.tv-gallery-item small{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-dm-grid{display:grid;gap:12px;margin:20px 0;grid-template-columns:repeat(2,minmax(0,1fr))}.tv-dm-grid label{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1b1424;border:1px solid #493754;padding:14px;border-radius:9px;font-size:12px}
+.tv-dm-grid label.tv-dm-long{grid-column:1/-1;display:block}.tv-dm-long span{display:flex;justify-content:space-between;gap:15px}.tv-dm-grid input[type=checkbox]{accent-color:#bb95e4;width:17px;height:17px}.tv-dm-grid input[type=range]{width:100%;margin-top:13px;accent-color:#bb95e4}
+.tv-ach-window footer{border-top:1px solid #35293f;padding:12px 24px;color:#786b84;font-size:9px;letter-spacing:.1em}
+.tv-ach-toasts{position:fixed;z-index:40000;bottom:72px;right:18px;display:grid;gap:10px;pointer-events:none;max-width:330px}
+.tv-ach-toast{background:#281c38;border:1px solid #9e77d3;border-radius:9px;padding:14px 18px;box-shadow:0 8px 40px #000b;display:grid;gap:4px;color:#e4d8eb;font-size:12px}
+.tv-ach-toast strong{color:#d2a9f2;font-size:13px}
+.tv-ad-premium{position:fixed;z-index:33000;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#ef42ab,#831d92);border:5px solid #fff;color:white;border-radius:17px;width:min(90vw,480px);text-align:center;padding:29px 20px;box-shadow:0 20px 90px #000e;display:grid;gap:10px}
+.tv-ad-premium span{font-size:10px;letter-spacing:.2em}.tv-ad-premium h2{font-size:34px;margin:0;font-weight:950}.tv-ad-premium p{font-size:15px}.tv-ad-premium small{font-size:11px}.tv-ad-premium button{border:none;border-radius:7px;padding:12px;background:white;color:#64165e;cursor:pointer;font-weight:800}
+.tv-ach-nav{font:inherit!important;text-align:left!important;width:100%;display:block!important;cursor:pointer}
+body.tv-ad-no-motion .tv-ad-popup{animation:none!important}
+@media(max-width:720px){.tv-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.tv-dm-grid{grid-template-columns:1fr}.tv-ach-window>header{padding:13px 15px}.tv-ach-window nav{padding:8px 10px}.tv-ach-window main{padding:18px}.tv-ach-window{max-height:95dvh}.tv-ach-widget{padding:10px 13px}.tv-ad-close-all{bottom:15px;left:10px}}
+@media(prefers-reduced-motion:reduce){.tv-ad-popup{animation:none!important}.tv-progress-track i{transition:none!important}}

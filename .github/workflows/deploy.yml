@@ -432,6 +432,36 @@ jobs:
           node site-overrides/test-bloodforger-v2-live.cjs
           grep -q "bloodforger-v2-live.js" site/index.html
           test -s site/bloodforger-v2-live.css
+      - name: Publish Adblockn't and approved Cabinet advertisements
+        shell: bash
+        run: |
+          mkdir -p site/codex-ads/ads
+          cp site-overrides/terravale-adblocknt.js site/codex-ads/terravale-adblocknt.js
+          cp site-overrides/terravale-adblocknt.css site/codex-ads/terravale-adblocknt.css
+          cp site-overrides/approved-ads.json site/codex-ads/ads.json
+          cp site-overrides/approved-ads/*.webp site/codex-ads/ads/
+          test "$(find site/codex-ads/ads -maxdepth 1 -type f -name '*.webp' | wc -l)" -eq 56
+          node --check site/codex-ads/terravale-adblocknt.js
+          python3 - <<'PY'
+          import pathlib,json
+          root=pathlib.Path('site')
+          ads=json.loads((root/'codex-ads/ads.json').read_text())
+          assert len(ads)==56
+          assert all((root/'codex-ads/ads'/(ad['id']+'.webp')).is_file() for ad in ads)
+          script='<script defer src="/terravale-preview/codex-ads/terravale-adblocknt.js"></script>'
+          css='<link rel="stylesheet" href="/terravale-preview/codex-ads/terravale-adblocknt.css">'
+          count=0
+          for page in root.rglob('*.html'):
+              html=page.read_text()
+              if '</head>' not in html:
+                  continue
+              if script not in html:
+                  page.write_text(html.replace('</head>',css+script+'</head>',1))
+                  count+=1
+          if count<10:
+              raise SystemExit('Cabinet assets were not installed on every published route')
+          print('Cabinet achievement and disabled-by-default ad layer installed on',count,'pages')
+          PY
       - uses: actions/configure-pages@v5
         with:
           enablement: true
