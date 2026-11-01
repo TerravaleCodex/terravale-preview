@@ -13,7 +13,10 @@ const $=id=>document.getElementById(id);
 const button=$("live-roster-button");
 const picker=$("live-campaign-select");
 const status=$("live-roster-status");
-if(!button||!picker||!status||!window.TerravaleRoomPreview)return;
+if(!button||!picker||!status||!window.TerravaleRoomPreview){
+ console.error("Terravale Session Room: missing required UI or room bridge");
+ return;
+}
 let sb=null,viewer=null,previewCampaignId=null,currentPortraits=[],currentUserId=null;
 let loadCounter=0, signedAt=0, busy=false, rosterMode=false;
 let roomId=null,roomDm=false,roomVersion=0,roomReady=false,roomWriting=false,roomPending=null,lastSignature="",fetchingEvents=false;
@@ -300,7 +303,7 @@ async function updateSheetState(characterId,patch){
  const r=await sb.from("character_state").update(safe).eq("character_id",characterId);
  if(r.error)show("Character sheet update failed: "+safeMessage(r.error.message),true);
 }
-window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,updateSheetState});
+window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,updateSheetState,reconnect:()=>loadRoster(roomId)});
 setInterval(()=>{if(!document.hidden&&roomId){void refreshRoom();void refreshEvents();}},4500);
 
 // Production has no demo roster; always authenticate and read real campaigns.
