@@ -11,8 +11,10 @@ CUSTOM = {
     "party/index.html": "party", "party.html": "party",
     "session-room/index.html": "party", "session-room.html": "party",
     "session-room-v2/index.html": "party",
-    "characters/sheet-live/index.html": "characters",
-    "characters/sheet-workshop/index.html": "characters",
+    # Character sheets are embedded by the compiled Codex. Their own
+    # .sidebar is hidden in html.live-embedded; replacing it with an
+    # iframe makes a giant nested navigation instead of the sheet.
+    # NEVER replace their <aside>; they use the parent Codex navigation.
     "session-room/encounter-library/index.html": "party",
     "session-room-v2/encounter-library/index.html": "party",
 }
@@ -215,10 +217,21 @@ def main():
     changed = [name for name, page in CUSTOM.items() if patch(name, page)]
     print("Shared Codex sidebar derived from original compiled homepage:",len(original),"HTML bytes")
     print("Unified standalone sidebar in",len(changed),"pages:",", ".join(changed))
-    if len(changed) < 7:
+    if len(changed) < 5:
         raise RuntimeError("Not enough sidebar pages were patched")
     assert "data-tour-nav" in (OUT/"shared-sidebar/index.html").read_text()
     assert 'codex-shared-sidebar-frame' in (OUT/"party/index.html").read_text()
+    for sheet_name in ("characters/sheet-live/index.html",
+                       "characters/sheet-workshop/index.html"):
+        sheet=(OUT/sheet_name).read_text()
+        if 'codex-shared-sidebar-frame' in sheet:
+            raise RuntimeError(f"Nested sidebar detected in embedded sheet: {sheet_name}")
+        if '<aside class="sidebar"' not in sheet:
+            raise RuntimeError(f"Original embedded sidebar was removed: {sheet_name}")
+    live=(OUT/"characters/sheet-live/index.html").read_text()
+    assert 'html.live-embedded .sidebar' in live, "Embedded sidebar hiding CSS missing"
+    assert 'loadApprovedCharacter' in live, "Approved sheet renderer missing"
+
 
 if __name__=="__main__":
     main()
