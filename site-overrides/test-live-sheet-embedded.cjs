@@ -21,7 +21,7 @@ const injected="<script>("+function(){
         heroVisible:!!hero&&hero.getBoundingClientRect().width>600,
         viewVisible:!!view&&view.getBoundingClientRect().width>600,
         approvedLoader:!!document.querySelector("#page"),
-        noSheetError:!document.body.textContent.includes("Character sheet could not load")
+        noSheetError:!(document.querySelector("#page")?.innerText||"").includes("Character sheet could not load")
       };
       report.pass=Object.values(report).every(v=>v===true);
       document.body.dataset.embeddedSheetTest=encodeURIComponent(JSON.stringify(report));
