@@ -37,7 +37,11 @@ window.addEventListener("load",function(){
   record.navTextNoWrap=iframe?.contentWindow?.getComputedStyle(nav?.[0]?.querySelector(".nav-text")).whiteSpace==="nowrap";
   record.clippedNavLabels=Array.from(nav||[]).filter(el=>{
    const label=el.querySelector(".nav-text");
-   return label&&label.scrollWidth>label.clientWidth+2;
+   if(!label)return false;
+   const labelRect=label.getBoundingClientRect();
+   const linkRect=el.getBoundingClientRect();
+   // nav-text is inline; clientWidth is 0 even when its text fits.
+   return labelRect.right>linkRect.right+1;
   }).map(el=>el.getAttribute("aria-label"));
   const bridge=window.TerravaleRoomPreview;
   record.bridgeAvailable=!!bridge?.useRoster;
