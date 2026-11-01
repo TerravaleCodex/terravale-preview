@@ -27,8 +27,11 @@ async function client(){
  if(sb)return sb;
  // This uses Supabase's standard browser storage key: same as the published app.
  const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");
- sb=createClient(API_URL,API_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
-   global:{headers:{"X-Client-Info":"terravale-v2-readonly-roster"}}});
+ sb=createClient(API_URL,API_KEY,{
+  // Match the actual compiled Codex client, which uses a custom storageKey.
+  // The standard sb-<project>-auth-token key is NOT the site's session.
+  auth:{storageKey:"supabase.auth.token",persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
+  global:{headers:{"X-Client-Info":"terravale-session-room-live"}}});
  return sb;
 }
 function result(value,what){
@@ -142,11 +145,15 @@ async function loadRoster(id){
   previewCampaignId=active.id;
   currentPortraits=data.portraitSources;
   window.TerravaleRoomPreview.useRoster({actors:data.actors,ownId:data.ownId,isDm:active.isDm,campaignName:active.name,userId:user.id});
-  roomId=active.id;roomDm=active.isDm;await refreshRoom();await refreshEvents();
+  roomId=active.id;roomDm=active.isDm;
+  document.body.dataset.roomConnection="ready";
+  await refreshRoom();await refreshEvents();
   rosterMode=true;
   show("Connected · "+active.name+" · "+data.actors.length+" characters");
  }catch(e){
-  show(safeMessage(e.message),true);
+  show("Campaign connection: "+safeMessage(e.message),true);
+  document.body.dataset.roomConnection="error";
+  window.TerravaleRoomPreview?.showConnectionFailure?.(safeMessage(e.message));
   if(!window.TerravaleRoomPreview.isLive())button.textContent="Use Live Roster";
  }finally{busy=false;button.disabled=false;picker.disabled=false;}
 }
