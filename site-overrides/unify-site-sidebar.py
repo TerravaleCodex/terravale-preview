@@ -266,10 +266,15 @@ def patch(file, page, native_sidebar):
             route=re.search(r'data-tour-nav="([^"]+)"',tag).group(1)
             class_match=re.search(r'class="([^"]+)"',tag)
             if class_match:
-                names=[x for x in class_match.group(1).split() if x!='active']
-                if route=='/party': names.append('active')
+                # The standalone room uses ".active" for its combatant panel.
+                # Never assign that global class to the sidebar: it applies
+                # combat sizing and padding to the selected navigation link.
+                names=[x for x in class_match.group(1).split()
+                       if x not in ('active', 'room-nav-current')]
+                if route=='/party': names.append('room-nav-current')
                 tag=tag.replace(class_match.group(0),'class="'+' '.join(names)+'"',1)
             if route=='/party':
+                tag=tag.replace(' aria-current="page"','')
                 tag=tag[:-1]+' aria-current="page">'
             else:
                 tag=tag.replace(' aria-current="page"','')
