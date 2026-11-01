@@ -304,6 +304,7 @@ jobs:
           node --check /tmp/terravale-session-live.js
           node --check site/session-room/session-room-live.js
           node site-overrides/test-session-room-live.cjs
+          node site-overrides/test-session-room-live-auth.cjs
       - name: Check Encounter Library JavaScript syntax
         shell: bash
         run: |
