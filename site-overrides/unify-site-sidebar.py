@@ -256,7 +256,8 @@ def patch(file, page, native_sidebar):
     html = path.read_text()
     native = file in NATIVE_ROUTES
     if native:
-        replacement = native_sidebar.replace('<aside class="sidebar"', '<aside id="room-native-nav" class="sidebar"', 1)
+        replacement, aside_count = re.subn(r'<aside\\b', '<aside id="room-native-nav"', native_sidebar, count=1)
+        assert aside_count == 1, "Source-built navigation must contain an aside"
         assert 'id="room-native-nav"' in replacement, "Source nav must contain one real sidebar"
         # The source sidebar was extracted from the Dashboard (active="/").
         # Mark the Room route in HTML, BEFORE scripts, to prevent an active-link flash.
