@@ -134,6 +134,47 @@ jobs:
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
           test -s site/characters/sheet-live/class-feature-rules.json
           test -s site/characters/sheet-live/death-mechanics.js
+      - name: Force real character viewer to load restored embedded sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The compiled character viewer hardcodes ?live=1&v=0912. Its
+          # iframe can keep a cached broken nested sidebar even after a
+          # correct fresh HTML build. Give the clean sheet a NEW path.
+          mkdir -p site/characters/sheet-render-fixed-20261101
+          cp -a site/characters/sheet-live/. site/characters/sheet-render-fixed-20261101/
+          cp site-overrides/approved-sheet-iframe-bridge.js site/approved-sheet-iframe-bridge.js
+          python3 - <<'PY'
+          from pathlib import Path
+          original='characters/sheet-live/?live=1&v=0912'
+          repaired='characters/sheet-render-fixed-20261101/?live=1&v=restored-sheet-20261101'
+          matches=[]
+          for p in Path('site/_next/static').rglob('*.js'):
+            txt=p.read_text()
+            if original in txt:
+              matches.append(p)
+              assert txt.count(original)==1, 'Unexpected repeated character viewer URL'
+              p.write_text(txt.replace(original,repaired))
+          assert len(matches)==1, f'Expected one compiled character-viewer reference; found {len(matches)}'
+          print('REPAIRED COMPILED SHEET VIEWER',matches[0])
+          bridge='<script src="/terravale-preview/approved-sheet-iframe-bridge.js?v=20261101" defer></script>'
+          pages=0
+          for p in Path('site').rglob('*.html'):
+            html=p.read_text()
+            if '</head>' in html and bridge not in html:
+              p.write_text(html.replace('</head>',bridge+'</head>',1))
+              pages+=1
+          assert pages>=10, 'Expected navigation bridge on compiled site pages'
+          print('Sheet iframe cache guard installed on',pages,'pages')
+          original_sheet=Path('site/characters/sheet-live/index.html').read_text()
+          fixed_sheet=Path('site/characters/sheet-render-fixed-20261101/index.html').read_text()
+          assert fixed_sheet==original_sheet, 'Restored sheet differs from approved source'
+          assert 'codex-shared-sidebar-frame' not in fixed_sheet
+          assert 'loadApprovedCharacter' in fixed_sheet
+          assert 'html.live-embedded .sidebar' in fixed_sheet
+          PY
+          node --check site/approved-sheet-iframe-bridge.js
+          grep -q 'sheet-render-fixed-20261101' site/_next/static/chunks/1liev8wshkvix.js
       - name: Apply unified theme to compiled character creator
         shell: bash
         run: |
@@ -494,6 +535,18 @@ jobs:
             fi
             echo "PASS live embedded sheet route $sheet_route"
           done
+          restored=$(curl --fail --silent --show-error --location --max-time 15 \
+            "${base}/characters/sheet-render-fixed-20261101/?check=${GITHUB_SHA}")
+          if grep -q 'codex-shared-sidebar-frame' <<< "$restored" ||
+             ! grep -q 'html.live-embedded .sidebar' <<< "$restored"; then
+            echo "::error::The restored embedded sheet URL is incorrect"
+            exit 1
+          fi
+          echo "PASS restored approved character sheet route"
+          curl --fail --silent --show-error --location --max-time 15 \
+            "${base}/approved-sheet-iframe-bridge.js?check=${GITHUB_SHA}" -o /tmp/terravale-iframe-bridge.js
+          grep -q 'sheet-render-fixed-20261101' /tmp/terravale-iframe-bridge.js
+          echo "PASS published iframe compatibility bridge"
           for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
             curl --fail --silent --show-error --location --max-time 15               "${base}${asset}?verify=${GITHUB_SHA}" -o /dev/null
             echo "PASS public asset $asset"
