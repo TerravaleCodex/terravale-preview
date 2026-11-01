@@ -9,7 +9,7 @@
     if(!el)return;
     const url=new URL(el.href,location.href);
     if(url.origin!==location.origin)return;
-    const path=url.pathname.replace(/\\/+$/,"")+"/";
+    const path=url.pathname.endsWith("/")?url.pathname:url.pathname+"/";
     if(!routes.has(path))return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
