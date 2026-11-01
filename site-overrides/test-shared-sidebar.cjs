@@ -38,6 +38,7 @@ window.addEventListener("load",function(){
   const bridge=window.TerravaleRoomPreview;
   record.bridgeAvailable=!!bridge?.useRoster;
   if(bridge){
+   document.documentElement.dataset.appTheme="shady";
    bridge.useRoster({actors:[],ownId:"",userId:"dm-user",isDm:true,campaignName:"Shady Test"});
    record.dmDesk=document.querySelector("#right-heading")?.textContent==="DM Desk";
    record.campaignName=document.querySelector("#live-campaign-caption")?.textContent?.includes("Shady Test");
@@ -48,7 +49,16 @@ window.addEventListener("load",function(){
     record.navFontSize>8&&record.navFontSize<=11.5&&record.navHeight<=43&&record.navTextNoWrap&&
     record.bridgeAvailable&&record.dmDesk&&record.campaignName&&record.dmActions;
  }catch(e){record.error=String(e);record.pass=false;}
- document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
+ setTimeout(()=>{
+  try{
+   const doc=iframe?.contentDocument;
+   record.themeSynced=doc?.documentElement?.dataset?.appTheme==="shady";
+   record.campaignInNav=Array.from(doc?.querySelectorAll("select option")||[])
+     .some(option=>option.textContent==="Shady Test");
+   record.pass=record.pass&&record.themeSynced&&record.campaignInNav;
+  }catch(e){record.pass=false;record.error=String(e)}
+  document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
+ },150);
 });
 }.toString()+")();</scr"+"ipt>";
 const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"image/png"};
