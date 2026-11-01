@@ -26,6 +26,21 @@ function hasLocalSession(){
  try{return !!localStorage.getItem("sb-"+PROJECT+"-auth-token");}
  catch(e){return false;}
 }
+function codexSessionStorageKey(){
+ // The compiled site has used the legacy key and standard Supabase v2 key
+ // in different builds. Read only this project's known session locations.
+ for(const key of ["supabase.auth.token","sb-"+PROJECT+"-auth-token"]){
+  try{
+   const raw=localStorage.getItem(key);
+   if(!raw)continue;
+   const obj=JSON.parse(raw);
+   if(typeof obj?.access_token==="string"||
+      typeof obj?.currentSession?.access_token==="string"||
+      typeof obj?.session?.access_token==="string")return key;
+  }catch{}
+ }
+ return "supabase.auth.token";
+}
 async function client(){
  if(sb)return sb;
  // This uses Supabase's standard browser storage key: same as the published app.
@@ -33,7 +48,7 @@ async function client(){
  sb=createClient(API_URL,API_KEY,{
   // Match the actual compiled Codex client, which uses a custom storageKey.
   // The standard sb-<project>-auth-token key is NOT the site's session.
-  auth:{storageKey:"supabase.auth.token",persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
+  auth:{storageKey:codexSessionStorageKey(),persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
   global:{headers:{"X-Client-Info":"terravale-session-room-live"}}});
  return sb;
 }
