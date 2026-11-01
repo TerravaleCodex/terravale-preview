@@ -99,33 +99,62 @@
   update();
  }
  function avatarUrl(){
+  const valid=session=>{
+   const meta=session?.user?.user_metadata||session?.user?.identities?.[0]?.identity_data;
+   const raw=meta?.avatar_url||meta?.picture;
+   if(typeof raw!=="string")return null;
+   try{const u=new URL(raw);return u.protocol==="https:"&&/(^|\.)discordapp\.(com|net)$/.test(u.hostname)?u.href:null}catch{return null}
+  };
   try{
-   for(let n=0;n<localStorage.length;n++){
-    const key=localStorage.key(n)||"";
+   for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i)||"";
     if(!/^sb-[\w-]+-auth-token$/.test(key)&&!key.includes("supabase.auth.token"))continue;
-    const session=JSON.parse(localStorage.getItem(key)||"null");
-    const meta=session?.user?.user_metadata||session?.user?.identities?.[0]?.identity_data;
-    const value=meta?.avatar_url||meta?.picture;
-    if(typeof value!=="string")continue;
-    const url=new URL(value);
-    if(url.protocol==="https:" && /(^|\.)discordapp\.com$|(^|\.)discordapp\.net$/.test(url.hostname))return url.href;
+    const url=valid(JSON.parse(localStorage.getItem(key)||"null"));
+    if(url)return url;
    }
-  }catch{}return null;
+  }catch{}
+  // @supabase/ssr commonly uses same-origin cookies (possibly split into chunks).
+  // Only the profile image is read; no access or refresh token is sent anywhere.
+  try{
+   const jar=new Map(document.cookie.split(";").map(part=>{
+    const idx=part.indexOf("=");return idx<0?["",""]:[part.slice(0,idx).trim(),part.slice(idx+1).trim()];
+   }).filter(pair=>pair[0]));
+   const bases=new Set();
+   for(const key of jar.keys()){
+    const match=key.match(/^(sb-[\w-]+-auth-token)(?:\.\d+)?$/);
+    if(match)bases.add(match[1]);
+   }
+   for(const base of bases){
+    const raw=jar.has(base)?jar.get(base):[...jar.entries()].filter(([key])=>key.startsWith(base+".")&&/\.\d+$/.test(key)).sort(([a],[b])=>Number(a.split(".").pop())-Number(b.split(".").pop())).map(([,value])=>value).join("");
+    if(!raw)continue;
+    const decoded=decodeURIComponent(raw);
+    const payload=decoded.startsWith("base64-")?atob(decoded.slice(7).replace(/-/g,"+").replace(/_/g,"/")):decoded;
+    const url=valid(JSON.parse(payload));
+    if(url)return url;
+   }
+  }catch{}
+  return null;
  }
  function account(){
   if(isShared()||isNewSource())return;
   const pill=document.querySelector(".app-frame .topbar .user-pill");
-  if(!pill||pill.querySelector(".terr-account-avatar"))return;
-  const current=(pill.textContent||"Account").trim();
-  const name=make("span","terr-account-name",current);
-  const avatar=make("span","terr-account-avatar",current[0]?.toUpperCase()||"?");
-  const src=avatarUrl();
-  if(src){
-   const img=document.createElement("img");img.src=src;img.alt="";img.referrerPolicy="no-referrer";img.loading="lazy";
-   img.addEventListener("error",()=>img.remove(),{once:true});avatar.appendChild(img);
+  if(!pill)return;
+  // Do not remove or reparent React's text node: the account updates on sign-in.
+  const node=Array.from(pill.childNodes).find(n=>n.nodeType===3);
+  const display=(node?.textContent||"Account").trim();
+  let avatar=pill.querySelector(".terr-account-avatar");
+  if(!avatar){
+   avatar=make("span","terr-account-avatar",display[0]?.toUpperCase()||"?");
+   pill.insertBefore(avatar,pill.firstChild);
+   pill.appendChild(make("span","terr-account-chevron","⌄"));
   }
-  const arrow=make("span","terr-account-chevron","⌄");
-  pill.textContent="";pill.append(avatar,name,arrow);
+  if(!avatar.querySelector("img")){
+   const url=avatarUrl();
+   if(url){
+    const img=document.createElement("img");img.src=url;img.alt="";img.referrerPolicy="no-referrer";img.loading="lazy";
+    img.addEventListener("error",()=>img.remove(),{once:true});avatar.appendChild(img);
+   }
+  }
   pill.title="Account settings";
  }
  function tutorialDeepLink(){
