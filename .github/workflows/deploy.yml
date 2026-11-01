@@ -472,6 +472,7 @@ jobs:
           grep -q 'html.live-embedded .sidebar' site/characters/sheet-live/index.html
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
           node site-overrides/test-live-sheet-embedded.cjs
+          node site-overrides/test-actual-character-viewer.cjs
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
