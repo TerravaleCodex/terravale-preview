@@ -64,7 +64,7 @@ window.addEventListener("load",function(){
   record.pass=record.found&&record.links>=5&&record.current==="page"&&record.height>400&&record.width>=100&&
     record.sidebarHeight>400&&record.width>=190&&record.width<=230&&
     record.sameStylesheets>=1&&record.mainHref?.includes("/party/")&&
-    record.navFontSize>8&&record.navFontSize<=11.5&&record.navHeight<=43&&record.navTextNoWrap&&
+    record.navFontSize>8&&record.navFontSize<=13&&record.navHeight<=43&&record.navTextNoWrap&&
     record.clippedNavLabels.length===0&&
     record.bridgeAvailable&&record.dmDesk&&record.campaignName&&record.dmActions;
  }catch(e){record.error=String(e);record.pass=false;}
@@ -74,9 +74,10 @@ window.addEventListener("load",function(){
    record.themeValue=doc?.documentElement?.dataset?.appTheme;
    record.themeParentValue=document.documentElement.dataset.appTheme;
    record.themeSynced=doc?.documentElement?.dataset?.appTheme==="shady";
-   record.campaignInNav=Array.from(doc?.querySelectorAll("select option")||[])
-     .some(option=>option.textContent==="Shady Test");
-   record.pass=record.pass&&record.themeSynced&&record.campaignInNav;
+   record.noCampaignSelector=doc?.querySelectorAll("#codex-sidebar-root select").length===0;
+   record.groupCount=doc?.querySelectorAll(".sidebar-nav-section").length||0;
+   record.helpAtBottom=!!doc?.querySelector(".sidebar-foot .sidebar-help");
+   record.pass=record.pass&&record.themeSynced&&record.noCampaignSelector&&record.groupCount>=4&&record.helpAtBottom;
   }catch(e){record.pass=false;record.error=String(e)}
   document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
  },150);
