@@ -401,7 +401,17 @@ jobs:
           node site-overrides/test-shared-sidebar.cjs
           test -s site/shared-sidebar/index.html
           grep -q 'codex-shared-sidebar-frame' site/party/index.html
-          grep -q 'codex-shared-sidebar-frame' site/characters/sheet-live/index.html
+          if grep -q 'codex-shared-sidebar-frame' site/characters/sheet-live/index.html; then
+            echo "::error::Live sheet has nested sidebar"
+            exit 1
+          fi
+          if grep -q 'codex-shared-sidebar-frame' site/characters/sheet-workshop/index.html; then
+            echo "::error::Sheet workshop has nested sidebar"
+            exit 1
+          fi
+          grep -q 'html.live-embedded .sidebar' site/characters/sheet-live/index.html
+          grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
+          node site-overrides/test-live-sheet-embedded.cjs
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -446,6 +456,24 @@ jobs:
               exit 1
             fi
             echo "PASS public route $route serves new Session Room"
+          done
+          for sheet_route in "/characters/sheet-live/" "/characters/sheet-workshop/"; do
+            found=0
+            for attempt in $(seq 1 18); do
+              sheet=$(curl --fail --silent --show-error --location --max-time 15 \
+                "${base}${sheet_route}?verify=${GITHUB_SHA}-${attempt}" || true)
+              if grep -q '<aside class="sidebar"' <<< "$sheet" &&
+                 ! grep -q 'codex-shared-sidebar-frame' <<< "$sheet"; then
+                found=1
+                break
+              fi
+              sleep 5
+            done
+            if [[ "$found" != "1" ]]; then
+              echo "::error::Broken embedded character sheet at $sheet_route"
+              exit 1
+            fi
+            echo "PASS live embedded sheet route $sheet_route"
           done
           for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
             curl --fail --silent --show-error --location --max-time 15               "${base}${asset}?verify=${GITHUB_SHA}" -o /dev/null
