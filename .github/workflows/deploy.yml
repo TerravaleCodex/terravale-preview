@@ -104,6 +104,25 @@ jobs:
           cp site-overrides/sheet-workshop-v0.9.1.html site/characters/sheet-workshop/index.html
           test -s site/characters/sheet-workshop/index.html
           grep -q 'Character Overview' site/characters/sheet-workshop/index.html
+      - name: Identify compiled character sheet iframe URL
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          hits=0
+          for f in Path('site').rglob('*.js'):
+            try: src=f.read_text(errors='ignore')
+            except Exception: continue
+            for m in re.finditer(r'sheet-live|sheet-workshop|TV_SHEET_READY',src,re.I):
+              excerpt=src[max(0,m.start()-220):m.end()+260]
+              excerpt=re.sub(r'eyJ[A-Za-z0-9_-]{60,}', '<JWT-REDACTED>', excerpt)
+              print('SHEET IFRAME COMPILED', f.relative_to('site'), repr(excerpt))
+              hits+=1
+              if hits>=12:break
+            if hits>=12:break
+          print('SHEET IFRAME references found',hits)
+          PY
       - name: Publish live character-sheet surface
         shell: bash
         run: |
