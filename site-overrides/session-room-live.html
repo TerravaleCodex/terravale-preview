@@ -86,7 +86,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 </select></label><span class="cloud">LIVE</span></div></header>
 <main>
 <section class="head"><div><h1>Session Room</h1><div class="subtitle" id="live-campaign-caption">Loading approved campaign characters…</div></div><div class="head-actions"><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose campaign"></select><span id="live-roster-status" class="meta live-roster-status">Connecting…</span><button id="view-mode" hidden disabled>Debug view</button><button id="live-roster-button" hidden disabled>Roster</button><button id="reset" hidden disabled>Reset</button></div></section>
-<div class="preview" id="room-connection-banner"><div><strong>Live campaign session.</strong> Shared chat, rolls and initiative. DM controls appear in the DM Desk.</div><div id="mode-label">Connecting…</div></div>
+<div class="preview" id="room-connection-banner"><div><strong>Live campaign session.</strong> Shared chat, rolls and initiative. DM controls appear in the DM Desk. <button id="room-reconnect" class="btn small" type="button" hidden>Reconnect</button></div><div id="mode-label">Connecting…</div></div>
 <section class="panel initiative" aria-label="Initiative order">
  <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><div id="initiative-dm-controls" hidden><button id="existing-character-open">Add existing character</button><button id="initiative-manager-open">Manage initiative</button><button id="initiative-clear">Clear queue</button><button id="add-actor">Add combatant</button><button id="next-turn">Advance turn</button></div></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
@@ -186,6 +186,7 @@ window.addEventListener("message",e=>{
  if(e.origin===location.origin && e.data?.type==="terravale:sidebar-ready")syncSidebarFrame();
 });
 window.addEventListener("DOMContentLoaded",()=>{
+ document.getElementById("room-reconnect")?.addEventListener("click",()=>window.TerravaleLiveHooks?.reconnect?.());
  const button=document.getElementById("sidebar-toggle");
  if(button)button.addEventListener("click",()=>{
   sidebarMinimized=!sidebarMinimized;
@@ -1003,8 +1004,8 @@ window.TerravaleRoomPreview=Object.freeze({
   $("live-campaign-caption").textContent="Campaign connection needed";
   $("mode-label").textContent="Connection required";
   $("room-connection-banner").classList.add("needs-connection");
-  $("room-connection-banner").querySelector("div:first-child").innerHTML='<strong>Unable to load your campaign.</strong> '+esc(message)+
-   ' <a href="../" class="btn small">Return to Dashboard</a>';
+  $("room-connection-banner").querySelector("div:first-child").firstChild.textContent="Unable to load your campaign. "+message;
+  $("room-reconnect").hidden=false;
  },
  openExistingPicker(records,context){openExistingPicker(records,context);},
  readState(){return state;},
@@ -1016,6 +1017,7 @@ window.TerravaleRoomPreview=Object.freeze({
   sidePanel:isDm?"dm":"character",activeCollapsed:old.activeCollapsed,layout:old.layout,sheetTab:old.sheetTab};
  $("mode-label").textContent=isDm?"Dungeon Master":"Player";
  $("room-connection-banner").classList.remove("needs-connection");
+ $("room-reconnect").hidden=true;
  $("live-campaign-caption").textContent=campaignName+" · Shared session";
  $("room-campaign-label").textContent=campaignName;
  roomCampaignName=campaignName;
