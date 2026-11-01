@@ -382,7 +382,7 @@ jobs:
             for attempt in $(seq 1 18); do
               html=$(curl --fail --silent --show-error --location --max-time 15                 --header 'Cache-Control: no-cache'                 "${base}${route}?verify=${GITHUB_SHA}-${attempt}" || true)
               if grep -q 'data-room-production="1"' <<< "$html" &&
-                 grep -q 'href="../party/" class="active"' <<< "$html" &&
+                 grep -q 'codex-shared-sidebar-frame' <<< "$html" &&
                  grep -q 'session-room-live.js' <<< "$html" &&
                  ! grep -q 'Campaign chat</h' <<< "$html"; then
                  passed=1
