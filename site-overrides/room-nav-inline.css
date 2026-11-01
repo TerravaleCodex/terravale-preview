@@ -89,6 +89,8 @@ body[data-room-production="1"] .main{min-width:0}
  color:var(--c-ink);font-size:12px;font-weight:500;line-height:1.3;
  white-space:nowrap;cursor:pointer;
 }
+/* Exact native Codex item height; standalone room rules previously gave 44px rows. */
+#room-native-nav .nav-section-links .nav-item{height:35px!important;min-height:35px!important;max-height:35px!important;padding:0 10px!important;}
 #room-native-nav .nav-item:hover,#room-native-nav .nav-item.active{
  color:var(--c-ink);background:color-mix(in srgb,var(--c-accent) 15%,var(--c-paper2));
 }
