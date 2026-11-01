@@ -231,6 +231,15 @@ jobs:
           # Preserve the published compiled bundle in Git, but replace the
           # Session Room route only after V2 prototype tests are successful.
           mkdir -p site/session-room/encounter-library
+          # /party/ is the real Codex sidebar Session Room route.
+          # The previous deployment only patched /session-room/, leaving
+          # the original /party/ interface unchanged.
+          mkdir -p site/party
+          cp site-overrides/session-room-live.html site/party/index.html
+          cp site-overrides/session-room-live.html site/party.html
+          grep -q 'data-room-production="1"' site/party/index.html
+          grep -q 'Session Room</span></a>' site/party/index.html
+          test -s site/party.html
           cp site-overrides/session-room-live.html site/session-room/index.html
           # Next static export may also include /session-room.html. Overwrite
           # that route too so slashless navigation cannot serve old content.
@@ -319,11 +328,12 @@ jobs:
           set -euo pipefail
           base="https://terravalecodex.github.io/terravale-preview"
           # Verify the public site, not only the generated GitHub Actions artifact.
-          for route in "/session-room/" "/session-room" "/session-room.html"; do
+          for route in "/party/" "/party" "/party.html" "/session-room/" "/session-room" "/session-room.html"; do
             passed=0
             for attempt in $(seq 1 18); do
               html=$(curl --fail --silent --show-error --location --max-time 15                 --header 'Cache-Control: no-cache'                 "${base}${route}?verify=${GITHUB_SHA}-${attempt}" || true)
               if grep -q 'data-room-production="1"' <<< "$html" &&
+                 grep -q 'href="../party/" class="active"' <<< "$html" &&
                  grep -q 'session-room-live.js' <<< "$html" &&
                  ! grep -q 'Campaign chat</h' <<< "$html"; then
                  passed=1
