@@ -142,7 +142,7 @@ jobs:
           cp site-overrides/session-room-navigation-bridge.js site/session-room-navigation-bridge.js
           python3 - <<'PY'
           from pathlib import Path
-          script='<script src="/terravale-preview/session-room-navigation-bridge.js" defer></script>'
+          script='<script src="/terravale-preview/session-room-navigation-bridge.js?v=sidebar-native-20261101" defer></script>'
           updated=0
           for p in Path('site').rglob('*.html'):
               content=p.read_text()
@@ -153,6 +153,15 @@ jobs:
           print('Live Session Room navigation added to',updated,'pages')
           PY
           node --check site/session-room-navigation-bridge.js
+          node site-overrides/test-session-sidebar-nav.cjs
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('site/index.html').read_text()
+          assert 'data-tour-nav="/party"' in source
+          assert '/terravale-preview/party/' in source
+          assert 'session-room-navigation-bridge.js?v=sidebar-native-20261101' in source
+          print('PASS original compiled sidebar is wired to native Session Room navigation')
+          PY
       - name: Verify class rule descriptions and equipment-slot protections
         shell: bash
         run: |
