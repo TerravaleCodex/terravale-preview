@@ -344,6 +344,28 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Inspect compiled authentication client initialization
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          needles=['storageKey:"supabase.auth.token"','storageKey:"sb-', 'supabase.auth.token',
+                   '"supabase.auth.token"', 'auth.getUser','createBrowserClient','persistSession:']
+          hits=0
+          for file in Path('site/_next/static').rglob('*.js'):
+              txt=file.read_text(errors='ignore')
+              for needle in needles:
+                  loc=txt.find(needle)
+                  if loc<0:continue
+                  # Only compiled application code and anonymous client options.
+                  fragment=txt[max(0,loc-200):loc+240]
+                  fragment=re.sub(r'(eyJ[A-Za-z0-9_-]{80,})','<redacted>',fragment)
+                  print('AUTH BUILT CLIENT',file.name,needle,repr(fragment))
+                  hits+=1
+                  if hits>=15:break
+              if hits>=15:break
+          PY
       - name: Diagnose dashboard navigation and authentication storage patterns
         shell: bash
         run: |
