@@ -1,0 +1,45 @@
+name: Verify public Session Room sidebar alignment
+
+on:
+  pull_request:
+    paths: ['.github/workflows/check-session-menu-public.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Confirm the public Room serves isolated selected-nav styling
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://terravalecodex.github.io/terravale-preview"
+          for attempt in $(seq 1 35); do
+            page=$(curl --fail --silent --show-error --location --max-time 15 ${base}/party/?nav-check=${GITHUB_SHA}-${attempt} || true)
+            css=$(curl --fail --silent --show-error --location --max-time 15 ${base}/session-room/room-nav-inline.css?nav-check=${GITHUB_SHA}-${attempt} || true)
+            if [[ "$page" == *'room-nav-current'* ]] &&
+               [[ "$page" == *'id="room-native-nav"'* ]] &&
+               [[ "$page" == *'aria-current="page"'* ]] &&
+               [[ "$css" == *'.nav-item.room-nav-current'* ]]; then
+              printf '%s' "$page" > /tmp/terravale-party-public.html
+              python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page=Path('/tmp/terravale-party-public.html').read_text()
+          nav=re.search(r'<aside id="room-native-nav"[^>]*>[\s\S]*?</aside>',page)
+          assert nav,'Native sidebar is absent'
+          selected=re.search(r'<a\b[^>]*data-tour-nav="/party"[^>]*>',nav.group())
+          assert selected and 'room-nav-current' in selected.group() and 'aria-current="page"' in selected.group()
+          assert not re.search(r'class="[^"]*\bactive\b',nav.group()),'Combat active styling still leaks into navigation'
+          print('PASS public Session Room selected item uses isolated class')
+          PY
+              exit 0
+            fi
+            sleep 7
+          done
+          echo "::error::Public Session Room has not published the selected navigation fix"
+          exit 1
