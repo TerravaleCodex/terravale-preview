@@ -1019,7 +1019,8 @@ window.TerravaleRoomPreview=Object.freeze({
  $("room-connection-banner").classList.remove("needs-connection");
  $("room-reconnect").hidden=true;
  $("live-campaign-caption").textContent=campaignName+" · Shared session";
- $("room-campaign-label").textContent=campaignName;
+ const oldLabel=document.getElementById("room-campaign-label");
+ if(oldLabel)oldLabel.textContent=campaignName;
  roomCampaignName=campaignName;
  syncSidebarFrame();
  render();
