@@ -1,0 +1,168 @@
+/* Native, server-inlined Codex sidebar for the production Session Room.
+   No nested document, delayed overlay, or second stylesheet cascade. */
+html[data-codex-theme]{
+ --bg:var(--c-bg);--panel:var(--c-surface);--panel2:var(--c-paper2);
+ --line:var(--c-border);--text:var(--c-ink);--muted:var(--c-sub);--gold:var(--c-accent);
+}
+body[data-room-production="1"]{font:15px/1.6 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body[data-room-production="1"] .app{
+ display:grid!important;grid-template-columns:208px minmax(0,1fr)!important;
+ min-height:100dvh;background:var(--c-bg);
+}
+body[data-room-production="1"] .main{min-width:0}
+#room-native-nav{
+ box-sizing:border-box!important;position:sticky!important;top:0!important;
+ display:flex!important;flex-direction:column!important;gap:0!important;
+ flex:0 0 208px!important;width:208px!important;min-width:0!important;
+ height:100dvh!important;max-height:100dvh!important;
+ overflow:hidden!important;padding:13px 9px 10px!important;
+ border-right:1px solid var(--c-border)!important;
+ background:var(--c-side)!important;color:var(--c-ink)!important;
+ font:15px/1.6 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ z-index:16;
+}
+#room-native-nav :is(a,button){font-family:inherit;color:inherit;text-decoration:none}
+#room-native-nav a:focus-visible,#room-native-nav button:focus-visible{
+ outline:2px solid var(--c-accent);outline-offset:2px;
+}
+#room-native-nav .brand{
+ flex:0 0 auto;display:flex;align-items:center;gap:9px;
+ padding:10px 8px 16px!important;margin:0!important;
+ border:0!important;background:transparent!important;border-radius:0;
+}
+#room-native-nav .brand-mark{
+ display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;
+ color:var(--c-accent);background:var(--c-paper2);
+ border:1px solid var(--c-border);border-radius:9px;font-size:20px;
+}
+#room-native-nav .brand-words{display:flex;flex-direction:column;min-width:0}
+#room-native-nav .brand strong{
+ font:600 13px/1.25 Georgia,"Times New Roman",serif;letter-spacing:.08em;
+ color:var(--c-ink);white-space:nowrap;
+}
+#room-native-nav .brand small{
+ display:block;font-size:8px;line-height:1.5;letter-spacing:.08em;color:var(--c-sub);
+}
+#room-native-nav .sidebar-search{
+ flex:0 0 auto;display:flex;align-items:center;gap:9px;
+ margin:0 3px 12px;padding:8px 10px;min-height:37px;
+ border:1px solid var(--c-border);border-radius:8px;
+ background:color-mix(in srgb,var(--c-paper2) 42%,transparent);
+ color:var(--c-ink);font-size:12px;
+}
+#room-native-nav .sidebar-search:hover,#room-native-nav .sidebar-search.active{
+ border-color:var(--c-accent);background:color-mix(in srgb,var(--c-accent) 11%,var(--c-surface));
+}
+#room-native-nav .nav-symbol{
+ color:var(--c-accent);font:15px/1.2 Georgia,serif;
+ flex:0 0 19px;min-width:19px;text-align:center;
+}
+#room-native-nav .sidebar-search .nav-symbol{font-size:17px}
+#room-native-nav .nav-text{
+ flex:1;min-width:0;width:auto;white-space:nowrap;overflow:hidden;
+ text-overflow:ellipsis;font:500 12px/1.35 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+#room-native-nav .sidebar-search-hint{font-size:12px;color:var(--c-sub)}
+#room-native-nav .sidebar-nav{
+ flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;
+ gap:10px;overflow-y:auto;overflow-x:hidden;
+ scrollbar-width:thin;scrollbar-color:var(--c-border) transparent;
+ overscroll-behavior:contain;padding:0 2px 12px;margin:0;
+}
+#room-native-nav .sidebar-nav-section{min-width:0;display:block}
+#room-native-nav .nav-section-toggle{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ width:100%;min-height:31px;padding:6px 9px;margin:0;
+ color:var(--c-sub);background:transparent;border:0;border-radius:6px;
+ font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:left;
+ cursor:pointer;
+}
+#room-native-nav .nav-section-toggle:hover{
+ background:color-mix(in srgb,var(--c-accent) 9%,transparent);color:var(--c-ink);
+}
+#room-native-nav .nav-section-chevron{font-size:16px;font-weight:400;line-height:1;letter-spacing:0}
+#room-native-nav .nav-section-links{padding-top:3px}
+#room-native-nav .nav-section-links[hidden]{display:none!important}
+#room-native-nav .nav-item{
+ display:flex;align-items:center;gap:9px;min-width:0;min-height:35px;
+ margin:0 0 2px;padding:8px 10px;border:0;border-radius:8px;
+ color:var(--c-ink);font-size:12px;font-weight:500;line-height:1.3;
+ white-space:nowrap;cursor:pointer;
+}
+#room-native-nav .nav-item:hover,#room-native-nav .nav-item.active{
+ color:var(--c-ink);background:color-mix(in srgb,var(--c-accent) 15%,var(--c-paper2));
+}
+#room-native-nav .nav-item.active{
+ box-shadow:inset 2px 0 var(--c-accent);
+}
+#room-native-nav .sidebar-foot{
+ display:block!important;flex:0 0 auto;margin-top:auto;
+ padding:10px 2px 0;border-top:1px solid var(--c-border);
+}
+#room-native-nav .sidebar-help{
+ display:flex;align-items:center;gap:10px;width:100%;min-height:38px;
+ padding:8px 10px;border:1px solid transparent;border-radius:8px;
+ color:var(--c-sub);background:transparent;cursor:pointer;font-size:12px;text-align:left;
+}
+#room-native-nav .sidebar-help:hover{
+ background:color-mix(in srgb,var(--c-accent) 9%,transparent);color:var(--c-ink);
+}
+#room-native-nav .sidebar-help-icon{
+ display:grid;place-items:center;flex:0 0 20px;width:20px;height:20px;
+ border:1px solid var(--c-border);border-radius:50%;font-size:12px;font-weight:700;
+ color:var(--c-accent);
+}
+/* Match the real Codex top bar rather than Session V2 workshop chrome. */
+body[data-room-production="1"] .topbar{
+ position:sticky!important;top:0!important;z-index:50!important;
+ min-height:62px!important;height:62px!important;
+ padding:0 clamp(14px,1.55vw,26px)!important;
+ border-bottom:1px solid var(--c-border)!important;
+ background:var(--c-surface)!important;color:var(--c-ink)!important;
+ box-shadow:0 7px 24px #090f19a8;backdrop-filter:blur(14px);
+}
+body[data-room-production="1"] .topbar .breadcrumbs{
+ display:flex;align-items:center;gap:8px;color:var(--c-sub);font-size:12px;
+}
+body[data-room-production="1"] .topbar .breadcrumbs strong{color:var(--c-ink)}
+body[data-room-production="1"] .topbar .codex-theme-control{display:none!important}
+body[data-room-production="1"] .topbar #sidebar-toggle{
+ min-height:32px;padding:7px 10px;font-size:14px;line-height:1;
+ background:transparent;border:1px solid var(--c-border);border-radius:8px;
+}
+/* Avoid the old 132px/56px workshop breakpoints: the nav rail is deliberate. */
+@media(min-width:761px){
+ body[data-room-production="1"].sidebar-collapsed .app{grid-template-columns:58px minmax(0,1fr)!important}
+ body[data-room-production="1"].sidebar-collapsed #room-native-nav{
+  width:58px!important;flex-basis:58px!important;padding:13px 5px 10px!important;
+ }
+ body.sidebar-collapsed #room-native-nav .brand{justify-content:center;padding:10px 0 18px!important}
+ body.sidebar-collapsed #room-native-nav .brand-words,
+ body.sidebar-collapsed #room-native-nav .nav-section-toggle,
+ body.sidebar-collapsed #room-native-nav .nav-text,
+ body.sidebar-collapsed #room-native-nav .sidebar-search-hint{display:none!important}
+ body.sidebar-collapsed #room-native-nav .nav-section-links{display:block!important}
+ body.sidebar-collapsed #room-native-nav .sidebar-nav{gap:6px;padding-inline:0}
+ body.sidebar-collapsed #room-native-nav .sidebar-nav-section{
+  padding-top:6px;border-top:1px solid var(--c-border);
+ }
+ body.sidebar-collapsed #room-native-nav .sidebar-nav-section:first-child{border-top:0}
+ body.sidebar-collapsed #room-native-nav .nav-item,
+ body.sidebar-collapsed #room-native-nav .sidebar-search,
+ body.sidebar-collapsed #room-native-nav .sidebar-help{justify-content:center;gap:0;padding:9px 0}
+}
+@media(max-width:760px){
+ body[data-room-production="1"] .app{display:block!important}
+ body[data-room-production="1"] #room-native-nav{
+  position:fixed!important;left:0!important;top:0!important;
+  width:255px!important;max-width:85vw!important;z-index:80!important;
+  transform:translateX(-110%);visibility:hidden;
+  box-shadow:12px 0 24px #0007;
+ }
+ body[data-room-production="1"].room-nav-open #room-native-nav{
+  transform:none;visibility:visible;
+ }
+ body[data-room-production="1"] .topbar{min-height:58px!important;height:58px!important;padding:0 12px!important}
+ body[data-room-production="1"] main{padding:15px 12px}
+}
+@media(prefers-reduced-motion:reduce){#room-native-nav{scroll-behavior:auto}}
