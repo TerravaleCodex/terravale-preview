@@ -171,8 +171,12 @@ function layoutSkillGraph(graph,filter){
   const x1=Math.round(a.x+NODE_WIDTH/2+fromPort),x2=Math.round(b.x+NODE_WIDTH/2+toPort);
   const y1=a.y+NODE_HEIGHT,y2=b.y,gap=y2-y1;
   let d;
-  // Long jumps go around intervening rows, rather than through node cards.
-  if(a.group===b.group&&gap>ROW_STEP+30){
+  // Inter-branch crosslinks (notably Blood Debt) use a dedicated rail
+  // above the branch cards; a direct curve would cut through other nodes.
+  if(a.group!==b.group&&a.group!=='Foundation'){
+   const railY=Math.min(a.y,b.y)-54-fromEdges.findIndex(v=>v.to===e.to)*8;
+   d=roundedRoute([{x:x1,y:a.y},{x:x1,y:railY},{x:x2,y:railY},{x:x2,y:b.y}]);
+  }else if(a.group===b.group&&gap>ROW_STEP+30){
    const lane=bounds.get(a.group);
    const rail=Math.round((lane?.right||Math.max(a.x,b.x)+NODE_WIDTH+SIDE_PAD)-22);
    const channel=rail+fromEdges.findIndex(v=>v.to===e.to)*7;
