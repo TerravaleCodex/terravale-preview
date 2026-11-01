@@ -52,6 +52,20 @@ jobs:
           (out / ".nojekyll").touch()
           print("Prepared", len(names), "static files for GitHub Pages")
           PY
+      - name: Inspect static site navigation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['index.html','party/index.html','party.html']:
+              p=Path('site')/name
+              if p.exists():
+                  print(name,'size',p.stat().st_size)
+                  s=p.read_text(errors='replace')
+                  for word in ['Session Room','/party','/session-room']:
+                      i=s.find(word)
+                      print(word,i,repr(s[max(0,i-100):i+150]) if i>=0 else '')
+          PY
       - name: Verify compiled Codex session project
         shell: bash
         run: |
