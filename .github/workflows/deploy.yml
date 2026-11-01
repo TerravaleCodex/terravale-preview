@@ -424,6 +424,14 @@ jobs:
           Path('/tmp/terravale-bloodforger-v2.js').write_text(blocks[0])
           PY
           node --check /tmp/terravale-bloodforger-v2.js
+      - name: Apply live Bloodforger V2 connector routing without altering character state
+        shell: bash
+        run: |
+          python3 site-overrides/patch-bloodforger-v2.py
+          node --check site/bloodforger-v2-live.js
+          node site-overrides/test-bloodforger-v2-live.cjs
+          grep -q "bloodforger-v2-live.js" site/index.html
+          test -s site/bloodforger-v2-live.css
       - uses: actions/configure-pages@v5
         with:
           enablement: true

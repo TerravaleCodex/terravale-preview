@@ -1,0 +1,44 @@
+name: Verify Bloodforger V2 live integration
+
+on:
+  pull_request:
+    paths:
+      - 'site-overrides/bloodforger-v2-live-adapter.js'
+      - 'site-overrides/patch-bloodforger-v2.py'
+      - 'site-overrides/test-bloodforger-v2-live.cjs'
+      - 'site-overrides/bloodforger-v2-demo.html'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/bloodforger-v2-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct current public release without deploying
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, io, pathlib, zipfile
+          parts=sorted(pathlib.Path('.preview-bundle').glob('part-*.b64'))
+          assert len(parts)==34,'Current release parts missing'
+          source=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
+          assert hashlib.sha256(source).hexdigest()=='5efb405ddc88c080a95a246adce85de1750bd87b4cbb570d15dd753b93b8edf2','Published bundle checksum mismatch'
+          with zipfile.ZipFile(io.BytesIO(source)) as z:
+            assert len(z.namelist())>570,'Expected published build'
+            for item in z.infolist():
+              p=pathlib.PurePosixPath(item.filename)
+              assert not p.is_absolute() and '..' not in p.parts,'Unsafe bundle path'
+            z.extractall('site')
+          PY
+      - name: Install V2 geometry into isolated test copy
+        run: python3 site-overrides/patch-bloodforger-v2.py
+      - name: Check JavaScript syntax and route integration
+        run: |
+          node --check site/bloodforger-v2-live.js
+          node site-overrides/test-bloodforger-v2-live.cjs
