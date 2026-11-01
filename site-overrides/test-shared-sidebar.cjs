@@ -61,8 +61,14 @@ const server=http.createServer((req,res)=>{
  try{
   const addr=server.address();
   const url="http://127.0.0.1:"+addr.port+prefix+"party/?test-sidebar=1";
-  const result=cp.execFileSync(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--virtual-time-budget=5000","--window-size=1650,970","--dump-dom",url],
-   {encoding:"utf8",maxBuffer:8*1024*1024,timeout:40000,stdio:["ignore","pipe","ignore"]});
+  const result=await new Promise((resolve,reject)=>{
+   const p=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--virtual-time-budget=5000","--window-size=1650,970","--dump-dom",url],
+    {stdio:["ignore","pipe","ignore"]});
+   let out="";const kill=setTimeout(()=>{p.kill();reject(Error("Chromium sidebar test timed out"))},35000);
+   p.stdout.on("data",chunk=>{out+=chunk.toString();if(out.length>8*1024*1024)p.kill()});
+   p.on("error",err=>{clearTimeout(kill);reject(err)});
+   p.on("close",code=>{clearTimeout(kill);code===0?resolve(out):reject(Error("Chromium exited "+code))});
+  });
   const m=result.match(/data-shared-sidebar-test="([^"]+)"/);
   if(!m)throw Error("Browser returned no sidebar measurement");
   const score=JSON.parse(decodeURIComponent(m[1]));
