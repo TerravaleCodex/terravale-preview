@@ -20,6 +20,15 @@ assert(!homepage.includes('navigation-refresh.css?v=20261101-nav1'),'Old overlay
 assert(shared.includes('terravale.ui.sidebar.groups.v1'),'Static shared nav missing accordion logic');
 assert(shared.includes('native-20261101')===false,'Standalone sidebar should not iframe itself');
 assert(party.includes('id="room-native-nav"'),'Session Room must contain the same source-built sidebar HTML directly');
+const roomSidebar=party.match(/<aside id="room-native-nav"[^>]*>[\\s\\S]*?<\\/aside>/)?.[0]||"";
+assert(roomSidebar,'The native room sidebar must be fully present');
+const selectedRoom=roomSidebar.match(/<a\\b[^>]*data-tour-nav="\\/party"[^>]*>/)?.[0]||"";
+assert(selectedRoom.includes("room-nav-current")&&selectedRoom.includes('aria-current="page"'),
+  'Session Room selection must use an isolated class and aria-current');
+assert(!/class="[^"]*\\bactive\\b/.test(roomSidebar),
+  'Global .active from the combat panel must never appear on sidebar links');
+assert(!roomSidebar.match(/data-tour-nav="\\/"[^>]*aria-current="page"/),
+  'Dashboard must not stay active while the Room is selected');
 assert(!party.includes('codex-shared-sidebar-frame'),'Production room must not download a second navigation document');
 assert(party.includes('room-nav-inline.css')&&party.includes('room-nav-inline.js'),'Native room styles and actions must load');
 assert(party.includes('id="codex-theme-before-paint"'),'Saved theme must be chosen before first CSS paint');
