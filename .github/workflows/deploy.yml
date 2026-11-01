@@ -343,6 +343,14 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Use the main Codex sidebar on all standalone pages
+        shell: bash
+        run: |
+          python3 site-overrides/unify-site-sidebar.py
+          node site-overrides/test-shared-sidebar.cjs
+          test -s site/shared-sidebar/index.html
+          grep -q 'codex-shared-sidebar-frame' site/party/index.html
+          grep -q 'codex-shared-sidebar-frame' site/characters/sheet-live/index.html
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -366,6 +374,9 @@ jobs:
           set -euo pipefail
           base="https://terravalecodex.github.io/terravale-preview"
           # Verify the public site, not only the generated GitHub Actions artifact.
+                    # The common sidebar is generated from the homepage's own navigation.
+          curl --fail --silent --show-error --location --max-time 15              "${base}/shared-sidebar/?verify=${GITHUB_SHA}" -o /tmp/terravale-shared-sidebar.html
+          grep -q 'data-tour-nav="/party"' /tmp/terravale-shared-sidebar.html
           for route in "/party/" "/party" "/party.html" "/session-room/" "/session-room" "/session-room.html"; do
             passed=0
             for attempt in $(seq 1 18); do
