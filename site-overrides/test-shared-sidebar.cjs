@@ -78,11 +78,23 @@ const script='<script>('+function(){
   r.theme=document.documentElement.dataset.codexTheme;
   r.bodyBg=getComputedStyle(document.body).backgroundColor;
   r.sidebarBg=nav?getComputedStyle(nav).backgroundColor:"";
+  // The dashboard's selected item is black in Absolute Zero. The Room's
+  // active link must not turn into the solid grey block seen in the screenshot.
+  document.documentElement.dataset.codexTheme="absolute-zero";
+  const roomActiveStyle=route?getComputedStyle(route):null;
+  const roomNavStyle=nav?getComputedStyle(nav):null;
+  r.zeroActiveBackground=roomActiveStyle?.backgroundColor||"";
+  r.zeroSidebarBackground=roomNavStyle?.backgroundColor||"";
+  r.zeroActiveBorder=roomActiveStyle?.boxShadow||"";
+  r.zeroActiveMatchesSidebar=r.zeroActiveBackground==="rgb(0, 0, 0)"&&
+   r.zeroActiveBackground===r.zeroSidebarBackground&&
+   r.zeroActiveBorder!=="none";
   if(theme){theme.value=current||"dark";theme.dispatchEvent(new Event("change",{bubbles:true}))}
   r.pass=r.inline&&r.navWidth===208&&r.navHeight>400&&r.topbarHeight===62&&
    r.navLabelFont>=11.5&&r.navLabelFont<=12.5&&r.linkHeight>=31&&r.linkHeight<=43&&
    r.sections>=4&&r.links>=10&&r.active&&!r.oldDashboardActive&&
-   r.noCombatActiveLinks&&r.navAlignment&&r.help&&!r.campaignPicker&&
+   r.noCombatActiveLinks&&r.navAlignment&&r.zeroActiveMatchesSidebar&&
+   r.help&&!r.campaignPicker&&
    r.bridge&&r.dmDesk&&r.campaignName&&r.dmActions&&
    r.theme==="shady"&&r.bodyBg==="rgb(5, 5, 6)"&&r.sidebarBg==="rgb(9, 9, 11)";
  }catch(e){r.pass=false;r.error=String(e)}

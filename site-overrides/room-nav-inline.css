@@ -91,11 +91,27 @@ body[data-room-production="1"] .main{min-width:0}
 }
 /* Exact native Codex item height; standalone room rules previously gave 44px rows. */
 #room-native-nav .nav-section-links .nav-item{height:35px!important;min-height:35px!important;max-height:35px!important;padding:0 10px!important;}
-#room-native-nav .nav-item:hover,#room-native-nav .nav-item.room-nav-current{
- color:var(--c-ink);background:color-mix(in srgb,var(--c-accent) 15%,var(--c-paper2));
+/* Match the dashboard's restrained selected-link treatment.
+   The room's previous 15% accent + paper fill created a solid grey block
+   on Absolute Zero while the actual Dashboard link remained nearly black. */
+#room-native-nav .nav-item:hover{
+ color:var(--c-ink);
+ background:color-mix(in srgb,var(--c-accent) 8%,var(--c-side));
 }
-#room-native-nav .nav-item.room-nav-current{
- box-shadow:inset 2px 0 var(--c-accent);
+#room-native-nav .nav-item.room-nav-current,
+#room-native-nav .nav-item.room-nav-current:hover{
+ color:var(--c-ink);
+ background:color-mix(in srgb,var(--c-side) 98%,var(--c-accent));
+ box-shadow:inset 2px 0 var(--c-accent),
+            inset 0 1px 0 color-mix(in srgb,var(--c-accent) 14%,transparent);
+}
+/* Absolute Zero has a genuinely black active link on the main Codex.
+   Use that same surface, not the grey selected fill. */
+html[data-codex-theme="absolute-zero"] #room-native-nav .nav-item.room-nav-current,
+html[data-codex-theme="absolute-zero"] #room-native-nav .nav-item.room-nav-current:hover{
+ background:var(--c-side);
+ box-shadow:inset 2px 0 color-mix(in srgb,var(--c-accent) 68%,var(--c-side)),
+            inset 0 1px 0 color-mix(in srgb,var(--c-accent) 15%,transparent);
 }
 #room-native-nav .sidebar-foot{
  display:block!important;flex:0 0 auto;margin-top:auto;
