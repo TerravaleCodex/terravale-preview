@@ -258,6 +258,23 @@ def patch(file, page, native_sidebar):
     if native:
         replacement = native_sidebar.replace('<aside class="sidebar"', '<aside id="room-native-nav" class="sidebar"', 1)
         assert 'id="room-native-nav"' in replacement, "Source nav must contain one real sidebar"
+        # The source sidebar was extracted from the Dashboard (active="/").
+        # Mark the Room route in HTML, BEFORE scripts, to prevent an active-link flash.
+        def select_active(match):
+            tag=match.group(0)
+            route=re.search(r'data-tour-nav="([^"]+)"',tag).group(1)
+            class_match=re.search(r'class="([^"]+)"',tag)
+            if class_match:
+                names=[x for x in class_match.group(1).split() if x!='active']
+                if route=='/party': names.append('active')
+                tag=tag.replace(class_match.group(0),'class="'+' '.join(names)+'"',1)
+            if route=='/party':
+                tag=tag[:-1]+' aria-current="page">'
+            else:
+                tag=tag.replace(' aria-current="page"','')
+            return tag
+        replacement=re.sub(r'<a\\b[^>]*data-tour-nav="[^"]+"[^>]*>',select_active,replacement)
+
     else:
         replacement = (f'<iframe class="codex-shared-sidebar-frame" '
             f'title="Terravale Codex navigation" '
