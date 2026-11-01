@@ -30,8 +30,13 @@ const server=http.createServer((req,res)=>{
  if(name.endsWith("/"))name+="index.html";
  const file=path.resolve(root,name);
  if(!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return}
- try{res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"});res.end(fs.readFileSync(file))}
- catch{res.writeHead(404);res.end()}
+ try{
+  let content=fs.readFileSync(file);
+  if(name==="shared-sidebar/index.html"){
+   content=Buffer.from(content.toString().replace("</head>",`<script>window.addEventListener("error",function(e){document.documentElement.dataset.navError=e.message||"unknown"});window.addEventListener("load",function(){setTimeout(function(){document.documentElement.dataset.navDebug=JSON.stringify({aside:!!document.querySelector("#codex-sidebar-root>aside"),menu:!!document.querySelector(".terr-nav"),scripts:document.querySelectorAll("script").length})},950)})</script></head>`));
+  }
+  res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"});res.end(content);
+ }catch{res.writeHead(404);res.end()}
 });
 (async()=>{
  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
@@ -45,7 +50,10 @@ const server=http.createServer((req,res)=>{
    p.on("close",code=>{clearTimeout(timeout);code===0?resolve(out):reject(new Error("Browser exited "+code))});
   });
   for(const marker of ['class="terr-nav"','data-section="workspace"','data-section="characters"','data-section="library"','data-section="settings"','class="terr-nav-footer"','Help &amp; Tutorial','terr-nav-search']){
-   if(!body.includes(marker))throw Error("Browser did not render "+marker);
+   if(!body.includes(marker)){
+    console.error("NAVIGATION BROWSER DIAGNOSTICS",JSON.stringify({marker,scriptLinked:body.includes("navigation-refresh.js"),debug:(body.match(/data-nav-debug="([^"]+)/)||[])[1],error:(body.match(/data-nav-error="([^"]+)/)||[])[1],navStrings:(body.match(/terr-nav/g)||[]).length,excerpt:body.slice(-800)}));
+    throw Error("Browser did not render "+marker);
+   }
   }
   if(!body.includes('data-sidebar-current="true"'))throw Error("Session Room selection was lost");
   console.log("PASS: Chromium rendered shared sidebar groups, search, footer help and active Session Room route");
