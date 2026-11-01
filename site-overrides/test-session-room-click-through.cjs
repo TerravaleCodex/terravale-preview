@@ -42,7 +42,7 @@ const server=http.createServer((req,res)=>{
   });
   const output={roomLoaded:html.includes('data-room-production="1"'),nativeSidebar:html.includes('id="room-native-nav"'),oldShell:html.includes('class="app-frame')};
   output.pass=output.roomLoaded&&output.nativeSidebar&&!output.oldShell;
-  console.log("Dashboard → Session Room click-through:",JSON.stringify(output));
+  console.log("Dashboard → Session Room click-through:",JSON.stringify({...output,bytes:html.length,head:html.slice(0,1800),tail:html.slice(-550),injected:html.includes('room-click-test')}));
   if(!output.pass)throw Error("The sidebar click still opens the obsolete Next session room");
  }finally{server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
