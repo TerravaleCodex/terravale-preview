@@ -72,7 +72,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
   <div class="campaign"><div class="micro">Campaign</div><div id="room-campaign-label" class="tiny" aria-live="polite">Connecting to campaign…</div><p class="tiny">Cloud · connected campaign</p></div>
 </aside>
 <div class="main">
-<header class="topbar"><div class="breadcrumbs">▦ &nbsp; Terravale &nbsp; / &nbsp; Session Room &nbsp;</div><div class="topright"><label class="codex-theme-control" for="codex-theme-select">Theme <select id="codex-theme-select" aria-label="Website and character-sheet theme">
+<header class="topbar"><div class="breadcrumbs"><button class="btn small" id="sidebar-toggle" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse menu">☰</button> &nbsp; Terravale &nbsp; / &nbsp; <strong>Session Room</strong></div><div class="topright"><label class="codex-theme-control" for="codex-theme-select">Theme <select id="codex-theme-select" aria-label="Website and character-sheet theme">
 <option value="dark">Old Faithful</option>
 <option value="night-sky">Stargazer's Delusion</option>
 <option value="shotxo">Guildie</option>
@@ -86,7 +86,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 </select></label><span class="cloud">LIVE</span></div></header>
 <main>
 <section class="head"><div><h1>Session Room</h1><div class="subtitle" id="live-campaign-caption">Loading approved campaign characters…</div></div><div class="head-actions"><select id="live-campaign-select" class="field live-campaign-select" aria-label="Choose campaign"></select><span id="live-roster-status" class="meta live-roster-status">Connecting…</span><button id="view-mode" hidden disabled>Debug view</button><button id="live-roster-button" hidden disabled>Roster</button><button id="reset" hidden disabled>Reset</button></div></section>
-<div class="preview"><div><strong>Live campaign session.</strong> Shared chat, rolls and initiative. Encounter management is in the DM Desk.</div><div id="mode-label">Authenticating…</div></div>
+<div class="preview" id="room-connection-banner"><div><strong>Live campaign session.</strong> Shared chat, rolls and initiative. DM controls appear in the DM Desk.</div><div id="mode-label">Connecting…</div></div>
 <section class="panel initiative" aria-label="Initiative order">
  <div class="section-top"><div><h2>Initiative Queue</h2><span id="round-info">Round 1 · Current turn at front</span></div><div class="controls"><button class="btn small" id="initiative-roll-mine" type="button" hidden>⚄ Roll my initiative</button><div id="initiative-dm-controls" hidden><button id="existing-character-open">Add existing character</button><button id="initiative-manager-open">Manage initiative</button><button id="initiative-clear">Clear queue</button><button id="add-actor">Add combatant</button><button id="next-turn">Advance turn</button></div></div></div>
  <div class="track" id="queue" aria-live="polite"></div>
@@ -173,6 +173,30 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
  * It never modifies live character/campaign records. */
 const THEME_KEY="terravale.unified.theme.v2",SITE_THEME_KEY="terravale.cosmetic.site.v1";
 const themes=new Set(["dark","night-sky","shotxo","shady","absolute-zero","sanguine","verdant","dragonforge","astral","null-meridian"]);
+let roomCampaignName="";
+let sidebarMinimized=false;
+function syncSidebarFrame(){
+ const frame=document.querySelector(".codex-shared-sidebar-frame");
+ if(!frame?.contentWindow)return;
+ frame.contentWindow.postMessage({type:"terravale:sidebar-context",
+  theme:document.documentElement.dataset.appTheme||"dark",
+  campaign:roomCampaignName,collapsed:sidebarMinimized},location.origin);
+}
+window.addEventListener("message",e=>{
+ if(e.origin===location.origin && e.data?.type==="terravale:sidebar-ready")syncSidebarFrame();
+});
+window.addEventListener("DOMContentLoaded",()=>{
+ const button=document.getElementById("sidebar-toggle");
+ if(button)button.addEventListener("click",()=>{
+  sidebarMinimized=!sidebarMinimized;
+  document.body.classList.toggle("sidebar-collapsed",sidebarMinimized);
+  button.title=sidebarMinimized?"Expand menu":"Collapse menu";
+  button.setAttribute("aria-expanded",String(!sidebarMinimized));
+  syncSidebarFrame();
+ });
+ document.querySelector(".codex-shared-sidebar-frame")?.addEventListener("load",syncSidebarFrame);
+ syncSidebarFrame();
+});
 function setCodexTheme(theme,persist=false){
  const id=themes.has(theme)?theme:"dark";
  document.documentElement.dataset.codexTheme=id;
@@ -180,6 +204,7 @@ function setCodexTheme(theme,persist=false){
  const menu=document.getElementById("codex-theme-select");
  if(menu&&menu.value!==id)menu.value=id;
  if(persist){try{localStorage.setItem(THEME_KEY,id);localStorage.setItem(SITE_THEME_KEY,id);}catch(e){}}
+ syncSidebarFrame();
 }
 function initialCodexTheme(){
  try{
@@ -192,7 +217,7 @@ document.getElementById("codex-theme-select").addEventListener("change",e=>setCo
 window.addEventListener("storage",e=>{
  if(e.key===THEME_KEY||e.key===SITE_THEME_KEY)setCodexTheme(initialCodexTheme());
 });
-const key="terravale-room-v2-workshop-v3";
+const key="terravale-session-live-v1";
 const definitions={
 "Blinded":"Cannot see. Automatically fails checks requiring sight. Attacks against the creature have advantage; its attacks have disadvantage.",
 "Charmed":"Cannot attack the charmer or target them with harmful abilities. The charmer has advantage on social interaction checks with it.",
@@ -446,7 +471,7 @@ $("my-character-content").innerHTML='<div class="desk-body"><div class="desk-int
 function myCharacterRender(){
 let showDesk=state.dm&&state.sidePanel==="dm";
 $("right-heading").textContent=showDesk?"DM Desk":"My Character";
-$("right-subheading").textContent=showDesk?"Encounter controls · preview":"Independent of initiative order";
+$("right-subheading").textContent=showDesk?"Live campaign · encounter controls":"Independent of initiative order";
 $("panel-switch").innerHTML=state.dm?'<button class="btn small '+(!showDesk?'is-on':'')+'" data-action="right-panel" data-panel="character" aria-pressed="'+!showDesk+'">Character</button><button class="btn small '+(showDesk?'is-on':'')+'" data-action="right-panel" data-panel="dm" aria-pressed="'+showDesk+'">DM Desk</button>':'';
 if(showDesk){dmDeskRender();return;}
 let players=state.actors.filter(a=>a.type==="Player");
@@ -504,7 +529,7 @@ let skillRows=abilities.flatMap(x=>x.skills.map(name=>[name,bonusFor(a,"skill",n
 state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true};
 $("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
 }
-function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"DM preview":"Player visibility preview";}
+function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"Dungeon Master":"Player";}
 
 /* Initiative management operates exclusively on V2's local state.
  * state.actors is the reusable roster; state.queue is only encounter order.
@@ -974,6 +999,13 @@ if(!state.exampleFullAdded){
 }
 /* Authorized live roster data remains transient and never reaches localStorage. */
 window.TerravaleRoomPreview=Object.freeze({
+ showConnectionFailure(message){
+  $("live-campaign-caption").textContent="Campaign connection needed";
+  $("mode-label").textContent="Connection required";
+  $("room-connection-banner").classList.add("needs-connection");
+  $("room-connection-banner").querySelector("div:first-child").innerHTML='<strong>Unable to load your campaign.</strong> '+esc(message)+
+   ' <a href="../" class="btn small">Return to Dashboard</a>';
+ },
  openExistingPicker(records,context){openExistingPicker(records,context);},
  readState(){return state;},
  getCurrent(){return current();},
@@ -982,9 +1014,12 @@ window.TerravaleRoomPreview=Object.freeze({
  const old=state;
  state={...base(),actors:Array.isArray(actors)?actors:[],dm:!!isDm,userId:userId||"",own:ownId||"",selected:ownId||"",
   sidePanel:isDm?"dm":"character",activeCollapsed:old.activeCollapsed,layout:old.layout,sheetTab:old.sheetTab};
- $("mode-label").textContent=isDm?"DM":"Player";
+ $("mode-label").textContent=isDm?"Dungeon Master":"Player";
+ $("room-connection-banner").classList.remove("needs-connection");
  $("live-campaign-caption").textContent=campaignName+" · Shared session";
  $("room-campaign-label").textContent=campaignName;
+ roomCampaignName=campaignName;
+ syncSidebarFrame();
  render();
  },
  applyServer(payload){
