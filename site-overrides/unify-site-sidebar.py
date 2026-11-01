@@ -69,6 +69,46 @@ body{background:#151e29;color:#f1e9dd}
   height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;
 }
 #codex-sidebar-root a{cursor:pointer}
+#codex-sidebar-root{
+  --codex-nav-label-size:11px;
+}
+#codex-sidebar-root>aside{
+  font-size:11px!important;line-height:1.35!important;
+  padding:0!important;
+}
+#codex-sidebar-root .nav-item{
+  display:flex!important;align-items:center!important;gap:8px!important;
+  padding:8px 8px!important;min-height:27px!important;
+  font-size:11px!important;font-weight:600!important;line-height:1.22!important;
+  letter-spacing:0!important;text-decoration:none!important;
+  width:calc(100% - 8px)!important;margin:2px 4px!important;
+  white-space:nowrap!important;box-sizing:border-box!important;
+}
+#codex-sidebar-root .nav-item .nav-text{
+  display:inline!important;font-size:11px!important;
+  font-weight:inherit!important;line-height:1.22!important;
+  white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;min-width:0!important;
+}
+#codex-sidebar-root .nav-item .nav-symbol{
+  font-size:12px!important;line-height:1!important;
+  flex:0 0 15px!important;min-width:15px!important;
+}
+#codex-sidebar-root .sidebar-label{font-size:9px!important;letter-spacing:1px!important;padding:9px 10px!important}
+#codex-sidebar-root>aside nav{padding:0!important;margin:0!important}
+#codex-sidebar-root select{font-size:10px!important;max-width:calc(100% - 8px)!important}
+#codex-sidebar-root [data-session-campaign-name]{
+  font-size:10px!important;
+}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-text,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-label,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .logo small,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root select,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-campaign,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root [data-session-campaign-name]{display:none!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-item{justify-content:center!important;padding:10px 0!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-item .nav-symbol{flex:0 0 22px!important;font-size:16px!important}
+
 #codex-sidebar-root [data-sidebar-current="true"]{
   background:rgba(215,181,121,.10);outline:1px solid rgba(215,181,121,.32);
 }
@@ -101,6 +141,26 @@ body{background:#151e29;color:#f1e9dd}
   }catch{}
  };
  theme();window.addEventListener('storage',theme);
+ window.addEventListener('message',function(event){
+  if(event.origin!==location.origin || event.source!==window.parent)return;
+  const payload=event.data;
+  if(!payload||payload.type!=='terravale:sidebar-context')return;
+  if(typeof payload.theme==='string' && /^[a-z0-9-]{2,35}$/.test(payload.theme)){
+    document.documentElement.dataset.appTheme=payload.theme;
+    document.documentElement.dataset.codexTheme=payload.theme;
+  }
+  document.documentElement.dataset.sidebarCollapsed=payload.collapsed?'true':'false';
+  if(typeof payload.campaign==='string' && payload.campaign.trim()){
+    for(const sel of document.querySelectorAll('#codex-sidebar-root select')){
+      const found=Array.from(sel.options).find(o=>o.textContent===payload.campaign);
+      if(found)sel.value=found.value;
+      else{sel.replaceChildren(new Option(payload.campaign,payload.campaign));}
+      sel.title='Campaign: '+payload.campaign;
+      sel.setAttribute('aria-label','Campaign: '+payload.campaign);
+    }
+  }
+ });
+ window.parent.postMessage({type:'terravale:sidebar-ready'},location.origin);
  // Navigate to Campaigns for changing the active campaign. Other links
  // are native top-level links; no inactive Next.js controls are copied.
  for(const sel of document.querySelectorAll('#codex-sidebar-root select')){
@@ -120,9 +180,11 @@ FRAME_STYLE = """
  align-self:start;position:sticky;top:0;
  border:0;background:#151e29;z-index:15;
 }
-.app{grid-template-columns:176px minmax(0,1fr)!important}
-@media(max-width:1270px){.app{grid-template-columns:145px minmax(0,1fr)!important}}
-@media(max-width:800px){.app{grid-template-columns:120px minmax(0,1fr)!important}}
+.app{grid-template-columns:140px minmax(0,1fr)!important}
+body.sidebar-collapsed .app{grid-template-columns:46px minmax(0,1fr)!important}
+@media(max-width:950px){.app{grid-template-columns:132px minmax(0,1fr)!important}}
+@media(max-width:650px){.app{grid-template-columns:102px minmax(0,1fr)!important}}
+body.sidebar-collapsed .codex-shared-sidebar-frame{max-width:46px!important}
 </style>
 """
 
