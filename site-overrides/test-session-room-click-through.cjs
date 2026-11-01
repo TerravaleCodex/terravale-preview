@@ -10,7 +10,7 @@ assert(read("party/index.html").includes('id="room-native-nav"'),"Native room no
 const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium","/usr/bin/chromium-browser"].filter(Boolean).find(fs.existsSync)
  ||["google-chrome","chromium","chromium-browser"].map(n=>{try{return cp.execFileSync("which",[n],{encoding:"utf8"}).trim()}catch{return""}}).find(Boolean);
 if(!chrome)throw Error("Chromium required for routing check");
-const inject='<script id="room-click-test">window.addEventListener("load",function(){setTimeout(function(){var a=document.querySelector("aside.sidebar a[data-tour-nav=\\"/party\\"]");if(a)a.click()},1500)},{once:true});</script>';
+const inject='<script>setTimeout(function(){var links=Array.from(document.querySelectorAll("aside.sidebar a"));var room=links.find(a=>a.dataset.tourNav==="/party");if(room)room.click();},80)</script>';
 const mime={".html":"text/html; charset=utf-8",".js":"text/javascript",".css":"text/css",".json":"application/json",".svg":"image/svg+xml",".png":"image/png",".woff2":"font/woff2"};
 const navigationRequests=[];
 const server=http.createServer((req,res)=>{
