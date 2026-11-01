@@ -343,6 +343,34 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Diagnose dashboard navigation and authentication storage patterns
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import re
+          text=Path('site/index.html').read_text()
+          p=text.find('data-tour-nav="/party"')
+          print('MAIN NAV EXCERPT',text[max(0,p-900):p+900][:1800])
+          print('MAIN NAV document width hints')
+          for q in ('sidebar', 'Collapse menu','data-tour-nav="/party"'):
+            print(q, text.count(q))
+          jslist=list(Path('site/_next').rglob('*.js'))
+          evidence={}
+          patterns=[r'storageKey[:=][^,}\n]{0,110}',r'sb-[a-z0-9]{12,40}-auth-token',
+                    r'terravale[^"\x27\\s]{0,55}auth[^"\x27\\s]{0,30}',r'auth\.getSession',
+                    r'localStorage\.getItem\([^)]{1,100}\)',
+                    r'createBrowserClient\(']
+          for file in jslist:
+            src=file.read_text(errors='ignore')
+            for pat in patterns:
+              matches=re.findall(pat,src,re.I)
+              if matches:
+                evidence.setdefault(pat,[]).extend(matches[:5])
+          for key,values in evidence.items():
+            print('AUTH CLUES',key,repr(list(dict.fromkeys(values))[:8]))
+          PY
       - name: Use the main Codex sidebar on all standalone pages
         shell: bash
         run: |
