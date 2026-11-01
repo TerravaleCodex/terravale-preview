@@ -138,7 +138,6 @@ function characterToPreviewActor(ch,row,portrait){
  const level=Math.max(1,Math.min(20,asNumber(build.level,1)));
  return {id:ch.id,name:ch.name,type:"Player",
   subtitle:"Lv "+level+" · "+(typeof build.className==="string"?build.className:"Adventurer"),
-  ac:Number.isInteger(Number(build.ac))&&Number(build.ac)>=1&&Number(build.ac)<=99?Number(build.ac):null,
   init:null,hp,max,hidden:false,conditions:asConditions(row?.conditions),
   ownerId:ch.owner_id,liveScores:classScores(ch),imageUrl:portrait||""};
 }
@@ -243,7 +242,6 @@ window.TerravaleV2LiveCharacters=Object.freeze({openPicker:openApprovedCharacter
 function signature(st){
  let actors=(st.actors||[]).map(a=>({id:a.id,name:a.name,type:a.type,subtitle:a.subtitle||"",ownerId:a.ownerId||null,
  init:Number.isFinite(a.init)?a.init:null,hp:Number.isFinite(a.hp)?a.hp:null,max:Number.isFinite(a.max)?a.max:null,
- ac:Number.isInteger(Number(a.ac))&&Number(a.ac)>=1&&Number(a.ac)<=99?Number(a.ac):null,
  hidden:!!a.hidden,conditions:a.conditions||[],notes:a.notes||"",statBlock:a.statBlock||null}));
  return JSON.stringify({actors,queue:st.queue||[],round:st.round||1,steps:st.steps||0});
 }
@@ -343,42 +341,7 @@ async function updateSheetState(characterId,patch){
  const r=await sb.from("character_state").update(safe).eq("character_id",characterId);
  if(r.error)show("Character sheet update failed: "+safeMessage(r.error.message),true);
 }
-
-/* Combat rolls are made by the existing authenticated campaign dice RPC.
- * The roll result (not Math.random) determines hit, critical and damage. */
-async function combatRoll(count,sides,modifier=0){
- if(!roomId||!roomReady)throw Error("The campaign room is not connected.");
- if(!Number.isInteger(count)||count<1||count>30||
-    ![4,6,8,10,12,20,100].includes(sides)||!Number.isInteger(modifier)||
-    Math.abs(modifier)>100)throw Error("Invalid dice request");
- const r=await sb.rpc("roll_campaign_dice",{target_campaign:roomId,
-  dice_count:count,dice_sides:sides,modifier,dm_only:false});
- if(r.error)throw Error(safeMessage(r.error.message));
- const data=r.data;
- if(!Array.isArray(data?.results)||data.results.length!==count||!Number.isInteger(data.total))throw Error("Invalid dice response");
- await refreshEvents();
- return {results:data.results,total:data.total};
-}
-async function combatMessage(message){
- if(!roomId||!roomReady)throw Error("Campaign room not connected");
- const r=await sb.rpc("send_session_message",{target_campaign:roomId,
-  body_text:String(message).slice(0,1000)});
- if(r.error)throw Error(safeMessage(r.error.message));
- await refreshEvents();
-}
-async function applyCombatDamage(targetId,amount){
- if(!roomDm)throw Error("Only the Dungeon Master can apply HP changes");
- if(!roomReady||roomWriting)throw Error("Encounter is updating; try again");
- const r=await sb.rpc("session_room_apply_damage",{target_campaign:roomId,
-  target_actor:targetId,damage_amount:amount,expected_version:roomVersion});
- if(r.error){await refreshRoom();throw Error(safeMessage(r.error.message));}
- roomVersion=Number(r.data?.version)||roomVersion+1;
- await refreshRoom();
- return r.data;
-}
-
-window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,
- updateSheetState,combatRoll,combatMessage,applyCombatDamage,reconnect:()=>loadRoster(roomId)});
+window.TerravaleLiveHooks=Object.freeze({persistState,advance,rollMine,sendLog,roll,updateSheetState,reconnect:()=>loadRoster(roomId)});
 setInterval(()=>{if(!document.hidden&&roomId){void refreshRoom();void refreshEvents();}},4500);
 
 // Production has no demo roster; always authenticate and read real campaigns.
