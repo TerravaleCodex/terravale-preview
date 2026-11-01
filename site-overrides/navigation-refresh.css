@@ -72,3 +72,6 @@
  .app-frame .topbar .user-pill .terr-account-name,.app-frame .topbar .user-pill .terr-account-chevron{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.app-frame .topbar .user-pill{transition:none}}
+
+/* During the guided tour, expose the highlighted route even inside a closed group. */
+.site-tour-running .terr-nav-section-links[hidden]{display:block!important}
