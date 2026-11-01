@@ -8,12 +8,18 @@ const main=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const menu=fs.readFileSync(path.join(root,"shared-sidebar/index.html"),"utf8");
 const expected=(main.match(/data-tour-nav="/g)||[]).length;
 if(expected<5||!menu.includes('data-tour-nav="/party"'))throw Error("Shared sidebar missing real Codex links");
-const pages=["party/index.html","session-room/index.html","session-room-v2/index.html","characters/sheet-live/index.html","characters/sheet-workshop/index.html"];
+const pages=["party/index.html","session-room/index.html","session-room-v2/index.html"];
 for(const file of pages){
  const data=fs.readFileSync(path.join(root,file),"utf8");
  if(!data.includes('class="codex-shared-sidebar-frame"'))throw Error(file+" still has separate sidebar");
  if(!data.includes(prefix+"shared-sidebar/?current="))throw Error(file+" not loading shared navigation");
 }
+for(const file of ["characters/sheet-live/index.html","characters/sheet-workshop/index.html"]){
+ const data=fs.readFileSync(path.join(root,file),"utf8");
+ if(data.includes("codex-shared-sidebar-frame"))throw Error(file+" has a nested sidebar in the embedded character sheet");
+ if(!data.includes('<aside class="sidebar"'))throw Error(file+" lost its original embedded navigation");
+}
+if(!fs.readFileSync(path.join(root,"characters/sheet-live/index.html"),"utf8").includes("html.live-embedded .sidebar"))throw Error("Embedded character sheet navigation hiding rule missing");
 if(!chrome){console.log("PASS: shared sidebar structure checks, browser unavailable");process.exit(0);}
 const inject="<script>("+function(){
 window.addEventListener("load",function(){
