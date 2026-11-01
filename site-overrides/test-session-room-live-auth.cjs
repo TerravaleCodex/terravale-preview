@@ -3,9 +3,12 @@
 const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/strict");
 const file="site/session-room/session-room-live.js";
 let code=fs.readFileSync(file,"utf8");
-const entry='const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");';
-assert.ok(code.includes(entry),"Production room must load a pinned Supabase browser client");
-code=code.replace(entry,'const {createClient}=window.__fakeCreateClient;');
+const ssrEntry='const {createBrowserClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/ssr@0.12.7/+esm");';
+const legacyEntry='const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");';
+assert.ok(code.includes(ssrEntry),"Production room must load the Codex SSR cookie client");
+assert.ok(code.includes(legacyEntry),"Legacy session fallback should remain available");
+code=code.replace(ssrEntry,'const {createBrowserClient}=window.__fakeCreateBrowserClient;');
+code=code.replace(legacyEntry,'const {createClient}=window.__fakeCreateClient;');
 let config=null,registered=null,bridgeState=null,pickerRows=null,roomSnapshot=null,upserts=0,rolls=0,endTurns=0,authRequests=0,loaded=0,forcedReads=0,errors=[];
 const els={};
 function element(){return {hidden:false,disabled:false,value:"",innerHTML:"",textContent:"",dataset:{},
@@ -62,15 +65,17 @@ const liveBridge={
  refreshPortraits(){},
  openExistingPicker(p){pickerRows=p}
 };
-const createClient=(url,key,settings)=>{config=settings;return backend;};
+const createBrowserClient=(url,key,settings)=>{config=settings;return backend;};
+const createClient=(url,key,settings)=>{throw Error("Legacy fallback should not be used when SSR cookie login is active");};
 const d={getElementById:id=>els[id],hidden:false,addEventListener(){},body:{dataset:{}}};
-const w={TerravaleRoomPreview:liveBridge,__fakeCreateClient:{createClient},addEventListener(){}};
+const w={TerravaleRoomPreview:liveBridge,__fakeCreateBrowserClient:{createBrowserClient},__fakeCreateClient:{createClient},addEventListener(){}};
 const local={getItem(k){return k==="supabase.auth.token"?"{\"access_token\":\"fixture\"}":null}};
 vm.runInNewContext(code,{window:w,document:d,localStorage:local,URL,Date,Math,Promise,setInterval(){},console}, {timeout:1500});
 (async()=>{
  for(let i=0;i<50&&!loaded;i++)await new Promise(r=>setImmediate(r));
  assert.equal(loaded,1,"Authenticated campaign roster should load automatically");
- assert.equal(config.auth.storageKey,"supabase.auth.token","Must share compiled main Codex authentication storage");
+ assert.equal(config.auth.persistSession,true,"SSR browser client must persist the shared cookie session");
+ assert.equal(config.isSingleton,false,"Standalone room must not reuse an unrelated browser client");
  assert.equal(registered.isDm,true,"The campaign owner must get the DM Desk");
  assert.equal(registered.campaignName,"Shady Test");
  assert.equal(registered.userId,"dm");
@@ -90,6 +95,6 @@ vm.runInNewContext(code,{window:w,document:d,localStorage:local,URL,Date,Math,Pr
  assert.ok(upserts>0,"DM initiative selections must persist to server");
  assert.deepEqual(Array.from(roomSnapshot.queue),["derulo","kai"]);
  assert.equal(roomSnapshot.actors[0].name,"Derulo");
- assert.equal(authRequests,2,"Campaign and picker must verify current logged-in user");
- console.log("PASS Live room signed-in DM: campaign, full approved-character picker, RLS-backed queued encounter, session storage");
+ assert.ok(authRequests>=3,"SSR cookie session and character picker must verify the signed-in user");
+ console.log("PASS Live room signed-in DM: campaign, full approved-character picker, RLS-backed queued encounter, SSR cookie authentication");
 })().catch(e=>{console.error(e);process.exitCode=1});
