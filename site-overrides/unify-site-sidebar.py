@@ -88,8 +88,8 @@ body{background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!im
 #codex-sidebar-root .nav-item .nav-text{
   display:inline!important;font-size:11px!important;
   font-weight:inherit!important;line-height:1.22!important;
-  white-space:nowrap!important;overflow:hidden!important;
-  text-overflow:ellipsis!important;min-width:0!important;
+  white-space:nowrap!important;overflow:visible!important;
+  text-overflow:clip!important;min-width:0!important;
 }
 #codex-sidebar-root .nav-item .nav-symbol{
   font-size:12px!important;line-height:1!important;
@@ -181,11 +181,10 @@ FRAME_STYLE = """
  align-self:start;position:sticky;top:0;
  border:0;background:var(--c-side,#151e29);z-index:15;
 }
-.app{grid-template-columns:140px minmax(0,1fr)!important}
-body.sidebar-collapsed .app{grid-template-columns:46px minmax(0,1fr)!important}
-@media(max-width:950px){.app{grid-template-columns:132px minmax(0,1fr)!important}}
-@media(max-width:650px){.app{grid-template-columns:102px minmax(0,1fr)!important}}
-body.sidebar-collapsed .codex-shared-sidebar-frame{max-width:46px!important}
+.app{grid-template-columns:200px minmax(0,1fr)!important}
+body.sidebar-collapsed .app{grid-template-columns:48px minmax(0,1fr)!important}
+body.sidebar-collapsed .codex-shared-sidebar-frame{max-width:48px!important}
+@media(max-width:750px){.app{grid-template-columns:200px minmax(0,1fr)!important}}
 </style>
 """
 
