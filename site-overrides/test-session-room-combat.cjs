@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 "use strict";
-const fs=require("node:fs"),path=require("node:path"),cp=require("node:child_process");
+const fs=require("node:fs"),path=require("node:path"),http=require("node:http"),cp=require("node:child_process");
 const {pathToFileURL}=require("node:url");
 const page=path.resolve("site/session-room/index.html");
 if(!fs.existsSync(page))throw Error("Live room HTML missing");
@@ -89,16 +89,42 @@ window.addEventListener("load",async()=>{
  document.body.dataset.combatTest=encodeURIComponent(JSON.stringify(report));
 });
 }.toString()+')();</scr'+'ipt>';
-const temp=path.join(path.dirname(page),"attack-browser-test-temp.html");
-try{
- const html=fs.readFileSync(page,"utf8");
- fs.writeFileSync(temp,html.replace("</body>",test+"</body>"));
- const dom=cp.execFileSync(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
-   "--allow-file-access-from-files","--virtual-time-budget=3800","--window-size=1640,960","--dump-dom",pathToFileURL(temp).href],
-  {encoding:"utf8",timeout:45000,maxBuffer:10*1024*1024,stdio:["ignore","pipe","ignore"]});
- const m=dom.match(/data-combat-test="([^"]+)"/);
- if(!m)throw Error("No browser combat report");
- const report=JSON.parse(decodeURIComponent(m[1]));
- console.log("Live combat browser regression:",JSON.stringify(report));
- if(!report.pass)process.exitCode=1;
-}finally{try{fs.unlinkSync(temp)}catch{}}
+
+const site=path.resolve("site"),prefix="/terravale-preview/";
+const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",
+ ".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"image/png"};
+const server=http.createServer((req,res)=>{
+ let url=new URL(req.url,"http://localhost");
+ if(!url.pathname.startsWith(prefix)){res.writeHead(404);res.end();return;}
+ let rel=decodeURIComponent(url.pathname.slice(prefix.length));
+ if(rel.includes("..")){res.writeHead(403);res.end();return;}
+ if(rel.endsWith("/"))rel+="index.html";
+ const file=path.resolve(site,rel);
+ if(!file.startsWith(site+path.sep)){res.writeHead(403);res.end();return;}
+ try{
+  let buf=fs.readFileSync(file);
+  if(rel==="party/index.html"&&url.searchParams.has("test-combat"))buf=Buffer.from(buf.toString().replace("</body>",test+"</body>"));
+  res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"});
+  res.end(buf);
+ }catch{res.writeHead(404);res.end()}
+});
+(async()=>{
+ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ try{
+  const url="http://127.0.0.1:"+server.address().port+prefix+"party/?test-combat=1";
+  const dom=await new Promise((resolve,reject)=>{
+   const child=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
+    "--virtual-time-budget=4000","--window-size=1640,960","--dump-dom",url],
+    {stdio:["ignore","pipe","ignore"]});
+   let out="";const timer=setTimeout(()=>{child.kill();reject(Error("Browser combat test timed out"));},35000);
+   child.stdout.on("data",chunk=>{out+=chunk.toString();if(out.length>10*1024*1024)child.kill()});
+   child.on("error",err=>{clearTimeout(timer);reject(err)});
+   child.on("close",code=>{clearTimeout(timer);code===0?resolve(out):reject(Error("Chromium exited "+code))});
+  });
+  const m=dom.match(/data-combat-test="([^"]+)"/);
+  if(!m)throw Error("No browser combat report");
+  const report=JSON.parse(decodeURIComponent(m[1]));
+  console.log("Live combat browser regression:",JSON.stringify(report));
+  if(!report.pass)process.exitCode=1;
+ }finally{server.close()}
+})().catch(e=>{console.error(e);server.close();process.exitCode=1;});
