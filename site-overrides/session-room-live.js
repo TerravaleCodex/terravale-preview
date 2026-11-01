@@ -43,14 +43,37 @@ function codexSessionStorageKey(){
 }
 async function client(){
  if(sb)return sb;
- // This uses Supabase's standard browser storage key: same as the published app.
- const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");
- sb=createClient(API_URL,API_KEY,{
-  // Match the actual compiled Codex client, which uses a custom storageKey.
-  // The standard sb-<project>-auth-token key is NOT the site's session.
-  auth:{storageKey:codexSessionStorageKey(),persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
-  global:{headers:{"X-Client-Info":"terravale-session-room-live"}}});
- return sb;
+ // The Codex's compiled Next.js app uses @supabase/ssr and cookie-based
+ // browser sessions. A plain localStorage client cannot see that login.
+ let cookieProblem=null;
+ try{
+  const {createBrowserClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/ssr@0.12.7/+esm");
+  const cookieClient=createBrowserClient(API_URL,API_KEY,{
+   isSingleton:false,
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
+   global:{headers:{"X-Client-Info":"terravale-room-cookie-session"}}
+  });
+  const check=await cookieClient.auth.getUser();
+  if(!check.error&&check.data?.user){
+   sb=cookieClient;
+   return sb;
+  }
+  cookieProblem=check.error?.message||"No cookie session";
+ }catch(error){cookieProblem=safeMessage(error.message);}
+ // Backwards compatibility for accounts authenticated by older static
+ // Codex builds. No access tokens are copied or stored by this bridge.
+ try{
+  const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");
+  const localClient=createClient(API_URL,API_KEY,{
+   auth:{storageKey:codexSessionStorageKey(),persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
+   global:{headers:{"X-Client-Info":"terravale-room-legacy-session"}}
+  });
+  const check=await localClient.auth.getUser();
+  if(!check.error&&check.data?.user){
+   sb=localClient;return sb;
+  }
+ }catch(error){console.warn("Legacy session not available:",safeMessage(error.message));}
+ throw new Error("Your Codex session could not be restored. Sign in through the Dashboard again, then use Reconnect.");
 }
 function result(value,what){
  if(value.error)throw new Error(what+": "+safeMessage(value.error.message));
