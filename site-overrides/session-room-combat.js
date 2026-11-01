@@ -83,7 +83,7 @@ function refresh(){
  else if(!sources.some(a=>a.id===attackerId))attackerId=sources[0]?.id||"";
  form.sourceWrap.hidden=!dm;
  form.role.textContent=dm?"DM · Choose any combatant in initiative":own?"Rolling as "+own.name:"No approved character is assigned";
- setOptions(form.source,sources,attackerId,sources.length?"Choose attacker":"No attacker in initiative");
+ setOptions(form.source,sources,attackerId,sources.length?"":"No attacker in initiative");
  const targets=party.filter(a=>a.id!==attackerId);
  if(!targets.some(a=>a.id===targetId)){targetId="";manualAc=null;attack=null;damage=null;}
  setOptions(form.target,targets,targetId,"Choose a target");
