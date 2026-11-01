@@ -91,10 +91,10 @@ body[data-room-production="1"] .main{min-width:0}
 }
 /* Exact native Codex item height; standalone room rules previously gave 44px rows. */
 #room-native-nav .nav-section-links .nav-item{height:35px!important;min-height:35px!important;max-height:35px!important;padding:0 10px!important;}
-#room-native-nav .nav-item:hover,#room-native-nav .nav-item.active{
+#room-native-nav .nav-item:hover,#room-native-nav .nav-item.room-nav-current{
  color:var(--c-ink);background:color-mix(in srgb,var(--c-accent) 15%,var(--c-paper2));
 }
-#room-native-nav .nav-item.active{
+#room-native-nav .nav-item.room-nav-current{
  box-shadow:inset 2px 0 var(--c-accent);
 }
 #room-native-nav .sidebar-foot{

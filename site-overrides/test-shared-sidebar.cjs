@@ -43,8 +43,26 @@ const script='<script>('+function(){
   r.topbarHeight=Math.round(topbar?.getBoundingClientRect().height||0);
   r.navLabelFont=font;r.linkHeight=Math.round(height);
   r.sections=rail;r.links=links.length;
-  r.active=route?.getAttribute("aria-current")==="page"&&route.classList.contains("active");
-  r.oldDashboardActive=!!nav?.querySelector('[data-tour-nav="/"].active');
+  r.active=route?.getAttribute("aria-current")==="page"&&
+   route.classList.contains("room-nav-current")&&!route.classList.contains("active");
+  r.oldDashboardActive=!!nav?.querySelector('[data-tour-nav="/"].room-nav-current,[data-tour-nav="/"].active');
+  r.noCombatActiveLinks=!nav?.querySelector(".nav-item.active");
+  const dashboard=nav?.querySelector('[data-tour-nav="/"]');
+  const campaigns=nav?.querySelector('[data-tour-nav="/campaigns"]');
+  const geometry=link=>{
+   if(!link)return null;
+   const item=link.getBoundingClientRect();
+   const icon=link.querySelector(".nav-symbol")?.getBoundingClientRect();
+   const text=link.querySelector(".nav-text")?.getBoundingClientRect();
+   return {height:item.height,iconOffset:icon?icon.left-item.left:NaN,
+           textOffset:text?text.left-item.left:NaN};
+  };
+  const activeRect=geometry(route);
+  r.navAlignment=[geometry(dashboard),geometry(campaigns)].every(g=>
+    g&&activeRect&&Math.abs(g.iconOffset-activeRect.iconOffset)<2&&
+    Math.abs(g.textOffset-activeRect.textOffset)<2&&
+    Math.abs(g.height-activeRect.height)<2);
+  r.activeRowGeometry=activeRect;
   r.help=!!nav?.querySelector(".sidebar-foot .sidebar-help");
   r.campaignPicker=!!nav?.querySelector("select");
   r.bridge=!!window.TerravaleRoomPreview?.useRoster;
@@ -63,7 +81,8 @@ const script='<script>('+function(){
   if(theme){theme.value=current||"dark";theme.dispatchEvent(new Event("change",{bubbles:true}))}
   r.pass=r.inline&&r.navWidth===208&&r.navHeight>400&&r.topbarHeight===62&&
    r.navLabelFont>=11.5&&r.navLabelFont<=12.5&&r.linkHeight>=31&&r.linkHeight<=43&&
-   r.sections>=4&&r.links>=10&&r.active&&!r.oldDashboardActive&&r.help&&!r.campaignPicker&&
+   r.sections>=4&&r.links>=10&&r.active&&!r.oldDashboardActive&&
+   r.noCombatActiveLinks&&r.navAlignment&&r.help&&!r.campaignPicker&&
    r.bridge&&r.dmDesk&&r.campaignName&&r.dmActions&&
    r.theme==="shady"&&r.bodyBg==="rgb(5, 5, 6)"&&r.sidebarBg==="rgb(9, 9, 11)";
  }catch(e){r.pass=false;r.error=String(e)}
