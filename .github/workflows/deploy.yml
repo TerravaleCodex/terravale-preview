@@ -407,6 +407,23 @@ jobs:
           pathlib.Path('/tmp/terravale-live-sheet.js').write_text(matches[-1])
           PY
           node --check /tmp/terravale-live-sheet.js
+      - name: Publish isolated Bloodforger V2 layout workshop
+        shell: bash
+        run: |
+          mkdir -p site/bloodforger-tree-v2
+          cp site-overrides/bloodforger-v2-demo.html site/bloodforger-tree-v2/index.html
+          test -s site/bloodforger-tree-v2/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page=Path('site/bloodforger-tree-v2/index.html').read_text()
+          assert 'Bloodforger Skill Trees' in page
+          assert 'graphdata' in page and 'layoutSkillGraph' in page
+          blocks=re.findall(r'<script>(.*?)</script>',page,re.S)
+          assert len(blocks)==1,'Expected one interactive workshop script'
+          Path('/tmp/terravale-bloodforger-v2.js').write_text(blocks[0])
+          PY
+          node --check /tmp/terravale-bloodforger-v2.js
       - uses: actions/configure-pages@v5
         with:
           enablement: true
