@@ -1,0 +1,35 @@
+name: Verify corrected public Session Room active style
+
+on:
+  pull_request:
+    paths: ['.github/workflows/verify-session-active-public.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check published Session Room styling and markup
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://terravalecodex.github.io/terravale-preview"
+          for attempt in $(seq 1 30); do
+            css=$(curl -fsSL --max-time 15 "${base}/session-room/room-nav-inline.css?verify=${GITHUB_SHA}-${attempt}" || true)
+            html=$(curl -fsSL --max-time 15 "${base}/party/?verify=${GITHUB_SHA}-${attempt}" || true)
+            if [[ "$css" == *'Match the dashboard'* ]] &&
+               [[ "$css" == *'background:var(--c-side);'* ]] &&
+               [[ "$css" == *'html[data-codex-theme="absolute-zero"] #room-native-nav .nav-item.room-nav-current'* ]] &&
+               [[ "$html" == *'room-nav-current'* ]] &&
+               [[ "$html" == *'id="room-native-nav"'* ]]; then
+              echo "PASS: Public Session Room uses newly published Dashboard-matching active styling."
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::New Session Room selected styling not yet present on public page"
+          exit 1
