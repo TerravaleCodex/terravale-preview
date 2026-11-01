@@ -285,7 +285,6 @@ jobs:
           test -s site/session-room.html
           grep -q 'data-room-production="1"' site/session-room.html
           cp site-overrides/session-room-live.js site/session-room/session-room-live.js
-          cp site-overrides/session-room-combat.js site/session-room/session-room-combat.js
           cp site-overrides/session-room-live.css site/session-room/session-room-live.css
           cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
           for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
@@ -304,8 +303,6 @@ jobs:
           PY
           node --check /tmp/terravale-session-live.js
           node --check site/session-room/session-room-live.js
-          node --check site/session-room/session-room-combat.js
-          node site-overrides/test-session-room-combat.cjs
           node site-overrides/test-session-room-live.cjs
           node site-overrides/test-session-room-live-auth.cjs
       - name: Check Encounter Library JavaScript syntax
@@ -450,7 +447,7 @@ jobs:
             fi
             echo "PASS public route $route serves new Session Room"
           done
-          for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css" "/session-room/session-room-combat.js"; do
+          for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
             curl --fail --silent --show-error --location --max-time 15               "${base}${asset}?verify=${GITHUB_SHA}" -o /dev/null
             echo "PASS public asset $asset"
           done
