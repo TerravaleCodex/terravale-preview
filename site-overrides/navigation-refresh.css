@@ -1,0 +1,74 @@
+
+/* Navigation refresh for the published compiled Codex and shared standalone sidebar. */
+/* Original React elements remain in the DOM; only their navigation presentation is superseded. */
+.app-frame .sidebar:has(>.terr-nav),
+#codex-sidebar-root>aside:has(>.terr-nav){
+  display:flex!important;flex-direction:column!important;overflow:hidden!important;min-height:0;
+}
+.app-frame .sidebar:has(>.terr-nav)>.sidebar-label,
+.app-frame .sidebar:has(>.terr-nav)>nav:not(.terr-nav),
+.app-frame .sidebar:has(>.terr-nav)>.sidebar-foot,
+#codex-sidebar-root>aside:has(>.terr-nav)>.sidebar-label,
+#codex-sidebar-root>aside:has(>.terr-nav)>nav:not(.terr-nav),
+#codex-sidebar-root>aside:has(>.terr-nav)>.sidebar-foot{display:none!important}
+.terr-nav{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;min-width:0;width:100%;font-family:inherit;color:var(--text,#f1e9dd);font-size:12px}
+.terr-nav-search,.terr-nav-link,.terr-nav-help{display:flex;align-items:center;box-sizing:border-box;min-width:0;text-decoration:none!important;cursor:pointer;color:var(--text,#f1e9dd);text-align:left;font-family:inherit;line-height:1.35}
+.terr-nav-search{gap:9px;min-height:38px;padding:8px 10px;margin:3px 3px 12px;border:1px solid var(--line,#394554);background:color-mix(in srgb,var(--panel2,#25313a) 45%,transparent);border-radius:8px}
+.terr-nav-search:hover,.terr-nav-search.active{background:color-mix(in srgb,var(--gold,#d7b579) 12%,var(--panel,#151e29));border-color:var(--gold,#d7b579);color:var(--text,#fff)}
+.terr-nav-icon{flex:0 0 20px;min-width:20px;text-align:center;font:16px/1 Georgia,serif;color:var(--gold,#d7b579)}
+.terr-nav-search .terr-nav-icon{font-size:20px}
+.terr-nav-label{flex:1;min-width:0;font:500 12px/1.4 inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.terr-nav-search-trail{font-size:12px;color:var(--muted,#9da8b7);opacity:.65}
+.terr-nav-scroll{display:flex;flex:1 1 auto;flex-direction:column;gap:9px;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin;scrollbar-color:var(--line,#394554) transparent;padding:0 2px 12px;overscroll-behavior:contain}
+.terr-nav-section{min-width:0}
+.terr-nav-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:6px 9px;min-height:30px;border:0;border-radius:6px;background:transparent;color:var(--muted,#a8b4c0);text-align:left;font:700 10px/1.4 inherit;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.terr-nav-heading:hover{background:color-mix(in srgb,var(--gold,#d7b579) 9%,transparent);color:var(--text,#fff)}
+.terr-nav-chevron{font-size:16px;line-height:1;font-weight:400;letter-spacing:0}
+.terr-nav-section-links[hidden]{display:none!important}
+.terr-nav-section-links{padding-top:3px}
+.terr-nav-link{gap:9px;padding:8px 10px;min-height:35px;margin:1px 0 2px;border-radius:8px;font-weight:500}
+.terr-nav-link:hover,.terr-nav-link.active{background:color-mix(in srgb,var(--gold,#d7b579) 14%,var(--panel2,#26313d));color:var(--text,#fff)}
+.terr-nav-link.active{box-shadow:inset 2px 0 var(--gold,#d7b579)}
+.terr-nav-footer{flex:0 0 auto;margin-top:auto;border-top:1px solid var(--line,#394554);padding:9px 2px 0}
+.terr-nav-help{width:100%;gap:10px;min-height:38px;padding:8px 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted,#a8b4c0);font-size:12px}
+.terr-nav-help:hover{background:color-mix(in srgb,var(--gold,#d7b579) 9%,transparent);color:var(--text,#fff)}
+.terr-nav-help-icon{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center;border:1px solid var(--line,#394554);border-radius:50%;font-size:12px;font-weight:700;color:var(--gold,#d7b579)}
+.terr-nav a:focus-visible,.terr-nav button:focus-visible{outline:2px solid var(--gold,#d7b579);outline-offset:1px}
+.site-tour-running .terr-nav-link.tour-nav-highlighted{position:relative;z-index:201;background:color-mix(in srgb,var(--gold,#d7b579) 21%,var(--panel,#151e29));box-shadow:inset 2px 0 var(--gold,#d7b579)}
+.app-frame .topbar .site-tour-trigger,
+.app-frame .topbar .topbar-search,
+.app-frame .topbar .site-theme-quick{display:none!important}
+.app-frame .topbar .user-pill{display:flex;align-items:center;gap:8px;min-width:0;max-width:205px;overflow:hidden;padding:4px 7px 4px 4px;border-radius:9px;border:1px solid transparent;text-overflow:ellipsis;white-space:nowrap;transition:background .15s}
+.app-frame .topbar .user-pill:hover{background:var(--panel2,#26313d);border-color:var(--line,#394554)}
+.app-frame .topbar .user-pill .terr-account-avatar{display:grid;place-items:center;position:relative;flex:0 0 29px;width:29px;height:29px;overflow:hidden;border:1px solid var(--line,#394554);border-radius:50%;background:var(--panel2,#26313d);color:var(--gold,#d7b579);font:bold 12px/1 inherit}
+.app-frame .topbar .user-pill .terr-account-avatar img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.app-frame .topbar .user-pill .terr-account-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;font-size:12px}
+.app-frame .topbar .user-pill .terr-account-chevron{flex:0 0 auto;font-size:12px;color:var(--muted,#a8b4c0)}
+@media (min-width:761px){
+ .app-frame.sidebar-is-collapsed .terr-nav-heading,
+ .app-frame.sidebar-is-collapsed .terr-nav-label,
+ .app-frame.sidebar-is-collapsed .terr-nav-search-trail,
+ .app-frame.sidebar-is-collapsed .terr-account-name,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-heading,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-label,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-search-trail{display:none!important}
+ .app-frame.sidebar-is-collapsed .terr-nav-scroll,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-scroll{gap:4px;padding-inline:0}
+ .app-frame.sidebar-is-collapsed .terr-nav-section,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-section{border-top:1px solid var(--line,#394554);padding-top:5px}
+ .app-frame.sidebar-is-collapsed .terr-nav-section:first-child,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-section:first-child{border-top:0}
+ .app-frame.sidebar-is-collapsed .terr-nav-link,
+ .app-frame.sidebar-is-collapsed .terr-nav-search,
+ .app-frame.sidebar-is-collapsed .terr-nav-help,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-link,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-search,
+ html[data-sidebar-collapsed="true"] #codex-sidebar-root .terr-nav-help{justify-content:center!important;gap:0;padding:8px 0;margin-inline:2px}
+}
+@media (max-width:1120px){.app-frame .topbar .user-pill{max-width:155px}}
+@media (max-width:760px){
+ .app-frame .sidebar:has(>.terr-nav){height:100dvh;max-height:100dvh}
+ .app-frame .topbar .user-pill{max-width:38px;padding:3px}
+ .app-frame .topbar .user-pill .terr-account-name,.app-frame .topbar .user-pill .terr-account-chevron{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.app-frame .topbar .user-pill{transition:none}}
