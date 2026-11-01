@@ -107,7 +107,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Additional roll modifier"><button class="btn primary" type="submit">Roll</button></form>
      <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
      <div class="check-shell"><div class="check-heading"><h3>Character Quick Checks</h3><span class="meta">Click to roll</span></div><div class="check-title"><label for="roller" class="subtle">Rolling as</label><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></div>
-     <details id="dice-help"><summary>Roll notation & privacy</summary><p class="subtle">Examples: 1d20, 2d6+3 or /roll 1d20+5. All rolls are local demo results, not secure hidden rolls.</p></details>
+     <details id="dice-help"><summary>Roll notation & privacy</summary><p class="subtle">Examples: 1d20, 2d6+3 or /roll 1d20+5. Campaign rolls are recorded by the server. DM-only rolls are not exposed to players.</p></details>
    </div>
  </section>
  <div class="room-resizer" id="resize-character" role="separator" tabindex="0" aria-label="Resize dice and character panels" aria-orientation="vertical" title="Drag to resize, or use arrow keys"><span></span></div>
@@ -144,7 +144,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 <dialog class="modal" id="add-modal">
  <form method="dialog" id="add-form">
  <div class="modal-top"><h2>Add to Initiative</h2><button type="button" class="btn small" data-close="add-modal" aria-label="Close">✕</button></div>
- <div class="modal-body"><p class="subtle">Add an NPC, monster, creature or person to the local combat preview.</p>
+ <div class="modal-body"><p class="subtle">Add a monster, NPC, creature or person to this shared campaign encounter.</p>
   <label class="field-label" for="new-template">Start from the Encounter Library (optional)</label>
  <select class="field" id="new-template"><option value="">Create a quick creature</option></select>
  <p id="template-hint" class="subtle">Quick creatures need no complete stat block. Saved entries can be added repeatedly as separate combatants.</p>
@@ -157,7 +157,7 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
 </dialog>
 <dialog class="modal" id="attach-modal">
  <div class="modal-top"><h2>Attach a Saved Stat Block</h2><button class="btn small" type="button" data-close="attach-modal">✕</button></div>
- <div class="modal-body"><p class="subtle">Choose a full stat block from the local Encounter Library. The current combatant's name, initiative, conditions and HP stay unchanged.</p>
+ <div class="modal-body"><p class="subtle">Choose a saved stat block from this browser's Encounter Library. The current combatant's name, initiative, conditions and HP stay unchanged.</p>
  <label class="field-label" for="attach-template">Saved stat block</label>
  <select class="field" id="attach-template"></select>
  <div class="modal-actions"><a class="btn" href="./encounter-library/">Create a stat block ↗</a><button class="btn primary" id="attach-confirm" type="button">Attach to combatant</button></div></div>
@@ -871,8 +871,8 @@ $("tab-messages").addEventListener("click",()=>{state.tab="messages";save();feed
 $("tab-rolls").addEventListener("click",()=>{state.tab="rolls";save();feedRender();});
 $("chat-form").addEventListener("submit",e=>{
 e.preventDefault();let input=$("chat-input"),msg=input.value.trim();if(!msg)return;
-if(/^\/roll?\s+/i.test(msg)){let notation=msg.replace(/^\/roll?\s+/i,"");roll(notation,"Chat command · "+notation,state.dm?"DM":"Fighter Test");}
-else log({kind:"text",who:state.dm?"DM":"Fighter Test",message:msg,time:clock()});
+if(/^\/roll?\s+/i.test(msg)){let notation=msg.replace(/^\/roll?\s+/i,"");roll(notation,"Chat command · "+notation,state.dm?"DM":(actor(state.own)?.name||"Adventurer"));}
+else log({kind:"text",who:state.dm?"DM":(actor(state.own)?.name||"Adventurer"),message:msg,time:clock()});
 input.value="";
 });
 const dicePolygons={
@@ -1006,6 +1006,9 @@ window.TerravaleRoomPreview=Object.freeze({
   $("room-connection-banner").classList.add("needs-connection");
   $("room-connection-banner").querySelector("div:first-child").firstChild.textContent="Unable to load your campaign. "+message;
   $("room-reconnect").hidden=false;
+  $("right-heading").textContent="Campaign connection";
+  $("right-subheading").textContent="Connect to unlock your campaign workspace";
+  $("my-character-content").innerHTML='<div class="empty">The DM Desk and approved campaign characters appear after this room reconnects to your Codex session. Use Reconnect above.</div>';
  },
  openExistingPicker(records,context){openExistingPicker(records,context);},
  readState(){return state;},
