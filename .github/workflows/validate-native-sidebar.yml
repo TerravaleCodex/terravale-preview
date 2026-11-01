@@ -1,0 +1,470 @@
+name: Validate native Codex sidebar rebuild (no public deploy)
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and extract compiled preview
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import io
+          import pathlib
+          import zipfile
+
+          files = sorted(pathlib.Path(".preview-bundle").glob("part-*.b64"))
+          if len(files) != 34:
+              raise SystemExit("Missing one or more compiled-preview bundle parts")
+          archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
+          expected = "__REPLACE_NEW_COMPILED_SHA256__"
+          if hashlib.sha256(archive).hexdigest() != expected:
+              raise SystemExit("Preview archive integrity verification failed")
+
+          out = pathlib.Path("site")
+          out.mkdir()
+          with zipfile.ZipFile(io.BytesIO(archive)) as z:
+              names = z.namelist()
+              if len(names) < 570 or "index.html" not in names or "codex.json" not in names:
+                  raise SystemExit("Compiled preview files incomplete")
+              for item in z.infolist():
+                  name = pathlib.PurePosixPath(item.filename)
+                  if name.is_absolute() or ".." in name.parts or item.is_dir():
+                      raise SystemExit("Unsafe path in compiled preview")
+                  if ((item.external_attr >> 16) & 0o170000) == 0o120000:
+                      raise SystemExit("Symlinks are not allowed in preview bundle")
+              z.extractall(out)
+          (out / ".nojekyll").touch()
+          print("Prepared", len(names), "static files for GitHub Pages")
+          PY
+      - name: Inspect static site navigation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['index.html','party/index.html','party.html']:
+              p=Path('site')/name
+              if p.exists():
+                  print(name,'size',p.stat().st_size)
+                  s=p.read_text(errors='replace')
+                  for word in ['Session Room','/party','/session-room']:
+                      i=s.find(word)
+                      print(word,i,repr(s[max(0,i-100):i+150]) if i>=0 else '')
+          PY
+      - name: Find original Next.js Session Room bundle
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('site').rglob('*.js'):
+              if 'party' in str(p).lower() or 'session-room' in str(p).lower():
+                  print('PARTY ROUTE JS',p,'bytes',p.stat().st_size)
+          for p in [Path('site/index.html'),Path('site/party/index.html')]:
+              if not p.exists():continue
+              txt=p.read_text(errors='replace')
+              for needle in ['_next/static/chunks/app/party','_next/static/chunks','data-tour-nav="/party"']:
+                  pos=txt.find(needle)
+                  if pos>=0:print('INDEX CODE REFERENCE',p,needle,repr(txt[max(0,pos-100):pos+170]))
+          PY
+      - name: Verify compiled Codex session project
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          detected=set()
+          for p in Path('site').rglob('*.js'):
+              try: data=p.read_text(errors='ignore')
+              except Exception: continue
+              for host in re.findall(r'([a-z0-9]{20,32})\.supabase\.co',data):
+                  detected.add(host)
+          print("Compiled client Supabase project identifiers:", sorted(detected))
+          if detected and 'emwlvbmnrrhxhrmlwkhs' not in detected:
+              raise SystemExit('Published app uses another Supabase project than the live Session Room')
+          PY
+      - name: Publish optional character sheet workshop
+        shell: bash
+        run: |
+          mkdir -p site/characters/sheet-workshop
+          cp site-overrides/sheet-workshop-v0.9.1.html site/characters/sheet-workshop/index.html
+          test -s site/characters/sheet-workshop/index.html
+          grep -q 'Character Overview' site/characters/sheet-workshop/index.html
+      - name: Identify compiled character sheet iframe URL
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          hits=0
+          for f in Path('site').rglob('*.js'):
+            try: src=f.read_text(errors='ignore')
+            except Exception: continue
+            for m in re.finditer(r'sheet-live|sheet-workshop|TV_SHEET_READY',src,re.I):
+              excerpt=src[max(0,m.start()-220):m.end()+260]
+              excerpt=re.sub(r'eyJ[A-Za-z0-9_-]{60,}', '<JWT-REDACTED>', excerpt)
+              print('SHEET IFRAME COMPILED', f.relative_to('site'), repr(excerpt))
+              hits+=1
+              if hits>=12:break
+            if hits>=12:break
+          print('SHEET IFRAME references found',hits)
+          PY
+      - name: Publish live character-sheet surface
+        shell: bash
+        run: |
+          mkdir -p site/characters/sheet-live
+          cp site-overrides/sheet-live-v091.html site/characters/sheet-live/index.html
+          cp site-overrides/death-mechanics.js site/characters/sheet-live/death-mechanics.js
+          cp site-overrides/class-feature-rules.json site/characters/sheet-live/class-feature-rules.json
+          cp site-overrides/live-sheet-theme-fix.css site/characters/sheet-live/live-sheet-theme-fix.css
+          grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
+          test -s site/characters/sheet-live/class-feature-rules.json
+          test -s site/characters/sheet-live/death-mechanics.js
+      - name: Force real character viewer to load restored embedded sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The compiled character viewer hardcodes ?live=1&v=0912. Its
+          # iframe can keep a cached broken nested sidebar even after a
+          # correct fresh HTML build. Give the clean sheet a NEW path.
+          mkdir -p site/characters/sheet-render-fixed-20261101
+          cp -a site/characters/sheet-live/. site/characters/sheet-render-fixed-20261101/
+          cp site-overrides/approved-sheet-iframe-bridge.js site/approved-sheet-iframe-bridge.js
+          python3 - <<'PY'
+          from pathlib import Path
+          original='characters/sheet-live/?live=1&v=0912'
+          repaired='characters/sheet-render-fixed-20261101/?live=1&v=restored-sheet-20261101'
+          matches=[]
+          for p in Path('site/_next/static').rglob('*.js'):
+            txt=p.read_text()
+            if original in txt:
+              matches.append(p)
+              assert txt.count(original)==1, 'Unexpected repeated character viewer URL'
+              p.write_text(txt.replace(original,repaired))
+          assert len(matches)==1, f'Expected one compiled character-viewer reference; found {len(matches)}'
+          print('REPAIRED COMPILED SHEET VIEWER',matches[0])
+          bridge='<script src="/terravale-preview/approved-sheet-iframe-bridge.js?v=20261101" defer></script>'
+          pages=0
+          for p in Path('site').rglob('*.html'):
+            html=p.read_text()
+            if '</head>' in html and bridge not in html:
+              p.write_text(html.replace('</head>',bridge+'</head>',1))
+              pages+=1
+          assert pages>=10, 'Expected navigation bridge on compiled site pages'
+          print('Sheet iframe cache guard installed on',pages,'pages')
+          original_sheet=Path('site/characters/sheet-live/index.html').read_text()
+          fixed_sheet=Path('site/characters/sheet-render-fixed-20261101/index.html').read_text()
+          assert fixed_sheet==original_sheet, 'Restored sheet differs from approved source'
+          assert 'codex-shared-sidebar-frame' not in fixed_sheet
+          assert 'loadApprovedCharacter' in fixed_sheet
+          assert 'html.live-embedded .sidebar' in fixed_sheet
+          PY
+          node --check site/approved-sheet-iframe-bridge.js
+          grep -Rl 'sheet-render-fixed-20261101' site/_next/static/chunks/ | grep -q .
+      - name: Apply unified theme to compiled character creator
+        shell: bash
+        run: |
+          cp site-overrides/creator-theme-fix.css site/creator-theme-fix.css
+          cp site-overrides/dm-editor-theme-fix.css site/dm-editor-theme-fix.css
+          python3 - <<'PY'
+          from pathlib import Path
+          # The currently published website is a validated prebuilt archive.
+          # Load theme corrections as a separate stylesheet rather than
+          # replacing the archive and losing the current character-sheet UI.
+          link='<link rel="stylesheet" href="/terravale-preview/creator-theme-fix.css"><link rel="stylesheet" href="/terravale-preview/dm-editor-theme-fix.css">'
+          count=0
+          for page in Path('site').rglob('*.html'):
+              html=page.read_text()
+              if '</head>' in html and link not in html:
+                  page.write_text(html.replace('</head>',link+'</head>',1))
+                  count+=1
+          if count<10:
+              raise SystemExit('Expected to inject theme styling into published Next pages')
+          print('Theme styles linked on',count,'pages')
+          PY
+      - name: Route sidebar Session Room links to replacement
+        shell: bash
+        run: |
+          cp site-overrides/session-room-navigation-bridge.js site/session-room-navigation-bridge.js
+          python3 - <<'PY'
+          from pathlib import Path
+          script='<script src="/terravale-preview/session-room-navigation-bridge.js?v=sidebar-native-20261101" defer></script>'
+          updated=0
+          for p in Path('site').rglob('*.html'):
+              content=p.read_text()
+              if '</head>' in content and script not in content:
+                  p.write_text(content.replace('</head>',script+'</head>',1))
+                  updated+=1
+          assert updated>=10, 'Expected compiled site pages for live-room navigation'
+          print('Live Session Room navigation added to',updated,'pages')
+          PY
+          node --check site/session-room-navigation-bridge.js
+          node site-overrides/test-session-sidebar-nav.cjs
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('site/index.html').read_text()
+          assert 'data-tour-nav="/party"' in source
+          assert '/terravale-preview/party/' in source
+          assert 'session-room-navigation-bridge.js?v=sidebar-native-20261101' in source
+          print('PASS original compiled sidebar is wired to native Session Room navigation')
+          PY
+      - name: Verify class rule descriptions and equipment-slot protections
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          data=json.loads(Path('site/characters/sheet-live/class-feature-rules.json').read_text())
+          sham=data['classes']['shaman']['descriptions']
+          assert '7 days' in sham['Prepare the Dead']
+          assert 'Presence' in sham['Ember']
+          assert len(sham)>=30
+          live=Path('site/characters/sheet-live/index.html').read_text()
+          assert 'normalizedLiveItem' in live and 'jeans?' in live and 'future.length' in live
+          assert 'Wallet · placeholder' in live and 'gear-slot-grid' in live
+          assert 'syncPublishedSiteTheme' in live and 'live-sheet-theme-fix.css' in live
+          embedded_theme=Path('site/characters/sheet-live/live-sheet-theme-fix.css').read_text()
+          assert "data-codex-theme='shady'" in embedded_theme and "data-codex-theme='night-sky'" in embedded_theme
+          theme=Path('site/creator-theme-fix.css').read_text()
+          assert '.creator-choice.selected' in theme and '.creator-step.current' in theme
+          dmtheme=Path('site/dm-editor-theme-fix.css').read_text()
+          assert '.dm-roster-choice.selected' in dmtheme and '.dm-dashboard-navitem.active' in dmtheme
+          assert '.advancement-workspace .choice-tile' in dmtheme
+          assert 'function hpColor(current,maximum)' in live and 'background:${hpColor(hp(),p().hp)}' in live
+          print('PASS: Shaman rules, HP colours, equipment and DM/creator themes')
+          PY
+      - name: Publish isolated Session Room V2 workshop
+        shell: bash
+        run: |
+          mkdir -p site/session-room-v2
+          cp site-overrides/session-room-v2.html site/session-room-v2/index.html
+          cp site-overrides/session-room-v2-redirect.js site/session-room-v2/session-room-v2-redirect.js
+          cp site-overrides/session-room-v2-live-roster.js site/session-room-v2/session-room-v2-live-roster.js
+          cp site-overrides/session-room-v2-fidelity.css site/session-room-v2/session-room-v2-fidelity.css
+          cp site-overrides/session-room-v2-wireframe.css site/session-room-v2/session-room-v2-wireframe.css
+          cp site-overrides/session-room-v2-encounters.css site/session-room-v2/session-room-v2-encounters.css
+          cp site-overrides/session-room-v2-sheet-style.css site/session-room-v2/session-room-v2-sheet-style.css
+          cp site-overrides/session-room-v2-bottom.css site/session-room-v2/session-room-v2-bottom.css
+          cp site-overrides/session-room-v2-codex.css site/session-room-v2/session-room-v2-codex.css
+          cp site-overrides/session-room-v2-portrait-cards.css site/session-room-v2/session-room-v2-portrait-cards.css
+          cp site-overrides/session-room-v2-initiative.css site/session-room-v2/session-room-v2-initiative.css
+          mkdir -p site/session-room-v2/encounter-library
+          cp site-overrides/session-room-v2-encounter-library.html site/session-room-v2/encounter-library/index.html
+          test -s site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-redirect.js
+          test -s site/session-room-v2/session-room-v2-live-roster.js
+          grep -q 'live-roster-button' site/session-room-v2/index.html
+          grep -q 'Initiative Queue' site/session-room-v2/index.html
+          grep -q 'Character Quick Checks' site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-fidelity.css
+          grep -q 'my-character-content' site/session-room-v2/index.html
+          grep -q 'combatant-overview' site/session-room-v2/index.html
+          test -s site/session-room-v2/session-room-v2-encounters.css
+          test -s site/session-room-v2/session-room-v2-sheet-style.css
+          test -s site/session-room-v2/session-room-v2-bottom.css
+          test -s site/session-room-v2/session-room-v2-codex.css
+          test -s site/session-room-v2/session-room-v2-portrait-cards.css
+          test -s site/session-room-v2/session-room-v2-initiative.css
+          grep -q 'initiative-manager-open' site/session-room-v2/index.html
+          grep -q 'existing-character-open' site/session-room-v2/index.html
+          grep -q 'active-collapse' site/session-room-v2/index.html
+          grep -q 'codex-missing-portrait' site/session-room-v2/index.html
+          grep -q 'codex-theme-select' site/session-room-v2/index.html
+          grep -q 'workspace-grid' site/session-room-v2/index.html
+          grep -q 'dmDeskRender' site/session-room-v2/index.html
+          grep -q 'setupPanelResizers' site/session-room-v2/index.html
+          grep -q 'sheet-ability-grid' site/session-room-v2/index.html
+          grep -q 'turn-ability-close' site/session-room-v2/index.html
+          grep -q 'Encounter Library' site/session-room-v2/encounter-library/index.html
+          test -s site/session-room-v2/session-room-v2-wireframe.css
+      - name: Check Session Room V2 preview JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          src=pathlib.Path('site/session-room-v2/index.html').read_text()
+          scripts=[content for content in re.findall(r'<script[^>]*>(.*?)</script>',src,re.S) if content.strip()]
+          if len(scripts)!=1:
+              raise SystemExit('Unexpected preview script count')
+          pathlib.Path('/tmp/terravale-room-v2.js').write_text(scripts[0])
+          PY
+          node --check /tmp/terravale-room-v2.js
+      - name: Test V2 authenticated roster and private character portraits
+        shell: bash
+        run: |
+          node --check site/session-room-v2/session-room-v2-live-roster.js
+          node site-overrides/test-v2-live-roster.cjs
+      - name: Regression check V2 add existing characters
+        shell: bash
+        run: node site-overrides/test-v2-existing-character.cjs
+      - name: Regression check V2 initiative setup and player roll
+        shell: bash
+        run: node site-overrides/test-v2-initiative.cjs
+      - name: Regression check V2 portrait cards and active turn collapse
+        shell: bash
+        run: node site-overrides/test-v2-portrait-cards.cjs
+      - name: Regression check V2 against Codex theme styling
+        shell: bash
+        run: node site-overrides/test-v2-codex-style.cjs
+      - name: Regression check V2 chat scroll with 200 messages
+        shell: bash
+        run: node site-overrides/test-v2-chat-scroll.cjs
+      - name: Build and validate live Session Room replacement
+        shell: bash
+        run: |
+          # Preserve the published compiled bundle in Git, but replace the
+          # Session Room route only after V2 prototype tests are successful.
+          mkdir -p site/session-room/encounter-library
+          # /party/ is the real Codex sidebar Session Room route.
+          # The previous deployment only patched /session-room/, leaving
+          # the original /party/ interface unchanged.
+          mkdir -p site/party
+          cp site-overrides/session-room-live.html site/party/index.html
+          cp site-overrides/session-room-live.html site/party.html
+          grep -q 'data-room-production="1"' site/party/index.html
+          grep -q 'Session Room</span></a>' site/party/index.html
+          test -s site/party.html
+          cp site-overrides/session-room-live.html site/session-room/index.html
+          # Next static export may also include /session-room.html. Overwrite
+          # that route too so slashless navigation cannot serve old content.
+          cp site-overrides/session-room-live.html site/session-room.html
+          test -s site/session-room.html
+          grep -q 'data-room-production="1"' site/session-room.html
+          cp site-overrides/session-room-live.js site/session-room/session-room-live.js
+          cp site-overrides/session-room-live.css site/session-room/session-room-live.css
+          cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
+          for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
+            cp "site-overrides/session-room-v2-${style}.css" "site/session-room/session-room-v2-${style}.css"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          content=Path('site/session-room/index.html').read_text()
+          assert 'data-room-production="1"' in content
+          assert 'room-live.js' in content
+          assert 'name:"Kai"' not in content
+          js=[p for p in re.findall(r'<script[^>]*>(.*?)</script>',content,re.S) if p.strip()]
+          assert len(js)==1, f"Expected one embedded production script: {len(js)}"
+          Path('/tmp/terravale-session-live.js').write_text(js[0])
+          PY
+          node --check /tmp/terravale-session-live.js
+          node --check site/session-room/session-room-live.js
+          node site-overrides/test-session-room-live.cjs
+          node site-overrides/test-session-room-live-auth.cjs
+      - name: Check Encounter Library JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          src=pathlib.Path('site/session-room-v2/encounter-library/index.html').read_text()
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',src,re.S)
+          if len(scripts)!=1:
+              raise SystemExit('Unexpected Encounter Library script count')
+          pathlib.Path('/tmp/terravale-v2-library.js').write_text(scripts[0])
+          PY
+          node --check /tmp/terravale-v2-library.js
+      - name: Test Shaman published class rules and level-appropriate feature cards
+        shell: bash
+        run: node site-overrides/test-shaman-rules.cjs
+      - name: Test signed character portraits and URL renewal
+        shell: bash
+        run: node site-overrides/test-portrait-refresh.cjs
+      - name: Test dynamic HP bar colours
+        shell: bash
+        run: node site-overrides/test-health-colors.cjs
+      - name: Test death saves, rescue triggers and rapid damage
+        shell: bash
+        run: node site-overrides/test-death-mechanics.cjs
+      - name: Check live sheet JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,pathlib
+          src=pathlib.Path('site/characters/sheet-live/index.html').read_text()
+          matches=re.findall(r'<script[^>]*>(.*?)</script>',src,re.S)
+          if not matches:
+              raise SystemExit('Missing embedded sheet JavaScript')
+          pathlib.Path('/tmp/terravale-live-sheet.js').write_text(matches[-1])
+          PY
+          node --check /tmp/terravale-live-sheet.js
+      - name: Inspect compiled authentication client initialization
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          needles=['storageKey:"supabase.auth.token"','storageKey:"sb-', 'supabase.auth.token',
+                   '"supabase.auth.token"', 'auth.getUser','createBrowserClient','persistSession:']
+          hits=0
+          for file in Path('site/_next/static').rglob('*.js'):
+              txt=file.read_text(errors='ignore')
+              for needle in needles:
+                  loc=txt.find(needle)
+                  if loc<0:continue
+                  # Only compiled application code and anonymous client options.
+                  fragment=txt[max(0,loc-200):loc+240]
+                  fragment=re.sub(r'(eyJ[A-Za-z0-9_-]{80,})','<redacted>',fragment)
+                  print('AUTH BUILT CLIENT',file.name,needle,repr(fragment))
+                  hits+=1
+                  if hits>=15:break
+              if hits>=15:break
+          PY
+      - name: Diagnose dashboard navigation and authentication storage patterns
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import re
+          text=Path('site/index.html').read_text()
+          p=text.find('data-tour-nav="/party"')
+          print('MAIN NAV EXCERPT',text[max(0,p-900):p+900][:1800])
+          print('MAIN NAV document width hints')
+          for q in ('sidebar', 'Collapse menu','data-tour-nav="/party"'):
+            print(q, text.count(q))
+          jslist=list(Path('site/_next').rglob('*.js'))
+          evidence={}
+          patterns=[r'storageKey[:=][^,}\n]{0,110}',r'sb-[a-z0-9]{12,40}-auth-token',
+                    r'terravale[^"\x27\\s]{0,55}auth[^"\x27\\s]{0,30}',r'auth\.getSession',
+                    r'localStorage\.getItem\([^)]{1,100}\)',
+                    r'createBrowserClient\(']
+          for file in jslist:
+            src=file.read_text(errors='ignore')
+            for pat in patterns:
+              matches=re.findall(pat,src,re.I)
+              if matches:
+                evidence.setdefault(pat,[]).extend(matches[:5])
+          for key,values in evidence.items():
+            print('AUTH CLUES',key,repr(list(dict.fromkeys(values))[:8]))
+          PY
+      - name: Use the main Codex sidebar on all standalone pages
+        shell: bash
+        run: |
+          python3 site-overrides/unify-site-sidebar.py
+          node site-overrides/test-shared-sidebar.cjs
+          test -s site/shared-sidebar/index.html
+          grep -q 'codex-shared-sidebar-frame' site/party/index.html
+          if grep -q 'codex-shared-sidebar-frame' site/characters/sheet-live/index.html; then
+            echo "::error::Live sheet has nested sidebar"
+            exit 1
+          fi
+          if grep -q 'codex-shared-sidebar-frame' site/characters/sheet-workshop/index.html; then
+            echo "::error::Sheet workshop has nested sidebar"
+            exit 1
+          fi
+          grep -q 'html.live-embedded .sidebar' site/characters/sheet-live/index.html
+          grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
+          node site-overrides/test-live-sheet-embedded.cjs
+          node site-overrides/test-actual-character-viewer.cjs
+      - name: Verify native server-rendered navigation
+        shell: bash
+        run: |
+          node site-overrides/test-native-navigation.cjs
