@@ -256,7 +256,7 @@ def patch(file, page, native_sidebar):
     html = path.read_text()
     native = file in NATIVE_ROUTES
     if native:
-        replacement, aside_count = re.subn(r'<aside\\b', '<aside id="room-native-nav"', native_sidebar, count=1)
+        replacement, aside_count = re.subn(r'<aside\b', '<aside id="room-native-nav"', native_sidebar, count=1)
         assert aside_count == 1, "Source-built navigation must contain an aside"
         assert 'id="room-native-nav"' in replacement, "Source nav must contain one real sidebar"
         # The source sidebar was extracted from the Dashboard (active="/").
@@ -274,7 +274,7 @@ def patch(file, page, native_sidebar):
             else:
                 tag=tag.replace(' aria-current="page"','')
             return tag
-        replacement=re.sub(r'<a\\b[^>]*data-tour-nav="[^"]+"[^>]*>',select_active,replacement)
+        replacement=re.sub(r'<a\b[^>]*data-tour-nav="[^"]+"[^>]*>',select_active,replacement)
 
     else:
         replacement = (f'<iframe class="codex-shared-sidebar-frame" '
