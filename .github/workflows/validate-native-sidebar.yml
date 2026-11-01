@@ -355,9 +355,12 @@ jobs:
           assert 'room-live.js' in content
           assert 'name:"Kai"' not in content
           js=[p for p in re.findall(r'<script[^>]*>(.*?)</script>',content,re.S) if p.strip()]
-          assert len(js)==1, f"Expected one embedded production script: {len(js)}"
-          Path('/tmp/terravale-session-live.js').write_text(js[0])
+          assert len(js)==2, f"Expected theme-prepaint and production scripts: {len(js)}"
+          assert 'codexTheme=value' in js[0], 'Theme must initialise before the first paint'
+          Path('/tmp/terravale-session-theme-prepaint.js').write_text(js[0])
+          Path('/tmp/terravale-session-live.js').write_text(js[-1])
           PY
+          node --check /tmp/terravale-session-theme-prepaint.js
           node --check /tmp/terravale-session-live.js
           node --check site/session-room/session-room-live.js
           node site-overrides/test-session-room-live.cjs
