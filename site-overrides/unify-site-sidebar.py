@@ -7,6 +7,7 @@ import re
 
 PREFIX = "/terravale-preview/"
 OUT = Path("site")
+NATIVE_ROUTES = {"party/index.html", "party.html", "session-room/index.html", "session-room.html"}
 CUSTOM = {
     "party/index.html": "party", "party.html": "party",
     "session-room/index.html": "party", "session-room.html": "party",
@@ -248,17 +249,40 @@ body.sidebar-collapsed .codex-shared-sidebar-frame{max-width:48px!important}
 </style>
 """
 
-def patch(file, page):
+def patch(file, page, native_sidebar):
     path = OUT/file
     if not path.exists():
         raise RuntimeError(f"Standalone page is missing: {file}")
     html = path.read_text()
-    iframe = (f'<iframe class="codex-shared-sidebar-frame" '
-        f'title="Terravale Codex navigation" '
-        f'src="{PREFIX}shared-sidebar/?current={page}&v=native-20261101" '
-        f'loading="eager" referrerpolicy="same-origin"></iframe>')
+    native = file in NATIVE_ROUTES
+    if native:
+        replacement, aside_count = re.subn(r'<aside\b', '<aside id="room-native-nav"', native_sidebar, count=1)
+        assert aside_count == 1, "Source-built navigation must contain an aside"
+        assert 'id="room-native-nav"' in replacement, "Source nav must contain one real sidebar"
+        # The source sidebar was extracted from the Dashboard (active="/").
+        # Mark the Room route in HTML, BEFORE scripts, to prevent an active-link flash.
+        def select_active(match):
+            tag=match.group(0)
+            route=re.search(r'data-tour-nav="([^"]+)"',tag).group(1)
+            class_match=re.search(r'class="([^"]+)"',tag)
+            if class_match:
+                names=[x for x in class_match.group(1).split() if x!='active']
+                if route=='/party': names.append('active')
+                tag=tag.replace(class_match.group(0),'class="'+' '.join(names)+'"',1)
+            if route=='/party':
+                tag=tag[:-1]+' aria-current="page">'
+            else:
+                tag=tag.replace(' aria-current="page"','')
+            return tag
+        replacement=re.sub(r'<a\b[^>]*data-tour-nav="[^"]+"[^>]*>',select_active,replacement)
+
+    else:
+        replacement = (f'<iframe class="codex-shared-sidebar-frame" '
+            f'title="Terravale Codex navigation" '
+            f'src="{PREFIX}shared-sidebar/?current={page}&v=native-20261101" '
+            f'loading="eager" referrerpolicy="same-origin"></iframe>')
     replaced, count = re.subn(
-        r'<aside\b[^>]*>[\s\S]*?</aside>', lambda _: iframe, html, count=1, flags=re.I
+        r'<aside\b[^>]*>[\s\S]*?</aside>', lambda _: replacement, html, count=1, flags=re.I
     )
     if count != 1:
         if "encounter-library" in file:
@@ -266,19 +290,30 @@ def patch(file, page):
         raise RuntimeError(f"Could not replace unique custom sidebar in {file}")
     if "</head>" not in replaced:
         raise RuntimeError(f"No head in {file}")
-    replaced = replaced.replace("</head>",FRAME_STYLE+"</head>",1)
+    if native:
+        # This is the exact source-built sidebar markup. Only its styling/interaction
+        # is scoped, so global Next styles cannot collide with the Session Room.
+        stylesheet='<link rel="stylesheet" href="/terravale-preview/session-room/room-nav-inline.css?v=stable-20261101">'
+        script='<script src="/terravale-preview/session-room/room-nav-inline.js?v=stable-20261101" defer></script>'
+        replaced=replaced.replace("</head>",stylesheet+"</head>",1)
+        replaced=replaced.replace("</body>",script+"</body>",1)
+    else:
+        replaced = replaced.replace("</head>",FRAME_STYLE+"</head>",1)
     path.write_text(replaced)
     return True
 
 def main():
     original = make_sidebar()
-    changed = [name for name, page in CUSTOM.items() if patch(name, page)]
+    changed = [name for name, page in CUSTOM.items() if patch(name, page, original)]
     print("Shared Codex sidebar derived from original compiled homepage:",len(original),"HTML bytes")
     print("Unified standalone sidebar in",len(changed),"pages:",", ".join(changed))
     if len(changed) < 5:
         raise RuntimeError("Not enough sidebar pages were patched")
     assert "data-tour-nav" in (OUT/"shared-sidebar/index.html").read_text()
-    assert 'codex-shared-sidebar-frame' in (OUT/"party/index.html").read_text()
+    party=(OUT/"party/index.html").read_text()
+    assert 'id="room-native-nav"' in party, "Production navigation must be inlined"
+    assert 'codex-shared-sidebar-frame' not in party, "An iframe would cause a layout flash"
+    assert "room-nav-inline.css" in party and "room-nav-inline.js" in party
     for sheet_name in ("characters/sheet-live/index.html",
                        "characters/sheet-workshop/index.html"):
         sheet=(OUT/sheet_name).read_text()

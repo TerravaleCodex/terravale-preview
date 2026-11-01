@@ -19,6 +19,10 @@ assert(!homepage.includes('navigation-refresh.js?v=20261101-nav1'),'Old DOM over
 assert(!homepage.includes('navigation-refresh.css?v=20261101-nav1'),'Old overlay CSS must never run');
 assert(shared.includes('terravale.ui.sidebar.groups.v1'),'Static shared nav missing accordion logic');
 assert(shared.includes('native-20261101')===false,'Standalone sidebar should not iframe itself');
-assert(party.includes('codex-shared-sidebar-frame'),'Session Room must include shared navigation');
-assert(party.includes('shared-sidebar/?current=party&v=native-20261101'),'Session Room must request fresh native navigation');
-console.log("PASS: SSR renders only native collapsible navigation; Session Room shares it; no overlay or old campaign picker");
+assert(party.includes('id="room-native-nav"'),'Session Room must contain the same source-built sidebar HTML directly');
+assert(!party.includes('codex-shared-sidebar-frame'),'Production room must not download a second navigation document');
+assert(party.includes('room-nav-inline.css')&&party.includes('room-nav-inline.js'),'Native room styles and actions must load');
+assert(party.includes('id="codex-theme-before-paint"'),'Saved theme must be chosen before first CSS paint');
+assert(party.indexOf('codex-theme-before-paint')<party.indexOf('session-room-v2-codex.css'),'Theme preload must run before stylesheets');
+assert(!party.includes('class="nav-head"'),'Legacy standalone sidebar must be absent');
+console.log("PASS: SSR renders only native collapsible navigation; Session Room inlines it; no iframe, overlay or legacy sidebar");

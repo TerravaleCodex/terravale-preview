@@ -4,6 +4,17 @@
 <base href="/terravale-preview/session-room/">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Session Room — Terravale Codex</title>
+<script id="codex-theme-before-paint">
+/* Set the same theme as the main Codex BEFORE first CSS/layout paint. */
+(function(){
+ var supported=new Set(["dark","night-sky","shotxo","shady","absolute-zero","sanguine","verdant","dragonforge","astral","null-meridian"]);
+ var value="dark";
+ try{value=localStorage.getItem("terravale.unified.theme.v2")||localStorage.getItem("terravale.cosmetic.site.v1")||"dark"}catch(e){}
+ if(!supported.has(value))value="dark";
+ document.documentElement.dataset.codexTheme=value;
+ document.documentElement.dataset.appTheme=value;
+})();
+</script>
 <style>
 :root{color-scheme:dark;--bg:#08090c;--panel:#0e1117;--panel2:#11151d;--line:#252a35;--line2:#383044;--ink:#e4e5eb;--muted:#8d91a1;--purple:#b58aeb;--purple2:#7e5cae;--green:#7fc7a3;--red:#eb8b90;--gold:#d7b77b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--purple);outline-offset:2px}a{color:inherit;text-decoration:none}
@@ -175,16 +186,6 @@ const THEME_KEY="terravale.unified.theme.v2",SITE_THEME_KEY="terravale.cosmetic.
 const themes=new Set(["dark","night-sky","shotxo","shady","absolute-zero","sanguine","verdant","dragonforge","astral","null-meridian"]);
 let roomCampaignName="";
 let sidebarMinimized=false;
-function syncSidebarFrame(){
- const frame=document.querySelector(".codex-shared-sidebar-frame");
- if(!frame?.contentWindow)return;
- frame.contentWindow.postMessage({type:"terravale:sidebar-context",
-  theme:document.documentElement.dataset.appTheme||"dark",
-  campaign:roomCampaignName,collapsed:sidebarMinimized},location.origin);
-}
-window.addEventListener("message",e=>{
- if(e.origin===location.origin && e.data?.type==="terravale:sidebar-ready")syncSidebarFrame();
-});
 window.addEventListener("DOMContentLoaded",()=>{
  document.getElementById("room-reconnect")?.addEventListener("click",()=>window.TerravaleLiveHooks?.reconnect?.());
  const button=document.getElementById("sidebar-toggle");
@@ -193,10 +194,7 @@ window.addEventListener("DOMContentLoaded",()=>{
   document.body.classList.toggle("sidebar-collapsed",sidebarMinimized);
   button.title=sidebarMinimized?"Expand menu":"Collapse menu";
   button.setAttribute("aria-expanded",String(!sidebarMinimized));
-  syncSidebarFrame();
  });
- document.querySelector(".codex-shared-sidebar-frame")?.addEventListener("load",syncSidebarFrame);
- syncSidebarFrame();
 });
 function setCodexTheme(theme,persist=false){
  const id=themes.has(theme)?theme:"dark";
@@ -205,7 +203,6 @@ function setCodexTheme(theme,persist=false){
  const menu=document.getElementById("codex-theme-select");
  if(menu&&menu.value!==id)menu.value=id;
  if(persist){try{localStorage.setItem(THEME_KEY,id);localStorage.setItem(SITE_THEME_KEY,id);}catch(e){}}
- syncSidebarFrame();
 }
 function initialCodexTheme(){
  try{
@@ -1025,7 +1022,6 @@ window.TerravaleRoomPreview=Object.freeze({
  const oldLabel=document.getElementById("room-campaign-label");
  if(oldLabel)oldLabel.textContent=campaignName;
  roomCampaignName=campaignName;
- syncSidebarFrame();
  render();
  },
  applyServer(payload){

@@ -2,122 +2,106 @@
 "use strict";
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http"),cp=require("node:child_process");
 const root=path.resolve("site"),prefix="/terravale-preview/";
-let chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium","/usr/bin/chromium-browser"].filter(Boolean).find(fs.existsSync);
-if(!chrome){for(const name of ["google-chrome","chromium","chromium-browser"]){try{chrome=cp.execFileSync("which",[name],{encoding:"utf8"}).trim();break}catch{}}}
-const main=fs.readFileSync(path.join(root,"index.html"),"utf8");
-const menu=fs.readFileSync(path.join(root,"shared-sidebar/index.html"),"utf8");
-const expected=(main.match(/data-tour-nav="/g)||[]).length;
-if(expected<5||!menu.includes('data-tour-nav="/party"'))throw Error("Shared sidebar missing real Codex links");
-const pages=["party/index.html","session-room/index.html","session-room-v2/index.html"];
-for(const file of pages){
- const data=fs.readFileSync(path.join(root,file),"utf8");
- if(!data.includes('class="codex-shared-sidebar-frame"'))throw Error(file+" still has separate sidebar");
- if(!data.includes(prefix+"shared-sidebar/?current="))throw Error(file+" not loading shared navigation");
+const read=n=>fs.readFileSync(path.join(root,n),"utf8");
+const main=read("index.html"),menu=read("shared-sidebar/index.html");
+if((main.match(/data-tour-nav="/g)||[]).length<5||!menu.includes('data-tour-nav="/party"'))
+ throw Error("Source Codex sidebar missing");
+for(const file of ["party/index.html","party.html","session-room/index.html","session-room.html"]){
+ const data=read(file);
+ if(!data.includes('id="room-native-nav"')||!data.includes('room-nav-inline.css'))
+  throw Error("Production Session Room does not render native navigation: "+file);
+ if(data.includes("codex-shared-sidebar-frame")||data.includes('class="nav-head"'))
+  throw Error("Legacy iframe or previous navigation still in production: "+file);
+ if(!data.includes('id="codex-theme-before-paint"'))
+  throw Error("Theme is not initialised before first paint: "+file);
 }
+if(!read("session-room-v2/index.html").includes('codex-shared-sidebar-frame'))
+ throw Error("Isolated workshop must retain its working shared-sidebar iframe");
 for(const file of ["characters/sheet-live/index.html","characters/sheet-workshop/index.html"]){
- const data=fs.readFileSync(path.join(root,file),"utf8");
- if(data.includes("codex-shared-sidebar-frame"))throw Error(file+" has a nested sidebar in the embedded character sheet");
- if(!data.includes('<aside class="sidebar"'))throw Error(file+" lost its original embedded navigation");
+ const data=read(file);
+ if(data.includes("codex-shared-sidebar-frame"))throw Error(file+" contains a nested menu");
+ if(!data.includes('<aside class="sidebar"'))throw Error(file+" lost its embedded sidebar");
 }
-if(!fs.readFileSync(path.join(root,"characters/sheet-live/index.html"),"utf8").includes("html.live-embedded .sidebar"))throw Error("Embedded character sheet navigation hiding rule missing");
-if(!chrome){console.log("PASS: shared sidebar structure checks, browser unavailable");process.exit(0);}
-const inject="<script>("+function(){
-window.addEventListener("load",function(){
- const iframe=document.querySelector("iframe.codex-shared-sidebar-frame");
- const record={found:!!iframe};
+let chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium","/usr/bin/chromium-browser"].filter(Boolean).find(fs.existsSync);
+if(!chrome){for(const cmd of ["google-chrome","chromium","chromium-browser"]){try{chrome=cp.execFileSync("which",[cmd],{encoding:"utf8"}).trim();break}catch{}}}
+if(!chrome){console.log("PASS structural native Session Room navigation; Chromium unavailable");process.exit(0)}
+const script='<script>('+function(){
+ window.addEventListener("load",()=>{
+ const r={};
  try{
-  const doc=iframe?.contentDocument;
-  const aside=doc?.querySelector("aside");
-  const nav=doc?.querySelectorAll('[data-tour-nav]');
-  const active=doc?.querySelector('[data-tour-nav="/party"]');
-  const r=iframe?.getBoundingClientRect();
-  record.links=nav?.length||0;
-  record.current=active?.getAttribute("aria-current");
-  record.height=Math.round(r?.height||0);
-  record.width=Math.round(r?.width||0);
-  record.sidebarHeight=Math.round(aside?.getBoundingClientRect().height||0);
-  record.mainHref=active?.getAttribute("href");
-  record.sameStylesheets=doc?.querySelectorAll("link[rel=stylesheet]").length||0;
-  record.navFontSize=parseFloat(iframe?.contentWindow?.getComputedStyle(nav?.[0]).fontSize)||0;
-  record.navHeight=Math.round(nav?.[0]?.getBoundingClientRect().height||0);
-  record.navTextNoWrap=iframe?.contentWindow?.getComputedStyle(nav?.[0]?.querySelector(".nav-text")).whiteSpace==="nowrap";
-  record.clippedNavLabels=Array.from(nav||[]).filter(el=>{
-   const label=el.querySelector(".nav-text");
-   if(!label)return false;
-   const labelRect=label.getBoundingClientRect();
-   const linkRect=el.getBoundingClientRect();
-   // nav-text is inline; clientWidth is 0 even when its text fits.
-   return labelRect.right>linkRect.right+1;
-  }).map(el=>el.getAttribute("aria-label"));
-  const bridge=window.TerravaleRoomPreview;
-  record.bridgeAvailable=!!bridge?.useRoster;
-  if(bridge){
-   // Simulate the main Codex theme selector, which persists both keys.
-   localStorage.setItem("terravale.unified.theme.v2","shady");
-   localStorage.setItem("terravale.cosmetic.site.v1","shady");
-   document.documentElement.dataset.appTheme="shady";
-   bridge.useRoster({actors:[],ownId:"",userId:"dm-user",isDm:true,campaignName:"Shady Test"});
-   record.dmDesk=document.querySelector("#right-heading")?.textContent==="DM Desk";
-   record.campaignName=document.querySelector("#live-campaign-caption")?.textContent?.includes("Shady Test");
-   record.dmActions=document.querySelector("#my-character-content")?.textContent?.includes("Existing character");
+  const nav=document.getElementById("room-native-nav");
+  const route=nav?.querySelector('[data-tour-nav="/party"]');
+  const links=nav?.querySelectorAll('[data-tour-nav]')||[];
+  const topbar=document.querySelector(".topbar");
+  const width=nav?.getBoundingClientRect().width||0;
+  const rectHeight=nav?.getBoundingClientRect().height||0;
+  const font=route?parseFloat(getComputedStyle(route.querySelector(".nav-text")).fontSize):0;
+  const height=route?.getBoundingClientRect().height||0;
+  const rail=nav?.querySelectorAll(".sidebar-nav-section").length||0;
+  r.inline=!!nav&&!document.querySelector(".codex-shared-sidebar-frame");
+  r.navWidth=Math.round(width);r.navHeight=Math.round(rectHeight);
+  r.topbarHeight=Math.round(topbar?.getBoundingClientRect().height||0);
+  r.navLabelFont=font;r.linkHeight=Math.round(height);
+  r.sections=rail;r.links=links.length;
+  r.active=route?.getAttribute("aria-current")==="page"&&route.classList.contains("active");
+  r.oldDashboardActive=!!nav?.querySelector('[data-tour-nav="/"].active');
+  r.help=!!nav?.querySelector(".sidebar-foot .sidebar-help");
+  r.campaignPicker=!!nav?.querySelector("select");
+  r.bridge=!!window.TerravaleRoomPreview?.useRoster;
+  if(r.bridge){
+   window.TerravaleRoomPreview.useRoster({actors:[],ownId:"",userId:"dm-user",isDm:true,campaignName:"Shady Test"});
+   r.dmDesk=document.querySelector("#right-heading")?.textContent==="DM Desk";
+   r.campaignName=document.querySelector("#live-campaign-caption")?.textContent?.includes("Shady Test");
+   r.dmActions=document.querySelector("#my-character-content")?.textContent?.includes("Existing character");
   }
-  record.pass=record.found&&record.links>=5&&record.current==="page"&&record.height>400&&record.width>=100&&
-    record.sidebarHeight>400&&record.width>=190&&record.width<=230&&
-    record.sameStylesheets>=1&&record.mainHref?.includes("/party/")&&
-    record.navFontSize>8&&record.navFontSize<=13&&record.navHeight<=43&&record.navTextNoWrap&&
-    record.clippedNavLabels.length===0&&
-    record.bridgeAvailable&&record.dmDesk&&record.campaignName&&record.dmActions;
- }catch(e){record.error=String(e);record.pass=false;}
- setTimeout(()=>{
-  try{
-   const doc=iframe?.contentDocument;
-   record.themeValue=doc?.documentElement?.dataset?.appTheme;
-   record.themeParentValue=document.documentElement.dataset.appTheme;
-   record.themeSynced=doc?.documentElement?.dataset?.appTheme==="shady";
-   record.noCampaignSelector=doc?.querySelectorAll("#codex-sidebar-root select").length===0;
-   record.groupCount=doc?.querySelectorAll(".sidebar-nav-section").length||0;
-   record.helpAtBottom=!!doc?.querySelector(".sidebar-foot .sidebar-help");
-   record.pass=record.pass&&record.themeSynced&&record.noCampaignSelector&&record.groupCount>=4&&record.helpAtBottom;
-  }catch(e){record.pass=false;record.error=String(e)}
-  document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
- },150);
-});
-}.toString()+")();</scr"+"ipt>";
-const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"image/png"};
+  const theme=document.getElementById("codex-theme-select");
+  const current=document.documentElement.dataset.codexTheme;
+  if(theme){theme.value="shady";theme.dispatchEvent(new Event("change",{bubbles:true}))}
+  r.theme=document.documentElement.dataset.codexTheme;
+  r.bodyBg=getComputedStyle(document.body).backgroundColor;
+  r.sidebarBg=nav?getComputedStyle(nav).backgroundColor:"";
+  if(theme){theme.value=current||"dark";theme.dispatchEvent(new Event("change",{bubbles:true}))}
+  r.pass=r.inline&&r.navWidth===208&&r.navHeight>400&&r.topbarHeight===62&&
+   r.navLabelFont>=11.5&&r.navLabelFont<=12.5&&r.linkHeight>=31&&r.linkHeight<=43&&
+   r.sections>=4&&r.links>=10&&r.active&&!r.oldDashboardActive&&r.help&&!r.campaignPicker&&
+   r.bridge&&r.dmDesk&&r.campaignName&&r.dmActions&&
+   r.theme==="shady"&&r.bodyBg==="rgb(5, 5, 6)"&&r.sidebarBg==="rgb(9, 9, 11)";
+ }catch(e){r.pass=false;r.error=String(e)}
+ document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(r));
+ });
+}.toString()+')();</scr'+'ipt>';
+const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json",".svg":"image/svg+xml"};
 const server=http.createServer((req,res)=>{
- let url=new URL(req.url,"http://localhost");
- if(!url.pathname.startsWith(prefix)){res.writeHead(404);res.end();return}
- let rel=decodeURIComponent(url.pathname.slice(prefix.length));
+ const u=new URL(req.url,"http://localhost");
+ if(!u.pathname.startsWith(prefix)){res.writeHead(404);res.end();return}
+ let rel=decodeURIComponent(u.pathname.slice(prefix.length));
  if(rel.includes("..")){res.writeHead(403);res.end();return}
  if(rel.endsWith("/"))rel+="index.html";
  const file=path.resolve(root,rel);
  if(!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return}
  try{
-  let data=fs.readFileSync(file);
-  if(rel==="party/index.html"&&url.searchParams.has("test-sidebar")){
-   data=Buffer.from(data.toString().replace("</body>",inject+"</body>"));
-  }
+  let b=fs.readFileSync(file);
+  if(rel==="party/index.html"&&u.searchParams.has("test-sidebar"))
+   b=Buffer.from(b.toString().replace("</body>",script+"</body>"));
   res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"});
-  res.end(data);
+  res.end(b);
  }catch{res.writeHead(404);res.end()}
 });
 (async()=>{
- await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
  try{
-  const addr=server.address();
-  const url="http://127.0.0.1:"+addr.port+prefix+"party/?test-sidebar=1";
-  const result=await new Promise((resolve,reject)=>{
-   const p=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--virtual-time-budget=5000","--window-size=1650,970","--dump-dom",url],
-    {stdio:["ignore","pipe","ignore"]});
-   let out="";const kill=setTimeout(()=>{p.kill();reject(Error("Chromium sidebar test timed out"))},35000);
-   p.stdout.on("data",chunk=>{out+=chunk.toString();if(out.length>8*1024*1024)p.kill()});
-   p.on("error",err=>{clearTimeout(kill);reject(err)});
-   p.on("close",code=>{clearTimeout(kill);code===0?resolve(out):reject(Error("Chromium exited "+code))});
+  const url="http://127.0.0.1:"+server.address().port+prefix+"party/?test-sidebar=1";
+  const html=await new Promise((resolve,reject)=>{
+   const p=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--virtual-time-budget=5000","--window-size=1650,970","--dump-dom",url],{stdio:["ignore","pipe","ignore"]});
+   let out="";const timeout=setTimeout(()=>{p.kill();reject(Error("Room browser test timed out"))},35000);
+   p.stdout.on("data",x=>{out+=x.toString();if(out.length>8*1024*1024)p.kill()});
+   p.on("error",e=>{clearTimeout(timeout);reject(e)});
+   p.on("close",code=>{clearTimeout(timeout);code===0?resolve(out):reject(Error("Chrome exited "+code))});
   });
-  const m=result.match(/data-shared-sidebar-test="([^"]+)"/);
-  if(!m)throw Error("Browser returned no sidebar measurement");
-  const score=JSON.parse(decodeURIComponent(m[1]));
-  console.log("Shared sidebar browser regression:",JSON.stringify(score));
+  const match=html.match(/data-shared-sidebar-test="([^"]+)"/);
+  if(!match)throw Error("Browser did not return native room layout measurements");
+  const score=JSON.parse(decodeURIComponent(match[1]));
+  console.log("Native Session Room layout regression:",JSON.stringify(score));
   if(!score.pass)process.exitCode=1;
  }finally{server.close()}
-})().catch(e=>{console.error(e);server.close();process.exitCode=1;});
+})().catch(e=>{console.error(e);server.close();process.exitCode=1});

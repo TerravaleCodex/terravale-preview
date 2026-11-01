@@ -340,6 +340,9 @@ jobs:
           grep -q 'data-room-production="1"' site/session-room.html
           cp site-overrides/session-room-live.js site/session-room/session-room-live.js
           cp site-overrides/session-room-live.css site/session-room/session-room-live.css
+          cp site-overrides/room-nav-inline.css site/session-room/room-nav-inline.css
+          cp site-overrides/room-nav-inline.js site/session-room/room-nav-inline.js
+          node --check site/session-room/room-nav-inline.js
           cp site-overrides/session-room-v2-encounter-library.html site/session-room/encounter-library/index.html
           for style in fidelity wireframe encounters sheet-style bottom codex portrait-cards initiative; do
             cp "site-overrides/session-room-v2-${style}.css" "site/session-room/session-room-v2-${style}.css"
@@ -352,9 +355,12 @@ jobs:
           assert 'room-live.js' in content
           assert 'name:"Kai"' not in content
           js=[p for p in re.findall(r'<script[^>]*>(.*?)</script>',content,re.S) if p.strip()]
-          assert len(js)==1, f"Expected one embedded production script: {len(js)}"
-          Path('/tmp/terravale-session-live.js').write_text(js[0])
+          assert len(js)==2, f"Expected theme-prepaint and production scripts: {len(js)}"
+          assert 'codexTheme=value' in js[0], 'Theme must initialise before the first paint'
+          Path('/tmp/terravale-session-theme-prepaint.js').write_text(js[0])
+          Path('/tmp/terravale-session-live.js').write_text(js[-1])
           PY
+          node --check /tmp/terravale-session-theme-prepaint.js
           node --check /tmp/terravale-session-live.js
           node --check site/session-room/session-room-live.js
           node site-overrides/test-session-room-live.cjs
@@ -451,7 +457,8 @@ jobs:
           python3 site-overrides/unify-site-sidebar.py
           node site-overrides/test-shared-sidebar.cjs
           test -s site/shared-sidebar/index.html
-          grep -q 'codex-shared-sidebar-frame' site/party/index.html
+          grep -q 'id="room-native-nav"' site/party/index.html
+          ! grep -q 'codex-shared-sidebar-frame' site/party/index.html
           if grep -q 'codex-shared-sidebar-frame' site/characters/sheet-live/index.html; then
             echo "::error::Live sheet has nested sidebar"
             exit 1
