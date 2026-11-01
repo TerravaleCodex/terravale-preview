@@ -52,6 +52,8 @@ window.addEventListener("load",function(){
  setTimeout(()=>{
   try{
    const doc=iframe?.contentDocument;
+   record.themeValue=doc?.documentElement?.dataset?.appTheme;
+   record.themeParentValue=document.documentElement.dataset.appTheme;
    record.themeSynced=doc?.documentElement?.dataset?.appTheme==="shady";
    record.campaignInNav=Array.from(doc?.querySelectorAll("select option")||[])
      .some(option=>option.textContent==="Shady Test");
