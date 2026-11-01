@@ -59,7 +59,7 @@ def make_sidebar():
 <style>
 :root{color-scheme:dark}
 html,body{height:100%;width:100%;margin:0;overflow:hidden}
-body{background:#151e29;color:#f1e9dd}
+body{background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!important}
 #codex-sidebar-root{height:100%;width:100%;min-width:0;overflow:hidden}
 #codex-sidebar-root>aside{
   box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
@@ -67,6 +67,7 @@ body{background:#151e29;color:#f1e9dd}
   visibility:visible!important;opacity:1!important;
   width:100%!important;min-width:0!important;max-width:none!important;
   height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;
+  background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!important;
 }
 #codex-sidebar-root a{cursor:pointer}
 #codex-sidebar-root{
@@ -178,7 +179,7 @@ FRAME_STYLE = """
  width:100%!important;height:100vh!important;height:100dvh!important;
  min-width:0!important;max-width:none!important;display:block!important;
  align-self:start;position:sticky;top:0;
- border:0;background:#151e29;z-index:15;
+ border:0;background:var(--c-side,#151e29);z-index:15;
 }
 .app{grid-template-columns:140px minmax(0,1fr)!important}
 body.sidebar-collapsed .app{grid-template-columns:46px minmax(0,1fr)!important}
