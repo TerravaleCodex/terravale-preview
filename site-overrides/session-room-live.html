@@ -1009,14 +1009,12 @@ if(!state.exampleFullAdded){
 }
 /* Authorized live roster data remains transient and never reaches localStorage. */
 window.TerravaleRoomPreview=Object.freeze({
- applyCombatDamage(targetId,amount){
-  if(!state.dm||!Number.isInteger(amount)||amount<0||amount>9999||!state.queue.includes(targetId))return false;
-  const target=actor(targetId);
-  if(!target||!Number.isFinite(target.hp))return false;
-  target.hp=Math.max(0,target.hp-amount);
-  if(target.type==="Player")window.TerravaleLiveHooks?.updateSheetState?.(target.id,{hp:target.hp});
-  save();render();
-  return true;
+ async applyCombatDamage(targetId,amount){
+  if(!state.dm||!Number.isInteger(amount)||amount<0||amount>9999||!state.queue.includes(targetId))
+   throw Error("Only the DM can damage a combatant in initiative.");
+  const apply=window.TerravaleLiveHooks?.applyCombatDamage;
+  if(!apply)throw Error("Campaign HP controls are not connected");
+  return apply(targetId,amount);
  },
  showConnectionFailure(message){
   $("live-campaign-caption").textContent="Campaign connection needed";
