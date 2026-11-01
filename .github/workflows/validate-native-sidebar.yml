@@ -475,3 +475,4 @@ jobs:
         shell: bash
         run: |
           node site-overrides/test-native-navigation.cjs
+          node site-overrides/test-session-room-click-through.cjs
