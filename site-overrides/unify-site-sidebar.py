@@ -68,7 +68,7 @@ body{background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!im
   position:relative!important;inset:auto!important;transform:none!important;
   visibility:visible!important;opacity:1!important;
   width:100%!important;min-width:0!important;max-width:none!important;
-  height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;
+  height:100dvh!important;overflow:hidden!important;
   background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!important;
 }
 #codex-sidebar-root a{cursor:pointer}
@@ -98,6 +98,24 @@ body{background:var(--public-nav,#151e29)!important;color:var(--text,#f1e9dd)!im
   flex:0 0 15px!important;min-width:15px!important;
 }
 #codex-sidebar-root .sidebar-label{font-size:9px!important;letter-spacing:1px!important;padding:9px 10px!important}
+#codex-sidebar-root .sidebar-nav{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;gap:8px!important;padding:0 3px 10px!important;scrollbar-width:thin!important}
+#codex-sidebar-root .sidebar-nav-section{display:block!important;min-width:0!important}
+#codex-sidebar-root .nav-section-toggle{display:flex!important;justify-content:space-between!important;align-items:center!important;min-height:29px!important;width:100%!important;padding:6px 9px!important;font-size:10px!important;text-align:left!important}
+#codex-sidebar-root .nav-section-links[hidden]{display:none!important}
+#codex-sidebar-root .sidebar-search{display:flex!important;flex:0 0 auto!important;min-height:39px!important}
+#codex-sidebar-root .sidebar-foot{display:flex!important;margin-top:auto!important;flex:0 0 auto!important;padding:9px 4px 5px!important}
+#codex-sidebar-root .sidebar-help{display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;font-size:11px!important}
+#codex-sidebar-root .nav-item{max-width:calc(100% - 8px)!important}
+#codex-sidebar-root .nav-item .nav-text{font-size:11px!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-section-toggle,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-search .nav-text,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-help .nav-text,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-search-hint{display:none!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-section-links{display:block!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-section-links .nav-item{justify-content:center!important}
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-help,
+html[data-sidebar-collapsed="true"] #codex-sidebar-root .sidebar-search{justify-content:center!important}
+
 #codex-sidebar-root>aside nav{padding:0!important;margin:0!important}
 #codex-sidebar-root select{font-size:10px!important;max-width:calc(100% - 8px)!important}
 #codex-sidebar-root [data-session-campaign-name]{
@@ -153,6 +171,7 @@ html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-item .nav-symbol{fl
     document.documentElement.dataset.codexTheme=payload.theme;
   }
   document.documentElement.dataset.sidebarCollapsed=payload.collapsed?'true':'false';
+  if(typeof paint==='function')paint();
   if(typeof payload.campaign==='string' && payload.campaign.trim()){
     for(const sel of document.querySelectorAll('#codex-sidebar-root select')){
       const found=Array.from(sel.options).find(o=>o.textContent===payload.campaign);
@@ -164,6 +183,45 @@ html[data-sidebar-collapsed="true"] #codex-sidebar-root .nav-item .nav-symbol{fl
   }
  });
  window.parent.postMessage({type:'terravale:sidebar-ready'},location.origin);
+ // The shared-sidebar document contains server-rendered native navigation.
+ // It is intentionally not hydrated with the main React application, so wire its
+ // accordion buttons and footer help directly without copying the old menu.
+ const key='terravale.ui.sidebar.groups.v1';
+ let saved={};
+ try{saved=JSON.parse(localStorage.getItem(key)||'null')||{}}catch{}
+ const paint=()=>{
+  const collapsed=document.documentElement.dataset.sidebarCollapsed==='true';
+  for(const button of document.querySelectorAll('.nav-section-toggle')){
+   const id=button.closest('.sidebar-nav-section')?.dataset.section;
+   const panel=document.getElementById(button.getAttribute('aria-controls')||'');
+   if(!id||!panel)continue;
+   const requested=typeof saved[id]==='boolean'?saved[id]:button.getAttribute('aria-expanded')==='true';
+   const isActive=!!panel.querySelector('[aria-current="page"]');
+   const expanded=collapsed||requested||isActive;
+   panel.hidden=!expanded;
+   button.setAttribute('aria-expanded',String(expanded));
+   const chevron=button.querySelector('.nav-section-chevron');
+   if(chevron)chevron.textContent=expanded?'⌄':'›';
+  }
+ };
+ for(const button of document.querySelectorAll('.nav-section-toggle')){
+  const id=button.closest('.sidebar-nav-section')?.dataset.section;
+  if(!id)continue;
+  button.addEventListener('click',()=>{
+   const panel=document.getElementById(button.getAttribute('aria-controls')||'');
+   saved[id]=!(panel&&!panel.hidden);
+   try{localStorage.setItem(key,JSON.stringify(saved))}catch{}
+   paint();
+  });
+ }
+ document.querySelector('.sidebar-help')?.addEventListener('click',()=>{
+  window.top.location.assign('/terravale-preview/?terravale-help=1');
+ });
+ const nativeTour=()=>{
+  const help=new URLSearchParams(location.search).get('terravale-help');
+  if(help==='1')window.top.location.assign('/terravale-preview/?terravale-help=1');
+ };
+ paint();window.addEventListener('storage',paint);
  // Navigate to Campaigns for changing the active campaign. Other links
  // are native top-level links; no inactive Next.js controls are copied.
  for(const sel of document.querySelectorAll('#codex-sidebar-root select')){
@@ -197,7 +255,7 @@ def patch(file, page):
     html = path.read_text()
     iframe = (f'<iframe class="codex-shared-sidebar-frame" '
         f'title="Terravale Codex navigation" '
-        f'src="{PREFIX}shared-sidebar/?current={page}" '
+        f'src="{PREFIX}shared-sidebar/?current={page}&v=native-20261101" '
         f'loading="eager" referrerpolicy="same-origin"></iframe>')
     replaced, count = re.subn(
         r'<aside\b[^>]*>[\s\S]*?</aside>', lambda _: iframe, html, count=1, flags=re.I

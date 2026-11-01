@@ -4,7 +4,9 @@ const fs=require("node:fs"),path=require("node:path"),http=require("node:http"),
 const root=path.resolve("site"),prefix="/terravale-preview/";
 const fresh=fs.readFileSync(path.join(root,"characters/sheet-render-fixed-20261101/index.html"),"utf8");
 if(fresh.includes("codex-shared-sidebar-frame"))throw Error("Restored sheet has nested sidebar");
-const bundle=fs.readFileSync(path.join(root,"_next/static/chunks/1liev8wshkvix.js"),"utf8");
+const bundles=fs.readdirSync(path.join(root,"_next/static/chunks")).filter(n=>n.endsWith(".js")).map(n=>fs.readFileSync(path.join(root,"_next/static/chunks",n),"utf8"));
+const bundle=bundles.find(src=>src.includes("characters/sheet-render-fixed-20261101/?live=1"));
+if(!bundle)throw Error("Could not find the compiled character viewer after cache-path rewiring");
 if(!bundle.includes("characters/sheet-render-fixed-20261101/?live=1"))throw Error("Actual compiled character viewer still references old sheet");
 if(bundle.includes("characters/sheet-live/?live=1&v=0912"))throw Error("Old iframe URL remains in compiled viewer");
 let chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium","/usr/bin/chromium-browser"].filter(Boolean).find(fs.existsSync);

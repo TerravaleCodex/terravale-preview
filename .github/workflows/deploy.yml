@@ -32,7 +32,7 @@ jobs:
           if len(files) != 34:
               raise SystemExit("Missing one or more compiled-preview bundle parts")
           archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
-          expected = "4b9d0ae726749570ed192f4c016e0b03d89a8ed845dc0451e0634314fe5267e5"
+          expected = "3bb58886d09aed332dd3c163c9e9b57a450226bd5bcaea890587b26684a6bd87"
           if hashlib.sha256(archive).hexdigest() != expected:
               raise SystemExit("Preview archive integrity verification failed")
 
@@ -174,7 +174,7 @@ jobs:
           assert 'html.live-embedded .sidebar' in fixed_sheet
           PY
           node --check site/approved-sheet-iframe-bridge.js
-          grep -q 'sheet-render-fixed-20261101' site/_next/static/chunks/1liev8wshkvix.js
+          grep -Rl 'sheet-render-fixed-20261101' site/_next/static/chunks/ | grep -q .
       - name: Apply unified theme to compiled character creator
         shell: bash
         run: |
@@ -473,14 +473,10 @@ jobs:
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
           node site-overrides/test-live-sheet-embedded.cjs
           node site-overrides/test-actual-character-viewer.cjs
-      - name: Install and verify collapsible navigation on current live build
+      - name: Verify native server-rendered navigation
         shell: bash
         run: |
-          cp site-overrides/navigation-refresh.css site/navigation-refresh.css
-          cp site-overrides/navigation-refresh.js site/navigation-refresh.js
-          python3 site-overrides/install-navigation-refresh.py
-          node --check site/navigation-refresh.js
-          node site-overrides/test-navigation-refresh.cjs
+          node site-overrides/test-native-navigation.cjs
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -553,22 +549,16 @@ jobs:
           fi
           echo "PASS restored approved character sheet route"
           # Navigation must appear in both Next pages and the cross-page shared sidebar.
-          for nav_route in "/navigation-refresh.js" "/navigation-refresh.css"; do
-            curl --fail --silent --show-error --location --max-time 15 \
-              "${base}${nav_route}?check=${GITHUB_SHA}" -o /dev/null
-            echo "PASS public navigation asset ${nav_route}"
-          done
           for nav_page in "/" "/shared-sidebar/"; do
             html=$(curl --fail --silent --show-error --location --max-time 15 \
               "${base}${nav_page}?check=${GITHUB_SHA}")
-            if ! grep -q 'navigation-refresh.js?v=20261101-nav1' <<< "$html"; then
-              echo "::error::Navigation update is not served at ${nav_page}"
+            if ! grep -q 'class="sidebar-nav"' <<< "$html" ||
+               grep -q 'navigation-refresh.js?v=20261101-nav1' <<< "$html"; then
+              echo "::error::Native navigation is missing or old overlay remains at ${nav_page}"
               exit 1
             fi
-            echo "PASS public navigation enabled at ${nav_page}"
+            echo "PASS server-rendered native sidebar at ${nav_page}"
           done
-          curl --fail --silent --show-error --location --max-time 15 \
-            "${base}/approved-sheet-iframe-bridge.js?check=${GITHUB_SHA}" -o /tmp/terravale-iframe-bridge.js
           grep -q 'sheet-render-fixed-20261101' /tmp/terravale-iframe-bridge.js
           echo "PASS published iframe compatibility bridge"
           for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
