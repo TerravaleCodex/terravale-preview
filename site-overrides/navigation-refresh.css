@@ -68,7 +68,7 @@
 @media (max-width:1120px){.app-frame .topbar .user-pill{max-width:155px}}
 @media (max-width:760px){
  .app-frame .sidebar:has(>.terr-nav){height:100dvh;max-height:100dvh}
- .app-frame .topbar .user-pill{max-width:38px;padding:3px}
+ .app-frame .topbar .user-pill{max-width:38px;padding:3px;font-size:0!important}
  .app-frame .topbar .user-pill .terr-account-name,.app-frame .topbar .user-pill .terr-account-chevron{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.app-frame .topbar .user-pill{transition:none}}
