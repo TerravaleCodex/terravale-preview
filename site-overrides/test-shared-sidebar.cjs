@@ -35,9 +35,18 @@ window.addEventListener("load",function(){
   record.navFontSize=parseFloat(iframe?.contentWindow?.getComputedStyle(nav?.[0]).fontSize)||0;
   record.navHeight=Math.round(nav?.[0]?.getBoundingClientRect().height||0);
   record.navTextNoWrap=iframe?.contentWindow?.getComputedStyle(nav?.[0]?.querySelector(".nav-text")).whiteSpace==="nowrap";
+  const bridge=window.TerravaleRoomPreview;
+  record.bridgeAvailable=!!bridge?.useRoster;
+  if(bridge){
+   bridge.useRoster({actors:[],ownId:"",userId:"dm-user",isDm:true,campaignName:"Shady Test"});
+   record.dmDesk=document.querySelector("#right-heading")?.textContent==="DM Desk";
+   record.campaignName=document.querySelector("#live-campaign-caption")?.textContent?.includes("Shady Test");
+   record.dmActions=document.querySelector("#my-character-content")?.textContent?.includes("Existing character");
+  }
   record.pass=record.found&&record.links>=5&&record.current==="page"&&record.height>400&&record.width>=100&&
     record.sidebarHeight>400&&record.sameStylesheets>=1&&record.mainHref?.includes("/party/")&&
-    record.navFontSize>8&&record.navFontSize<=11.5&&record.navHeight<=43&&record.navTextNoWrap;
+    record.navFontSize>8&&record.navFontSize<=11.5&&record.navHeight<=43&&record.navTextNoWrap&&
+    record.bridgeAvailable&&record.dmDesk&&record.campaignName&&record.dmActions;
  }catch(e){record.error=String(e);record.pass=false;}
  document.body.dataset.sharedSidebarTest=encodeURIComponent(JSON.stringify(record));
 });
