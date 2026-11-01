@@ -106,7 +106,20 @@ details{border-top:1px solid #252b37;margin-top:14px;padding-top:10px}summary{cu
      <div class="subheading">Custom Roll</div>
      <form id="roll-form" class="roll-row"><input id="notation" class="field" value="1d20" aria-label="Roll notation"><input id="bonus" class="field" type="number" value="0" aria-label="Additional roll modifier"><button class="btn primary" type="submit">Roll</button></form>
      <div id="dice-adv-controls"><button type="button" class="btn small" data-action="rollmode" data-mode="advantage">Advantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="disadvantage">Disadvantage</button><button type="button" class="btn small" data-action="rollmode" data-mode="normal">Normal</button></div>
-     <div class="check-shell"><div class="check-heading"><h3>Character Quick Checks</h3><span class="meta">Click to roll</span></div><div class="check-title"><label for="roller" class="subtle">Rolling as</label><select class="field" id="roller" aria-label="Roll as character"></select></div><div id="check-groups"></div></div>
+     <section id="attack-workbench" class="attack-workbench" aria-label="Attack and damage rolls">
+<div class="attack-title"><h3>Attack &amp; Damage</h3><span id="attack-role-note" class="meta">Select a target to attack</span></div>
+<div class="attack-grid">
+<label class="attack-field" id="attack-source-wrap"><span>Attacker</span><select id="attack-source" class="field"></select></label>
+<label class="attack-field"><span>Target</span><select id="attack-target" class="field"><option value="">Choose combatant</option></select></label>
+<label class="attack-field"><span>Attack bonus</span><input id="attack-bonus" class="field" type="number" min="-30" max="100" step="1" value="0"></label>
+<label class="attack-field"><span>Target AC</span><input id="attack-ac" class="field" type="number" min="1" max="99" step="1" placeholder="Unknown" readonly></label>
+<label class="attack-field"><span>Damage dice</span><input id="attack-damage" class="field" type="text" maxlength="24" value="1d8+0" placeholder="1d8+3"></label>
+<label class="attack-field"><span>Attack mode</span><select id="attack-mode" class="field"><option value="normal">Normal</option><option value="advantage">Advantage</option><option value="disadvantage">Disadvantage</option></select></label>
+</div>
+<div class="attack-actions"><button id="attack-roll" type="button" class="btn primary">Roll to Hit</button><button id="attack-roll-damage" type="button" class="btn" disabled>Roll Damage</button><button id="attack-apply" type="button" class="btn" hidden disabled>Apply Damage to HP</button></div>
+<div id="attack-result" class="attack-result" role="status" aria-live="polite">Choose an attacker and target. Hit checks use approved AC when known.</div>
+<p class="attack-help" id="attack-help">Unknown AC: the roll can be made, but hit or miss must be confirmed by the DM. Damage is not automatically applied.</p>
+</section>
      <details id="dice-help"><summary>Roll notation & privacy</summary><p class="subtle">Examples: 1d20, 2d6+3 or /roll 1d20+5. Campaign rolls are recorded by the server. DM-only rolls are not exposed to players.</p></details>
    </div>
  </section>
@@ -530,7 +543,7 @@ let skillRows=abilities.flatMap(x=>x.skills.map(name=>[name,bonusFor(a,"skill",n
 state.checkSections=state.checkSections||{abilities:true,saves:false,skills:true};
 $("check-groups").innerHTML=section("Ability Checks","abilities",abilityRows)+section("Saving Throws","saves",saveRows)+section("Skills","skills",skillRows);
 }
-function render(){queueRender();activeRender();myCharacterRender();feedRender();renderChecks();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"Dungeon Master":"Player";}
+function render(){queueRender();activeRender();myCharacterRender();feedRender();window.TerravaleCombatPanel?.refresh?.();$("view-mode").textContent=state.dm?"View as Player":"Return to DM View";$("mode-label").textContent=state.dm?"Dungeon Master":"Player";}
 
 /* Initiative management operates exclusively on V2's local state.
  * state.actors is the reusable roster; state.queue is only encounter order.
@@ -812,11 +825,7 @@ if(action==="toggle-hidden"&&state.dm){let a=current();a.hidden=!a.hidden;save()
 if(action==="rollmode"){state.rollMode=b.dataset.mode;save();document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.toggle("is-on",x.dataset.mode===state.rollMode));}
 if(action==="hp"&&state.dm&&current()){let a=current();a.hp=Math.max(0,Math.min(a.max,a.hp+Number(b.dataset.value)));save();if(a.type==="Player")window.TerravaleLiveHooks?.updateSheetState?.(a.id,{hp:a.hp});render();}
 if(action==="conditions")editConditions(b.dataset.targetId);
-if(action==="check"){
-let a=actor(state.selected),mod=Number(b.dataset.mod)||0;
-if(a&&a.type==="Player"&&(state.dm||a.id===state.own)){
-let notation="1d20"+prettyMod(mod);roll(notation,(b.dataset.label||"Check")+" · "+notation,a.name);
-}}
+
 if(action==="select"){let a=actor(b.dataset.id);if(a){document.getElementById("active-combatant").scrollIntoView({behavior:"smooth",block:"nearest"});}}
 if(action==="inspect"){let a=actor(state.own);if(a)location.href="../characters/sheet-live/?character="+encodeURIComponent(a.id);}
 });
@@ -890,9 +899,9 @@ e.preventDefault();let x=$("notation").value.trim(),bonus=parseInt($("bonus").va
 if(bonus!==0){let m=x.replace(/\s/g,"").match(/^(\d{0,2}d(?:4|6|8|10|12|20|100))([+-]\d+)?$/i);if(m)x=m[1]+((Number(m[2]||0)+bonus)>=0?"+":"")+(Number(m[2]||0)+bonus);}
 roll(x,"Custom roll · "+x,state.dm?"DM":"Fighter Test");
 });
-$("roller").addEventListener("change",e=>{state.selected=e.target.value;save();renderChecks();});
+
 document.addEventListener("change",e=>{if(e.target.id==="my-character-choice"){
-state.own=e.target.value;state.selected=e.target.value;save();myCharacterRender();renderChecks();
+state.own=e.target.value;state.selected=e.target.value;save();myCharacterRender();window.TerravaleCombatPanel?.refresh?.();
 }});
 document.addEventListener("toggle",e=>{if(e.target.matches?.("details[data-check-section]")){
 state.checkSections=state.checkSections||{};
@@ -1000,6 +1009,15 @@ if(!state.exampleFullAdded){
 }
 /* Authorized live roster data remains transient and never reaches localStorage. */
 window.TerravaleRoomPreview=Object.freeze({
+ applyCombatDamage(targetId,amount){
+  if(!state.dm||!Number.isInteger(amount)||amount<0||amount>9999||!state.queue.includes(targetId))return false;
+  const target=actor(targetId);
+  if(!target||!Number.isFinite(target.hp))return false;
+  target.hp=Math.max(0,target.hp-amount);
+  if(target.type==="Player")window.TerravaleLiveHooks?.updateSheetState?.(target.id,{hp:target.hp});
+  save();render();
+  return true;
+ },
  showConnectionFailure(message){
   $("live-campaign-caption").textContent="Campaign connection needed";
   $("mode-label").textContent="Connection required";
@@ -1050,5 +1068,6 @@ document.querySelectorAll("#dice-adv-controls button").forEach(x=>x.classList.to
 })();
 </script>
 <script src="./session-room-live.js?v=ssr-cookie-dm-20261101" defer></script>
+<script src="./session-room-combat.js?v=attack-workbench-20261101" defer></script>
 </body>
 </html>
