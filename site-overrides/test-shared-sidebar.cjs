@@ -38,6 +38,9 @@ window.addEventListener("load",function(){
   const bridge=window.TerravaleRoomPreview;
   record.bridgeAvailable=!!bridge?.useRoster;
   if(bridge){
+   // Simulate the main Codex theme selector, which persists both keys.
+   localStorage.setItem("terravale.unified.theme.v2","shady");
+   localStorage.setItem("terravale.cosmetic.site.v1","shady");
    document.documentElement.dataset.appTheme="shady";
    bridge.useRoster({actors:[],ownId:"",userId:"dm-user",isDm:true,campaignName:"Shady Test"});
    record.dmDesk=document.querySelector("#right-heading")?.textContent==="DM Desk";
