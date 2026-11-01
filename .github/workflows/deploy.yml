@@ -559,6 +559,8 @@ jobs:
             fi
             echo "PASS server-rendered native sidebar at ${nav_page}"
           done
+          curl --fail --silent --show-error --location --max-time 15 \
+            "${base}/approved-sheet-iframe-bridge.js?check=${GITHUB_SHA}" -o /tmp/terravale-iframe-bridge.js
           grep -q 'sheet-render-fixed-20261101' /tmp/terravale-iframe-bridge.js
           echo "PASS published iframe compatibility bridge"
           for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css"; do
