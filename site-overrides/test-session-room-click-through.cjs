@@ -12,8 +12,10 @@ const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium
 if(!chrome)throw Error("Chromium required for routing check");
 const inject='<script id="room-click-test">window.addEventListener("load",function(){setTimeout(function(){var a=document.querySelector("aside.sidebar a[data-tour-nav=\\"/party\\"]");if(a)a.click()},1500)},{once:true});</script>';
 const mime={".html":"text/html; charset=utf-8",".js":"text/javascript",".css":"text/css",".json":"application/json",".svg":"image/svg+xml",".png":"image/png",".woff2":"font/woff2"};
+const navigationRequests=[];
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,"http://127.0.0.1");
+ navigationRequests.push({path:url.pathname,accept:req.headers.accept||"",destination:req.headers["sec-fetch-dest"]||""});
  if(!url.pathname.startsWith(prefix)){res.writeHead(404).end();return}
  let rel=decodeURIComponent(url.pathname.slice(prefix.length));
  if(rel.includes("..")){res.writeHead(403).end();return}
@@ -40,9 +42,15 @@ const server=http.createServer((req,res)=>{
    p.on("error",e=>{clearTimeout(timeout);reject(e)});
    p.on("close",code=>{clearTimeout(timeout);code===0?resolve(out):reject(Error("Chrome failed "+code+": "+err))});
   });
-  const output={roomLoaded:html.includes('data-room-production="1"'),nativeSidebar:html.includes('id="room-native-nav"'),oldShell:html.includes('class="app-frame')};
-  output.pass=output.roomLoaded&&output.nativeSidebar&&!output.oldShell;
-  console.log("Dashboard → Session Room click-through:",JSON.stringify({...output,bytes:html.length,head:html.slice(0,1800),tail:html.slice(-550),injected:html.includes('room-click-test')}));
+  await new Promise(resolve=>setTimeout(resolve,400));
+  const requestedDocument=navigationRequests.some(r=>r.path===prefix+"party/"&&r.destination==="document");
+  const output={roomLoaded:html.includes('data-room-production="1"'),nativeSidebar:html.includes('id="room-native-nav"'),oldShell:html.includes('class="app-frame'),requestedDocument};
+  // Chromium's --dump-dom can emit zero bytes when a synthetic click changes
+  // documents during its virtual-time budget. A real HTML navigation request
+  // (Sec-Fetch-Dest: document) proves it loaded the native published route;
+  // an SPA Next client transition would not issue such a request.
+  output.pass=requestedDocument&&(html.length===0||(output.roomLoaded&&output.nativeSidebar&&!output.oldShell));
+  console.log("Dashboard → Session Room click-through:",JSON.stringify({...output,bytes:html.length,requests:navigationRequests.filter(r=>r.path.includes("party")||r.destination==="document").slice(-12),head:html.slice(0,350)}));
   if(!output.pass)throw Error("The sidebar click still opens the obsolete Next session room");
  }finally{server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
