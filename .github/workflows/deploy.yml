@@ -464,6 +464,7 @@ jobs:
           PY
           node site-overrides/test-theme-ads-advancement.cjs
           node site-overrides/test-cabinet-achievements-layout.cjs
+          node site-overrides/test-cabinet-full-page.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
