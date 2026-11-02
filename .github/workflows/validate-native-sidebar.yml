@@ -26,7 +26,7 @@ jobs:
           if len(files) != 34:
               raise SystemExit("Missing one or more compiled-preview bundle parts")
           archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
-          expected = "5efb405ddc88c080a95a246adce85de1750bd87b4cbb570d15dd753b93b8edf2"
+          expected = "d1c3f41ac0bbd55b6eb1954b7f1f976f2cdf5dc0916350f57f05b648a37eeb57"
           if hashlib.sha256(archive).hexdigest() != expected:
               raise SystemExit("Preview archive integrity verification failed")
 
@@ -471,6 +471,17 @@ jobs:
           grep -q 'loadApprovedCharacter' site/characters/sheet-live/index.html
           node site-overrides/test-live-sheet-embedded.cjs
           node site-overrides/test-actual-character-viewer.cjs
+      - name: Prepare Bloodforger appearance, Ad Laboratory permissions and Advancement integration
+        shell: bash
+        run: |
+          python3 site-overrides/patch-bloodforger-v2.py
+          mkdir -p site/codex-ads/ads
+          cp site-overrides/terravale-adblocknt.js site/codex-ads/terravale-adblocknt.js
+          cp site-overrides/terravale-adblocknt.css site/codex-ads/terravale-adblocknt.css
+          cp site-overrides/approved-ads.json site/codex-ads/ads.json
+          cp site-overrides/approved-ads/*.webp site/codex-ads/ads/
+          node --check site/codex-ads/terravale-adblocknt.js
+          node site-overrides/test-theme-ads-advancement.cjs
       - name: Verify native server-rendered navigation
         shell: bash
         run: |

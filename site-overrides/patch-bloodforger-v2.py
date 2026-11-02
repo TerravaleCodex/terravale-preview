@@ -63,6 +63,82 @@ css = """/* Bloodforger V2-only visual controls; all other site UI untouched. */
   .tree-map-shell .tree-connections path {transition:none !important}
 }
 """
+
+# The base tree palette predates unified Codex appearance. The live V2
+# adapter is injected after the main CSS, so use active theme variables
+# rather than freezing the nodes in dark blue and gold.
+css += """
+/* BLOODFORGER · Unified theme colours · applies to all ten Codex themes. */
+html[data-app-theme] .blood-tree-shell {
+ --bf-surface:var(--panel,#1b2631);
+ --bf-paper:var(--panel2,#23313f);
+ --bf-canvas:var(--bg,#101720);
+ --bf-edge:var(--line,#354353);
+ --bf-text:var(--text,#f1e9dd);
+ --bf-sub:var(--muted,#a8b4c0);
+ --bf-accent:var(--gold,#d7b579);
+ --bf-picked:color-mix(in srgb,var(--gold,#d7b579) 28%,var(--panel2,#23313f));
+}
+html[data-app-theme] .tree-map-shell {
+ background:var(--bf-canvas)!important;border-color:var(--bf-edge)!important;color:var(--bf-text);
+}
+html[data-app-theme] .tree-map-top,
+html[data-app-theme] .tree-lane-label {
+ background:var(--bf-paper)!important;color:var(--bf-accent)!important;border-color:var(--bf-edge)!important;
+}
+html[data-app-theme] .tree-map-top>span {color:var(--bf-sub)!important}
+html[data-app-theme] .tree-stage {
+ background-color:var(--bf-canvas)!important;
+ background-image:radial-gradient(color-mix(in srgb,var(--bf-edge) 48%,transparent) 1px,transparent 1px)!important;
+}
+html[data-app-theme] .tree-scroll {scrollbar-color:var(--bf-edge) var(--bf-canvas)!important}
+html[data-app-theme] .tree-node {
+ background:var(--bf-paper)!important;border-color:var(--bf-edge)!important;
+ color:var(--bf-text)!important;box-shadow:0 7px 16px #0004;
+}
+html[data-app-theme] .tree-node strong {color:var(--bf-text)!important}
+html[data-app-theme] .tree-node small {color:var(--bf-sub)!important}
+html[data-app-theme] .tree-node-top {color:var(--bf-accent)!important}
+html[data-app-theme] .tree-node.available {
+ background:color-mix(in srgb,var(--bf-accent) 13%,var(--bf-paper))!important;
+ border-color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-node.selected {
+ background:var(--bf-picked)!important;border-color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-node.locked,
+html[data-app-theme] .tree-node.tier-locked,
+html[data-app-theme] .tree-node.no-points {
+ background:color-mix(in srgb,var(--bf-canvas) 65%,var(--bf-paper))!important;
+ border-color:var(--bf-edge)!important;
+}
+html[data-app-theme] .tree-node.crown {border-color:var(--bf-accent)!important}
+html[data-app-theme] .tree-node.focused {outline:3px solid var(--bf-accent)!important}
+html[data-app-theme] .tree-inspector {
+ background:linear-gradient(155deg,var(--bf-paper),var(--bf-surface))!important;
+ border-color:var(--bf-edge)!important;color:var(--bf-text)!important;
+}
+html[data-app-theme] .tree-inspector h3 {color:var(--bf-accent)!important}
+html[data-app-theme] .tree-detail-badges span {
+ border-color:var(--bf-edge)!important;color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-requirement {
+ background:var(--bf-paper)!important;border-color:var(--bf-edge)!important;color:var(--bf-text)!important;
+}
+html[data-app-theme] .tree-requirement p {color:var(--bf-text)!important}
+html[data-app-theme] .tree-rule-copy {color:var(--bf-text)!important}
+html[data-app-theme] .tree-connections .link-neutral {stroke:var(--bf-edge)!important}
+html[data-app-theme] .tree-connections .link-ready {stroke:var(--bf-accent)!important}
+html[data-app-theme] .tree-connections .link-active {stroke:var(--bf-accent)!important}
+html[data-app-theme] .tree-connections path.bf2-route {
+ stroke:var(--bf-accent)!important;filter:none!important;
+}
+html[data-app-theme] .tree-connections path.link-active.bf2-route {
+ stroke:color-mix(in srgb,var(--bf-accent) 75%,white)!important;
+}
+html[data-app-theme] .tree-legend {color:var(--bf-sub)!important}
+"""
+
 (site / "bloodforger-v2-live.css").write_text(css)
 # All pages can navigate into the live tree without replacing React code.
 # Defer script so the page's markup is present, then observe for client navigation.
