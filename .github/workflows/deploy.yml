@@ -463,6 +463,7 @@ jobs:
           print('Cabinet achievement and disabled-by-default ad layer installed on',count,'pages')
           PY
           node site-overrides/test-theme-ads-advancement.cjs
+          node site-overrides/test-cabinet-achievements-layout.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

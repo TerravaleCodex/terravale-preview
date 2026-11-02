@@ -51,27 +51,42 @@
   function controls(shell, stage, scroll, state) {
     const zoom = shell.querySelector('.tree-zoom');
     if (!zoom) return;
-    if (!zoom.querySelector('[data-bf2-control="fit"]')) {
-      const fit = document.createElement('button');
-      fit.type = 'button'; fit.dataset.bf2Control = 'fit';
-      fit.textContent = 'Fit';
-      fit.title = 'Fit the entire skill tree to this viewport';
-      const center = document.createElement('button');
-      center.type = 'button'; center.dataset.bf2Control = 'centre';
-      center.textContent = 'Centre';
-      center.title = 'Return to foundation nodes';
-      const full = zoom.querySelector('button');
-      zoom.insertBefore(fit, full);
-      zoom.insertBefore(center, full);
-      fit.addEventListener('click', () => {
-        state.zoomOverride = limit((scroll.clientWidth - 28) / state.layout.width);
+    // Reuse the real React toolbar buttons when the source already provides
+    // Fit/Centre. The previous adapter appended another pair on every mount.
+    const buttons=[...zoom.querySelectorAll('button')];
+    let fit=zoom.querySelector('[data-bf2-control="fit"]') ||
+      buttons.find(button=>button.textContent.trim().toLowerCase()==='fit');
+    let center=zoom.querySelector('[data-bf2-control="centre"]') ||
+      buttons.find(button=>/^(centre|center)$/i.test(button.textContent.trim()));
+    const originalFit=Boolean(fit), originalCenter=Boolean(center);
+    if(!fit){
+      fit=document.createElement('button');fit.type='button';fit.textContent='Fit';
+      zoom.insertBefore(fit,zoom.firstElementChild);
+    }
+    if(!center){
+      center=document.createElement('button');center.type='button';center.textContent='Centre';
+      zoom.insertBefore(center,fit.nextSibling);
+    }
+    fit.dataset.bf2Control='fit';center.dataset.bf2Control='centre';
+    fit.title='Fit the entire skill tree to this viewport';
+    center.title='Return to foundation nodes';
+    if(!fit.dataset.bf2Bound){
+      fit.dataset.bf2Bound='1';
+      fit.addEventListener('click',event=>{
+        // Prevent the original Next handler from fitting obsolete geometry.
+        if(originalFit){event.preventDefault();event.stopPropagation();}
+        state.zoomOverride=limit((scroll.clientWidth-28)/state.layout.width);
         schedule();
-        requestAnimationFrame(() => {scroll.scrollLeft = 0;scroll.scrollTop = 0;});
-      });
-      center.addEventListener('click', () => {
-        scroll.scrollLeft = Math.max(0, (state.layout.width * getZoom(stage,state) - scroll.clientWidth) / 2);
-        scroll.scrollTop = 0;
-      });
+        requestAnimationFrame(()=>{scroll.scrollLeft=0;scroll.scrollTop=0;});
+      },true);
+    }
+    if(!center.dataset.bf2Bound){
+      center.dataset.bf2Bound='1';
+      center.addEventListener('click',event=>{
+        if(originalCenter){event.preventDefault();event.stopPropagation();}
+        scroll.scrollLeft=Math.max(0,(state.layout.width*getZoom(stage,state)-scroll.clientWidth)/2);
+        scroll.scrollTop=0;
+      },true);
     }
     for (const kind of ['Zoom in','Zoom out']) {
       const btn = zoom.querySelector('button[aria-label="' + kind + '"]');
