@@ -462,6 +462,7 @@ jobs:
               raise SystemExit('Cabinet assets were not installed on every published route')
           print('Cabinet achievement and disabled-by-default ad layer installed on',count,'pages')
           PY
+          node site-overrides/test-theme-ads-advancement.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
