@@ -21,7 +21,7 @@ for(const needle of ["--bf-surface:var(--panel","--bf-paper:var(--panel2",
  ".tree-connections path.bf2-route",'.tree-stage','color-mix']){
  assert(style.includes(needle),"Bloodforger theme is missing "+needle);
 }
-assert(classes.includes("Bloodforger"),"tree atlas route lost");
+assert(classes.includes("bloodforger-v2-live.js"),"theme-aware Bloodforger adapter not installed in atlas");
 for(const needle of ["labButton.hidden=!isDM","if((which==='dm'||which==='adlab')&&!isDM)",
  "function populateGallery()","if(!isDM||!box||galleryPopulated)return","id=\"tv-tab-adlab\" hidden"]){
  assert(ads.includes(needle),"Ad Lab DM gate missing: "+needle);
