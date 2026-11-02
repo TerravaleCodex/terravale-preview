@@ -483,6 +483,7 @@ jobs:
           node --check site/codex-ads/terravale-adblocknt.js
           node site-overrides/test-theme-ads-advancement.cjs
           node site-overrides/test-cabinet-achievements-layout.cjs
+          node site-overrides/test-cabinet-full-page.cjs
       - name: Verify native server-rendered navigation
         shell: bash
         run: |
