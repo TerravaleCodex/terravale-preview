@@ -11,7 +11,25 @@ assert(adapter.includes("originalFit=Boolean(fit)"),"Duplicate Fit/Centre correc
 const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/chromium","/usr/bin/chromium-browser"].filter(Boolean).find(x=>x&&fs.existsSync(x))||
  ["google-chrome","chromium","chromium-browser"].map(x=>{try{return cp.execFileSync("which",[x],{encoding:"utf8"}).trim()}catch{return""}}).find(Boolean);
 if(!chrome){console.log("PASS static contrast and Cabinet tests; Chromium unavailable");process.exit(0);}
-const probe="<script id=\"cabinet-regression\">\n(function(){\n var attempts=0,timer=setInterval(function(){\n  var widget=document.querySelector(\".tv-ach-widget\");\n  if(!widget){if(++attempts>80){document.body.dataset.cabinetTest=encodeURIComponent(JSON.stringify({pass:false,reason:\"widget missing\"}));clearInterval(timer)}return}\n  clearInterval(timer);widget.click();document.querySelector('[data-tv-tab=\"achievements\"]')?.click();\n  setTimeout(function(){\n   var nav=document.querySelector(\".tv-ach-window>nav\"),modal=document.querySelector(\".tv-ach-window\"),main=document.querySelector(\".tv-ach-window>main\"),pane=document.querySelector('[data-tv-pane=\"achievements\"]'),r=nav.getBoundingClientRect();\n   var buttons=Array.from(nav.querySelectorAll(\"button:not([hidden])\"));\n   var result={\n    navHeight:Math.round(r.height),scrollHeight:nav.scrollHeight,clientHeight:nav.clientHeight,\n    mainHeight:main.clientHeight,\n    paneVisible:!!pane&&!pane.hidden,\n    reward:!!pane?.querySelector(\".tv-ach-reward\"),\n    progress:!!pane?.querySelector(\"#tv-ach-progress\"),\n    tabFits:buttons.every(function(b){var x=b.getBoundingClientRect();return x.top>=r.top-2&&x.bottom<=r.bottom+2}),\n    overflowY:getComputedStyle(nav).overflowY,\n    fits:modal.getBoundingClientRect().bottom<=innerHeight+1,\n    adLabHidden:document.querySelector(\"#tv-tab-adlab\")?.hidden===true\n   };\n   result.pass=result.navHeight>=50&&result.scrollHeight<=result.clientHeight+2&&result.mainHeight>150&&result.paneVisible&&result.reward&&result.progress&&result.tabFits&&result.overflowY===\"hidden\"&&result.fits&&result.adLabHidden;\n   document.body.dataset.cabinetTest=encodeURIComponent(JSON.stringify(result));\n  },250);\n },80);\n})();\n</script>";
+/* The browser verifies the actual Cabinet CSS against its real structural layout,
+   independent of asynchronous authentication or the parent Next.js app. */
+const sample='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+ +'<style>'+css+'</style></head><body>'
+ +'<div class="tv-ach-backdrop"><section class="tv-ach-window">'
+ +'<header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button type="button">×</button></header>'
+ +'<nav aria-label="Cabinet sections"><button>Cabinet</button><button class="selected">Achievements</button><button>Unlockables</button><button hidden>Ad Laboratory</button><button hidden>DM Controls</button></nav>'
+ +'<main><div data-tv-pane="achievements"><div class="tv-eyebrow">COLLECTION / ACHIEVEMENTS</div><h1>Achievements <em>&amp; discoveries.</em></h1>'
+ +'<p class="tv-small">Achievements are linked to the Codex account.</p><div class="tv-stats"><strong>0 of 1 discovered</strong><span>1 APPROVED</span></div>'
+ +'<div class="tv-ach-category"><span>MISCHIEF</span><span>1 achievement</span></div><article id="tv-ach-card"><div class="tv-medal">▣</div><div><h2>Undiscovered Secret</h2><p>25 advertisements</p></div></article>'
+ +'<div class="tv-progress-label">Progress: 0/25</div><div class="tv-progress-track"><i></i></div><div class="tv-ach-reward"><strong>Terravale Adblocker™</strong><p class="tv-small">An optional unlock.</p><button>View unlockable</button></div></div></main>'
+ +'<footer>ALL ADVERTISEMENTS ARE FICTIONAL</footer></section></div>'
+ +'<script>(function(){const nav=document.querySelector(".tv-ach-window>nav"),m=document.querySelector(".tv-ach-window>main"),modal=document.querySelector(".tv-ach-window"),r=nav.getBoundingClientRect();'
+ +'const controls=[...nav.querySelectorAll("button:not([hidden])")];const data={height:Math.round(r.height),navScroll:nav.scrollHeight,navClient:nav.clientHeight,mainHeight:m.clientHeight,'
+ +'tabFits:controls.every(b=>{const x=b.getBoundingClientRect();return x.top>=r.top-2&&x.bottom<=r.bottom+2}),overflowY:getComputedStyle(nav).overflowY,'
+ +'modalFits:modal.getBoundingClientRect().bottom<=innerHeight+1,achievement:!!document.querySelector(".tv-ach-reward"),'
+ +'tabVisible:!!document.querySelector("nav .selected")};'
+ +'data.pass=data.height>=50&&data.navScroll<=data.navClient+2&&data.mainHeight>150&&data.tabFits&&data.overflowY==="hidden"&&data.modalFits&&data.achievement&&data.tabVisible;'
+ +'document.body.dataset.cabinetTest=encodeURIComponent(JSON.stringify(data));})();</script></body></html>';
 const mime={".html":"text/html; charset=utf-8",".js":"text/javascript",".css":"text/css",".json":"application/json",".svg":"image/svg+xml",".webp":"image/webp"};
 const server=http.createServer((req,res)=>{
  const u=new URL(req.url,"http://localhost");
@@ -21,14 +39,14 @@ const server=http.createServer((req,res)=>{
  if(rel.endsWith("/"))rel+="index.html";
  const file=path.resolve(root,rel);
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return}
- try{let body=fs.readFileSync(file);if(rel==="index.html"&&u.searchParams.has("cabinet-test"))body=Buffer.from(body.toString().replace("</head>",probe+"</head>"));res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"}).end(body)}
+ try{let body=rel==="__cabinet-layout-test.html"?Buffer.from(sample):fs.readFileSync(file);res.writeHead(200,{"Content-Type":mime[path.extname(file)]||"application/octet-stream"}).end(body)}
  catch{res.writeHead(404).end()}
 });
 (async()=>{
  await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
  try{
   for(const [w,h] of [[1370,930],[420,760]]){
-   const url="http://127.0.0.1:"+server.address().port+prefix+"?cabinet-test=1";
+   const url="http://127.0.0.1:"+server.address().port+prefix+"__cabinet-layout-test.html";
    const dom=await new Promise((resolve,reject)=>{
     const p=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--virtual-time-budget=6500","--window-size="+w+","+h,"--dump-dom",url],{stdio:["ignore","pipe","pipe"]});
     let out="",err="";const timer=setTimeout(()=>{p.kill();reject(Error("Browser timeout"))},40000);
