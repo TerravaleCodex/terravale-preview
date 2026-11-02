@@ -99,7 +99,7 @@ function openPanel(which='cabinet'){if((which==='dm'||which==='adlab')&&!isDM)wh
 function closePanel(){box.hidden=true;document.body.classList.remove('tv-panel-open');}
 function paint(){if(!ui)return;
  const n=N(progress.ads_dismissed);widget.textContent='✧ '+(hasAchievement()?'1':'0')+'/1';widget.title='Cabinet of Curiosities — '+progressLabel();
- $('#tv-ach-found').textContent=progressLabel();$('#tv-ach-count').textContent=Math.min(25,n)+'/25';$('#tv-ach-progress').style.width=Math.min(100,n/25*100)+'%';
+ $('#tv-ach-found').textContent=progressLabel();$('#tv-ach-count').textContent=Math.min(25,n)+'/25';$('#tv-ach-progress').style.width=Math.min(100,n/25*100)+'%';$('#tv-home-found').textContent=progressLabel();$('#tv-home-progress').textContent=Math.min(25,n)+' / 25';$('#tv-ach-progress').parentElement.setAttribute('aria-valuenow',String(Math.min(25,n)));
  $('#tv-ach-card').classList.toggle('unlocked',hasAchievement());$('#tv-ach-name').textContent=hasAchievement()?'Adblockn’t':'Undiscovered Secret';
  $('#tv-ach-desc').textContent=hasAchievement()?'Dismissed 25 suspicious ads. Got 20 more for your trouble.':'A certain number of closed windows will upset the advertising department.';
  $('#tv-ach-state').textContent=hasAchievement()?'DISCOVERED':'LOCKED';
@@ -122,8 +122,37 @@ function populateGallery(){
 function mount(){
  if(!document.body||ui)return;layer=E('div','tv-ad-layer');layer.id='tv-ad-layer';closeAll=E('button','tv-ad-close-all');closeAll.type='button';closeAll.hidden=true;closeAll.innerHTML='× &nbsp; Close all ads <b>0</b>';closeAll.onclick=()=>clearAds(true);
  widget=E('button','tv-ach-widget','✧ 0/1');widget.type='button';widget.onclick=()=>openPanel('cabinet');widget.setAttribute('aria-label','Open Cabinet of Curiosities');
- box=E('div','tv-ach-backdrop');box.hidden=true;box.innerHTML=`<section class="tv-ach-window" role="dialog" aria-modal="true" aria-label="Terravale Cabinet of Curiosities"><header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button id="tv-ach-close" type="button" aria-label="Close Cabinet">×</button></header><nav aria-label="Cabinet sections"><button data-tv-tab="cabinet">Cabinet</button><button data-tv-tab="appearance">Unlockables</button><button data-tv-tab="adlab" id="tv-tab-adlab" hidden>Ad Laboratory</button><button id="tv-tab-dm" data-tv-tab="dm" hidden>DM · Ad Controls</button></nav><main>
- <div data-tv-pane="cabinet"><div class="tv-eyebrow">MYSTERIES OF THE LIVING CODEX</div><h1>Cabinet of <em>Curiosities.</em></h1><p class="tv-small">A place for things you were never supposed to discover. Only approved achievements are listed here.</p><div class="tv-stats"><strong id="tv-ach-found">0 of 1 discovered</strong><span>ONE APPROVED ACHIEVEMENT</span></div><article id="tv-ach-card"><div class="tv-medal">▣</div><div><span class="tv-eyebrow">EPIC · MISCHIEF</span><h2 id="tv-ach-name">Undiscovered Secret</h2><p id="tv-ach-desc">A certain number of closed windows will upset the advertising department.</p><small id="tv-ach-state">LOCKED</small></div></article><div class="tv-progress-label">Advertisement dismissals <strong id="tv-ach-count">0/25</strong></div><div class="tv-progress-track"><i id="tv-ach-progress"></i></div></div>
+ box=E('div','tv-ach-backdrop');box.hidden=true;box.innerHTML=`<section class="tv-ach-window" role="dialog" aria-modal="true" aria-label="Terravale Cabinet of Curiosities"><header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button id="tv-ach-close" type="button" aria-label="Close Cabinet">×</button></header><nav aria-label="Cabinet sections"><button data-tv-tab="cabinet">Cabinet</button><button data-tv-tab="achievements">Achievements</button><button data-tv-tab="appearance">Unlockables</button><button data-tv-tab="adlab" id="tv-tab-adlab" hidden>Ad Laboratory</button><button id="tv-tab-dm" data-tv-tab="dm" hidden>DM · Ad Controls</button></nav><main>
+ <div data-tv-pane="cabinet">
+  <div class="tv-eyebrow">THE CABINET OF CURIOSITIES</div>
+  <h1>A cabinet of <em>curiosities.</em></h1>
+  <p class="tv-small">A home for discoveries, strange milestones and unusual rewards across Terravale. Your achievements are tracked separately from character level and DM-approved advancement.</p>
+  <div class="tv-cabinet-summary">
+   <div><span class="tv-eyebrow">DISCOVERIES</span><strong id="tv-home-found">0 of 1 discovered</strong><small>One approved achievement is currently available</small></div>
+   <div><span class="tv-eyebrow">PROGRESS</span><strong id="tv-home-progress">0 / 25</strong><small>Advertisements dismissed toward Adblockn’t</small></div>
+  </div>
+  <button type="button" id="tv-view-achievements" class="tv-cabinet-entry">
+   <span class="tv-medal" aria-hidden="true">✧</span>
+   <span><strong>Achievements</strong><small>Inspect discovered and locked achievements, progress and their rewards.</small></span>
+   <span class="tv-cabinet-arrow" aria-hidden="true">›</span>
+  </button>
+ </div>
+ <div data-tv-pane="achievements" hidden>
+  <div class="tv-eyebrow">COLLECTION / ACHIEVEMENTS</div><h1>Achievements <em>& discoveries.</em></h1>
+  <p class="tv-small">Achievements are tied to your Codex account, not a character sheet. Only achievements approved for the current Codex build appear here.</p>
+  <div class="tv-stats"><strong id="tv-ach-found">0 of 1 discovered</strong><span>1 APPROVED · 0 HIDDEN CATEGORIES</span></div>
+  <div class="tv-ach-category"><span>✦ MISCHIEF</span><span>1 achievement</span></div>
+  <article id="tv-ach-card" aria-label="Adblockn't achievement">
+    <div class="tv-medal" aria-hidden="true">▣</div>
+    <div class="tv-ach-card-body"><div class="tv-eyebrow">EPIC · MISCHIEF</div><h2 id="tv-ach-name">Undiscovered Secret</h2>
+      <p id="tv-ach-desc">A certain number of closed windows will upset the advertising department.</p>
+      <small id="tv-ach-state">LOCKED</small>
+    </div>
+  </article>
+  <div class="tv-progress-label"><span>Progress · Advertisement dismissals</span><strong id="tv-ach-count">0/25</strong></div>
+  <div class="tv-progress-track" role="progressbar" aria-label="Adblockn't achievement progress" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0"><i id="tv-ach-progress"></i></div>
+  <div class="tv-ach-reward"><div class="tv-eyebrow">REWARD / APPEARANCE UNLOCK</div><strong>Terravale Adblocker™</strong><p class="tv-small">Dismiss 25 real ad pop-ups to unlock the optional Adblocker. The 20-ad incident is triggered at the unlock milestone when global ads and swarm mode are enabled.</p><button id="tv-ach-open-unlockables" class="tv-secondary" type="button">View unlockable →</button></div>
+ </div>
  <div data-tv-pane="appearance" hidden><div class="tv-eyebrow">APPEARANCE · UNLOCKABLES</div><h1>Terravale <em>Adblocker™.</em></h1><p id="tv-adblock-hint" class="tv-small">Dismiss 25 windows to unlock it.</p><button id="tv-adblock-toggle" class="tv-primary" disabled>Unlock through Adblockn’t</button></div>
  <div data-tv-pane="adlab" hidden><div class="tv-eyebrow">ADVERSE ADVERTISING DIVISION</div><h1>Ad <em>Laboratory.</em></h1><p class="tv-small" id="tv-delivery-state">Checking global settings…</p><p class="tv-small">Approved artwork: 56 ads. Open windows: <strong id="tv-ads-open">0</strong>. The Codex's ad layer follows you from page to page.</p><div class="tv-actions"><button class="tv-primary" id="tv-preview-one">Spawn random ad</button><button id="tv-preview-swarm">Preview 20-ad incident</button></div><div id="tv-gallery" class="tv-gallery"></div></div>
  <div data-tv-pane="dm" hidden><div class="tv-eyebrow">DUNGEON MASTER · GLOBAL SETTINGS</div><h1>Advertisement <em>Controls.</em></h1>${settingsForm()}</div>
@@ -131,6 +160,8 @@ function mount(){
  box.addEventListener('click',ev=>{if(ev.target===box)closePanel()});
  document.body.append(layer,closeAll,widget,box);ui=box;
  $('#tv-ach-close').onclick=closePanel;for(const b of box.querySelectorAll('[data-tv-tab]'))b.onclick=()=>{if((b.dataset.tvTab==='adlab'||b.dataset.tvTab==='dm')&&!isDM)return;tab=b.dataset.tvTab;paint()};
+ $('#tv-view-achievements').onclick=()=>openPanel('achievements');
+ $('#tv-ach-open-unlockables').onclick=()=>openPanel('appearance');
  $('#tv-adblock-toggle').onclick=togglePersonal;$('#tv-preview-one').onclick=()=>spawnAd('normal');$('#tv-preview-swarm').onclick=()=>launchSwarm();$('#tv-dm-save').onclick=saveDM;
  $('#tv-dm-interval').oninput=e=>{$('#tv-dm-interval-value').textContent=e.target.value+' seconds'};
  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!box.hidden)closePanel()});
