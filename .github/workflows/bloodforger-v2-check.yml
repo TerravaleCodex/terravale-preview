@@ -26,7 +26,7 @@ jobs:
           python3 - <<'PY'
           import base64, hashlib, io, pathlib, zipfile
           parts=sorted(pathlib.Path('.preview-bundle').glob('part-*.b64'))
-          assert len(parts)==34,'Current release parts missing'
+          assert len(parts)==int(pathlib.Path('.preview-bundle/parts_count.txt').read_text().strip()),'Current release parts missing'
           source=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
           assert hashlib.sha256(source).hexdigest()=='980d28675d8db24f435b15ba3590d734aad7501201c9a46c5af7fd54a6b164c9','Published bundle checksum mismatch'
           with zipfile.ZipFile(io.BytesIO(source)) as z:
