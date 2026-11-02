@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const read=p=>fs.readFileSync(path.join(__dirname,'..','site',p),'utf8');
+const home=read('index.html');
+const cabinet=read('cabinet-of-curiosities/index.html');
+const ads=read('codex-ads/terravale-adblocknt.js');
+assert(home.includes('data-tour-nav="/cabinet-of-curiosities"'),'Left navigation must link to the Cabinet page');
+assert(home.includes('Discoveries'),'Cabinet must have a named sidebar section');
+assert(cabinet.includes('data-cabinet-full-page="true"'),'Cabinet must render as a full content page, not a popup');
+assert(cabinet.includes('Cabinet of Curiosities'),'Missing Cabinet heading');
+assert(cabinet.includes('Achievements &amp; discoveries')||cabinet.includes('Achievements & discoveries'),'Full achievement collection absent');
+assert(cabinet.includes('Adblockn’t'),'Currently approved achievement absent');
+assert(cabinet.includes('Terravale Adblocker™'),'Associated unlockable absent');
+assert(cabinet.includes('aria-label="Filter Cabinet achievements"'),'Missing status filtering');
+assert(cabinet.includes('aria-label="Search Cabinet achievements"'),'Missing search');
+assert(!cabinet.includes('TCAdsLive'),'Do not restore obsolete standalone progress tracker');
+assert(ads.includes('terravale-cabinet-progress'),'Global ad layer must publish live progress to Cabinet page');
+assert(ads.includes('openUnlockables:()=>openPanel'),'Reuse current achievement reward controls');
+console.log('PASS: standalone Cabinet full route linked in native sidebar with live achievements and unlocks');
