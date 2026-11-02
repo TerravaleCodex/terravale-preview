@@ -28,7 +28,7 @@ jobs:
           parts=sorted(pathlib.Path('.preview-bundle').glob('part-*.b64'))
           assert len(parts)==34,'Current release parts missing'
           source=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
-          assert hashlib.sha256(source).hexdigest()=='5efb405ddc88c080a95a246adce85de1750bd87b4cbb570d15dd753b93b8edf2','Published bundle checksum mismatch'
+          assert hashlib.sha256(source).hexdigest()=='d1c3f41ac0bbd55b6eb1954b7f1f976f2cdf5dc0916350f57f05b648a37eeb57','Published bundle checksum mismatch'
           with zipfile.ZipFile(io.BytesIO(source)) as z:
             assert len(z.namelist())>570,'Expected published build'
             for item in z.infolist():
