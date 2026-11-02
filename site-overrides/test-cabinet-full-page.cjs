@@ -8,6 +8,7 @@ const cabinet=read('cabinet-of-curiosities/index.html');
 const ads=read('codex-ads/terravale-adblocknt.js');
 assert(home.includes('data-tour-nav="/cabinet-of-curiosities"'),'Left navigation must link to the Cabinet page');
 assert(home.includes('Discoveries'),'Cabinet must have a named sidebar section');
+if(!cabinet.includes('data-cabinet-full-page="true"')) console.log('Cabinet static HTML diagnostic:',JSON.stringify({length:cabinet.length,head:cabinet.slice(0,2000),cabinetText:cabinet.indexOf('Cabinet of Curiosities'),fullPage:cabinet.indexOf('cabinet-full-page'),pageHeading:cabinet.indexOf('YOUR DISCOVERIES'),cabinetSection:cabinet.indexOf('cabinet-page')}));
 assert(cabinet.includes('data-cabinet-full-page="true"'),'Cabinet must render as a full content page, not a popup');
 assert(cabinet.includes('Cabinet of Curiosities'),'Missing Cabinet heading');
 assert(cabinet.includes('Achievements &amp; discoveries')||cabinet.includes('Achievements & discoveries'),'Full achievement collection absent');
