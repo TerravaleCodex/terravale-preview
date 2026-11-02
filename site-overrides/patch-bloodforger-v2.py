@@ -137,6 +137,96 @@ html[data-app-theme] .tree-connections path.link-active.bf2-route {
  stroke:color-mix(in srgb,var(--bf-accent) 75%,white)!important;
 }
 html[data-app-theme] .tree-legend {color:var(--bf-sub)!important}
+/* Entire planner must share the palette; earlier patch only themed inner nodes. */
+html[data-app-theme] .blood-tree-shell {
+ --bf-canvas:color-mix(in srgb,var(--panel,#1b2631) 73%,var(--bg,#101720));
+ --bf-node:color-mix(in srgb,var(--panel2,#23313f) 80%,var(--text,#f1e9dd) 20%);
+ --bf-locked:color-mix(in srgb,var(--panel2,#23313f) 87%,var(--text,#f1e9dd) 13%);
+ --bf-connector:color-mix(in srgb,var(--line,#354353) 50%,var(--muted,#a8b4c0) 50%);
+ background:linear-gradient(145deg,var(--bf-surface),var(--bf-canvas))!important;
+ border-color:var(--bf-edge)!important;color:var(--bf-text)!important;
+}
+html[data-app-theme] .blood-tree-heading h3{color:var(--bf-text)!important}
+html[data-app-theme] .blood-tree-heading p{color:var(--bf-sub)!important}
+html[data-app-theme] .tree-budget{
+ background:linear-gradient(145deg,var(--bf-paper),var(--bf-surface))!important;
+ border-color:var(--bf-edge)!important;color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-budget strong{color:var(--bf-accent)!important}
+html[data-app-theme] .tree-budget small{color:var(--bf-sub)!important}
+html[data-app-theme] .tree-toolbar :is(input,select){
+ background:var(--bf-canvas)!important;color:var(--bf-text)!important;
+ border:1px solid var(--bf-edge)!important;border-radius:7px;
+}
+html[data-app-theme] .tree-toolbar .field-label{color:var(--bf-sub)!important}
+html[data-app-theme] .tree-map-shell,html[data-app-theme] .tree-map-shell.tree-fullscreen{
+ background:var(--bf-canvas)!important;
+}
+html[data-app-theme] .tree-map-top .tree-zoom{
+ border-color:var(--bf-edge)!important;background:var(--bf-canvas)!important;
+}
+html[data-app-theme] .tree-map-top .tree-zoom button{
+ color:var(--bf-text)!important;
+}
+html[data-app-theme] .tree-map-top .tree-zoom button:hover{
+ background:var(--bf-paper)!important;
+}
+html[data-app-theme] .tree-node{
+ background:var(--bf-node)!important;border-color:var(--bf-connector)!important;
+}
+html[data-app-theme] .tree-node.locked,
+html[data-app-theme] .tree-node.tier-locked,
+html[data-app-theme] .tree-node.no-points{
+ background:var(--bf-locked)!important;
+ border-color:var(--bf-connector)!important;
+ opacity:.94!important;
+}
+html[data-app-theme] .tree-node.dimmed,
+html[data-app-theme] .tree-node.locked.dimmed,
+html[data-app-theme] .tree-node.tier-locked.dimmed,
+html[data-app-theme] .tree-node.no-points.dimmed{
+ opacity:.76!important;
+}
+html[data-app-theme] .tree-node.focused{
+ opacity:1!important;
+ box-shadow:0 0 0 2px color-mix(in srgb,var(--bf-accent) 20%,transparent)!important;
+}
+html[data-app-theme] .tree-node.dimmed:hover,
+html[data-app-theme] .tree-node.locked:hover{opacity:1!important}
+html[data-app-theme] .tree-stage {
+ background-color:var(--bf-canvas)!important;
+ background-image:radial-gradient(var(--bf-connector) .7px,transparent .7px)!important;
+ background-size:26px 26px!important;
+}
+html[data-app-theme] .tree-footnote{
+ border-color:var(--bf-edge)!important;
+ color:var(--bf-sub)!important;
+}
+html[data-app-theme] .tree-connections path.bf2-muted{
+ stroke:var(--bf-connector)!important;opacity:.54!important;
+}
+html[data-app-theme] .tree-connections .link-neutral,
+html[data-app-theme] .tree-connections .link-ready{
+ stroke:var(--bf-connector)!important;
+}
+html[data-app-theme] .tree-rule-copy{
+ border-color:var(--bf-edge)!important;color:var(--bf-text)!important;
+}
+html[data-app-theme] .tree-detail-note {color:var(--bf-sub)!important}
+html[data-app-theme] .tree-requirement .tree-branch-warning {color:var(--bf-accent)!important}
+html[data-app-theme] .tree-swatch.is-available{
+ background:color-mix(in srgb,var(--bf-accent) 28%,var(--bf-paper))!important;
+ border-color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-swatch.is-selected{
+ background:var(--bf-picked)!important;border-color:var(--bf-accent)!important;
+}
+html[data-app-theme] .tree-swatch.is-locked{
+ background:var(--bf-locked)!important;border-color:var(--bf-connector)!important;
+}
+html[data-app-theme] .tree-swatch.is-crown{
+ background:var(--bf-accent)!important;border-color:var(--bf-accent)!important;
+}
 """
 
 (site / "bloodforger-v2-live.css").write_text(css)
