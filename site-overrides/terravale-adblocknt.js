@@ -95,7 +95,7 @@ async function renewIdentity(){const s=access(),id=s?.id||null,t=s?.token||null;
  paint();reschedule();if(pending)void flushDismissals();
 }
 function progressLabel(){return hasAchievement()?'1 of 1 discovered':'0 of 1 discovered'}
-function openPanel(which='cabinet'){tab=which==='dm'&&isDM?'dm':which;box.hidden=false;document.body.classList.add('tv-panel-open');paint();}
+function openPanel(which='cabinet'){if((which==='dm'||which==='adlab')&&!isDM)which='cabinet';tab=which;box.hidden=false;document.body.classList.add('tv-panel-open');paint();}
 function closePanel(){box.hidden=true;document.body.classList.remove('tv-panel-open');}
 function paint(){if(!ui)return;
  const n=N(progress.ads_dismissed);widget.textContent='✧ '+(hasAchievement()?'1':'0')+'/1';widget.title='Cabinet of Curiosities — '+progressLabel();
@@ -106,17 +106,23 @@ function paint(){if(!ui)return;
  $('#tv-adblock-toggle').disabled=!hasAchievement();$('#tv-adblock-toggle').textContent=hasAchievement()?(progress.personal_adblocker?'Disable my Adblocker':'Enable my Adblocker'):'Unlock through Adblockn’t';
  $('#tv-adblock-hint').textContent=hasAchievement()?(progress.personal_adblocker?'Regular popups are suppressed for you.':'Your optional Adblocker is currently off.'):'Dismiss 25 genuine ad windows to unlock the optional Adblocker.';
  $('#tv-delivery-state').textContent=!settingsLoaded?'Checking global settings…':!settings.enabled?'Ads disabled by DM':progress.personal_adblocker?'Your Adblocker is on':settings.auto?'Advertisements enabled':'Ads enabled, auto delivery paused';
- const dmButton=$('#tv-tab-dm');dmButton.hidden=!isDM;if(tab==='dm'&&!isDM)tab='cabinet';
+ const dmButton=$('#tv-tab-dm');dmButton.hidden=!isDM;const labButton=$('#tv-tab-adlab');labButton.hidden=!isDM;if((tab==='dm'||tab==='adlab')&&!isDM)tab='cabinet';if(isDM)populateGallery();
  for(const e of ui.querySelectorAll('[data-tv-tab]'))e.classList.toggle('selected',e.dataset.tvTab===tab);
  for(const e of ui.querySelectorAll('[data-tv-pane]'))e.hidden=e.dataset.tvPane!==tab;
  $('#tv-dm-enabled').checked=Boolean(settings.enabled);$('#tv-dm-auto').checked=Boolean(settings.auto);$('#tv-dm-interval').value=String(settings.interval_seconds);$('#tv-dm-interval-value').textContent=settings.interval_seconds+' seconds';$('#tv-dm-motion').checked=Boolean(settings.motion);$('#tv-dm-swarm').checked=Boolean(settings.swarm);
  $('#tv-preview-one').disabled=!allow();$('#tv-preview-swarm').disabled=!allow();$('#tv-ads-open').textContent=open.size;
 }
 function settingsForm(){return `<div class="tv-dm-grid"><label><span>Global ad delivery</span><input id="tv-dm-enabled" type="checkbox"></label><label><span>Automatic interruptions</span><input id="tv-dm-auto" type="checkbox"></label><label class="tv-dm-long"><span>Time between ads <output id="tv-dm-interval-value">25 seconds</output></span><input id="tv-dm-interval" type="range" min="5" max="120" step="5" value="25"></label><label><span>Animated pop-ins</span><input id="tv-dm-motion" type="checkbox"></label><label><span>25-close ad swarm</span><input id="tv-dm-swarm" type="checkbox"></label></div><p class="tv-small">These settings affect every player and every page. Initially disabled. Only the site DM can save changes.</p><button class="tv-primary" id="tv-dm-save">Save global settings</button>`}
+let galleryPopulated=false;
+function populateGallery(){
+ if(!isDM||!box||galleryPopulated)return;
+ galleryPopulated=true;
+ const gallery=$('#tv-gallery');for(const a of ads){const button=E('button','tv-gallery-item');button.type='button';button.title='View '+a.title;const img=E('img');img.src=ROOT+'ads/'+a.id+'.webp';img.loading='lazy';img.alt=a.title;button.append(img,E('small','',a.title));button.onclick=()=>{if(allow())spawnSpecific(a);else alertUser('Ads are disabled','Enable them in DM controls before spawning.');};gallery.append(button)}
+}
 function mount(){
  if(!document.body||ui)return;layer=E('div','tv-ad-layer');layer.id='tv-ad-layer';closeAll=E('button','tv-ad-close-all');closeAll.type='button';closeAll.hidden=true;closeAll.innerHTML='× &nbsp; Close all ads <b>0</b>';closeAll.onclick=()=>clearAds(true);
  widget=E('button','tv-ach-widget','✧ 0/1');widget.type='button';widget.onclick=()=>openPanel('cabinet');widget.setAttribute('aria-label','Open Cabinet of Curiosities');
- box=E('div','tv-ach-backdrop');box.hidden=true;box.innerHTML=`<section class="tv-ach-window" role="dialog" aria-modal="true" aria-label="Terravale Cabinet of Curiosities"><header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button id="tv-ach-close" type="button" aria-label="Close Cabinet">×</button></header><nav aria-label="Cabinet sections"><button data-tv-tab="cabinet">Cabinet</button><button data-tv-tab="appearance">Unlockables</button><button data-tv-tab="adlab">Ad Laboratory</button><button id="tv-tab-dm" data-tv-tab="dm" hidden>DM · Ad Controls</button></nav><main>
+ box=E('div','tv-ach-backdrop');box.hidden=true;box.innerHTML=`<section class="tv-ach-window" role="dialog" aria-modal="true" aria-label="Terravale Cabinet of Curiosities"><header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button id="tv-ach-close" type="button" aria-label="Close Cabinet">×</button></header><nav aria-label="Cabinet sections"><button data-tv-tab="cabinet">Cabinet</button><button data-tv-tab="appearance">Unlockables</button><button data-tv-tab="adlab" id="tv-tab-adlab" hidden>Ad Laboratory</button><button id="tv-tab-dm" data-tv-tab="dm" hidden>DM · Ad Controls</button></nav><main>
  <div data-tv-pane="cabinet"><div class="tv-eyebrow">MYSTERIES OF THE LIVING CODEX</div><h1>Cabinet of <em>Curiosities.</em></h1><p class="tv-small">A place for things you were never supposed to discover. Only approved achievements are listed here.</p><div class="tv-stats"><strong id="tv-ach-found">0 of 1 discovered</strong><span>ONE APPROVED ACHIEVEMENT</span></div><article id="tv-ach-card"><div class="tv-medal">▣</div><div><span class="tv-eyebrow">EPIC · MISCHIEF</span><h2 id="tv-ach-name">Undiscovered Secret</h2><p id="tv-ach-desc">A certain number of closed windows will upset the advertising department.</p><small id="tv-ach-state">LOCKED</small></div></article><div class="tv-progress-label">Advertisement dismissals <strong id="tv-ach-count">0/25</strong></div><div class="tv-progress-track"><i id="tv-ach-progress"></i></div></div>
  <div data-tv-pane="appearance" hidden><div class="tv-eyebrow">APPEARANCE · UNLOCKABLES</div><h1>Terravale <em>Adblocker™.</em></h1><p id="tv-adblock-hint" class="tv-small">Dismiss 25 windows to unlock it.</p><button id="tv-adblock-toggle" class="tv-primary" disabled>Unlock through Adblockn’t</button></div>
  <div data-tv-pane="adlab" hidden><div class="tv-eyebrow">ADVERSE ADVERTISING DIVISION</div><h1>Ad <em>Laboratory.</em></h1><p class="tv-small" id="tv-delivery-state">Checking global settings…</p><p class="tv-small">Approved artwork: 56 ads. Open windows: <strong id="tv-ads-open">0</strong>. The Codex's ad layer follows you from page to page.</p><div class="tv-actions"><button class="tv-primary" id="tv-preview-one">Spawn random ad</button><button id="tv-preview-swarm">Preview 20-ad incident</button></div><div id="tv-gallery" class="tv-gallery"></div></div>
@@ -124,11 +130,11 @@ function mount(){
  </main><footer>ALL ADVERTISEMENTS ARE FICTIONAL · OFFLINE TEST CHAMBER RETIRED</footer></section>`;
  box.addEventListener('click',ev=>{if(ev.target===box)closePanel()});
  document.body.append(layer,closeAll,widget,box);ui=box;
- $('#tv-ach-close').onclick=closePanel;for(const b of box.querySelectorAll('[data-tv-tab]'))b.onclick=()=>{tab=b.dataset.tvTab;paint()};
+ $('#tv-ach-close').onclick=closePanel;for(const b of box.querySelectorAll('[data-tv-tab]'))b.onclick=()=>{if((b.dataset.tvTab==='adlab'||b.dataset.tvTab==='dm')&&!isDM)return;tab=b.dataset.tvTab;paint()};
  $('#tv-adblock-toggle').onclick=togglePersonal;$('#tv-preview-one').onclick=()=>spawnAd('normal');$('#tv-preview-swarm').onclick=()=>launchSwarm();$('#tv-dm-save').onclick=saveDM;
  $('#tv-dm-interval').oninput=e=>{$('#tv-dm-interval-value').textContent=e.target.value+' seconds'};
  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!box.hidden)closePanel()});
- const gallery=$('#tv-gallery');for(const a of ads){const button=E('button','tv-gallery-item');button.type='button';button.title='View '+a.title;const img=E('img');img.src=ROOT+'ads/'+a.id+'.webp';img.loading='lazy';img.alt=a.title;button.append(img,E('small','',a.title));button.onclick=()=>{if(allow())spawnSpecific(a);else alertUser('Ads are disabled','Enable them in DM controls before spawning.');};gallery.append(button)}
+
  paint();
 }
 function spawnSpecific(ad){const old=chooseAd;const idx=ads.indexOf(ad);if(idx<0)return;const selected=ads.splice(idx,1);ads.unshift(ad);spawnAd('normal');ads.splice(0,1);ads.splice(idx,0,...selected)}
