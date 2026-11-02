@@ -23,7 +23,7 @@ jobs:
           import zipfile
 
           files = sorted(pathlib.Path(".preview-bundle").glob("part-*.b64"))
-          if len(files) != 34:
+          if len(files) != int(pathlib.Path(".preview-bundle/parts_count.txt").read_text().strip()):
               raise SystemExit("Missing one or more compiled-preview bundle parts")
           archive = base64.b64decode("".join(f.read_text().strip() for f in files), validate=True)
           expected = "980d28675d8db24f435b15ba3590d734aad7501201c9a46c5af7fd54a6b164c9"
