@@ -19,3 +19,14 @@
 [data-tv-pane="achievements"] .tv-ach-category[hidden]{display:none!important}
 @media(max-width:520px){.tv-approved-list{grid-template-columns:1fr}.tv-approved-item{padding:12px}.tv-approved-catalog{margin-top:18px}}
 @media(prefers-reduced-motion:reduce){.tv-approved-item{transition:none!important}}
+
+/* Native Cabinet integration: the original one-item placeholder is retired. */
+.tv-cabinet-retired{display:none!important}
+#tv-approved-catalog-page.tv-approved-inline{width:100%;max-width:none;min-width:0;margin:0;padding:2px 0 14px;border:0}
+.tv-approved-inline h2[hidden],.tv-approved-inline .tv-approved-intro[hidden]{display:none!important}
+.tv-approved-inline .tv-approved-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:12px}
+.tv-approved-inline .tv-approved-item{min-height:120px;background:color-mix(in srgb,currentColor 3.8%,transparent)}
+.tv-approved-inline .tv-approved-summary{margin:0 0 16px;letter-spacing:.03em}
+#tv-approved-catalog-modal{margin-top:6px}
+#tv-approved-catalog-modal .tv-approved-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+@media(max-width:620px){.tv-approved-inline .tv-approved-list{grid-template-columns:1fr}.tv-approved-inline .tv-approved-item{min-height:0}}
