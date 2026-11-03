@@ -500,13 +500,18 @@ jobs:
           node --check site/codex-achievements/cabinet-v2-embed.js
           python3 - <<'PY'
           from pathlib import Path
-          page=Path('site/cabinet-of-curiosities/index.html')
-          content=page.read_text()
+          root=Path('site')
           script='<script defer src="/terravale-preview/codex-achievements/cabinet-v2-embed.js"></script>'
-          if script not in content:
-              if '</head>' not in content:
-                  raise SystemExit('Cabinet route is missing document head')
-              page.write_text(content.replace('</head>',script+'</head>',1))
+          pages=0
+          for page in root.rglob('*.html'):
+              content=page.read_text()
+              if '</head>' not in content: continue
+              if script not in content:
+                  page.write_text(content.replace('</head>',script+'</head>',1))
+                  pages+=1
+          if pages<10:
+              raise SystemExit('Cabinet V2 client navigation hook missing from site routes')
+          print('Cabinet V2 navigation bridge installed on',pages,'pages')
           for name in ['cabinet-v2-live.html','cabinet-v2-live.js','cabinet-v2-embed.js']:
               if not (Path('site/codex-achievements')/name).is_file():
                   raise SystemExit('Missing Cabinet V2 asset: '+name)
