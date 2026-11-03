@@ -465,6 +465,30 @@ jobs:
           node site-overrides/test-theme-ads-advancement.cjs
           node site-overrides/test-cabinet-achievements-layout.cjs
           node site-overrides/test-cabinet-full-page.cjs
+      - name: Publish approved account-wide achievements
+        shell: bash
+        run: |
+          mkdir -p site/codex-achievements
+          cp site-overrides/codex-achievements-v1.js site/codex-achievements/codex-achievements-v1.js
+          cp site-overrides/codex-achievements-v1.css site/codex-achievements/codex-achievements-v1.css
+          node --check site/codex-achievements/codex-achievements-v1.js
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('site')
+          asset='<script defer src="/terravale-preview/codex-achievements/codex-achievements-v1.js"></script>'
+          style='<link rel="stylesheet" href="/terravale-preview/codex-achievements/codex-achievements-v1.css">'
+          updated=0
+          for page in root.rglob('*.html'):
+              html=page.read_text()
+              if '</head>' not in html: continue
+              if asset not in html:
+                  page.write_text(html.replace('</head>',style+asset+'</head>',1))
+                  updated+=1
+          if updated<10:
+              raise SystemExit('Achievements were not installed on every published route')
+          print('Approved achievement catalogue installed on',updated,'routes')
+          PY
+          node site-overrides/test-approved-achievements.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
