@@ -490,6 +490,29 @@ jobs:
           PY
           node site-overrides/test-approved-achievements.cjs
           node site-overrides/test-cabinet-native-integration.cjs
+      - name: Publish approved Cabinet V2 and verify live totals
+        shell: bash
+        run: |
+          cp site-overrides/cabinet-v2-live.html site/codex-achievements/cabinet-v2-live.html
+          cp site-overrides/cabinet-v2-live.js site/codex-achievements/cabinet-v2-live.js
+          cp site-overrides/cabinet-v2-embed.js site/codex-achievements/cabinet-v2-embed.js
+          node --check site/codex-achievements/cabinet-v2-live.js
+          node --check site/codex-achievements/cabinet-v2-embed.js
+          python3 - <<'PY'
+          from pathlib import Path
+          page=Path('site/cabinet-of-curiosities/index.html')
+          content=page.read_text()
+          script='<script defer src="/terravale-preview/codex-achievements/cabinet-v2-embed.js"></script>'
+          if script not in content:
+              if '</head>' not in content:
+                  raise SystemExit('Cabinet route is missing document head')
+              page.write_text(content.replace('</head>',script+'</head>',1))
+          for name in ['cabinet-v2-live.html','cabinet-v2-live.js','cabinet-v2-embed.js']:
+              if not (Path('site/codex-achievements')/name).is_file():
+                  raise SystemExit('Missing Cabinet V2 asset: '+name)
+          print('Cabinet V2 installed without replacing Codex sidebar')
+          PY
+          node site-overrides/test-cabinet-v2-live.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
