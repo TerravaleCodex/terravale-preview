@@ -9,6 +9,7 @@ assert.equal(entries.length,62);assert.equal(new Set(entries.map(x=>x.id)).size,
 for(const feature of ['Cabinet of Curiosities','Emphasise milestones','Search achievements','Sort by','Keeper of the Living Codex','cabinet-v2-live.js'])assert(html.includes(feature),feature+' missing');
 assert(!html.includes('Show demo progress'));
 assert(read('cabinet-of-curiosities/index.html').includes('cabinet-v2-embed.js'));
+assert(read('index.html').includes('cabinet-v2-embed.js'),'Home navigation must install the Cabinet V2 bridge');
 assert(read('codex-achievements/cabinet-v2-embed.js').includes('tv-cabinet-v2-host'));
 const app=read('codex-achievements/cabinet-v2-live.js');
 assert(app.includes('TerravaleAchievementState')&&app.includes('terravale-achievements-changed'));
