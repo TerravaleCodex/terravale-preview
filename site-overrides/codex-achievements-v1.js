@@ -112,8 +112,9 @@ function progress(key){
   default:return '';
  }
 }
+const approvedKeys=new Set(collection.map(a=>a.key));
 function unlockedSet(){
- const keys=new Set(snapshot.unlocks.map(x=>x.achievement_key));
+ const keys=new Set(snapshot.unlocks.map(x=>x.achievement_key).filter(k=>approvedKeys.has(k)));
  if(snapshot.adProgress?.adblocknt_unlocked_at)keys.add('adblocknt');
  return keys;
 }
@@ -225,6 +226,13 @@ function mount(){
 function render(){
  mount();
  const keys=unlockedSet(),signature=JSON.stringify([identity,loaded,searchQuery,statusFilter,[...keys].sort(),snapshot.events.map(e=>[e.kind,e.subject]),snapshot.adProgress?.ads_dismissed]);
+ const state={ready:loaded,authenticated:Boolean(identity),earnedKeys:[...keys],total:collection.length,earned:keys.size,events:snapshot.events,adsDismissed:Number(snapshot.adProgress?.ads_dismissed)||0};
+ const stateText=JSON.stringify(state);
+ if(lastData!==stateText){
+  lastData=stateText;
+  window.TerravaleAchievementState=state;
+  window.dispatchEvent(new CustomEvent('terravale-achievements-changed',{detail:state}));
+ }
  const info=loaded?summary():(identity?'Loading account achievements…':document.querySelector('a[aria-label^="Account:"]')?'Account connected — achievement session is reconnecting…':'Sign in to track achievements');
  for(const host of document.querySelectorAll('.tv-approved-catalog')){
   const label=host.querySelector('.tv-approved-summary'),grid=host.querySelector('.tv-approved-list');
