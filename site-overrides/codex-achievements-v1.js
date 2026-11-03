@@ -37,7 +37,7 @@ const collection=[
  entry('adblocknt','Adblockn’t','Epic','Dismiss 25 actual pop-up advertisements.','ads25')
 ];
 if(collection.length!==62)throw new Error('Approved achievement count changed: '+collection.length);
-let identity=null,snapshot={events:[],unlocks:[],adProgress:null},fetching=false,loaded=false,lastData='',lastPage='',lastTheme=null,lastRender='',known=new Set(),lastRead='';
+let identity=null,snapshot={events:[],unlocks:[],adProgress:null},fetching=false,loaded=false,lastData='',lastPage='',lastTheme=null,lastRender='',known=new Set(),lastRead='',searchQuery='',statusFilter='All';
 const seenClicks=new Set(),toast=(heading,detail)=>{
  const parent=document.getElementById('tv-ach-toasts')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'tv-ach-toasts',className:'tv-ach-toasts'}));
  const t=document.createElement('div');t.className='tv-ach-toast';const strong=document.createElement('strong');strong.textContent=heading;const label=document.createElement('span');label.textContent=detail;t.append(strong,label);parent.append(t);setTimeout(()=>t.remove(),5000);
@@ -118,6 +118,86 @@ function unlockedSet(){
  return keys;
 }
 function summary(){return unlockedSet().size+' / '+collection.length+' discovered'}
+function exactLeaf(root,text){
+ return [...root.querySelectorAll('h1,h2,h3,h4,strong,span,p,div,small')].find(e=>!e.closest('.tv-approved-catalog')&&e.textContent?.trim()===text&&![...e.children].some(c=>c.textContent?.trim()===text));
+}
+function directDescendant(node,parent){
+ let current=node;
+ while(current&&current.parentElement!==parent)current=current.parentElement;
+ return current?.parentElement===parent?current:null;
+}
+function markRetired(element){
+ if(!element||element.classList.contains('tv-cabinet-retired'))return;
+ element.classList.add('tv-cabinet-retired');
+ element.setAttribute('aria-hidden','true');
+}
+function nativeCount(root,pattern,text){
+ const candidates=[...root.querySelectorAll('strong,span,p,small,div')].filter(e=>!e.closest('.tv-approved-catalog')&&e.children.length===0);
+ const matched=candidates.find(e=>e.dataset.tvCountSource===pattern.source||pattern.test(e.textContent?.trim()||''));
+ if(matched){
+  matched.dataset.tvCountSource=pattern.source;
+  if(matched.textContent!==text)matched.textContent=text;
+ }
+}
+function nativeFilters(page){
+ const input=page.querySelector('input[aria-label="Search Cabinet achievements"]');
+ if(input&&!input.dataset.tvCatalogueBound){
+  input.dataset.tvCatalogueBound='yes';
+  input.addEventListener('input',()=>{searchQuery=input.value.trim().toLowerCase();render();});
+  searchQuery=input.value.trim().toLowerCase();
+ }
+ const select=page.querySelector('select[aria-label="Filter Cabinet achievements"]');
+ if(select&&!select.dataset.tvCatalogueBound){
+  select.dataset.tvCatalogueBound='yes';
+  select.addEventListener('change',()=>{statusFilter=select.value;render();});
+  statusFilter=select.value||'All';
+ }
+}
+function updateNativeCabinet(page){
+ if(!page)return;
+ nativeFilters(page);
+ const earned=unlockedSet().size;
+ nativeCount(page,/^\d+\s*\/\s*1\s+discovered$/i,earned+' / '+collection.length+' discovered');
+ nativeCount(page,/^1\s+approved\s+achievement$/i,collection.length+' approved achievements');
+ nativeCount(page,/^\d+\s*%$/,Math.round(100*earned/collection.length)+'%');
+ const oldIntro=exactLeaf(page,'Only approved achievements are listed here. More mysteries can be added after they are designed and approved.');
+ if(oldIntro)oldIntro.textContent='Discoveries are permanent and account-wide, starting from the new achievement launch.';
+ const oldSubtitle=exactLeaf(page,'Achievements, strange discoveries and their rewards. One secret at a time.');
+ if(oldSubtitle)oldSubtitle.textContent='Achievements, strange discoveries and their rewards across Terravale.';
+ const footer=[...page.querySelectorAll('footer')].find(e=>e.textContent?.includes('RELEASE 001'));
+ if(footer)markRetired(footer);
+}
+function integrateCabinet(page,section){
+ if(!page||!section)return;
+ updateNativeCabinet(page);
+ const former=exactLeaf(page,'Undiscovered Secret');
+ const sealed=exactLeaf(page,'Further drawers remain sealed');
+ if(!former||!sealed)return;
+ let column=former;
+ while(column&&column!==page&&!column.contains(sealed))column=column.parentElement;
+ if(!column||column===page||column.textContent.includes('Terravale Adblocker™'))return;
+ const original=directDescendant(former,column),placeholder=directDescendant(sealed,column);
+ if(!original||!placeholder||original===placeholder)return;
+ markRetired(original);markRetired(placeholder);
+ if(section.parentElement!==column)column.insertBefore(section,original);
+ section.classList.add('tv-approved-inline');
+ const heading=section.querySelector('h2'),intro=section.querySelector('.tv-approved-intro');
+ if(heading)heading.hidden=true;
+ if(intro)intro.hidden=true;
+}
+function syncWidget(){
+ const widget=document.getElementById('tv-ach-widget');
+ if(!widget)return;
+ const label='✧ '+unlockedSet().size+'/'+collection.length;
+ if(widget.textContent!==label)widget.textContent=label;
+ const description='Cabinet of Curiosities — '+summary();
+ if(widget.title!==description)widget.title=description;
+ if(!widget.dataset.tvAchievementObserved){
+  widget.dataset.tvAchievementObserved='yes';
+  new MutationObserver(()=>syncWidget()).observe(widget,{childList:true,characterData:true,subtree:true});
+ }
+}
+
 function mount(){
  const modal=document.querySelector('[data-tv-pane="achievements"]');
  if(modal&&!modal.querySelector('#tv-approved-catalog-modal')){
