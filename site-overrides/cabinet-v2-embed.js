@@ -4,7 +4,7 @@ const BASE='/terravale-preview/';
 const pathNow=()=>decodeURIComponent(location.pathname).replace(/^\/terravale-preview\/?/,'/').replace(/\/+$/,'')||'/';
 if(window.__tvCabinetV2Mounted)return;window.__tvCabinetV2Mounted=true;
 const style=document.createElement('style');
-style.textContent='.tv-cabinet-v2-active{width:100%!important;max-width:none!important;min-width:0!important}.tv-cabinet-v2-active > :not(#tv-cabinet-v2-host){display:none!important}#tv-cabinet-v2-host{display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important}#tv-cabinet-v2-frame{display:block;width:100%;min-height:500px;height:1500px;border:0;background:#07080c;overflow:hidden}';
+style.textContent='.tv-cabinet-v2-active{display:block!important;width:100%!important;max-width:none!important;min-width:0!important}.tv-cabinet-v2-active > :not(#tv-cabinet-v2-host){display:none!important}#tv-cabinet-v2-host{display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important}#tv-cabinet-v2-frame{display:block;width:100%;min-height:500px;height:1500px;border:0;background:#07080c;overflow:hidden}';
 document.head.append(style);
 let frame=null,root=null;
 function mount(){
