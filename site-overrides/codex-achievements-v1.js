@@ -206,7 +206,9 @@ function mount(){
   const status=document.createElement('p');status.className='tv-approved-summary';wrapper.append(intro,status);
   const grid=document.createElement('div');grid.className='tv-approved-list';wrapper.append(grid);
   modal.append(wrapper);
-  const old=modal.querySelector('.tv-ach-category');if(old)old.hidden=true;
+  for(const selector of ['.tv-ach-category','#tv-ach-card','.tv-progress-label','.tv-progress-track','.tv-ach-reward']){
+   const old=modal.querySelector(selector);if(old)markRetired(old);
+  }
  }
  const page=document.querySelector('[data-cabinet-full-page]');
  if(page&&!page.querySelector('#tv-approved-catalog-page')){
@@ -217,19 +219,23 @@ function mount(){
   const grid=document.createElement('div');grid.className='tv-approved-list';
   section.append(h,intro,status,grid);page.append(section);
  }
+ if(page)integrateCabinet(page,page.querySelector('#tv-approved-catalog-page'));
+ syncWidget();
 }
 function render(){
  mount();
- const keys=unlockedSet(),signature=JSON.stringify([identity,loaded,[...keys].sort(),snapshot.events.map(e=>[e.kind,e.subject]),snapshot.adProgress?.ads_dismissed]);
- const info=loaded?summary():(identity?'Loading account achievements…':'Sign in to track achievements');
+ const keys=unlockedSet(),signature=JSON.stringify([identity,loaded,searchQuery,statusFilter,[...keys].sort(),snapshot.events.map(e=>[e.kind,e.subject]),snapshot.adProgress?.ads_dismissed]);
+ const info=loaded?summary():(identity?'Loading account achievements…':document.querySelector('a[aria-label^="Account:"]')?'Account connected — achievement session is reconnecting…':'Sign in to track achievements');
  for(const host of document.querySelectorAll('.tv-approved-catalog')){
   const label=host.querySelector('.tv-approved-summary'),grid=host.querySelector('.tv-approved-list');
   if(label&&label.textContent!==info)label.textContent=info;
   if(!grid||grid.dataset.signature===signature)continue;
   grid.dataset.signature=signature;grid.replaceChildren();
   for(const item of collection){
-   // Adblockn't retains its original live card, counter and reward in the Cabinet modal.
-   if(host.id==='tv-approved-catalog-modal'&&item.key==='adblocknt')continue;
+   const query=(item.title+' '+item.description+' '+item.rarity+' '+item.key).toLowerCase();
+   if(host.id==='tv-approved-catalog-page'&&searchQuery&&!query.includes(searchQuery))continue;
+   if(host.id==='tv-approved-catalog-page'&&statusFilter==='Discovered'&&!keys.has(item.key))continue;
+   if(host.id==='tv-approved-catalog-page'&&statusFilter==='Locked'&&keys.has(item.key))continue;
    const active=keys.has(item.key),article=document.createElement('article');
    article.className='tv-approved-item'+(active?' is-earned':'');
    article.dataset.achievementKey=item.key;
@@ -244,11 +250,12 @@ function render(){
    article.append(head,desc,footer);grid.append(article);
   }
  }
- const widget=document.getElementById('tv-ach-widget');
- if(widget&&loaded){const label='✧ '+keys.size+'/'+collection.length;if(widget.textContent!==label)widget.textContent=label;widget.title='Cabinet of Curiosities — '+summary();}
+ syncWidget();
  const found=document.getElementById('tv-ach-found');
- if(found&&loaded&&found.textContent!==summary())found.textContent=summary();
- const home=document.getElementById('tv-home-found');if(home&&loaded&&home.textContent!==summary())home.textContent=summary();
+ if(found&&found.textContent!==summary())found.textContent=summary();
+ const home=document.getElementById('tv-home-found');if(home&&home.textContent!==summary())home.textContent=summary();
+ const page=document.querySelector('[data-cabinet-full-page]');
+ if(page)updateNativeCabinet(page);
  const stat=document.querySelector('[data-tv-pane="achievements"] .tv-stats > span');if(stat)stat.textContent=collection.length+' APPROVED · ACCOUNT-WIDE';
 }
 async function refresh(){
