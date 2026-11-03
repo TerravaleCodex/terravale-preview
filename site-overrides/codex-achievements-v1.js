@@ -42,14 +42,52 @@ const seenClicks=new Set(),toast=(heading,detail)=>{
  const parent=document.getElementById('tv-ach-toasts')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'tv-ach-toasts',className:'tv-ach-toasts'}));
  const t=document.createElement('div');t.className='tv-ach-toast';const strong=document.createElement('strong');strong.textContent=heading;const label=document.createElement('span');label.textContent=detail;t.append(strong,label);parent.append(t);setTimeout(()=>t.remove(),5000);
 };
+function parseStoredSession(value){
+ try{
+  if(!value)return null;
+  let session=value;
+  if(typeof session==='string'){
+   session=decodeURIComponent(session);
+   if(session.startsWith('base64-')){
+    const raw=session.slice(7).replace(/-/g,'+').replace(/_/g,'/');
+    const bytes=atob(raw.padEnd(Math.ceil(raw.length/4)*4,'='));
+    session=JSON.parse(decodeURIComponent(Array.from(bytes,c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')));
+   }else session=JSON.parse(session);
+  }
+  if(session&&typeof session==='object'&&!Array.isArray(session))session=session.currentSession||session.session||session.data?.session||session;
+  const token=Array.isArray(session)?session[0]:session?.access_token;
+  if(typeof token!=='string'||token.split('.').length!==3)return null;
+  let uid=Array.isArray(session)?null:session?.user?.id;
+  if(!uid){
+   const segment=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+   const claims=JSON.parse(atob(segment.padEnd(Math.ceil(segment.length/4)*4,'=')));
+   uid=claims?.sub;
+  }
+  if(typeof uid==='string'&&/^[a-f0-9-]{36}$/i.test(uid))return {uid,token};
+ }catch(e){}
+ return null;
+}
 function getAuth(){
- try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i)||'';
-  if(!(/^sb-[\w-]+-auth-token$/.test(key)||key.includes('supabase.auth.token')))continue;
-  const session=JSON.parse(localStorage.getItem(key)||'null');if(session?.user?.id&&session?.access_token)return {uid:session.user.id,token:session.access_token};
- }}catch{}
- try{const raw=document.cookie.split(';').map(s=>s.trim()).filter(s=>s.startsWith('sb-emwlvbmnrrhxhrmlwkhs-auth-token')).sort();
-  const parts=raw.map(s=>s.substring(s.indexOf('=')+1));if(parts.length){let value=decodeURIComponent(parts.join(''));if(value.startsWith('base64-'))value=atob(value.slice(7).replace(/-/g,'+').replace(/_/g,'/'));const session=JSON.parse(value);if(session?.user?.id&&session?.access_token)return {uid:session.user.id,token:session.access_token};}
- }catch{}return null;
+ const base='sb-emwlvbmnrrhxhrmlwkhs-auth-token';
+ try{
+  for(const key of [base,'supabase.auth.token']){
+   const auth=parseStoredSession(localStorage.getItem(key));
+   if(auth)return auth;
+  }
+ }catch(e){}
+ try{
+  const pairs=new Map(document.cookie.split(';').map(s=>{
+   const pos=s.indexOf('=');
+   return pos<0?['','']:[s.slice(0,pos).trim(),s.slice(pos+1).trim()];
+  }));
+  const whole=pairs.get(base);
+  if(whole){const auth=parseStoredSession(whole);if(auth)return auth;}
+  const chunks=[...pairs.entries()].filter(([k])=>new RegExp('^'+base+'\\.[0-9]+$').test(k)).sort(([a],[b])=>Number(a.slice(base.length+1))-Number(b.slice(base.length+1)));
+  if(chunks.length&&chunks.every(([k],i)=>Number(k.slice(base.length+1))===i)){
+   const auth=parseStoredSession(chunks.map(([,v])=>v).join(''));if(auth)return auth;
+  }
+ }catch(e){}
+ return null;
 }
 async function request(path,method='GET',body){
  const auth=getAuth();if(!auth)return null;
