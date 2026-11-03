@@ -94,11 +94,16 @@ async function renewIdentity(){const s=access(),id=s?.id||null,t=s?.token||null;
  }
  paint();reschedule();if(pending)void flushDismissals();
 }
-function progressLabel(){return hasAchievement()?'1 of 1 discovered':'0 of 1 discovered'}
+function progressLabel(){
+ const state=window.TerravaleAchievementState;
+ return (Number(state?.earned)||0)+' of '+(Number(state?.total)||62)+' discovered';
+}
 function openPanel(which='cabinet'){if((which==='dm'||which==='adlab')&&!isDM)which='cabinet';tab=which;box.hidden=false;document.body.classList.add('tv-panel-open');paint();}
 function closePanel(){box.hidden=true;document.body.classList.remove('tv-panel-open');}
 function paint(){if(!ui)return;
- const n=N(progress.ads_dismissed);widget.textContent='✧ '+(hasAchievement()?'1':'0')+'/1';widget.title='Cabinet of Curiosities — '+progressLabel();
+ const n=N(progress.ads_dismissed),live=window.TerravaleAchievementState;
+ widget.textContent='✧ '+(Number(live?.earned)||0)+'/'+(Number(live?.total)||62);
+ widget.title='Cabinet of Curiosities — '+progressLabel();
  window.dispatchEvent(new CustomEvent('terravale-cabinet-progress',{detail:{ads_dismissed:progress.ads_dismissed,adblocknt_unlocked_at:progress.adblocknt_unlocked_at,personal_adblocker:progress.personal_adblocker}}));
  $('#tv-ach-found').textContent=progressLabel();$('#tv-ach-count').textContent=Math.min(25,n)+'/25';$('#tv-ach-progress').style.width=Math.min(100,n/25*100)+'%';$('#tv-home-found').textContent=progressLabel();$('#tv-home-progress').textContent=Math.min(25,n)+' / 25';$('#tv-ach-progress').parentElement.setAttribute('aria-valuenow',String(Math.min(25,n)));
  $('#tv-ach-card').classList.toggle('unlocked',hasAchievement());$('#tv-ach-name').textContent=hasAchievement()?'Adblockn’t':'Undiscovered Secret';
@@ -122,7 +127,7 @@ function populateGallery(){
 }
 function mount(){
  if(!document.body||ui)return;layer=E('div','tv-ad-layer');layer.id='tv-ad-layer';closeAll=E('button','tv-ad-close-all');closeAll.type='button';closeAll.hidden=true;closeAll.innerHTML='× &nbsp; Close all ads <b>0</b>';closeAll.onclick=()=>clearAds(true);
- widget=E('button','tv-ach-widget','✧ 0/1');widget.type='button';widget.onclick=()=>openPanel('cabinet');widget.setAttribute('aria-label','Open Cabinet of Curiosities');
+ widget=E('button','tv-ach-widget','✧ 0/62');widget.type='button';widget.onclick=()=>window.location.assign(BASE+'cabinet-of-curiosities/');widget.setAttribute('aria-label','Open Cabinet of Curiosities');
  box=E('div','tv-ach-backdrop');box.hidden=true;box.innerHTML=`<section class="tv-ach-window" role="dialog" aria-modal="true" aria-label="Terravale Cabinet of Curiosities"><header><span>✧ TERRAVALE CODEX <small>THE CABINET OF CURIOSITIES</small></span><button id="tv-ach-close" type="button" aria-label="Close Cabinet">×</button></header><nav aria-label="Cabinet sections"><button data-tv-tab="cabinet">Cabinet</button><button data-tv-tab="achievements">Achievements</button><button data-tv-tab="appearance">Unlockables</button><button data-tv-tab="adlab" id="tv-tab-adlab" hidden>Ad Laboratory</button><button id="tv-tab-dm" data-tv-tab="dm" hidden>DM · Ad Controls</button></nav><main>
  <div data-tv-pane="cabinet">
   <div class="tv-eyebrow">THE CABINET OF CURIOSITIES</div>
@@ -178,7 +183,9 @@ function addNavLinks(){const add=(section,id,label,onClick)=>{const root=$(secti
 async function init(){
  try{const r=await fetch(ROOT+'ads.json',{cache:'force-cache'});if(r.ok){const d=await r.json();if(Array.isArray(d)&&d.length===56)ads=d;}}catch(e){console.warn('Approved ad manifest unavailable',e)}
  mount();await refreshSettings();await renewIdentity();authPoll=setInterval(()=>{renewIdentity();addNavLinks()},4500);settingsPoll=setInterval(refreshSettings,18000);setInterval(()=>{if(pending&&!dbBusy)flushDismissals()},12000);
- addNavLinks();document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSettings()});
+ addNavLinks();
+ window.addEventListener('terravale-achievements-changed',()=>paint());
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSettings()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.TerravaleAdblocknt={openCabinet:()=>openPanel('cabinet'),openUnlockables:()=>openPanel('appearance'),openDM:()=>isDM&&openPanel('dm')};
