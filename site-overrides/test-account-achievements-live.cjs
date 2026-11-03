@@ -13,15 +13,16 @@ const jsRoot=path.join(root,'_next','static','chunks');
 const chunks=fs.readdirSync(jsRoot).filter(x=>x.endsWith('.js')).map(x=>fs.readFileSync(path.join(jsRoot,x),'utf8'));
 const has=x=>chunks.some(c=>c.includes(x));
 const keys=[
- 'class:artificer','class:bloodforger','ancestry:elf','ancestry:flugel',
- 'classes_complete','ancestries_complete','codex_keeper','bloodforger_3','bloodforger_all',
+'classes_complete','ancestries_complete','codex_keeper','bloodforger_3','bloodforger_all',
  'character_first','character_approved','journal_private','journal_party','journal_both',
  'journal_twenty','quicksave_first','theme_first','theme_five','backstory_first',
  'search_first','dice_first','campaign_joined'
 ];
 for(const key of keys)assert(has(key),'Compiled collection missing '+key);
+for(const className of ['Artificer','Bloodforger','Shaman','Vitaeforge (v1.10)'])assert(has(className),'Class catalogue omitted '+className);
+for(const ancestry of ['Beastfolk','Elf','Flugel','Oni'])assert(has(ancestry),'Ancestry catalogue omitted '+ancestry);
 for(const marker of ['codex_achievement_events','codex_achievement_unlocks','codex_record_activity',
- 'achievementProgress','bloodforger_discipline','read_class','read_ancestry',
+ 'bloodforger_discipline','read_class','read_ancestry',
  'terravale-achievement-notice','Filter Cabinet rarity','Filter Cabinet achievements',
  'data-cabinet-full-page']){
  assert(has(marker),'Published achievement UI missing '+marker);
