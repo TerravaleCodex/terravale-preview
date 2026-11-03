@@ -164,7 +164,7 @@ function updateNativeCabinet(page){
  if(oldIntro)oldIntro.textContent='Discoveries are permanent and account-wide, starting from the new achievement launch.';
  const oldSubtitle=exactLeaf(page,'Achievements, strange discoveries and their rewards. One secret at a time.');
  if(oldSubtitle)oldSubtitle.textContent='Achievements, strange discoveries and their rewards across Terravale.';
- const footer=[...page.querySelectorAll('footer')].find(e=>e.textContent?.includes('RELEASE 001'));
+ const footer=[...page.querySelectorAll('footer,p,small,div')].find(e=>e.children.length===0&&e.textContent?.includes('RELEASE 001'));
  if(footer)markRetired(footer);
 }
 function integrateCabinet(page,section){
@@ -257,6 +257,8 @@ function render(){
  const page=document.querySelector('[data-cabinet-full-page]');
  if(page)updateNativeCabinet(page);
  const stat=document.querySelector('[data-tv-pane="achievements"] .tv-stats > span');if(stat)stat.textContent=collection.length+' APPROVED · ACCOUNT-WIDE';
+ const homeHint=[...document.querySelectorAll('[data-tv-pane="cabinet"] small')].find(e=>e.textContent?.includes('One approved achievement'));
+ if(homeHint)homeHint.textContent=collection.length+' approved account-wide achievements';
 }
 async function refresh(){
  if(fetching)return;const current=getAuth(),uid=current?.uid||null;
