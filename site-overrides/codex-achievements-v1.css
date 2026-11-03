@@ -1,0 +1,21 @@
+/* Approved Cabinet achievements — additive, compact and theme-aware. */
+.tv-approved-catalog{margin:24px 0 6px;max-width:100%;color:var(--text-primary,var(--foreground,#e4e0ed));font:inherit}
+.tv-approved-catalog h2{font-size:clamp(1.2rem,2vw,1.7rem);line-height:1.25;margin:0 0 10px}
+.tv-approved-catalog .tv-approved-intro{font-size:.88rem;line-height:1.6;opacity:.76;margin:0 0 12px}
+.tv-approved-catalog .tv-approved-summary{font-size:.92rem;font-weight:750;letter-spacing:.025em;margin:0 0 16px}
+.tv-approved-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;align-items:stretch}
+.tv-approved-item{min-width:0;display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:12px;background:color-mix(in srgb,currentColor 4%,transparent)}
+.tv-approved-item.is-earned{border-color:color-mix(in srgb,#a8a1f3 46%,transparent);background:color-mix(in srgb,#a8a1f3 8%,transparent)}
+.tv-approved-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:9px}
+.tv-approved-item-head strong{font-size:.90rem;line-height:1.35;font-weight:720;overflow-wrap:anywhere}
+.tv-approved-item-head small{font-size:.65rem;line-height:1.5;letter-spacing:.075em;font-weight:750;opacity:.72;white-space:nowrap}
+.tv-approved-item p{margin:0;font-size:.8rem;line-height:1.5;opacity:.79;flex-grow:1}
+.tv-approved-item-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid color-mix(in srgb,currentColor 12%,transparent);padding-top:8px;font-size:.69rem;letter-spacing:.035em}
+.tv-approved-item-foot span:first-child{font-weight:750;opacity:.70}
+.tv-approved-item.is-earned .tv-approved-item-foot span:first-child{color:#bfb4fb;opacity:1}
+.tv-approved-item-foot span:last-child:not(:first-child){font-variant-numeric:tabular-nums;opacity:.70}
+#tv-approved-catalog-modal{padding-top:8px;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}
+#tv-approved-catalog-page{padding:22px 0 38px;max-width:1200px}
+[data-tv-pane="achievements"] .tv-ach-category[hidden]{display:none!important}
+@media(max-width:520px){.tv-approved-list{grid-template-columns:1fr}.tv-approved-item{padding:12px}.tv-approved-catalog{margin-top:18px}}
+@media(prefers-reduced-motion:reduce){.tv-approved-item{transition:none!important}}
