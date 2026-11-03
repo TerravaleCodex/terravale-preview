@@ -16,13 +16,13 @@ const state={ready:true,authenticated:true,earnedKeys:['theme_first','class:arti
 const fixture='<!doctype html><html><body><main data-cabinet-full-page><p id="legacy">0 / 1</p></main>'
 +'<script>window.TerravaleAchievementState='+JSON.stringify(state)+';</script>'
 +'<script src="/terravale-preview/codex-achievements/cabinet-v2-embed.js"></script>'
-+'<script>setTimeout(function(){var f=document.getElementById("tv-cabinet-v2-frame"),d=f&&f.contentDocument,x={};'
++'<script>var attempts=0;var checker=setInterval(function(){var f=document.getElementById("tv-cabinet-v2-frame"),d=f&&f.contentDocument,x={};if(!d||!d.getElementById("heroCount")){if(++attempts>45){clearInterval(checker);document.body.dataset.fixture=encodeURIComponent(JSON.stringify({error:"Iframe failed to load",src:f?.src,ready:d?.readyState}));}return;}clearInterval(checker);'
 +'try{x.count=d.getElementById("heroCount").textContent.trim();x.cards=d.querySelectorAll(".ach-card").length;'
 +'x.ads=d.querySelector("[data-id=adblocknt] .progress-copy strong").textContent.trim();'
 +'x.hidden=getComputedStyle(document.getElementById("legacy")).display;'
 +'var s=d.getElementById("searchInput");s.value="Artificer";s.dispatchEvent(new Event("input",{bubbles:true}));x.filtered=d.querySelectorAll(".ach-card").length;'
 +'d.querySelector("[data-id=class\\:artificer]")?.click();x.dialog=!d.getElementById("modal").hidden;}catch(e){x.error=String(e)}'
-+'document.body.dataset.fixture=encodeURIComponent(JSON.stringify(x));},2200)</script></body></html>';
++'document.body.dataset.fixture=encodeURIComponent(JSON.stringify(x));},120)</script></body></html>';
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
  if(pathname==='/'){res.writeHead(200,{'Content-Type':'text/html'}).end(fixture);return;}
