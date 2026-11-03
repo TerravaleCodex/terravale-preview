@@ -10,15 +10,17 @@ const ancestries=['Beastfolk','Crimsonborn','Daemon','Dvergr','Elf','Kharithen',
 const disciplines=['Alteration','Arsenal','Ballistics','Blood Battle','Blood Debt','Compression','Fortification','Hardening','Hunger','Living Weapon','Regeneration','Thorn','Vector'];
 const themes=['dark','night-sky','shotxo','shady','absolute-zero','sanguine','verdant','dragonforge','astral','null-meridian'];
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const classTitles={"Artificer":"Measure Twice, Enchant Once","Barbarian":"The Art of Anger","Bard":"One More Verse","Cleric":"A Prayer Answered?","Druid":"The World Still Breathes","Fighter":"Steel Has No Secrets","Monk":"A Thousand Quiet Strikes","Paladin":"An Oath Has Weight","Ranger":"Reading the Trail","Rogue":"Nothing to See Here","Sorcerer":"Born of the Spark","Warlock":"Read the Fine Print","Wizard":"Knowledge Is a Weapon","Ashheir":"From Ash, We Inherit","Bloodforger":"The Shape of Blood","Chaos Arsenal":"Armed with Chaos","Crimson Conduit":"A Second Heart, Shared","Dream-Eater":"The Dream Bites Back","Echo-Bearer":"Echoes of Another Life","Gatewarden":"Not One Step Further","Lineage Adept":"Instinct Remembers","Nullwatcher":"Silence the Spell","Oracle of the Two Waters":"Where Two Waters Meet","Pressurebearer":"Under Pressure","Ripperbound":"The Hunt Never Ends","Scarlet Masque":"Behind the Scarlet Smile","Seal-Maintainer":"The Seal Holds","Shadowforger":"Shadows Have Shape","Shaman":"The Spirits Are Listening","Summoner":"A Pact of Two Souls","Ventweaver":"Between Breath and Boundary","Vhaeros Cantor (v1.10)":"The Domain Answers","Vitaeforge (v1.10)":"Flesh Remade in Vitae"};
+const ancestryTitles={"Beastfolk":"Older Than Instinct","Crimsonborn":"The Second Heart Beats","Daemon":"A Will Without Shape","Dvergr":"Built to Outlast","Elf":"Memory Without End","Kharithen":"Bound by Twilight","Thalassari":"What the Deep Remembers","Flugel":"The Sky Remembers","Human":"Against All Odds","Oni":"The World Does Not Yield"};
 const entry=(key,title,rarity,description,measure)=>({key,title,rarity,description,measure});
 const collection=[
- ...classes.map(c=>entry('class:'+slug(c),'Studied: '+c,'Common','Read the '+c+' class entry.')),
- ...ancestries.map(a=>entry('ancestry:'+slug(a),'Discovered: '+a,'Common','Read the '+a+' ancestry entry.')),
- entry('classes_complete','Master of Classes','Epic','Read all 33 class entries.','classes'),
- entry('ancestries_complete','Children of Terravale','Rare','Read all 10 ancestry entries.','ancestries'),
- entry('codex_keeper','Keeper of the Codex','Legendary','Read every class and ancestry entry.','all'),
- entry('bloodforger_3','Blood on the Blueprint','Uncommon','Explore three different Bloodforger disciplines in the preview.','disciplines3'),
- entry('bloodforger_all','The Blood Remembers','Epic','Explore all 13 Bloodforger disciplines in the preview.','disciplines13'),
+ ...classes.map(c=>entry('class:'+slug(c),classTitles[c]||('Studied: '+c),'Common','Read the '+c+' class entry.')),
+ ...ancestries.map(a=>entry('ancestry:'+slug(a),ancestryTitles[a]||('Discovered: '+a),'Common','Read the '+a+' ancestry entry.')),
+ entry('classes_complete','Many Paths, One Scholar','Epic','Read all 33 class entries.','classes'),
+ entry('ancestries_complete','Peoples of a Broken World','Epic','Read all 10 ancestry entries.','ancestries'),
+ entry('codex_keeper','Keeper of the Living Codex','Legendary','Read every class and ancestry entry.','all'),
+ entry('bloodforger_3','A Thousand Ways to Bleed','Rare','Explore three different Bloodforger disciplines in the preview.','disciplines3'),
+ entry('bloodforger_all','Blood Knows No Limits','Epic','Explore all 13 Bloodforger disciplines in the preview.','disciplines13'),
  entry('character_first','And So It Begins…','Common','Save your first new character.'),
  entry('character_approved','Officially Someone Else’s Problem','Uncommon','Have your newly created character approved by the DM.'),
  entry('journal_private','Dear Diary, Don’t Judge Me','Common','Write and save a private journal entry.'),
