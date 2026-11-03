@@ -489,6 +489,7 @@ jobs:
           print('Approved achievement catalogue installed on',updated,'routes')
           PY
           node site-overrides/test-approved-achievements.cjs
+          node site-overrides/test-cabinet-native-integration.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
