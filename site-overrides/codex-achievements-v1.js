@@ -186,12 +186,12 @@ function clicked(ev){
   const name=disciplines.find(d=>new RegExp('(^|[^a-z])'+d.replace(/\s+/g,'\\s+')+'([^a-z]|$)','i').test(combined));
   if(name)void record('bloodforger_discipline',name);
  }
- if(path==='/search'&&el.tagName==='A'){
+ if(path==='/search'&&el.tagName==='A'&&!!el.closest('main,[role="main"],.search-results')&&!el.closest('nav,aside,header')){
   try{const url=new URL(el.href,location.href);const ref=url.pathname.replace(/^\/terravale-preview\/?/,'/');
    if(url.origin===location.origin&&ref!=='/search'&&ref.length>2)void record('search_result',ref);
   }catch{}
  }
- if(/^(save|quick ?save|bookmark|add to saved|save reference|save page)/i.test(label)&&!/remove|unsave|saved already/i.test(label)){
+ if(/\b(quick\s*save|bookmark|add to saved|save reference|save page|save to quick\s*save)\b/i.test(label)&&!/remove|unsave|saved already/i.test(label)){
   if(path!=='/search'&&path!=='/bookmarks'&&path.length>2)setTimeout(()=>void record('quick_save',path),350);
  }
 }
@@ -202,7 +202,7 @@ function themeChange(){
  if(next!==lastTheme){lastTheme=next;void record('theme_changed',next);}
 }
 function boot(){
- lastTheme=document.documentElement.dataset.appTheme||null;
+ lastTheme=document.documentElement.dataset.appTheme||localStorage.getItem('terravale.unified.theme.v2')||localStorage.getItem('terravale.cosmetic.site.v1')||'dark';
  document.addEventListener('click',clicked,true);
  const observer=new MutationObserver(records=>{if(records.some(x=>x.target===document.documentElement&&x.attributeName==='data-app-theme'))themeChange();});
  observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-app-theme']});
