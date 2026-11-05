@@ -624,6 +624,13 @@ jobs:
         run: |
           node site-overrides/test-native-navigation.cjs
           node site-overrides/test-session-room-click-through.cjs
+      - name: Publish private-source mobile rules preview shell
+        shell: bash
+        run: |
+          mkdir -p site/rules-recovery-mobile
+          cp site-overrides/rules-recovery-mobile.html site/rules-recovery-mobile/index.html
+          test -s site/rules-recovery-mobile/index.html
+          grep -q 'No server upload' site/rules-recovery-mobile/index.html
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
