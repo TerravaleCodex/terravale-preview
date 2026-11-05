@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/><meta name="theme-color" content="#100d17"/><title>Terravale Codex · Mobile Rules Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0b10;--surface:#17131d;--line:#362b40;--muted:#b4a7c0;--fg:#f1eaf4;--violet:#c5a0ef;--gold:#efd7b1}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}a{color:var(--violet)}.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#121018ee;border-bottom:1px solid #3a2c43;backdrop-filter:blur(14px);padding:12px max(14px,env(safe-area-inset-left))}.brand{font:700 21px Georgia,serif;color:var(--gold);line-height:1.05}.brand small{display:block;font:700 8px system-ui;letter-spacing:2px;color:var(--violet)}button{border-radius:9px;padding:10px 13px;background:#241b2c;color:var(--fg);border:1px solid #584568}button.primary{background:#4c3062;border-color:#ac83d1;font-weight:700}.wrap{max-width:1250px;margin:0 auto;padding:18px clamp(14px,3vw,40px) 65px}.eyebrow{font-size:10px;font-weight:800;letter-spacing:1.7px;color:var(--violet);text-transform:uppercase}h1{font:clamp(32px,5vw,47px)/1.15 Georgia,serif;color:#f9e9d3;margin:7px 0 12px}h2{font:27px Georgia,serif;color:var(--gold);margin:12px 0}h3{font:21px Georgia,serif;color:var(--gold)}p{margin:9px 0 12px}.muted{color:var(--muted)}.panel{border:1px solid var(--line);background:var(--surface);border-radius:13px;padding:18px;margin-bottom:12px}.notice{border-color:#6c4c7d;background:linear-gradient(130deg,#2a1b34,#15101b)}.notice p{color:#d1c2da}.notice strong{color:#ffedc8}.content{display:grid;grid-template-columns:260px 1fr;gap:22px;margin-top:22px;align-items:start}.sidebar{position:sticky;top:78px;max-height:calc(100vh - 96px);overflow:auto;padding:14px}.sidebar label{display:block;font-weight:700;margin:0 0 6px;font-size:12px;color:var(--muted)}.sidebar input{width:100%;padding:12px;border:1px solid #564564;border-radius:8px;background:#120f17;color:#fff}.sidebutton{width:100%;text-align:left;margin:3px 0;background:transparent;border:0;color:#d6ccdf;padding:10px;border-radius:8px}.sidebutton.active,.sidebutton:hover{background:#302339;color:#fff}.sidebutton small{color:#a998b6;display:block}.switches{display:flex;gap:7px;margin:14px 0}.switches button{flex:1;padding:9px 8px;font-size:12px}.switches button.active{background:#51336b;border-color:#ba93d9}.titleline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;margin:0 0 12px}.tag{padding:5px 9px;border:1px solid #6c557f;border-radius:99px;font-size:11px;color:#debcff}.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0}.fact{background:#111015;border:1px solid #322939;border-radius:10px;padding:12px;min-width:0}.fact small{display:block;color:#ab95bd;font-size:10px;text-transform:uppercase;letter-spacing:1px}.fact b{display:block;font-size:13px;overflow-wrap:anywhere;margin-top:5px}.tabs{display:flex;gap:3px;border-bottom:1px solid #3c3044;overflow-x:auto;scrollbar-width:thin;margin:16px 0 24px}.tabs button{white-space:nowrap;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;color:#c4b7cf;padding:12px}.tabs button.active{color:#fff;border-color:#c5a0ef;background:#2a1e32}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.option{border:1px solid #41364a;border-radius:10px;background:#111015;overflow:hidden}.option summary{padding:15px;cursor:pointer;color:#fff0d8;font:700 18px Georgia,serif}.option .text{border-top:1px solid #3d3248;padding:13px}.levelbuttons{display:flex;flex-wrap:wrap;gap:5px;margin:14px 0}.levelbuttons button{min-width:38px;padding:8px}.levelbuttons .active{background:#55376c;border-color:#ae8acb}.text{line-height:1.8;overflow-wrap:anywhere}.text h1,.text h2,.text h3,.text h4{color:var(--gold)}.text table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;font-size:12px}.text td,.text th{border:1px solid #46384e;padding:8px 10px;vertical-align:top}.text code{background:#302637;padding:2px 5px}.text blockquote{border-left:3px solid var(--violet);padding:8px 15px;margin-left:0;background:#271d30}.text hr{border:0;border-top:1px solid var(--line)}.text img{max-width:100%}.text li{margin:5px 0}.privacy{font-size:12px;color:#b9adc3}.empty{padding:25px 16px;border:1px dashed #645370;color:var(--muted);border-radius:9px}.mobilechoose{display:none}#sourceFile{display:none}#alert{min-height:18px;font-size:12px;color:#f0c8dc}.hidden{display:none!important}
+@media(max-width:800px){.top{padding:12px 14px}.brand{font-size:18px}.top button{padding:10px 9px;font-size:12px}.wrap{padding:17px 14px 50px}.content{display:block;margin-top:12px}.sidebar{display:none}.mobilechoose{display:block}.mobilechoose select{width:100%;padding:12px;color:#f6efff;background:#21182a;border:1px solid #705383;border-radius:9px}.facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fact{padding:10px}.grid{grid-template-columns:1fr}.panel{padding:14px}h1{font-size:36px}.tabs{margin-bottom:18px}.tabs button{font-size:12px;padding:12px 10px}.levelbuttons button{flex:0 0 15%;min-width:0}.text table{font-size:11px}.top{padding-top:max(12px,env(safe-area-inset-top))}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body>
+<header class="top"><div class="brand"><small>THE LIVING CODEX</small>Terravale</div><button class="primary" id="loadTop" type="button">Load private rules</button></header>
+<div class="wrap"><div class="eyebrow">Standalone review · Mobile friendly</div><h1>Rules recovery</h1><div id="notice" class="panel notice"><strong>Open this preview directly on your phone.</strong><p>The layout works immediately. For complete mechanics, tap <b>Load private rules</b> and select the companion <b>Terravale_Full_Rules_Mobile_Data.json</b> from Files. Everything is read on your device — the rules are not uploaded or published.</p><div class="privacy">No sign-in · Live site unchanged · Preview-only</div></div>
+<div id="alert" role="status"></div>
+<div class="content"><aside class="sidebar panel"><label for="query">Find an entry</label><input id="query" type="search" placeholder="Search classes or races"><div class="switches"><button class="active" data-mode="classes">Classes</button><button data-mode="races">Ancestry</button></div><div id="classList"></div></aside>
+<main><div class="mobilechoose"><div class="switches"><button class="active" data-mode="classes">Classes</button><button data-mode="races">Ancestry</button></div><label for="mobileSelect" class="eyebrow">Choose a class or ancestry document</label><select id="mobileSelect"></select></div><div id="details"></div></main></div></div><input id="sourceFile" type="file" accept=".json,application/json"/>
+<script>
+"use strict";
+const names="Artificer|Ashheir|Barbarian|Bard|Bloodforger|Chaos Arsenal|Cleric|Crimson Conduit|Dream-Eater|Druid|Echo-Bearer|Fighter|Gatewarden|Lineage Adept|Monk|Nullwatcher|Oracle of the Two Waters|Paladin|Pressurebearer|Ranger|Ripperbound|Rogue|Scarlet Masque|Seal-Maintainer|Shadowforger|Shaman|Sorcerer|Summoner|Ventweaver|Vhaeros Cantor|Vitaeforge|Warlock|Wizard".split("|");
+const mockHTML="<p>Complete mechanics are kept private. Load the companion source JSON from your phone to read this article.</p>";
+let data={classes:names.map((n,i)=>({id:n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/-$/,""),name:n,group:["Artificer","Barbarian","Bard","Cleric","Druid","Fighter","Monk","Paladin","Ranger","Rogue","Sorcerer","Warlock","Wizard"].includes(n)?"core":"terravale",sourceVersion:"",stats:{},introHtml:mockHTML,progression:{levels:[],html:mockHTML},featureByLevel:{},options:[],optionsLabel:"Paths and specialisations",html:mockHTML})),races:[]};
+let mode="classes", selected="artificer", tab="overview", level=1;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const items=()=>mode==="classes"?data.classes:data.races;
+function choose(id){selected=id;tab="overview";level=1;paint();window.scrollTo({top:0,behavior:"smooth"})}
+function nav(){
+ let ls=items(),q=$("#query").value.toLowerCase();
+ let filtered=ls.filter(x=>(x.name+" "+(x.group||x.ancestry||"")).toLowerCase().includes(q));
+ $("#classList").innerHTML=filtered.map(x=>'<button class="sidebutton '+(selected===x.id?'active':'')+'" data-id="'+esc(x.id)+'"><b>'+esc(x.name)+'</b><small>'+esc(x.group==="core"?"Standard D&D":x.group==="terravale"?"Terravale":x.ancestry||"Ancestry document")+'</small></button>').join("")||'<p class="muted">No matching entries.</p>';
+ $("#mobileSelect").innerHTML=ls.map(x=>'<option value="'+esc(x.id)+'" '+(selected===x.id?"selected":"")+'>'+esc(x.name)+'</option>').join("");
+ document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+}
+function fact(k,v){return '<div class="fact"><small>'+esc(k)+'</small><b>'+esc(v)+'</b></div>'}
+function paint(){
+ if(!items().some(x=>x.id===selected))selected=items()[0]?.id||"";
+ nav();const x=items().find(i=>i.id===selected);
+ if(!x){$("#details").innerHTML='<div class="empty">No entries. Load your private source JSON for ancestry documents.</div>';return}
+ if(mode==="races"){$("#details").innerHTML='<div class="titleline"><div><div class="eyebrow">Ancestry · '+esc(x.ancestry)+'</div><h1>'+esc(x.name)+'</h1></div><span class="tag">Private reference</span></div><section class="panel text">'+(x.html||mockHTML)+'</section>';return}
+ const tabs=[["overview","At a glance"],["progression","Levels 1–20"],["paths","Paths & options"],["rules","Complete rules"]];
+ let out='<div class="titleline"><div><div class="eyebrow">'+esc(x.group==="core"?"Standard D&D class":"Terravale class")+'</div><h1>'+esc(x.name)+'</h1></div><span class="tag">'+esc(x.sourceVersion||"Preview")+'</span></div>';
+ out+='<div class="facts">'+Object.entries(x.stats||{}).map(([k,v])=>fact(k,v)).join("")+'</div>';
+ out+='<nav class="tabs">'+tabs.map(t=>'<button type="button" data-tab="'+t[0]+'" class="'+(tab===t[0]?"active":"")+'">'+t[1]+'</button>').join("")+'</nav>';
+ if(tab==="overview"){out+='<h2>At a glance</h2><div class="panel text">'+(x.introHtml||mockHTML)+'</div><div class="facts">'+fact("Progression",""+(x.progression?.levels?.length||0)+" levels")+fact("Options",""+(x.options?.length||0)+" sections")+fact("Source",x.sourceVersion||"Private")+'</div><button class="primary" data-tab="progression">Examine level progression</button>';}
+ if(tab==="progression"){
+  out+='<h2>Level progression</h2><div class="panel text">'+(x.progression?.html||mockHTML)+'</div><h2>Level '+level+' details</h2><div class="levelbuttons">'+Array.from({length:20},(_,i)=>'<button data-level="'+(i+1)+'" class="'+(level===i+1?"active":"")+'">'+(i+1)+'</button>').join("")+'</div>';
+  const entry=x.progression?.levels?.find(y=>y.level===level),features=x.featureByLevel?.[String(level)]||[];
+  if(entry)out+='<div class="panel"><div class="eyebrow">Progression table · Level '+level+'</div><p>'+esc((entry.cells||[]).slice(1).join(" · "))+'</p></div>';
+  out+=features.length?features.map(y=>'<div class="panel text">'+(y.html||"")+'</div>').join(""):'<div class="empty">No separate level-specific feature section indexed here. Consult the complete article.</div>';
+ }
+ if(tab==="paths"){out+='<h2>'+esc(x.optionsLabel||"Paths & specialisations")+'</h2><p class="muted">'+(x.options?.length||0)+' source sections indexed.</p>';out+=(x.options?.length?'<div class="grid">'+x.options.map(y=>'<details class="option"><summary>'+esc(y.name)+'</summary><div class="text">'+(y.html||"")+'</div></details>').join("")+'</div>':'<div class="empty">Complete mechanics are in the private data file. Load the JSON to see all available subclass options.</div>');}
+ if(tab==="rules")out+='<h2>Complete class article</h2><div class="panel text">'+(x.html||mockHTML)+'</div>';
+ out+='<p class="privacy" style="margin-top:24px">Reference preview only. No live Codex changes or automatic character-sheet actions.</p>';
+ $("#details").innerHTML=out;
+}
+$("#loadTop").addEventListener("click",()=>$("#sourceFile").click());
+$("#sourceFile").addEventListener("change",async e=>{
+ const f=e.target.files?.[0];if(!f)return;
+ $("#alert").textContent="Reading local file…";
+ try{
+  const o=JSON.parse(await f.text());
+  if(!Array.isArray(o.classes)||!Array.isArray(o.races)||o.classes.length<1||!o.classes[0].html)throw Error("Please select Terravale_Full_Rules_Mobile_Data.json (the formatted source file).");
+  data=o;mode="classes";selected=o.classes.find(x=>x.id==="artificer")?.id||o.classes[0].id;tab="overview";level=1;$("#query").value="";
+  $("#notice").innerHTML='<strong>Complete source loaded privately.</strong><p>'+data.classes.length+' classes, '+data.races.length+' ancestry documents. Your browser read this file locally. No server upload.</p><span class="privacy">Live site unchanged · This file remains available in this tab</span>';
+  $("#notice").style.borderColor="#537f72";$("#alert").textContent="Rules successfully loaded.";paint();
+ }catch(err){$("#alert").textContent="Import failed: "+String(err.message||err)}
+ e.target.value="";
+});
+$("#query").addEventListener("input",nav);
+$("#mobileSelect").addEventListener("change",e=>choose(e.target.value));
+document.addEventListener("click",e=>{
+ let b=e.target.closest("button");if(!b)return;
+ if(b.dataset.id)choose(b.dataset.id);
+ if(b.dataset.mode){mode=b.dataset.mode;selected=items()[0]?.id||"";tab="overview";paint()}
+ if(b.dataset.tab){tab=b.dataset.tab;paint()}
+ if(b.dataset.level){level=+b.dataset.level;paint()}
+});
+paint();
+</script></body></html>
