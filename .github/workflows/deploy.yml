@@ -89,7 +89,11 @@ jobs:
               --output "$response_file" --write-out '%{http_code}' \
               --header 'Cache-Control: no-cache' \
               "${base}${path}?retired=${GITHUB_SHA}")"
-            if [ "$status" != "404" ] ||
+            expected_status="404"
+            if [ "$path" = "/404.html" ]; then
+              expected_status="200"
+            fi
+            if [ "$status" != "$expected_status" ] ||
                ! grep -q 'Awaiting <em>2.0</em> update' "$response_file" ||
                ! grep -q 'location.replace("/terravale-preview/")' "$response_file"; then
               echo "::error::Retired path ${path} did not serve the branded fallback (HTTP ${status})."
