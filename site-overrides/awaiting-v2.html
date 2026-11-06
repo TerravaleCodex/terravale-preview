@@ -24,13 +24,20 @@
     .halo{position:relative;display:grid;place-items:center;margin:0 auto 48px;width:166px;height:166px}
     .halo::before,.halo::after{content:"";position:absolute;inset:2px;border-radius:50%;border:1px solid #9475ae55;box-shadow:inset 0 0 30px #b88ad010,0 0 62px #7e52942c}
     .halo::after{inset:18px;border:1px dashed #9d78be60;animation:turn 55s linear infinite}
-    .sigil{width:80px;height:80px;filter:drop-shadow(0 0 15px #c49ce65c)}
+    .sigil{width:80px;height:80px;filter:drop-shadow(0 0 15px #c49ce65c);transform-origin:center;animation:sigil-spin 24s linear infinite;will-change:transform}
     .eyebrow{display:inline-flex;align-items:center;gap:14px;color:#c6a4dd;font-size:11px;letter-spacing:.32em;text-transform:uppercase;font-weight:700}
     .eyebrow::before,.eyebrow::after{content:"";display:block;width:26px;height:1px;background:linear-gradient(90deg,transparent,#c6a4dd88)}
     .eyebrow::after{transform:rotate(180deg)}
     h1{font:400 clamp(48px,8vw,86px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.035em;color:var(--ivory);margin:22px 0 19px;text-wrap:balance;text-shadow:0 12px 60px #08060b}
     h1 em{font-style:italic;color:#d8b9ef;white-space:nowrap}
     .lead{font-size:clamp(15px,2.5vw,18px);line-height:1.8;color:#c6bbc9;max-width:530px;margin:0 auto}
+    .countdown{margin:32px auto 0;max-width:420px}
+    .countdown-title{margin:0 0 13px;color:#c9a6df;font-size:10px;font-weight:750;letter-spacing:.29em;text-transform:uppercase}
+    .timer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .timer-unit{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;padding:15px 8px 12px;border:1px solid #6e527c70;border-radius:13px;background:linear-gradient(180deg,#2d20364d,#100c1575);box-shadow:inset 0 1px #b98ad21a,0 9px 32px #08060a32}
+    .timer-value{display:block;font:400 clamp(34px,6vw,46px)/1.06 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;color:#f6e6cb;letter-spacing:.025em}
+    .timer-label{display:block;margin-top:9px;font-size:9px;font-weight:700;letter-spacing:.21em;text-transform:uppercase;color:#ad95bc}
+    .countdown-note{margin:14px auto 0;color:#a899b2;font-size:12px;letter-spacing:.05em}
     .rule{width:min(100%,310px);height:1px;margin:35px auto 23px;background:linear-gradient(90deg,transparent,#8f6f9f80,transparent)}
     .footnote{color:#a394af;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
     footer{padding:25px 18px 30px;text-align:center;border-top:1px solid #9d7bb51a;color:#887c94;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
@@ -38,6 +45,7 @@
     .sparks i{position:absolute;display:block;width:2px;height:2px;background:#e6c4ff;border-radius:50%;box-shadow:0 0 10px #a077ce;opacity:.5;animation:glimmer 6s ease-in-out infinite}
     .sparks i:nth-child(1){top:18%;left:18%;animation-delay:0s}.sparks i:nth-child(2){top:31%;left:82%;animation-delay:1.5s}.sparks i:nth-child(3){top:75%;left:12%;animation-delay:2s}.sparks i:nth-child(4){top:74%;left:85%;animation-delay:.8s}.sparks i:nth-child(5){top:13%;left:66%;animation-delay:3s}
     @keyframes turn{to{transform:rotate(360deg)}}
+    @keyframes sigil-spin{to{transform:rotate(360deg)}}
     @keyframes glimmer{0%,100%{opacity:.12;transform:scale(.7)}50%{opacity:.75;transform:scale(1.5)}}
     @media(max-width:600px){.top{padding:21px 20px}.brand strong{font-size:17px}.brand small{font-size:8px}.version{font-size:10px}.halo{width:136px;height:136px;margin-bottom:34px}.halo::after{inset:15px}.sigil{width:70px;height:70px}main{padding:45px 22px 65px}.eyebrow{font-size:9px;letter-spacing:.23em}.eyebrow::before,.eyebrow::after{width:18px}h1{font-size:clamp(45px,11vw,64px)}.lead{font-size:15px}footer{font-size:9px;line-height:1.8}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
@@ -67,10 +75,45 @@
       <div class="eyebrow">A new chapter approaches</div>
       <h1>Awaiting <em>2.0</em> update</h1>
       <p class="lead">The Living Codex is being reforged.<br>Our halls are quiet while we prepare what comes next.</p>
+      <section class="countdown" aria-labelledby="countdown-title">
+        <p id="countdown-title" class="countdown-title">Until the next chapter</p>
+        <div class="timer" role="timer" aria-label="Time remaining on the 24-hour countdown">
+          <div class="timer-unit"><span class="timer-value" id="countdown-hours">24</span><span class="timer-label">Hours</span></div>
+          <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
+          <div class="timer-unit"><span class="timer-value" id="countdown-seconds">00</span><span class="timer-label">Seconds</span></div>
+        </div>
+        <p class="countdown-note" id="countdown-note">7 November 2026 · 23:48 GMT</p>
+      </section>
       <div class="rule"></div>
       <div class="footnote">Terravale will return</div>
     </div>
   </main>
   <footer>Terravale · The Living Codex · Version 2.0 in preparation</footer>
+  <script>
+    (() => {
+      "use strict";
+      // One shared deadline for all visitors, including after a refresh.
+      const deadline = Date.parse("2026-11-07T23:48:40Z");
+      const hours = document.getElementById("countdown-hours");
+      const minutes = document.getElementById("countdown-minutes");
+      const seconds = document.getElementById("countdown-seconds");
+      const note = document.getElementById("countdown-note");
+      const title = document.getElementById("countdown-title");
+      const pad = value => String(value).padStart(2, "0");
+      function updateCountdown() {
+        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        hours.textContent = pad(Math.floor(remaining / 3600));
+        minutes.textContent = pad(Math.floor((remaining % 3600) / 60));
+        seconds.textContent = pad(remaining % 60);
+        if (remaining === 0) {
+          title.textContent = "The countdown has ended";
+          note.textContent = "The next chapter awaits.";
+          clearInterval(ticker);
+        }
+      }
+      const ticker = setInterval(updateCountdown, 250);
+      updateCountdown();
+    })();
+  </script>
 </body>
 </html>
