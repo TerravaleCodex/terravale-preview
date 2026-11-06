@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c0a10">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Terravale Living Codex is preparing for its 2.0 update.">
+  <title>Awaiting 2.0 Update · Terravale Living Codex</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0c0a10;--violet:#c5a0ef;--ivory:#f6e6cb;--muted:#aba0b4;--line:#46334f}
+    *,*::before,*::after{box-sizing:border-box}
+    html{min-height:100%;background:var(--bg)}
+    body{margin:0;min-height:100svh;display:flex;flex-direction:column;overflow-x:hidden;color:#f5eff7;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(ellipse 58% 46% at 50% 49%,#3d244a65 0%,#1b132350 47%,transparent 100%),radial-gradient(ellipse 45% 45% at 86% 6%,#38204739,transparent 90%),linear-gradient(135deg,#0c0a10,#120e18 55%,#0b0910)}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(#bba3d10e 1px,transparent 1px),linear-gradient(90deg,#bba3d10e 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,#000,transparent 75%)}
+    .top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;padding:29px clamp(22px,6vw,92px);gap:20px;border-bottom:1px solid #9d7bb51a}
+    .brand{display:flex;align-items:center;gap:13px;text-decoration:none;color:var(--ivory)}
+    .mark{font:italic 600 33px/.9 Georgia,"Times New Roman",serif;color:var(--ivory);letter-spacing:-6px;padding-right:6px;text-shadow:0 0 28px #b88bda52}
+    .brand strong{display:block;font:600 19px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.08em;text-transform:uppercase}
+    .brand small{display:block;margin-top:5px;color:#a48db9;font-size:9px;letter-spacing:.25em;font-weight:750;text-transform:uppercase}
+    .version{font-size:11px;color:#c7b3d4;letter-spacing:.21em;text-transform:uppercase}
+    main{position:relative;isolation:isolate;flex:1;display:grid;place-items:center;padding:52px 22px 85px;text-align:center}
+    .inner{width:min(100%,780px);position:relative}
+    .halo{position:relative;display:grid;place-items:center;margin:0 auto 48px;width:166px;height:166px}
+    .halo::before,.halo::after{content:"";position:absolute;inset:2px;border-radius:50%;border:1px solid #9475ae55;box-shadow:inset 0 0 30px #b88ad010,0 0 62px #7e52942c}
+    .halo::after{inset:18px;border:1px dashed #9d78be60;animation:turn 55s linear infinite}
+    .sigil{width:80px;height:80px;filter:drop-shadow(0 0 15px #c49ce65c)}
+    .eyebrow{display:inline-flex;align-items:center;gap:14px;color:#c6a4dd;font-size:11px;letter-spacing:.32em;text-transform:uppercase;font-weight:700}
+    .eyebrow::before,.eyebrow::after{content:"";display:block;width:26px;height:1px;background:linear-gradient(90deg,transparent,#c6a4dd88)}
+    .eyebrow::after{transform:rotate(180deg)}
+    h1{font:400 clamp(48px,8vw,86px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.035em;color:var(--ivory);margin:22px 0 19px;text-wrap:balance;text-shadow:0 12px 60px #08060b}
+    h1 em{font-style:italic;color:#d8b9ef;white-space:nowrap}
+    .lead{font-size:clamp(15px,2.5vw,18px);line-height:1.8;color:#c6bbc9;max-width:530px;margin:0 auto}
+    .rule{width:min(100%,310px);height:1px;margin:35px auto 23px;background:linear-gradient(90deg,transparent,#8f6f9f80,transparent)}
+    .footnote{color:#a394af;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+    footer{padding:25px 18px 30px;text-align:center;border-top:1px solid #9d7bb51a;color:#887c94;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+    .sparks{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-1}
+    .sparks i{position:absolute;display:block;width:2px;height:2px;background:#e6c4ff;border-radius:50%;box-shadow:0 0 10px #a077ce;opacity:.5;animation:glimmer 6s ease-in-out infinite}
+    .sparks i:nth-child(1){top:18%;left:18%;animation-delay:0s}.sparks i:nth-child(2){top:31%;left:82%;animation-delay:1.5s}.sparks i:nth-child(3){top:75%;left:12%;animation-delay:2s}.sparks i:nth-child(4){top:74%;left:85%;animation-delay:.8s}.sparks i:nth-child(5){top:13%;left:66%;animation-delay:3s}
+    @keyframes turn{to{transform:rotate(360deg)}}
+    @keyframes glimmer{0%,100%{opacity:.12;transform:scale(.7)}50%{opacity:.75;transform:scale(1.5)}}
+    @media(max-width:600px){.top{padding:21px 20px}.brand strong{font-size:17px}.brand small{font-size:8px}.version{font-size:10px}.halo{width:136px;height:136px;margin-bottom:34px}.halo::after{inset:15px}.sigil{width:70px;height:70px}main{padding:45px 22px 65px}.eyebrow{font-size:9px;letter-spacing:.23em}.eyebrow::before,.eyebrow::after{width:18px}h1{font-size:clamp(45px,11vw,64px)}.lead{font-size:15px}footer{font-size:9px;line-height:1.8}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand" aria-label="Terravale, the Living Codex">
+      <span class="mark" aria-hidden="true">T</span>
+      <span><strong>Terravale</strong><small>The Living Codex</small></span>
+    </div>
+    <div class="version">Codex 2.0</div>
+  </header>
+  <main>
+    <div class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="inner">
+      <div class="halo" aria-hidden="true">
+        <svg class="sigil" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 3 56 30 77 23 70 44 97 50 70 56 77 77 56 70 50 97 44 70 23 77 30 56 3 50 30 44 23 23 44 30Z" stroke="#d1a8f0" stroke-width="1.1" opacity=".8"/>
+          <circle cx="50" cy="50" r="29" stroke="#dcc1ee" stroke-width="1.2"/>
+          <circle cx="50" cy="50" r="20" stroke="#aa7acb" stroke-width=".8" opacity=".65"/>
+          <path d="M35 39h30M50 39v34M39 39l-4 9M61 39l4 9" stroke="#f6e6cb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="50" cy="10" r="2" fill="#e6c1ff"/>
+          <circle cx="50" cy="90" r="2" fill="#e6c1ff"/>
+        </svg>
+      </div>
+      <div class="eyebrow">A new chapter approaches</div>
+      <h1>Awaiting <em>2.0</em> update</h1>
+      <p class="lead">The Living Codex is being reforged.<br>Our halls are quiet while we prepare what comes next.</p>
+      <div class="rule"></div>
+      <div class="footnote">Terravale will return</div>
+    </div>
+  </main>
+  <footer>Terravale · The Living Codex · Version 2.0 in preparation</footer>
+</body>
+</html>

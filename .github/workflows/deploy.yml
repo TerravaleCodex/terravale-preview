@@ -631,6 +631,23 @@ jobs:
           cp site-overrides/rules-recovery-mobile.html site/rules-recovery-mobile/index.html
           test -s site/rules-recovery-mobile/index.html
           grep -q 'No server upload' site/rules-recovery-mobile/index.html
+      - name: Replace old public application with the 2.0 holding page
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          source = Path("site-overrides/awaiting-v2.html")
+          assert source.is_file() and "Awaiting" in source.read_text()
+          dest = Path("site")
+          shutil.rmtree(dest)
+          dest.mkdir()
+          (dest / "index.html").write_bytes(source.read_bytes())
+          (dest / "404.html").write_bytes(source.read_bytes())
+          (dest / ".nojekyll").touch()
+          assert sorted(p.name for p in dest.iterdir()) == [".nojekyll", "404.html", "index.html"]
+          print("Publishing only the 2.0 holding page, no V1 pages or assets")
+          PY
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -648,77 +665,21 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-      - name: Public smoke test — real Session Room replaces old route
+      - name: Public smoke test — 2.0 holding page only
         shell: bash
         run: |
           set -euo pipefail
-          base="https://terravalecodex.github.io/terravale-preview"
-          # Verify the public site, not only the generated GitHub Actions artifact.
-                    # The common sidebar is generated from the homepage's own navigation.
-          curl --fail --silent --show-error --location --max-time 15              "${base}/shared-sidebar/?verify=${GITHUB_SHA}" -o /tmp/terravale-shared-sidebar.html
-          grep -q 'data-tour-nav="/party"' /tmp/terravale-shared-sidebar.html
-          for route in "/party/" "/party" "/party.html" "/session-room/" "/session-room" "/session-room.html"; do
-            passed=0
-            for attempt in $(seq 1 18); do
-              html=$(curl --fail --silent --show-error --location --max-time 15                 --header 'Cache-Control: no-cache'                 "${base}${route}?verify=${GITHUB_SHA}-${attempt}" || true)
-              if grep -q 'data-room-production="1"' <<< "$html" &&
-                 grep -q 'id="room-native-nav"' <<< "$html" &&
-                 ! grep -q 'codex-shared-sidebar-frame' <<< "$html" &&
-                 grep -q 'session-room-live.js' <<< "$html" &&
-                 ! grep -q 'Campaign chat</h' <<< "$html"; then
-                 passed=1
-                 break
-              fi
-              sleep 5
-            done
-            if [[ "$passed" != "1" ]]; then
-              echo "::error::Production Session Room is not being served at $route"
-              exit 1
+          base="https://terravalecodex.github.io/terravale-preview/"
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error --location --max-time 15 \
+                --header 'Cache-Control: no-cache' \
+                "${base}?verify=${GITHUB_SHA}-${attempt}" -o /tmp/terravale-maintenance.html &&
+               grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-maintenance.html &&
+               ! grep -q 'supabase.co' /tmp/terravale-maintenance.html; then
+              echo "PASS: 2.0 holding page is live without V1 backend links"
+              exit 0
             fi
-            echo "PASS public route $route serves new Session Room"
+            sleep 5
           done
-          for sheet_route in "/characters/sheet-live/" "/characters/sheet-workshop/"; do
-            found=0
-            for attempt in $(seq 1 18); do
-              sheet=$(curl --fail --silent --show-error --location --max-time 15 \
-                "${base}${sheet_route}?verify=${GITHUB_SHA}-${attempt}" || true)
-              if grep -q '<aside class="sidebar"' <<< "$sheet" &&
-                 ! grep -q 'codex-shared-sidebar-frame' <<< "$sheet"; then
-                found=1
-                break
-              fi
-              sleep 5
-            done
-            if [[ "$found" != "1" ]]; then
-              echo "::error::Broken embedded character sheet at $sheet_route"
-              exit 1
-            fi
-            echo "PASS live embedded sheet route $sheet_route"
-          done
-          restored=$(curl --fail --silent --show-error --location --max-time 15 \
-            "${base}/characters/sheet-render-fixed-20261101/?check=${GITHUB_SHA}")
-          if grep -q 'codex-shared-sidebar-frame' <<< "$restored" ||
-             ! grep -q 'html.live-embedded .sidebar' <<< "$restored"; then
-            echo "::error::The restored embedded sheet URL is incorrect"
-            exit 1
-          fi
-          echo "PASS restored approved character sheet route"
-          # Navigation must appear in both Next pages and the cross-page shared sidebar.
-          for nav_page in "/" "/shared-sidebar/"; do
-            html=$(curl --fail --silent --show-error --location --max-time 15 \
-              "${base}${nav_page}?check=${GITHUB_SHA}")
-            if ! grep -q 'class="sidebar-nav"' <<< "$html" ||
-               grep -q 'navigation-refresh.js?v=20261101-nav1' <<< "$html"; then
-              echo "::error::Native navigation is missing or old overlay remains at ${nav_page}"
-              exit 1
-            fi
-            echo "PASS server-rendered native sidebar at ${nav_page}"
-          done
-          curl --fail --silent --show-error --location --max-time 15 \
-            "${base}/approved-sheet-iframe-bridge.js?check=${GITHUB_SHA}" -o /tmp/terravale-iframe-bridge.js
-          grep -q 'sheet-render-fixed-20261101' /tmp/terravale-iframe-bridge.js
-          echo "PASS published iframe compatibility bridge"
-          for asset in "/session-room/session-room-live.js" "/session-room/session-room-live.css" "/session-room/room-nav-inline.js" "/session-room/room-nav-inline.css"; do
-            curl --fail --silent --show-error --location --max-time 15               "${base}${asset}?verify=${GITHUB_SHA}" -o /dev/null
-            echo "PASS public asset $asset"
-          done
+          echo "::error::Public site is not serving the 2.0 holding page"
+          exit 1
