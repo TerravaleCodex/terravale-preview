@@ -22,17 +22,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble exactly one public HTML file
+      - name: Assemble one visual page with a custom 404 fallback
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p published
           cp site-overrides/awaiting-v2.html published/index.html
-          grep -q 'Awaiting <em>2.0</em> update' published/index.html
-          ! grep -qi 'supabase.co' published/index.html
-          test "$(find published -type f | wc -l)" -eq 1
-          test "$(find published -type f -name '*.html' | wc -l)" -eq 1
-          echo "Only published/index.html will be deployed."
+          python3 - <<'PY'
+          from pathlib import Path
+          import html
+          home = Path('published/index.html').read_text()
+          assert 'Awaiting <em>2.0</em> update' in home
+          assert 'supabase.co' not in home.lower()
+          # GitHub Pages requires a 404.html file to replace its generic error
+          # on retired routes. It displays exactly the same holding design and
+          # returns visitors to the canonical root URL automatically.
+          redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
+          fallback = home.replace('</head>', redirect + '</head>', 1)
+          assert redirect in fallback
+          Path('published/404.html').write_text(fallback)
+          files = sorted(p.name for p in Path('published').iterdir() if p.is_file())
+          assert files == ['404.html', 'index.html'], files
+          assert 'Awaiting <em>2.0</em> update' in fallback
+          print('Publishing one visual page: index.html + matching GitHub Pages fallback.')
+          PY
       - name: Upload single-page site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -71,13 +84,16 @@ jobs:
             sleep 5
           done
           for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
+            response_file="/tmp/terravale-retired.html"
             status="$(curl --silent --show-error --location --max-time 15 \
-              --output /dev/null --write-out '%{http_code}' \
+              --output "$response_file" --write-out '%{http_code}' \
               --header 'Cache-Control: no-cache' \
               "${base}${path}?retired=${GITHUB_SHA}")"
-            if [ "$status" != "404" ]; then
-              echo "::error::Retired path ${path} returned HTTP ${status}, expected 404."
+            if [ "$status" != "404" ] ||
+               ! grep -q 'Awaiting <em>2.0</em> update' "$response_file" ||
+               ! grep -q 'location.replace("/terravale-preview/")' "$response_file"; then
+              echo "::error::Retired path ${path} did not serve the branded fallback (HTTP ${status})."
               exit 1
             fi
-            echo "PASS: retired ${path}"
+            echo "PASS: ${path} displays branded 2.0 fallback and redirects to homepage"
           done
