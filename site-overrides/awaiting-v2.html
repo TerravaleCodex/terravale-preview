@@ -48,7 +48,123 @@
     @keyframes sigil-spin{to{transform:rotate(360deg)}}
     @keyframes glimmer{0%,100%{opacity:.12;transform:scale(.7)}50%{opacity:.75;transform:scale(1.5)}}
     @media(max-width:600px){.top{padding:21px 20px}.brand strong{font-size:17px}.brand small{font-size:8px}.version{font-size:10px}.halo{width:136px;height:136px;margin-bottom:34px}.halo::after{inset:15px}.sigil{width:70px;height:70px}main{padding:45px 22px 65px}.eyebrow{font-size:9px;letter-spacing:.23em}.eyebrow::before,.eyebrow::after{width:18px}h1{font-size:clamp(45px,11vw,64px)}.lead{font-size:15px}footer{font-size:9px;line-height:1.8}}
-    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
+
+    /* The Awakening — one-file cinematic holding page. */
+    :root{--arcane:#cf9bff;--fire:#eac59c;--progress:360deg}
+    body{background:
+      radial-gradient(ellipse 26% 34% at 50% 29%,rgba(128,65,173,.22),transparent 95%),
+      radial-gradient(ellipse 76% 48% at 50% 62%,rgba(55,25,79,.28),transparent 88%),
+      radial-gradient(ellipse 40% 50% at 2% 85%,rgba(64,33,76,.2),transparent 100%),
+      linear-gradient(165deg,#07060b 3%,#0d0913 46%,#06050a 100%)}
+    body::before{opacity:.12;background-size:76px 76px;mask-image:radial-gradient(ellipse at 50% 45%,#000,transparent 84%)}
+    body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at 50% 35%,transparent 10%,rgba(0,0,0,.17) 70%,rgba(0,0,0,.5) 100%)}
+    .top{z-index:5;background:linear-gradient(90deg,#0c0910df,#160e1ad1,#0c0910df);border-bottom:1px solid #9b779b2f;
+      box-shadow:0 15px 40px #04020760}
+    .top::after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+      width:min(45vw,420px);height:1px;background:linear-gradient(90deg,transparent,#d4a8ffb0,transparent);
+      box-shadow:0 0 18px #ac60d2a0}
+    .version{padding:7px 13px;border:1px solid #8e6e9d5b;background:#a674c213;border-radius:4px;color:#e0bee9}
+    main{overflow:hidden;z-index:1;padding:38px 24px 55px}
+    .inner{width:min(100%,900px)}
+    .sky{position:absolute;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+    .sky::before{content:"";position:absolute;left:50%;top:16%;transform:translateX(-50%);
+      width:920px;height:720px;max-width:135vw;background:radial-gradient(ellipse,#8f4bc732 0%,#6c38871b 36%,transparent 70%);filter:blur(18px);
+      animation:cosmic-breath 7s ease-in-out infinite alternate}
+    .sky::after{content:"";position:absolute;left:50%;top:36%;transform:translateX(-50%);width:95vw;max-width:1220px;height:1px;
+      background:linear-gradient(90deg,transparent,#a57abd1a,#f3d3ff80,#a57abd1a,transparent);box-shadow:0 0 27px #a557b96b}
+    .sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#f6dcff;box-shadow:0 0 13px #d7a3ff;
+      opacity:.3;animation:star-breathe 4s ease-in-out infinite alternate}
+    .sky i:nth-child(1){top:16%;left:10%;animation-delay:-1.2s}.sky i:nth-child(2){top:27%;left:20%;animation-delay:-.2s}
+    .sky i:nth-child(3){top:19%;left:77%;animation-delay:-3.2s}.sky i:nth-child(4){top:45%;left:91%;animation-delay:-2.1s}
+    .sky i:nth-child(5){top:64%;left:7%;animation-delay:-1.8s}.sky i:nth-child(6){top:72%;left:84%;animation-delay:-.7s}
+    .sky i:nth-child(7){top:11%;left:53%;animation-delay:-2.8s}.sky i:nth-child(8){top:85%;left:33%;animation-delay:-3.7s}
+    .sky i:nth-child(9){top:57%;left:72%;animation-delay:-1.5s}.sky i:nth-child(10){top:90%;left:65%;animation-delay:-.5s}
+    .sky i:nth-child(11){top:42%;left:5%;animation-delay:-2.4s}.sky i:nth-child(12){top:36%;left:97%;animation-delay:-3s}
+    .halo{width:272px;height:272px;margin:0 auto 14px;isolation:isolate}
+    .halo::before{inset:23px;border:1px solid #f5c6ff72;box-shadow:0 0 30px #ae62e359,inset 0 0 30px #b062ec30;
+      animation:seal-pulse 4s ease-in-out infinite}
+    .halo::after{inset:47px;border:1px dashed #dfb6ff9b;box-shadow:0 0 22px #b978ff4b;animation:turn 40s linear infinite reverse}
+    .orb{position:absolute;inset:39px;border-radius:50%;z-index:-1;background:
+      radial-gradient(circle at 50% 50%,#db9cfa2d 0%,#6d258b19 52%,transparent 72%);
+      filter:blur(9px);animation:seal-pulse 6s ease-in-out infinite alternate}
+    .ring{position:absolute;display:block;border-radius:50%;pointer-events:none;transform-origin:center}
+    .ring-one{inset:0;border:1px solid #d3aaf759;box-shadow:0 0 55px #a450c83c, inset 0 0 60px #ad5acf22;
+      animation:turn 48s linear infinite}
+    .ring-one::before{content:"";position:absolute;inset:-4px;border-radius:50%;
+      background:repeating-conic-gradient(from 0deg,#d9bbff 0deg 2deg,transparent 2deg 31deg,#e9c7ff 31deg 33deg,transparent 33deg 45deg);
+      -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
+      mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));opacity:.85}
+    .ring-two{inset:12px;border:1px dashed #cf9af38a;animation:turn 34s linear infinite reverse}
+    .ring-three{inset:34px;border:2px solid #c487ed62;border-left-color:#e9c6ffa6;border-right-color:#efcaa27c;
+      box-shadow:inset 0 0 24px #bf75df20;animation:turn 19s linear infinite}
+    .sigil{width:119px;height:119px;z-index:2;filter:drop-shadow(0 0 18px #deb2ffba) drop-shadow(0 0 44px #a353d35e);
+      animation:sigil-spin 21s linear infinite}
+    .seal-flare{position:absolute;z-index:-1;left:-170px;right:-170px;top:50%;height:1px;
+      background:linear-gradient(90deg,transparent,#b27ac013 20%,#ead4ffae 50%,#b27ac013 80%,transparent);
+      box-shadow:0 0 23px 3px #ab67d73a}
+    .seal-points{position:absolute;inset:0;animation:turn 48s linear infinite}
+    .seal-points span{position:absolute;width:7px;height:7px;top:calc(50% - 3.5px);left:calc(50% - 3.5px);
+      background:#e6c2ff;transform:rotate(var(--a)) translateY(-136px) rotate(45deg);
+      box-shadow:0 0 18px #be7afa;opacity:.9}
+    .eyebrow{color:#d6aef7;letter-spacing:.38em;font-size:11px;text-shadow:0 0 20px #bd8cee8a}
+    .eyebrow::before,.eyebrow::after{width:51px;background:linear-gradient(90deg,transparent,#e6c59dc0)}
+    h1{font-size:clamp(52px,7.4vw,101px);margin:15px 0 12px;letter-spacing:-.045em;line-height:1.12;
+      text-shadow:0 2px 17px #040208,0 0 60px #9c4ec844}
+    h1 em{font-style:normal;background:linear-gradient(112deg,#f5dec0 10%,#fffaee 40%,#dcabff 67%,#d39ffc 95%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 0 20px #ba6ee955)}
+    .lead{font-size:clamp(15px,2vw,18px);line-height:1.75;color:#d3c3d7;max-width:640px}
+    .countdown{max-width:550px;margin:30px auto 0;position:relative}
+    .countdown::before{content:"";position:absolute;inset:-12px -12px -10px;
+      border:1px solid #bd91c21d;pointer-events:none;border-radius:13px}
+    .countdown-title{font-size:11px;letter-spacing:.37em;margin:0 0 15px;color:#ebd4b8;
+      text-shadow:0 0 16px #f6c99c77}
+    .timer{gap:12px}
+    .timer-unit{position:relative;border:1px solid #b18bb97b;border-radius:7px;
+      padding:18px 8px 15px;background:linear-gradient(160deg,#382142af,#201329d9 60%,#120c19ea);
+      box-shadow:inset 0 1px #edd2ff35,0 10px 30px #0402058c,0 0 30px #a455d322;overflow:hidden}
+    .timer-unit::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+      radial-gradient(ellipse at 50% 0%,#e0b8ff28,transparent 75%)}
+    .timer-unit::after{content:"";position:absolute;left:20%;right:20%;top:0;height:1px;
+      background:linear-gradient(90deg,transparent,#ffe1baaf,transparent);box-shadow:0 0 12px #ffd6ffb3}
+    .timer-value{font:400 clamp(49px,6vw,75px)/1 Georgia,"Times New Roman",serif;color:#fff1dd;
+      text-shadow:0 0 26px #dfb7e46e;letter-spacing:.01em}
+    .timer-label{font-size:10px;letter-spacing:.31em;color:#d2b2dd}
+    .countdown-note{margin:20px auto 0;color:#c6b4ca;font-size:12px;letter-spacing:.12em}
+    .rule{width:min(100%,510px);margin:28px auto 17px;background:linear-gradient(90deg,transparent,#b78bcd95,transparent)}
+    .footnote{color:#dab6eb;font-size:11px;letter-spacing:.35em;text-shadow:0 0 18px #a461c45e}
+    footer{position:relative;z-index:2;background:#09060cbb;border-top-color:#99739a26}
+    .sparks{display:none}
+    @keyframes cosmic-breath{to{opacity:.6;transform:translateX(-50%) scale(1.15)}}
+    @keyframes star-breathe{to{opacity:.95;transform:scale(1.7)}}
+    @keyframes seal-pulse{0%,100%{opacity:.65;box-shadow:0 0 26px #ae62e33a,inset 0 0 30px #b062ec20}
+      50%{opacity:1;box-shadow:0 0 55px #b66ced8c,inset 0 0 44px #bb72f24f}}
+    @media(max-width:650px){
+      .top{padding:20px 18px}.version{padding:6px 8px;font-size:9px;letter-spacing:.12em}
+      main{padding:30px 19px 55px}.halo{width:205px;height:205px;margin-bottom:22px}
+      .halo::before{inset:18px}.halo::after{inset:36px}.ring-two{inset:9px}.ring-three{inset:25px}
+      .seal-points span{transform:rotate(var(--a)) translateY(-103px) rotate(45deg);width:5px;height:5px}
+      .sigil{width:90px;height:90px}.seal-flare{left:-65px;right:-65px}
+      h1{font-size:clamp(48px,10vw,70px);margin:15px 0}.eyebrow{letter-spacing:.22em;font-size:9px}
+      .eyebrow::before,.eyebrow::after{width:21px}
+      .lead{font-size:15px;line-height:1.7}.countdown{margin-top:29px}
+      .timer{gap:8px}.timer-unit{padding:15px 4px 11px}
+      .timer-value{font-size:clamp(37px,11vw,61px)}.timer-label{font-size:8px;letter-spacing:.19em}
+      .countdown-title{letter-spacing:.18em}
+      .countdown-note{font-size:11px;letter-spacing:.06em}
+      .footnote{letter-spacing:.18em}
+    }
+    @media(max-height:690px) and (min-width:651px){
+      main{padding:16px 22px 25px}.halo{width:188px;height:188px;margin-bottom:7px}
+      .halo::before{inset:19px}.halo::after{inset:36px}.ring-two{inset:9px}.ring-three{inset:26px}
+      .seal-points span{transform:rotate(var(--a)) translateY(-94px) rotate(45deg)}
+      .sigil{width:84px;height:84px}
+      h1{font-size:clamp(50px,6vw,75px)}.countdown{margin-top:19px}
+      .timer-unit{padding:11px 8px}.timer-value{font-size:49px}
+    }
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
+
   </style>
 </head>
 <body>
@@ -60,9 +176,15 @@
     <div class="version">Codex 2.0</div>
   </header>
   <main>
-    <div class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="inner">
       <div class="halo" aria-hidden="true">
+        <span class="orb"></span>
+        <span class="seal-flare"></span>
+        <span class="ring ring-one"></span>
+        <span class="ring ring-two"></span>
+        <span class="ring ring-three"></span>
+        <span class="seal-points"><span style="--a:0deg"></span><span style="--a:90deg"></span><span style="--a:180deg"></span><span style="--a:270deg"></span></span>
         <svg class="sigil" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M50 3 56 30 77 23 70 44 97 50 70 56 77 77 56 70 50 97 44 70 23 77 30 56 3 50 30 44 23 23 44 30Z" stroke="#d1a8f0" stroke-width="1.1" opacity=".8"/>
           <circle cx="50" cy="50" r="29" stroke="#dcc1ee" stroke-width="1.2"/>
@@ -72,11 +194,11 @@
           <circle cx="50" cy="90" r="2" fill="#e6c1ff"/>
         </svg>
       </div>
-      <div class="eyebrow">A new chapter approaches</div>
+      <div class="eyebrow">The veil grows thin</div>
       <h1>Awaiting <em>2.0</em> update</h1>
-      <p class="lead">The Living Codex is being reforged.<br>Our halls are quiet while we prepare what comes next.</p>
+      <p class="lead">The old pages have fallen silent. Deep beneath Terravale, the runes stir once more.<br>A new age of the Living Codex is almost upon us.</p>
       <section class="countdown" aria-labelledby="countdown-title">
-        <p id="countdown-title" class="countdown-title">Until the next chapter</p>
+        <p id="countdown-title" class="countdown-title">The awakening begins in</p>
         <div class="timer" role="timer" aria-label="Time remaining on the 24-hour countdown">
           <div class="timer-unit"><span class="timer-value" id="countdown-hours">24</span><span class="timer-label">Hours</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
@@ -85,7 +207,7 @@
         <p class="countdown-note" id="countdown-note">7 November 2026 · 23:48 GMT</p>
       </section>
       <div class="rule"></div>
-      <div class="footnote">Terravale will return</div>
+      <div class="footnote">From the ashes, a new chapter rises</div>
     </div>
   </main>
   <footer>Terravale · The Living Codex · Version 2.0 in preparation</footer>
