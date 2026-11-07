@@ -246,10 +246,20 @@
     return aside;
   }
   function decorateCampaignStory(root,campaign){
-    if(isDemo(campaign.id))return;
     const tab=selectedCampaignTab(root);
     const body=root.querySelector('.campaign-detail-content');
     if(!body||!tab)return;
+    if(isDemo(campaign.id)){
+      if(tab==='settings'){
+        // This shared live demo has persistent characters and no local-only
+        // DM simulation controls. Remove inherited offline-preview messaging.
+        body.querySelector('#campaignSettingsForm')?.remove();
+        body.querySelector('.campaign-settings-locked')?.remove();
+        const hint=body.querySelector('.campaign-detail-title p');
+        if(hint)hint.textContent='The Wayfarers’ Table is a shared live demonstration. Its permanent characters retain their inventories and progress.';
+      }
+      return;
+    }
     if(tab==='overview'){
       if(body.querySelector('#tv-campaign-story'))return;
       const panel=document.createElement('section');
@@ -385,8 +395,8 @@
       section.id='tv-campaign-membership';section.className='tv-campaign-membership';
       if(isDemo(id)){
         section.innerHTML='<div class="tv-eyebrow">THE WAYFARERS’ TABLE · LIMITED DEMO</div>'+
-          '<h3>Practice without changing a real campaign.</h3>'+
-          '<p>One level-one test character per player. No campaign editing, DM invitations or permanent session management. This is a shared practice table, not a full adventure campaign.</p>';
+          '<h3>A permanent demonstration party.</h3>'+
+          '<p>Aster and the six Wayfarers are permanent, approved characters. You can create your own level-one character here, but the shared campaign’s story and settings are not editable.</p>';
       }else{
         section.innerHTML='<div class="tv-eyebrow">CAMPAIGN MEMBERSHIP</div>'+
           '<h3>Your place at the table</h3><p>You can leave this campaign without deleting your character records.</p>';
