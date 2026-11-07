@@ -62,10 +62,12 @@ begin
      'summary',left(coalesce(sheet->>'backstory',''),12000),'character',body),true)
  returning * into char_record;
  cid:=char_record.id;
- insert into public.character_state(character_id,hp,blood_state,inventory)
- values(cid,least(9999,greatest(0,coalesce(nullif(sheet->>'hp','')::int,10))),
-   least(40,greatest(-40,coalesce(nullif(sheet->>'bloodState','')::int,0))),
-   case when jsonb_typeof(sheet->'inventory')='array' then sheet->'inventory' else '[]'::jsonb end);
+ update public.character_state set
+   hp=least(9999,greatest(0,coalesce(nullif(sheet->>'hp','')::int,10))),
+   blood_state=least(40,greatest(-40,coalesce(nullif(sheet->>'bloodState','')::int,0))),
+   inventory=case when jsonb_typeof(sheet->'inventory')='array' then sheet->'inventory' else '[]'::jsonb end,
+   updated_at=now()
+ where character_id=cid;
  if demo then
    perform public.codex_capture_achievement_event(caller,'character_created',cid::text);
    perform public.codex_capture_achievement_event(caller,'character_approved',cid::text);
