@@ -18,6 +18,11 @@ assert hashlib.sha256(source_bytes).hexdigest() == manifest["uncompressed_sha256
 source = source_bytes.decode("utf-8")
 from v243_native_patch import patch
 source = patch(source)
+# No public article text or ancestry placeholder may be altered by UI changes.
+lore_re = r'<script\\s+type="application/json"\\s+id="tv238-v14-content">([\\s\\S]*?)</script>'
+before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
+after_lore = re.search(lore_re, source)
+assert before_lore and after_lore and before_lore.group(1) == after_lore.group(1), "Lore content changed by V2.43 patch"
 assert source.count("</head>") == 1 and source.count("</body>") == 1
 assert source.count('id="previewTray"') == 1, "Expected exact V2.39 preview controls"
 assert '--bg:#07080c' in source and '--accent:#c3a5ff' in source, "Actual V2 theme tokens missing"
