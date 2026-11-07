@@ -28,7 +28,7 @@ assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
 assert 'terravale_sync_discord_profile' in auth
-assert 'data-state=\'empty\'' in auth
+assert 'window.TerravaleClearDemoWorkspace' in auth
 assert "TV-" not in auth, "TvUID is server-assigned, never fabricated in JS"
 
 catalog = json.loads((ROOT / "site-overrides/approved-ads.json").read_text())
