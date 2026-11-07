@@ -91,7 +91,10 @@
     if(members.has(result.data)){
       db.campaign=result.data;db.mode='sample';persist();
       navigate('/campaigns/'+result.data);
-      toastText(isDemo(result.data)?'Joined the demo: one level-one test character.':'Campaign joined. You can now create a character.');
+      toastText(isDemo(result.data)?'Joined the demo: you can create your own level-one character.':'Campaign joined. You can now create a character.');
+      window.dispatchEvent(new CustomEvent('terravale-campaign-joined',{
+        detail:{campaignId:result.data,isDemo:isDemo(result.data)}
+      }));
     }else toastText('Joined online, but could not load campaign details.');
   }
   async function createCampaign(name,description,longDescription='',theme='',genre=''){
@@ -130,66 +133,54 @@
     if(form.id==='joinForm'){joinCampaign(data.get('code'));return}
     const name=String(data.get('name')||'').trim();
     if(name.length<2){toastText('Enter a campaign name of at least two characters');return}
-    createCampaign(name,String(data.get('description')||'').trim(),String(data.get('long_description')||'').trim(),String(data.get('theme')||'').trim(),String(data.get('genre')||'').trim());
+    createCampaign(name);
   }
   document.addEventListener('submit',submit,true);
 
-  // The short existing "description" is deliberately a tagline/quote; it must
-  // not be overwritten by the longer player-facing campaign introduction.
+  // Campaign creation is intentionally NAME ONLY. The story, tagline, genre
+  // and theme can be filled out at any time from Campaign Settings.
   function decorateCampaignCreator(){
     const form=document.getElementById('campaignForm');
-    if(!form||form.dataset.tvStoryFields==='1')return;
-    form.dataset.tvStoryFields='1';
-    const short=form.querySelector('[name="description"]');
-    if(short){
-      short.setAttribute('placeholder','e.g. Not every soul buried beneath the ice is dead.');
-      short.setAttribute('maxlength','320');
-      // Only rename a real label when it explicitly labels this field.
-      const labels=Array.from(form.querySelectorAll('label'));
-      const oldLabel=labels.find(x=>x===short.closest('label')||
-        (short.id&&x.getAttribute('for')===short.id));
-      if(oldLabel){
-        const text=Array.from(oldLabel.childNodes).find(n=>n.nodeType===3&&/description/i.test(n.textContent));
-        if(text)text.textContent=text.textContent.replace(/description/i,'Tagline / quote');
+    if(form&&!form.dataset.tvMinimalCampaign){
+      form.dataset.tvMinimalCampaign='1';
+      for(const selector of [
+        '[name="description"]','[name="long_description"]',
+        '[name="genre"]','[name="theme"]'
+      ]){
+        const control=form.querySelector(selector);
+        if(control)(control.closest('label')||control).remove();
       }
-      const hint=document.createElement('small');
-      hint.className='tv-campaign-tagline-hint';
-      hint.textContent='This is the short quote shown beneath the campaign title.';
-      short.insertAdjacentElement('afterend',hint);
+      for(const selector of ['.tv-campaign-story-create-field',
+                             '.tv-campaign-story-metadata-editor',
+                             '.tv-campaign-tagline-hint']){
+        form.querySelectorAll(selector).forEach(node=>node.remove());
+      }
+      const create=form.querySelector('button[type="submit"]');
+      if(create)create.textContent='Create campaign →';
+      const panel=form.closest('.campaign-entry-panel');
+      const description=panel?.querySelector('h3+p');
+      if(description)description.textContent=
+        'Just give your campaign a name. Add its quote, genre, themes and full story later in Campaign Settings.';
     }
-    const field=document.createElement('label');
-    field.className='tv-campaign-story-create-field';
-    const heading=document.createElement('span');
-    heading.textContent='Full campaign description';
-    const help=document.createElement('small');
-    help.textContent='The real introduction to your adventure: premise, setting, tone and what the party should expect. Optional; 12,000 characters maximum.';
-    const area=document.createElement('textarea');
-    area.name='long_description';
-    area.rows=8;
-    area.maxLength=12000;
-    area.placeholder='Beyond the opening quote, what awaits your players? Set the scene, describe the starting situation, and introduce the adventure…';
-    const meter=document.createElement('small');
-    meter.className='tv-campaign-story-count';
-    meter.textContent='0 / 12,000';
-    area.addEventListener('input',()=>{meter.textContent=area.value.length.toLocaleString()+' / 12,000'});
-    field.append(heading,help,area,meter);
-    const metadata=document.createElement('div');
-    metadata.className='tv-campaign-story-metadata-editor';
-    for(const [key,label,placeholder] of [
-      ['genre','Genre','Dark fantasy · supernatural mystery'],
-      ['theme','Theme','Isolation · grief · endurance']
-    ]){
-      const labelNode=document.createElement('label');labelNode.className='tv-campaign-story-create-field';
-      const span=document.createElement('span');span.textContent=label;
-      const input=document.createElement('input');input.name=key;input.type='text';input.maxLength=240;input.placeholder=placeholder;
-      labelNode.append(span,input);metadata.append(labelNode);
+    const join=document.getElementById('joinForm');
+    if(join&&!join.dataset.tvCodeHint){
+      join.dataset.tvCodeHint='1';
+      const input=join.querySelector('input[name="code"]');
+      if(input){
+        input.placeholder='TV-XXXXXX';
+        input.setAttribute('aria-label','Invitation code');
+        const label=input.closest('label');
+        if(label){
+          // Keep the actual input, so focus and password-manager behaviour work.
+          for(const textNode of label.childNodes){
+            if(textNode.nodeType===Node.TEXT_NODE&&textNode.textContent.trim()){
+              textNode.textContent='Invitation code ';
+              break;
+            }
+          }
+        }
+      }
     }
-    const submit=form.querySelector('button[type="submit"],input[type="submit"]');
-    const before=submit?.closest('.v2-actions,.form-actions,.actions')||submit;
-    if(before&&before.parentElement){
-      before.insertAdjacentElement('beforebegin',metadata);
-      before.insertAdjacentElement('beforebegin',field);
-    }else form.append(metadata,field);
   }
 
   // Campaign details belong WITHIN their native tabs, never below the page footer.
