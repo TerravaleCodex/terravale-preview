@@ -80,7 +80,7 @@ jobs:
               'From the ashes, a new chapter rises',
               'h1 class="standby"',
               'border:0!important;border-radius:0!important;background:transparent!important',
-              '2026-11-08T00:00:00Z',
+              '2026-11-07T21:30:00Z',
               'window.location.assign("/terravale-preview/veiled-codex/")',
           )
           for check in checks:
@@ -135,7 +135,7 @@ jobs:
                grep -q 'The final seal breaks in' /tmp/terravale-home.html &&
                grep -q 'From the ashes, a new chapter rises' /tmp/terravale-home.html &&
                grep -q 'animation:sigil-spin' /tmp/terravale-home.html &&
-               grep -q '2026-11-08T00:00:00Z' /tmp/terravale-home.html &&
+               grep -q '2026-11-07T21:30:00Z' /tmp/terravale-home.html &&
                grep -q 'window.location.assign("/terravale-preview/veiled-codex/")' /tmp/terravale-home.html; then
               echo "PASS: public holding page and invisible V2 entrance are live."
               break

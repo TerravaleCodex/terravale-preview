@@ -387,12 +387,12 @@
       <h1 class="standby">Awaiting <em>2.0</em> update</h1>
       <section class="countdown" aria-labelledby="countdown-title">
         <h2 id="countdown-title" class="countdown-title">The final seal breaks in</h2>
-        <div class="timer" role="timer" aria-label="Time remaining until midnight GMT">
-          <div class="timer-unit"><span class="timer-value" id="countdown-hours">24</span><span class="timer-label">Hours</span></div>
+        <div class="timer" role="timer" aria-label="Time remaining until 21:30 GMT">
+          <div class="timer-unit"><span class="timer-value" id="countdown-hours">02</span><span class="timer-label">Hours</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-seconds">00</span><span class="timer-label">Seconds</span></div>
         </div>
-        <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div><p class="countdown-note" id="countdown-note">8 November 2026 · 00:00 GMT</p>
+        <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div><p class="countdown-note" id="countdown-note">7 November 2026 · 21:30 GMT</p>
       </section>
       <div class="rule"></div>
       <p class="footnote">From the ashes, a new chapter rises</p>
@@ -403,8 +403,8 @@
     (() => {
       "use strict";
       // One shared deadline for all visitors, including after a refresh.
-      const deadline = Date.parse("2026-11-08T00:00:00Z");
-      const start = Date.parse("2026-11-06T23:48:40Z");
+      const deadline = Date.parse("2026-11-07T21:30:00Z");
+      const start = Date.parse("2026-11-07T19:30:00Z");
       const fill = document.getElementById("countdown-progress");
       const motes = document.getElementById("motes");
       if (motes) {
