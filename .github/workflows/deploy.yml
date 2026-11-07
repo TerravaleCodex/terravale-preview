@@ -34,8 +34,10 @@ jobs:
           home = Path('published/index.html').read_text()
           assert 'Awaiting <em>2.0</em> update' in home
           assert 'animation:sigil-spin' in home
+          assert 'id="countdown-progress"' in home
+          assert 'class="storm"' in home
           assert 'id="countdown-hours"' in home
-          assert '2026-11-07T23:48:40Z' in home
+          assert '2026-11-08T00:00:00Z' in home
           assert 'supabase.co' not in home.lower()
           # GitHub Pages requires a 404.html file to replace its generic error
           # on retired routes. It displays exactly the same holding design and
@@ -79,7 +81,8 @@ jobs:
             if grep -q 'Awaiting <em>2.0</em> update' <<< "$html" &&
                grep -q 'id="countdown-hours"' <<< "$html" &&
                grep -q 'animation:sigil-spin' <<< "$html" &&
-               grep -q '2026-11-07T23:48:40Z' <<< "$html"; then
+               grep -q 'id="countdown-progress"' <<< "$html" &&
+               grep -q '2026-11-08T00:00:00Z' <<< "$html"; then
               echo "PASS: 2.0 holding page is live."
               break
             fi

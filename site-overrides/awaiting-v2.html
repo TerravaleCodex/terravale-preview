@@ -163,7 +163,97 @@
       h1{font-size:clamp(50px,6vw,75px)}.countdown{margin-top:19px}
       .timer-unit{padding:11px 8px}.timer-value{font-size:49px}
     }
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
+
+    /* The Sundering: cinematic arcane storm */
+    body{background:radial-gradient(ellipse 56% 46% at 50% 26%,#72339d38,transparent 85%),radial-gradient(ellipse 140% 60% at 50% 90%,#30104494,transparent 80%),linear-gradient(170deg,#050308,#0c0612 60%,#050308);}
+    .top{background:#0a0511e5;border-bottom-color:#b57cdf67}
+    main{min-height:calc(100svh - 135px);padding:20px 20px 36px}
+    .inner{width:min(100%,1000px);z-index:2;animation:entry 1.5s ease-out both}
+    .stage-glow{position:absolute;top:-20%;left:50%;width:min(1100px,160vw);height:1000px;max-height:160%;
+      transform:translateX(-50%);background:conic-gradient(from 15deg at center,transparent 0 35deg,#a44de51b 44deg,transparent 72deg,#c274f11f 125deg,transparent 159deg,#9f4beb24 240deg,transparent 275deg);
+      filter:blur(30px);pointer-events:none;animation:stage-rotate 80s linear infinite}
+    .storm{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+    .storm i{position:absolute;top:-30%;bottom:-30%;width:3px;background:linear-gradient(transparent 9%,#e8bcff17 29%,#f4d7ffba 50%,#af6fee28 67%,transparent 85%);opacity:0;filter:blur(1px);box-shadow:0 0 35px 7px #a05df077}
+    .storm i:nth-child(1){left:17%;transform:rotate(26deg);animation:lightning 12s ease-out infinite}
+    .storm i:nth-child(2){left:83%;transform:rotate(-27deg);animation:lightning 15s ease-out -5s infinite}
+    .storm i:nth-child(3){left:52%;transform:rotate(9deg);animation:lightning 19s ease-out -10s infinite}
+    .motes{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+    .motes i{position:absolute;left:var(--x);top:var(--y);width:var(--sz);height:var(--sz);border-radius:50%;
+      background:#f7ddff;box-shadow:0 0 14px 3px #b267f5;opacity:0;
+      animation:mote-rise var(--duration) ease-in-out var(--delay) infinite}
+    .halo{width:clamp(280px,31vw,390px);height:clamp(280px,31vw,390px);margin:0 auto -12px}
+    .halo::before{inset:27px;box-shadow:0 0 70px #ab5ae28a,inset 0 0 50px #bc76ef67;border-color:#f8d6ffbc}
+    .halo::after{inset:69px;animation-duration:21s;border-color:#f7d9ffab}
+    .ring-one{border-color:#efd2ffb5;animation-duration:35s;box-shadow:0 0 80px #a24fd66b,inset 0 0 70px #b976e250}
+    .ring-two{inset:18px;border:2px dashed #e0a9f8c4;animation-duration:23s}
+    .ring-three{inset:53px;border-width:3px;animation-duration:10s;border-left-color:#ffe0b3;border-right-color:#ffe0b3;box-shadow:0 0 34px #cf8aff8b}
+    .sigil{width:clamp(128px,13vw,164px);height:clamp(128px,13vw,164px);animation-duration:11s;
+      filter:drop-shadow(0 0 26px #f1cfff) drop-shadow(0 0 60px #bf74f1)}
+    .seal-points span{transform:rotate(var(--a)) translateY(calc(-1 * clamp(140px,15.5vw,195px))) rotate(45deg)}
+    .orb{inset:16%;background:radial-gradient(circle,#f0cdff65,#a251da3d 34%,transparent 71%);animation-duration:3.5s}
+    .great-flare{position:absolute;left:-130px;right:-130px;top:50%;height:2px;background:linear-gradient(90deg,transparent,#d5a4e044,#ffe5ffdd,#d5a4e044,transparent);box-shadow:0 0 40px 6px #c07bfb6b;animation:flare 5s ease-in-out infinite;z-index:-1}
+    .outer-runewheel,.inner-runewheel{position:absolute;pointer-events:none;border-radius:50%}
+    .outer-runewheel{inset:35px;background:repeating-conic-gradient(from 0deg,#edcdffb3 0deg 1.5deg,transparent 1.5deg 11deg);-webkit-mask:radial-gradient(farthest-side,transparent 91%,#000 92%,#000 94%,transparent 95%);mask:radial-gradient(farthest-side,transparent 91%,#000 92%,#000 94%,transparent 95%);animation:turn 27s linear infinite reverse}
+    .inner-runewheel{inset:27%;background:repeating-conic-gradient(#ffe7c6dd 0deg 4deg,transparent 4deg 27deg);-webkit-mask:radial-gradient(farthest-side,transparent 84%,#000 87%,#000 92%,transparent 94%);mask:radial-gradient(farthest-side,transparent 84%,#000 87%,#000 92%,transparent 94%);animation:turn 17s linear infinite}
+    .shards{position:absolute;inset:-23px;border-radius:50%;border:1px solid #bf87fa6a;box-shadow:0 0 30px #a66cfa50;animation:turn 43s linear infinite reverse}
+    .shards::after{content:"";position:absolute;inset:-15px;border-radius:50%;border:1px dotted #d5a6fd7a}
+    .omen{margin:12px auto 8px;letter-spacing:.41em;color:#efcaaf;font-size:11px;font-weight:700;text-shadow:0 0 19px #b45efc}
+    .omen span{color:#e6a9ff;font-size:20px;vertical-align:middle;margin:0 12px}
+    .eyebrow{font-size:12px;color:#e2baff;letter-spacing:.38em}
+    h1{font-size:clamp(65px,8vw,112px);letter-spacing:-.06em;line-height:1.04;margin:12px auto 16px}
+    h1 em{background:linear-gradient(90deg,#ffe0b1,#fff5e6,#d397ff,#f4d7ff,#ffe1b7);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradient-sweep 8s linear infinite;filter:drop-shadow(0 0 39px #ae5fe9a1)}
+    .lead{max-width:770px;font-size:clamp(16px,2vw,20px);line-height:1.72}
+    .lead strong{color:#ffe8d3;font-weight:500}
+    .countdown{max-width:670px;margin:31px auto 0}
+    .countdown-title{font-size:12px;letter-spacing:.4em;color:#ffe3bb}
+    .timer{gap:14px}
+    .timer-unit{padding:21px 9px 15px;border:1px solid #d8acf3ab;background:linear-gradient(151deg,#4c205fba,#261331dd 70%,#0e0918);
+      border-radius:4px;box-shadow:0 0 42px #b66beb4a,inset 0 1px #eed4ff85,0 12px 35px #06030c}
+    .timer-value{font-size:clamp(63px,7.3vw,94px);text-shadow:0 0 38px #d69cffb7}
+    .timer-label{font-size:10px;letter-spacing:.36em;color:#e5c9f5}
+    .countdown-progress{height:3px;background:#6740766b;overflow:hidden;margin:22px auto 0;box-shadow:inset 0 0 8px #0c0415}
+    .countdown-progress span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#8953be,#ebadff,#fff0c4);box-shadow:0 0 16px #cc88ef;transition:width .5s linear}
+    .countdown-note{font-size:13px;color:#efdaef;letter-spacing:.18em}
+    .footnote{color:#e6c0f4;letter-spacing:.28em}
+    .rule{margin-top:26px}
+    body.urgent .timer-unit{animation:urgent-breathe 3s ease-in-out infinite}
+    body.imminent .timer-unit{animation:urgent-breathe 1.3s ease-in-out infinite}
+    body.unsealed .halo{animation:unseal 3s ease-out both}
+    @keyframes stage-rotate{to{transform:translateX(-50%) rotate(360deg)}}
+    @keyframes lightning{0%,18%,21%,100%{opacity:0}19%{opacity:.65}19.5%{opacity:.13}20%{opacity:.5}}
+    @keyframes mote-rise{0%{opacity:0;transform:translateY(25px) scale(.4)}25%{opacity:.8}70%{opacity:.35}100%{opacity:0;transform:translate(var(--drift),-175px) scale(.1)}}
+    @keyframes flare{0%,100%{opacity:.25;transform:scaleX(.77)}50%{opacity:1;transform:scaleX(1.08)}}
+    @keyframes gradient-sweep{to{background-position:240% 0}}
+    @keyframes urgent-breathe{0%,100%{box-shadow:0 0 32px #b66beb48,inset 0 1px #eed4ff85}50%{box-shadow:0 0 67px #d198ffab,inset 0 1px #fff3efb0}}
+    @keyframes unseal{0%{transform:scale(1)}45%{transform:scale(1.15);filter:drop-shadow(0 0 100px #f4d0ff)}100%{transform:scale(1.08);filter:drop-shadow(0 0 50px #b966ef)}}
+    @keyframes entry{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:700px){
+      main{padding:20px 14px 40px}
+      .halo{width:clamp(246px,69vw,330px);height:clamp(246px,69vw,330px);margin:0 auto 13px}
+      .halo::before{inset:20px}.halo::after{inset:50px}
+      .ring-two{inset:12px}.ring-three{inset:39px}.outer-runewheel{inset:29px}
+      .seal-points span{transform:rotate(var(--a)) translateY(calc(-1 * clamp(123px,34.5vw,165px))) rotate(45deg)}
+      .sigil{width:clamp(102px,26vw,136px);height:clamp(102px,26vw,136px)}
+      .great-flare{left:-57px;right:-57px}
+      .omen{font-size:8px;letter-spacing:.14em;margin:12px auto 6px}.omen span{margin:0 5px;font-size:12px}
+      .eyebrow{font-size:9px;letter-spacing:.15em}
+      h1{font-size:clamp(48px,10.5vw,74px);margin:10px auto}
+      .lead{font-size:14px;line-height:1.6}
+      .countdown{margin-top:25px}.timer{gap:7px}.timer-unit{padding:15px 4px 11px}
+      .timer-value{font-size:clamp(42px,11vw,66px)}.timer-label{font-size:8px;letter-spacing:.14em}
+      .countdown-title{font-size:10px;letter-spacing:.14em}.countdown-note{font-size:10px;letter-spacing:.08em}
+      .footnote{font-size:9px;letter-spacing:.08em}
+    }
+    @media(max-height:720px) and (min-width:701px){
+      main{padding-block:10px 25px}.halo{width:225px;height:225px;margin-bottom:0}
+      .halo::before{inset:19px}.halo::after{inset:43px}
+      .ring-three{inset:32px}.outer-runewheel{inset:24px}
+      .seal-points span{transform:rotate(var(--a)) translateY(-113px) rotate(45deg)}
+      .sigil{width:105px;height:105px}
+      h1{font-size:clamp(58px,6vw,79px);margin:7px}
+      .countdown{margin-top:18px}.timer-unit{padding:12px 8px}.timer-value{font-size:57px}
+    }
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 
   </style>
 </head>
@@ -176,9 +266,9 @@
     <div class="version">Codex 2.0</div>
   </header>
   <main>
-    <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="stage-glow" aria-hidden="true"></div><div class="storm" aria-hidden="true"><i></i><i></i><i></i></div><div class="motes" id="motes" aria-hidden="true"></div><div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="inner">
-      <div class="halo" aria-hidden="true">
+      <div class="halo" aria-hidden="true"><div class="outer-runewheel"></div><div class="inner-runewheel"></div><div class="great-flare"></div><div class="shards"></div>
         <span class="orb"></span>
         <span class="seal-flare"></span>
         <span class="ring ring-one"></span>
@@ -194,20 +284,20 @@
           <circle cx="50" cy="90" r="2" fill="#e6c1ff"/>
         </svg>
       </div>
-      <div class="eyebrow">The veil grows thin</div>
+      <div class="omen"><span>✧</span> THE SEAL IS FRACTURING <span>✧</span></div><div class="eyebrow">The hour of awakening approaches</div>
       <h1>Awaiting <em>2.0</em> update</h1>
-      <p class="lead">The old pages have fallen silent. Deep beneath Terravale, the runes stir once more.<br>A new age of the Living Codex is almost upon us.</p>
+      <p class="lead">The old world falls silent. Beneath the veil, ancient powers awaken.<br><strong>One final night separates what was from what will be.</strong></p>
       <section class="countdown" aria-labelledby="countdown-title">
-        <p id="countdown-title" class="countdown-title">The awakening begins in</p>
-        <div class="timer" role="timer" aria-label="Time remaining on the 24-hour countdown">
+        <p id="countdown-title" class="countdown-title">The final seal breaks in</p>
+        <div class="timer" role="timer" aria-label="Time remaining until midnight GMT">
           <div class="timer-unit"><span class="timer-value" id="countdown-hours">24</span><span class="timer-label">Hours</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-seconds">00</span><span class="timer-label">Seconds</span></div>
         </div>
-        <p class="countdown-note" id="countdown-note">7 November 2026 · 23:48 GMT</p>
+        <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div><p class="countdown-note" id="countdown-note">8 November 2026 · 00:00 GMT</p>
       </section>
       <div class="rule"></div>
-      <div class="footnote">From the ashes, a new chapter rises</div>
+      <div class="footnote">✦ &nbsp; From the ashes, a new chapter rises &nbsp; ✦</div>
     </div>
   </main>
   <footer>Terravale · The Living Codex · Version 2.0 in preparation</footer>
@@ -215,7 +305,25 @@
     (() => {
       "use strict";
       // One shared deadline for all visitors, including after a refresh.
-      const deadline = Date.parse("2026-11-07T23:48:40Z");
+      const deadline = Date.parse("2026-11-08T00:00:00Z");
+      const start = Date.parse("2026-11-06T23:48:40Z");
+      const fill = document.getElementById("countdown-progress");
+      const motes = document.getElementById("motes");
+      if (motes) {
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 52; i++) {
+          const mote = document.createElement("i");
+          const rand = n => ((i * n + i * i * 13) % 101) / 101;
+          mote.style.setProperty("--x", (rand(67) * 100).toFixed(2) + "%");
+          mote.style.setProperty("--y", (rand(47) * 100).toFixed(2) + "%");
+          mote.style.setProperty("--sz", (1 + rand(19) * 3).toFixed(1) + "px");
+          mote.style.setProperty("--drift", Math.round(rand(37) * 120 - 60) + "px");
+          mote.style.setProperty("--duration", (5 + rand(83) * 9).toFixed(1) + "s");
+          mote.style.setProperty("--delay", (-14 * rand(31)).toFixed(1) + "s");
+          fragment.appendChild(mote);
+        }
+        motes.appendChild(fragment);
+      }
       const hours = document.getElementById("countdown-hours");
       const minutes = document.getElementById("countdown-minutes");
       const seconds = document.getElementById("countdown-seconds");
@@ -227,9 +335,13 @@
         hours.textContent = pad(Math.floor(remaining / 3600));
         minutes.textContent = pad(Math.floor((remaining % 3600) / 60));
         seconds.textContent = pad(remaining % 60);
+        if (fill) fill.style.width = (Math.min(1, Math.max(0, (Date.now() - start) / (deadline - start))) * 100).toFixed(2) + "%";
+        document.body.classList.toggle("urgent", remaining > 0 && remaining <= 3600);
+        document.body.classList.toggle("imminent", remaining > 0 && remaining <= 300);
         if (remaining === 0) {
-          title.textContent = "The countdown has ended";
-          note.textContent = "The next chapter awaits.";
+          title.textContent = "The appointed hour has arrived";
+          note.textContent = "The Living Codex awaits its next chapter.";
+          document.body.classList.add("unsealed");
           clearInterval(ticker);
         }
       }
