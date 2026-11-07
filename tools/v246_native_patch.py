@@ -41,6 +41,15 @@ def patch(source):
     one(gate,'','Remove blanket demo DM lockout')
     one("const dmControls=db.role==='dm'&&!window.TerravaleV2Bridge?.isDemo?.(db.campaign)?",
         "const dmControls=db.role==='dm'?",'Enable demo room DM controls')
+    one("if(tab){e.preventDefault();reader.mode=tab.dataset.v227ReaderTab;reader.index=0;",
+        "if(tab){window.TerravaleReaderRequestedMode=tab.dataset.v227ReaderTab;e.preventDefault();reader.mode=tab.dataset.v227ReaderTab;reader.index=0;",
+        'Record reader tab selection before earlier document listeners render')
+    one("b.setAttribute('aria-selected',String(treeTab==='bloodforger'));",
+        "if(window.TerravaleReaderRequestedMode&&window.TerravaleReaderRequestedMode!=='bloodforger')treeTab='class';b.setAttribute('aria-selected',String(treeTab==='bloodforger'));",
+        'Synchronize native and Bloodforger reader tab states')
+    one("if(tab){e.preventDefault();e.stopImmediatePropagation();treeTab=tab.dataset.v232FeatureTab;",
+        "if(tab){window.TerravaleReaderRequestedMode='bloodforger';e.preventDefault();e.stopImmediatePropagation();treeTab=tab.dataset.v232FeatureTab;",
+        'Keep Bloodforger explicit tab selected only when requested')
     one("if(original)treeTab='class';",
         "if(original){treeTab='class';setTimeout(()=>renderPage(false),0);}",'Reader subtab recovery')
     one("if(e.target.closest('button,a,input,select'))return;start={x:e.clientX",
