@@ -9,6 +9,10 @@ on:
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
       - "tools/v245_theme_patch.py"
+      - "tools/v246_native_patch.py"
+      - "site-overrides/v246-real-characters.js"
+      - "site-overrides/v246-ui-controls.js"
+      - "site-overrides/v246-theme-creator-gallery.css"
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - ".github/workflows/deploy.yml"
@@ -33,6 +37,8 @@ jobs:
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
           node --check site-overrides/v243-campaign-achievement-bridge.js
+          node --check site-overrides/v246-real-characters.js
+          node --check site-overrides/v246-ui-controls.js
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
@@ -47,6 +53,8 @@ jobs:
           assert 'Want to test <strong>Adblockn’t' not in html
           assert 'repeat(auto-fill,236px)' in html
           assert 'cabinet-grid' in html
+          assert 'terravale_create_character' in html and 'v246-ui-controls.js' in html
+          assert 'window.TERRAVALE_V225_FEATS' in html
           assert 'Verdant Archive' in html and 'Crimson Court' in html and 'Bone Zone' in html
           assert 'cab-title-long' in html and 'tv-lore-title-long' in html
           assert 'body[data-theme="zero"] .tv-lore .lore-history' in html
