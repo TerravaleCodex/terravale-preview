@@ -24,6 +24,5 @@ for term in ['const TVR','const TV','const ancestry','feats:','featureId:','clas
  starts=[m.start() for m in re.finditer(re.escape(term),s)]
  print(term,len(starts),"first",[s[max(0,i-95):i+200].replace('\n',' ') for i in starts[:2]])
 print("\n=== SAFE ANCESTRY FEAT IDS ===")
-pattern=r'["\\']([a-z][a-z0-9-]{4,80})["\\']\\s*:\\s*["\\'][^\\n]+'
 for term in ['TERRAVALE_V225_FEATS','TVR.FEAT','TVR.anc','v225Feat']:
  print(term,'count=',s.count(term))
