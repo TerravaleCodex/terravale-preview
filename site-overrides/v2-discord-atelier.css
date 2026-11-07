@@ -57,3 +57,11 @@
 
 .tv-account-btn .tv-avatar{width:34px;height:34px;border:1px solid var(--edge);border-radius:50%;background:var(--raised);flex-shrink:0}
 [aria-label="Rules Foundation"]{display:none!important}
+
+.tv-dm-verified-players{margin:24px 0;padding:23px;border:1px solid var(--edge,#33313f);border-radius:16px;background:var(--surface,#101119);color:var(--ink,#ebe8ef)}
+.tv-dm-verified-players h2{margin:8px 0 7px;font:500 29px/1.2 var(--serif,Georgia,serif)}
+.tv-dm-player{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--edge,#33313f)}
+.tv-dm-player:first-of-type{margin-top:14px}
+.tv-dm-player img,.tv-dm-player .tv-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid var(--edge,#33313f);background:var(--raised,#171821)}
+.tv-dm-player strong{font-size:13px;font-weight:750}
+.tv-dm-player small{display:block;margin-top:4px;font:11px ui-monospace,monospace;color:var(--soft,#b2aebd);overflow-wrap:anywhere}
