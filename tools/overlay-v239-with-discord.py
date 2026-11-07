@@ -37,11 +37,14 @@ css += "\n" + (ROOT / "site-overrides/v244-fixed-gallery.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v245-theme-and-title.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v246-theme-creator-gallery.css").read_text()
 css += "\n" + theme_bridge_css(source)
+css += "\n" + (ROOT / "site-overrides/v247-admin-and-themes.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
 cloud = (ROOT / "site-overrides/v246-real-characters.js").read_text()
 controls = (ROOT / "site-overrides/v246-ui-controls.js").read_text()
+party = (ROOT / "site-overrides/v247-demo-party-admin.js").read_text()
+variants = (ROOT / "site-overrides/v247-theme-variants.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -93,6 +96,8 @@ inline_js = (
     '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'
     '<script data-source="v246-real-characters.js">\n' + cloud + '\n</script>\n'
     '<script data-source="v246-ui-controls.js">\n' + controls + '\n</script>\n'
+    '<script data-source="v247-demo-party-admin.js">\n' + party + '\n</script>\n'
+    '<script data-source="v247-theme-variants.js">\n' + variants + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -107,6 +112,10 @@ assert source.count('data-source="v2-discord-auth.mjs"') == 1
 assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
 assert source.count('data-source="v246-real-characters.js"') == 1
 assert source.count('data-source="v246-ui-controls.js"') == 1
+assert source.count('data-source="v247-demo-party-admin.js"') == 1
+assert source.count('data-source="v247-theme-variants.js"') == 1
+assert "118000" in source and "RESET DEMO" in source
+assert "tv-crimson-variant" in source and "tv-growing-vines" in source
 assert "Actual Discord" not in cloud and "terravale_create_character" in cloud
 assert "data-v246-" not in source[:source.find("<script data-source=\"v246-ui-controls.js\"")] or True
 assert 'cabinet-grid' in source and 'cab-featured' in source
