@@ -1,5 +1,4 @@
--- V2.51 interactive item mechanics: bounded DM definition and atomic owner/DM actions.
--- No existing inventory/item properties are deleted or rewritten by this migration.
+-- V2.51 interactive item mechanics: new DM configuration and secure player actions.
 
 create or replace function public.terravale_dm_edit_inventory_item(
   target_character uuid,
@@ -103,180 +102,24 @@ begin
       or length(coalesce(props->>'features',''))>5000 then
       raise exception 'Item mechanics exceed text limits' using errcode='22023';
     end if;
-    -- Structured mechanics are authored by the DM; all interactive fields are bounded.
+    -- Structured DM item mechanic validation. The item actor controls attunement.
     if coalesce(props->>'recovery','manual') not in ('manual','short','long','dawn') then
       raise exception 'Invalid recharge trigger' using errcode='22023';
     end if;
     if coalesce(props->>'attack_ability','none') not in ('none','str','dex','int','wis','cha')
-      or coalesce(props->>'damage_ability','none') not in ('none','str','dex','int','wis','cha') then
+       or coalesce(props->>'damage_ability','none') not in ('none','str','dex','int','wis','cha') then
       raise exception 'Invalid item attack or damage ability' using errcode='22023';
     end if;
     if props ? 'recharge_dice' and coalesce(props->>'recharge_dice','') <> ''
-       and (props->>'recharge_dice') !~* '^([1-9]|1[0-9]|20)d(4|6|8|10|12|20)([ ]*[+-][ ]*[0-9]{1,2})? then raise exception 'Inventory full' using errcode='22023'; end if;
-      item_key:='dm-'||replace(gen_random_uuid()::text,'-','');
-    elsif old_item is null then
-      raise exception 'Item not found on this character' using errcode='22023';
-    end if;
-    new_item:=coalesce(old_item,'{}'::jsonb)||jsonb_build_object(
-      'id',item_key,'name',label,'kind',kind,
-      'qty',quantity,'quantity',quantity,'description',description,
-      'twoHanded',two_handed,'origin','dm'
-    );
-    if old_item is null then
-      new_item:=new_item||jsonb_build_object('slot','','location','backpack');
-      new_inv:=inv||jsonb_build_array(new_item);
-    else
-      select jsonb_agg(case when e.value->>'id'=item_key then new_item else e.value end
-             order by e.ordinality) into new_inv
-        from jsonb_array_elements(inv) with ordinality e(value,ordinality);
-    end if;
-    if props='{}'::jsonb then
-      delete from public.character_item_properties
-        where character_id=target_character and character_item_properties.item_id=item_key;
-    else
-      insert into public.character_item_properties(character_id,item_id,properties)
-       values(target_character,item_key,props)
-       on conflict on constraint character_item_properties_pkey do update set
-        properties=excluded.properties,updated_at=now();
-    end if;
-  end if;
-  update public.character_state set inventory=new_inv,updated_at=now()
-   where character_id=target_character;
-  return jsonb_build_object(
-    'item_id',item_key,'inventory',new_inv,
-    'item_properties',(
-      select coalesce(jsonb_object_agg(ip.item_id,ip.properties),'{}'::jsonb)
-       from public.character_item_properties ip where ip.character_id=target_character
-    )
-  );
-end;
-$fn$;
- then
+       and (props->>'recharge_dice') !~* '^([1-9]|1[0-9]|20)d(4|6|8|10|12|20)([ ]*[+-][ ]*[0-9]{1,2})?$' then
       raise exception 'Unsupported recharge dice expression' using errcode='22023';
     end if;
     if props ? 'damage_dice' and coalesce(props->>'damage_dice','') <> ''
-       and (props->>'damage_dice') !~* '^([1-9]|1[0-9]|20)d(4|6|8|10|12|20|100)([ ]*[+-][ ]*[0-9]{1,2})? then raise exception 'Inventory full' using errcode='22023'; end if;
-      item_key:='dm-'||replace(gen_random_uuid()::text,'-','');
-    elsif old_item is null then
-      raise exception 'Item not found on this character' using errcode='22023';
-    end if;
-    new_item:=coalesce(old_item,'{}'::jsonb)||jsonb_build_object(
-      'id',item_key,'name',label,'kind',kind,
-      'qty',quantity,'quantity',quantity,'description',description,
-      'twoHanded',two_handed,'origin','dm'
-    );
-    if old_item is null then
-      new_item:=new_item||jsonb_build_object('slot','','location','backpack');
-      new_inv:=inv||jsonb_build_array(new_item);
-    else
-      select jsonb_agg(case when e.value->>'id'=item_key then new_item else e.value end
-             order by e.ordinality) into new_inv
-        from jsonb_array_elements(inv) with ordinality e(value,ordinality);
-    end if;
-    if props='{}'::jsonb then
-      delete from public.character_item_properties
-        where character_id=target_character and character_item_properties.item_id=item_key;
-    else
-      insert into public.character_item_properties(character_id,item_id,properties)
-       values(target_character,item_key,props)
-       on conflict on constraint character_item_properties_pkey do update set
-        properties=excluded.properties,updated_at=now();
-    end if;
-  end if;
-  update public.character_state set inventory=new_inv,updated_at=now()
-   where character_id=target_character;
-  return jsonb_build_object(
-    'item_id',item_key,'inventory',new_inv,
-    'item_properties',(
-      select coalesce(jsonb_object_agg(ip.item_id,ip.properties),'{}'::jsonb)
-       from public.character_item_properties ip where ip.character_id=target_character
-    )
-  );
-end;
-$fn$;
- then
+       and (props->>'damage_dice') !~* '^([1-9]|1[0-9]|20)d(4|6|8|10|12|20|100)([ ]*[+-][ ]*[0-9]{1,2})?$' then
       raise exception 'Unsupported weapon damage expression' using errcode='22023';
     end if;
-    if (props ? 'recharge_amount' and coalesce(props->>'recharge_amount','') !~ '^[0-9]{1,3} then raise exception 'Inventory full' using errcode='22023'; end if;
-      item_key:='dm-'||replace(gen_random_uuid()::text,'-','');
-    elsif old_item is null then
-      raise exception 'Item not found on this character' using errcode='22023';
-    end if;
-    new_item:=coalesce(old_item,'{}'::jsonb)||jsonb_build_object(
-      'id',item_key,'name',label,'kind',kind,
-      'qty',quantity,'quantity',quantity,'description',description,
-      'twoHanded',two_handed,'origin','dm'
-    );
-    if old_item is null then
-      new_item:=new_item||jsonb_build_object('slot','','location','backpack');
-      new_inv:=inv||jsonb_build_array(new_item);
-    else
-      select jsonb_agg(case when e.value->>'id'=item_key then new_item else e.value end
-             order by e.ordinality) into new_inv
-        from jsonb_array_elements(inv) with ordinality e(value,ordinality);
-    end if;
-    if props='{}'::jsonb then
-      delete from public.character_item_properties
-        where character_id=target_character and character_item_properties.item_id=item_key;
-    else
-      insert into public.character_item_properties(character_id,item_id,properties)
-       values(target_character,item_key,props)
-       on conflict on constraint character_item_properties_pkey do update set
-        properties=excluded.properties,updated_at=now();
-    end if;
-  end if;
-  update public.character_state set inventory=new_inv,updated_at=now()
-   where character_id=target_character;
-  return jsonb_build_object(
-    'item_id',item_key,'inventory',new_inv,
-    'item_properties',(
-      select coalesce(jsonb_object_agg(ip.item_id,ip.properties),'{}'::jsonb)
-       from public.character_item_properties ip where ip.character_id=target_character
-    )
-  );
-end;
-$fn$;
-)
-       or (props ? 'charge_cost' and coalesce(props->>'charge_cost','') !~ '^[0-9]{1,3} then raise exception 'Inventory full' using errcode='22023'; end if;
-      item_key:='dm-'||replace(gen_random_uuid()::text,'-','');
-    elsif old_item is null then
-      raise exception 'Item not found on this character' using errcode='22023';
-    end if;
-    new_item:=coalesce(old_item,'{}'::jsonb)||jsonb_build_object(
-      'id',item_key,'name',label,'kind',kind,
-      'qty',quantity,'quantity',quantity,'description',description,
-      'twoHanded',two_handed,'origin','dm'
-    );
-    if old_item is null then
-      new_item:=new_item||jsonb_build_object('slot','','location','backpack');
-      new_inv:=inv||jsonb_build_array(new_item);
-    else
-      select jsonb_agg(case when e.value->>'id'=item_key then new_item else e.value end
-             order by e.ordinality) into new_inv
-        from jsonb_array_elements(inv) with ordinality e(value,ordinality);
-    end if;
-    if props='{}'::jsonb then
-      delete from public.character_item_properties
-        where character_id=target_character and character_item_properties.item_id=item_key;
-    else
-      insert into public.character_item_properties(character_id,item_id,properties)
-       values(target_character,item_key,props)
-       on conflict on constraint character_item_properties_pkey do update set
-        properties=excluded.properties,updated_at=now();
-    end if;
-  end if;
-  update public.character_state set inventory=new_inv,updated_at=now()
-   where character_id=target_character;
-  return jsonb_build_object(
-    'item_id',item_key,'inventory',new_inv,
-    'item_properties',(
-      select coalesce(jsonb_object_agg(ip.item_id,ip.properties),'{}'::jsonb)
-       from public.character_item_properties ip where ip.character_id=target_character
-    )
-  );
-end;
-$fn$;
-) then
+    if (props ? 'recharge_amount' and coalesce(props->>'recharge_amount','') !~ '^[0-9]{1,3}$')
+       or (props ? 'charge_cost' and coalesce(props->>'charge_cost','') !~ '^[0-9]{1,3}$') then
       raise exception 'Invalid recharge amount or activation cost' using errcode='22023';
     end if;
     if coalesce((props->>'recharge_amount')::integer,0)>999
@@ -289,8 +132,6 @@ $fn$;
         raise exception 'Item flags must be checkboxes' using errcode='22023';
       end if;
     end loop;
-    -- Attunement is actor-managed. DM edits must never silently undo it.
-    -- A deliberately removed attunement requirement resets attuned state.
     if coalesce((props->>'attunement')::boolean,false) and old_item is not null then
       props:=props||coalesce(
         (select jsonb_build_object('attuned',true)
@@ -340,7 +181,6 @@ $fn$;
   );
 end;
 $fn$;
-
 -- Roll bounded recharge expressions inside the database. 0 from amount = full.
 -- Dice may be used for partial recharges (such as 1d4 at dawn), never evaluated as SQL/JS.
 create or replace function authz.terravale_item_recharge_gain(props jsonb,max_value integer)
