@@ -1,0 +1,42 @@
+name: Verify approved V2.39 public-safe offline website
+on:
+  push:
+    branches: [feature/actual-v239-publicsafe-preview]
+    paths:
+      - '.preview-v239-approved/**'
+      - 'tools/assemble-approved-v239.py'
+      - '.github/workflows/verify-approved-v239.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-offline-v239:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble and verify approved V2.39 site
+        run: python3 tools/assemble-approved-v239.py
+      - name: Verify self-contained offline page
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s published/veiled-codex/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('published/veiled-codex/index.html').read_text()
+          assert '<html lang="en">' in s
+          assert '<style data-source="v2.css">' in s
+          assert 'data-page="Dashboard"' in s
+          assert 'data-page="Session Room"' in s
+          assert 'data-path="/lore"' in s
+          assert 'id="tv238-v14-content"' in s
+          print('PASS: V2 navigation, V2 Session Room, and lore pages present')
+          PY
+      - name: Save checked standalone V2 preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: approved-v239-publicsafe
+          path: published/veiled-codex/index.html
+          if-no-files-found: error
+          retention-days: 7
