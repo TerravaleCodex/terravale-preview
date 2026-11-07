@@ -197,7 +197,7 @@ function validate(index){
  }
  if(index===3&&req.slots.length){
   if(v.tools.length!==req.slots.length||
-   v.tools.some(x=>!x)||new Set(v.tools).size!==v.tools.length){
+   req.slots.some((slot,i)=>!v.tools[i])||new Set(v.tools).size!==v.tools.length){
    return 'Complete all '+req.slots.length+' class tool proficiency slots before continuing.';}
   for(let i=0;i<req.slots.length;i++){
    if(!eligible(req.slots[i].pool).some(x=>x.id===v.tools[i]))
