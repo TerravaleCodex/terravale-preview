@@ -64,6 +64,9 @@ def patch(source):
     one("const able=a=>!a.heritageOf||roster.some(r=>r.ancestry===a.heritageOf);",
         "const able=a=>!a.heritageOf||(Array.isArray(db?.characters)&&db.characters.some(c=>c.ancestry===a.heritageOf&&window.TerravaleV2Bridge?.hasCampaign?.(c.campaign)));",
         "Use real character ancestry for V14 article locks")
+    one('<symbol id="i-shield" viewBox=',
+        '<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z"/></symbol><symbol id="i-shield" viewBox=',
+        'Add missing heart SVG glyph for maximum HP cards')
     one("function activeCharacters(){return db.mode==='empty'?[]:db.characters.filter(c=>c.campaign===db.campaign)}",
         "function activeCharacters(){return db.mode==='empty'?[]:db.characters.filter(c=>c.campaign===db.campaign&&(!window.TerravalePlayerPreview||c.owner==='You'||(c.status==='Approved'&&c.sheetVisibleToParty)))}",
         'Player-view hides DM-private characters')
