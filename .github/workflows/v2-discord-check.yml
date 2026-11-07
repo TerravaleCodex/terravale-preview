@@ -34,6 +34,15 @@ on:
       - "site-overrides/v250-dm-backpack-editor.js"
       - "site-overrides/v251-live-item-actions.js"
       - "site-overrides/v253-backpack-gifts.js"
+      - "site-overrides/v254-rules-registry.js"
+      - "site-overrides/v254-character-proficiencies-wallet.js"
+      - "site-overrides/v254-dm-vault.js"
+      - "site-overrides/v254-dm-vault.css"
+      - "site-overrides/v254-proficiencies-wallet.css"
+      - "site-overrides/sql/v254_native_currency_wallet.sql"
+      - "site-overrides/sql/v254_proficiency_choices.sql"
+      - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
+      - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -77,6 +86,9 @@ jobs:
           node --check site-overrides/v250-dm-backpack-editor.js
           node --check site-overrides/v251-live-item-actions.js
           node --check site-overrides/v253-backpack-gifts.js
+          node --check site-overrides/v254-rules-registry.js
+          node --check site-overrides/v254-dm-vault.js
+          node --check site-overrides/v254-character-proficiencies-wallet.js
       - name: Verify V2.49 guided tour and botanical lifecycle
         run: |
           python3 - <<'PY'
@@ -346,6 +358,54 @@ jobs:
           print("PASS: tutorial uses /party and highlights player-facing steps")
           print("PASS: item rest listener precedes native stopImmediatePropagation")
           print("PASS: atomic backpack gifts, persistent recipient-only notifications and no automatic dismissal")
+          PY
+      - name: Verify 2.54 Vault, creator choices, native wallets and session layout
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          html=Path('published/veiled-codex/index.html').read_text()
+          reg=Path('site-overrides/v254-rules-registry.js').read_text()
+          rules=json.loads(reg.split("window.TerravaleRulesV4=",1)[1].strip().rstrip(";"))
+          assert len(rules['tools'])==64
+          assert sum(t['category']=='Musical Instruments' for t in rules['tools'])==18
+          assert sum(t['category']=='Gaming Sets' for t in rules['tools'])==9
+          assert len(rules['languages'])==18 and sum(x['enabled'] for x in rules['languages'])==17
+          assert len(rules['currencies'])==14
+          assert sum(len(c['denominations']) for c in rules['currencies'])==81
+          assert len(rules['classes'])==33
+          assert rules['notes'].startswith("No playable games")
+          assert 'terr-game-crownfall' in rules['neverSelectable']
+          assert 'chirurgeons-instruments' in rules['neverSelectable']
+          wallet=Path('site-overrides/sql/v254_native_currency_wallet.sql').read_text()
+          prof=Path('site-overrides/sql/v254_proficiency_choices.sql').read_text()
+          vault=Path('site-overrides/sql/v254_dm_vault_shopkeeper.sql').read_text()
+          grant=Path('site-overrides/sql/v254_bonus_choice_id_hotfix.sql').read_text()
+          gifts=Path('site-overrides/v253-backpack-gifts.js').read_text()
+          room=Path('site-overrides/v251-live-item-actions.js').read_text()
+          assert 'terravale_wallet_adjust' in wallet and 'terravale_wallet_transfer' in wallet
+          assert 'terravale_save_starting_proficiencies' in prof
+          assert 'terravale_dm_grant_proficiency_choice' in prof
+          assert 'terravale_claim_proficiency_choice' in prof
+          assert 'terravale_dm_approve_language' in prof
+          assert 'new_choice_id uuid' in grant
+          assert 'terravale_vault_save_item' in vault
+          assert 'terravale_vault_issue_item' in vault
+          assert 'terravale_send_item_to_dm_vault' in vault
+          assert "source_item_id" in gifts and "dm-vault" in gifts
+          assert "const activity=workspace?.querySelector" in room
+          assert "grid-column:1 / -1" in Path('site-overrides/v251-interactive-item-actions.css').read_text()
+          for script in ('v254-rules-registry.js','v254-dm-vault.js','v254-character-proficiencies-wallet.js'):
+            assert html.count(f'data-source="{script}"')==1,script
+          assert "tv254-dm-vault" in html
+          assert "tv254-sheet-wallet" in html
+          assert "tv254-creator-proficiency" in html
+          assert "terravale_claim_proficiency_choice" in html
+          assert "tv254-chronicle-tabs" in html
+          assert 'SOME TECHNICAL DIFFICULTIES' not in html
+          print("PASS: 64 tools (18 instruments, 9 game sets), 18 languages, 14 currencies, 33 class rules")
+          print("PASS: DM Vault/Treasury, player shopkeeper gifts, role-secured choices and wallets")
+          print("PASS: live creator and equipment fields; Session Room actions follow chat and dice")
           PY
       - name: Protect lore, theme, authentication and assets
         run: |
