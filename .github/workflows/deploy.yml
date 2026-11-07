@@ -95,14 +95,19 @@ jobs:
               'SOME TECHNICAL DIFFICULTIES',
               'ERROR: ARCANE_CORE_UNRESPONSIVE',
               'id="repair"',
-              'id="secret-placeholder"',
-              'opacity:0;box-shadow:none;',
+              'id="fluff-lead"',
+              'id="fluff-punchline"',
+              'id="incident-title"',
+              'id="diag-value-3"',
+              'const incidents = [',
+              'showIncident(incidentIndex)',
               'function restoreDiscordCallback()',
-              'window.location.assign("/terravale-preview/veiled-codex/")',
               'overscroll-behavior:none',
           )
           for check in checks:
               assert check in home, f"Technical difficulties page missing required content: {check}"
+          assert 'id="secret-placeholder"' not in home, "Secret button must be removed"
+          assert 'secretV239Entrance' not in home, "Secret click handler must be removed"
           assert 'id="countdown-hours"' not in home, "Old countdown remains"
           assert '2026-11-07T21:30:00Z' not in home, "Old countdown deadline remains"
           assert "supabase.co" not in home.lower()
@@ -121,7 +126,7 @@ jobs:
           assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
           for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js"):
               assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
-          print("PASS: technical difficulties page, invisible V2 entrance and Discord callback preserved")
+          print("PASS: randomized humorous fluff and incident logs, with no secret button; Discord callback preserved")
           print("PASS: only two root holding files plus one public-safe V2 preview")
           PY
       - name: Upload safe GitHub Pages site
@@ -155,14 +160,16 @@ jobs:
             if grep -q 'WE ARE EXPERIENCING' /tmp/terravale-home.html &&
                grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-home.html &&
                grep -q 'id="repair"' /tmp/terravale-home.html &&
-               grep -q 'id="secret-placeholder"' /tmp/terravale-home.html &&
-               ! grep -q 'id="countdown-hours"' /tmp/terravale-home.html &&
-               grep -q 'window.location.assign("/terravale-preview/veiled-codex/")' /tmp/terravale-home.html; then
-              echo "PASS: humorous glitch page and invisible V2 entrance are live."
+               grep -q 'id="fluff-lead"' /tmp/terravale-home.html &&
+               grep -q 'id="incident-title"' /tmp/terravale-home.html &&
+               grep -q 'const incidents = [' /tmp/terravale-home.html &&
+               ! grep -q 'id="secret-placeholder"' /tmp/terravale-home.html &&
+               ! grep -q 'id="countdown-hours"' /tmp/terravale-home.html; then
+              echo "PASS: rotating glitch explanations and diagnostics are live, without secret entrance."
               break
             fi
             if [ "$attempt" -eq 12 ]; then
-              echo "::error::Glitch page with hidden V2 entrance did not appear."
+              echo "::error::Rotating glitch maintenance page did not appear."
               exit 1
             fi
             sleep 5

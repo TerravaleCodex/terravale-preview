@@ -72,6 +72,10 @@ h1 span{animation:subtle-jitter 11s steps(1) infinite}
 .summary{margin:clamp(12px,2.3vh,24px) 0 0;max-width:780px;font-size:clamp(13px,1.7vw,18px);
 color:#d0bdd7;line-height:1.52}
 .summary strong{color:var(--gold);font-weight:650}
+.summary{min-height:3em}
+.term-top span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.term-grid p{overflow-wrap:anywhere}
+@media(max-height:650px){.summary{min-height:0}}
 .terminal{margin:clamp(14px,2.6vh,28px) auto 0;max-width:750px;width:100%;text-align:left;
 background:linear-gradient(145deg,#24142fe0,#0e0b19eb);border:1px solid #a67bcc74;
 box-shadow:0 0 38px #8b39bb30,inset 0 1px #c7a9d82d}
@@ -93,11 +97,6 @@ footer{flex:none;height:40px;border-top:1px solid #9769bf44;background:#080710cc
 display:flex;align-items:center;justify-content:space-between;gap:15px;
 font:650 9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#a594b5}
 footer span:last-child{color:#c7a7d0}
-#secret-placeholder{position:absolute;top:10px;right:2.7vw;width:28px;height:28px;
-margin:0;padding:0;border:0;background:transparent;color:transparent;opacity:0;box-shadow:none;
-appearance:none;outline:none;cursor:default;z-index:20}
-#secret-placeholder:hover,#secret-placeholder:focus,#secret-placeholder:active{
-background:transparent;color:transparent;opacity:0;box-shadow:none;outline:none}
 body.trying .glyph{animation:shake .8s ease-out}
 @keyframes scan{to{background-position:0 -330%}}
 @keyframes turn{to{transform:rotate(360deg)}}
@@ -149,7 +148,6 @@ footer{font-size:7px}
   <div class="stat"><i aria-hidden="true"></i>STATUS: QUESTIONABLE</div>
 </header>
 <main>
-  <button type="button" id="secret-placeholder" aria-label="Hidden Terravale V2.39 preview entrance" tabindex="-1"></button>
   <div class="signal" aria-hidden="true"></div><div class="signal two" aria-hidden="true"></div>
   <section class="content">
     <p class="eyebrow">AN UNEXPECTED EXPERIMENT HAS OCCURRED</p>
@@ -168,15 +166,15 @@ footer{font-size:7px}
       <span data-text="WE ARE EXPERIENCING">WE ARE EXPERIENCING</span>
       <span data-text="SOME TECHNICAL DIFFICULTIES">SOME TECHNICAL DIFFICULTIES</span>
     </h1>
-    <p class="summary">Our finest mages have been notified.
-      <strong>Unfortunately, they are arguing about whose spell did this.</strong></p>
+    <p class="summary" id="fluff" aria-live="off"><span id="fluff-lead">Our finest mages have been notified.</span>
+      <strong id="fluff-punchline">Unfortunately, they are arguing about whose spell did this.</strong></p>
     <div class="terminal" aria-label="Questionable magical diagnostics">
-      <div class="term-top"><span>INCIDENT LOG // REALITY.EXE</span><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
-      <div class="term-grid">
-        <p>ARCANE CONTAINMENT: <em>OFFLINE</em></p>
-        <p>REBOOT PROBABILITY: <em>ABSOLUTELY MAYBE</em></p>
-        <p>GRAND LIBRARY: <b>DENIES INVOLVEMENT</b></p>
-        <p>ESTIMATED REPAIR: <em>ASK A DIFFERENT WIZARD</em></p>
+      <div class="term-top"><span id="incident-title">INCIDENT LOG // REALITY.EXE</span><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+      <div class="term-grid" id="diagnostic-readings" aria-live="off">
+        <p><span id="diag-label-0">ARCANE CONTAINMENT:</span> <em id="diag-value-0">OFFLINE</em></p>
+        <p><span id="diag-label-1">REBOOT PROBABILITY:</span> <em id="diag-value-1">ABSOLUTELY MAYBE</em></p>
+        <p><span id="diag-label-2">GRAND LIBRARY:</span> <b id="diag-value-2">DENIES INVOLVEMENT</b></p>
+        <p><span id="diag-label-3">ESTIMATED REPAIR:</span> <em id="diag-value-3">ASK A DIFFERENT WIZARD</em></p>
       </div>
     </div>
     <p class="explanation" id="excuse" aria-live="polite">“Have you tried turning the magic off and on again?”</p>
@@ -199,6 +197,197 @@ footer{font-size:7px}
       "The runes aren't broken. They're expressing themselves.",
       "The responsible wizard is currently disguised as a chair."
     ];
+    // One story per cycle: the status message and incident log change together.
+    // All entries are authored locally, with no external requests or HTML injection.
+    const incidents = [
+      {
+        lead: "Our finest mages have been notified.",
+        punchline: "Unfortunately, they are arguing about whose spell did this.",
+        title: "INCIDENT LOG // REALITY.EXE",
+        readings: [
+          ["ARCANE CONTAINMENT:", "OFFLINE"],
+          ["REBOOT PROBABILITY:", "ABSOLUTELY MAYBE"],
+          ["GRAND LIBRARY:", "DENIES INVOLVEMENT"],
+          ["ESTIMATED REPAIR:", "ASK A DIFFERENT WIZARD"]
+        ]
+      },
+      {
+        lead: "The Grand Library has opened an investigation.",
+        punchline: "Its first conclusion is that the Grand Library did nothing wrong.",
+        title: "ARCHIVE REPORT // NOT_OUR_FAULT.LOG",
+        readings: [
+          ["BOOKS ACCOUNTED FOR:", "ALL 7,000,002 OF THEM"],
+          ["MISSING FOOTNOTES:", "SUSPICIOUSLY MANY"],
+          ["LIBRARIAN STATUS:", "DEFENSIVE"],
+          ["CULPRIT:", "REDACTED FOR LORE REASONS"]
+        ]
+      },
+      {
+        lead: "A goblin technician has been dispatched.",
+        punchline: "He brought a hammer, a sandwich, and absolutely no qualifications.",
+        title: "MAINTENANCE // GOBLIN_OS",
+        readings: [
+          ["TOOLS AVAILABLE:", "ONE (1) HAMMER"],
+          ["REPLACEMENT PARTS:", "CRUNCHY"],
+          ["WARRANTY STATUS:", "EATEN"],
+          ["EXPECTED OUTCOME:", "LOUD"]
+        ]
+      },
+      {
+        lead: "Our necromancers volunteered to restore the servers.",
+        punchline: "We have explained that 'technically alive' is not the goal.",
+        title: "RECOVERY // NECRO_REBOOT.DAT",
+        readings: [
+          ["SERVER HEARTBEAT:", "QUESTIONABLE"],
+          ["UNDEAD PROCESSES:", "SIXTEEN"],
+          ["SOUL WARRANTY:", "EXPIRED"],
+          ["TECHNICAL ADVICE:", "DO NOT BURY THE ROUTER"]
+        ]
+      },
+      {
+        lead: "A dragon has offered to supply additional power.",
+        punchline: "Unfortunately, it now considers the entire website part of its hoard.",
+        title: "POWER SYSTEM // DRAGON_OWNED",
+        readings: [
+          ["ENERGY OUTPUT:", "TOO MUCH"],
+          ["COOLING:", "ON FIRE"],
+          ["OWNERSHIP:", "DISPUTED"],
+          ["NEGOTIATION STATUS:", "SEND GOLD"]
+        ]
+      },
+      {
+        lead: "A very important committee has been assembled.",
+        punchline: "They have unanimously agreed to schedule another committee.",
+        title: "COUNCIL MINUTES // MEETING_47",
+        readings: [
+          ["WIZARDS PRESENT:", "12"],
+          ["DECISIONS REACHED:", "0"],
+          ["TEA CONSUMED:", "EXTENSIVE"],
+          ["NEXT ACTION:", "DISCUSS NEXT ACTION"]
+        ]
+      },
+      {
+        lead: "The seal was subjected to a routine safety inspection.",
+        punchline: "The inspector took one look at it and resigned.",
+        title: "SEAL DIAGNOSTICS // PLEASE_NO",
+        readings: [
+          ["RUNE INTEGRITY:", "MOSTLY DECORATIVE"],
+          ["MAGICAL PRESSURE:", "YES"],
+          ["INSPECTOR:", "CURRENTLY FLEEING"],
+          ["SUGGESTED FIX:", "A LARGER SEAL"]
+        ]
+      },
+      {
+        lead: "A suspiciously confident alchemist claims to have found the problem.",
+        punchline: "He has replaced the error message with three additional error messages.",
+        title: "ALCHEMY LAB // PROBABLY_SAFE",
+        readings: [
+          ["POTION COLOUR:", "UNREASONABLE"],
+          ["SIDE EFFECTS:", "UNDOCUMENTED"],
+          ["ORIGINAL ERROR:", "MULTIPLIED BY THREE"],
+          ["ALCHEMIST:", "STILL CONFIDENT"]
+        ]
+      },
+      {
+        lead: "Someone attempted to fix the problem with time magic.",
+        punchline: "The repair is now scheduled for last Thursday.",
+        title: "TIMELINE ERROR // YESTERDAY.TMP",
+        readings: [
+          ["CURRENT MOMENT:", "PENDING"],
+          ["LAST THURSDAY:", "IN PROGRESS"],
+          ["TIME PARADOXES:", "PLEASE DON'T COUNT"],
+          ["FIX DEPLOYED:", "RETROACTIVELY MAYBE"]
+        ]
+      },
+      {
+        lead: "The local slime population has joined the maintenance team.",
+        punchline: "Productivity has doubled. So has the amount of slime.",
+        title: "SLIME SERVICES // ABSORB_ALL",
+        readings: [
+          ["TEAM MEMBERS:", "SOMEWHERE BETWEEN 1 AND 80"],
+          ["KEYBOARDS:", "DISSOLVED"],
+          ["MORALE:", "JIGGLY"],
+          ["ERROR ABSORPTION:", "LITERAL"]
+        ]
+      },
+      {
+        lead: "An emergency message has been sent to the gods.",
+        punchline: "The response simply reads: 'Have you considered praying harder?'",
+        title: "DIVINE SUPPORT // TICKET_0001",
+        readings: [
+          ["PRAYERS SUBMITTED:", "EVERYWHERE"],
+          ["ANSWER RECEIVED:", "VAGUE"],
+          ["MIRACLE QUEUE:", "BACKLOGGED"],
+          ["ESCALATION:", "THEOLOGICALLY COMPLEX"]
+        ]
+      },
+      {
+        lead: "Our engineers believe the issue is almost resolved.",
+        punchline: "That was also their official statement three explosions ago.",
+        title: "ENGINEERING // OPTIMISTIC.TXT",
+        readings: [
+          ["FIX CONFIDENCE:", "OVERWHELMING"],
+          ["EXPLOSIONS:", "THREE (SO FAR)"],
+          ["LAST KNOWN GOOD BUILD:", "A LEGEND"],
+          ["FINAL VERDICT:", "IT BUILDS ON MY CRYSTAL"]
+        ]
+      },
+      {
+        lead: "The error was briefly contained inside a tiny magical box.",
+        punchline: "The box is now larger than the building.",
+        title: "CONTAINMENT // BOX_TOO_SMALL",
+        readings: [
+          ["BOX DIMENSIONS:", "INCREASING"],
+          ["BUILDING DIMENSIONS:", "DECREASING"],
+          ["SPACE-TIME:", "A BIT CRUMPLED"],
+          ["EMERGENCY PLAN:", "GET ANOTHER BOX"]
+        ]
+      },
+      {
+        lead: "A royal messenger has arrived with urgent instructions.",
+        punchline: "They appear to be a recipe for soup.",
+        title: "ROYAL DECREE // SOUP_PROTOCOL",
+        readings: [
+          ["MESSAGE PRIORITY:", "HIGHEST"],
+          ["CRITICAL INGREDIENT:", "ONE ONION"],
+          ["MAGICAL RELEVANCE:", "UNKNOWN"],
+          ["KITCHEN STATUS:", "MOBILISED"]
+        ]
+      },
+      {
+        lead: "The technical team assures us everything is under control.",
+        punchline: "They have requested that we stop asking what 'everything' means.",
+        title: "STATUS REPORT // ALL_FINE.EXE",
+        readings: [
+          ["PROBLEMS DETECTED:", "NO COMMENT"],
+          ["PANIC LEVEL:", "PROFESSIONALLY HIDDEN"],
+          ["ESCAPE ROUTES:", "MAPPED"],
+          ["STATUS:", "VERY NORMAL"]
+        ]
+      }
+    ];
+    const fluffLead = document.getElementById("fluff-lead");
+    const fluffPunchline = document.getElementById("fluff-punchline");
+    const incidentTitle = document.getElementById("incident-title");
+    const diagnosticLabels = Array.from({length:4}, (_,i) => document.getElementById("diag-label-"+i));
+    const diagnosticValues = Array.from({length:4}, (_,i) => document.getElementById("diag-value-"+i));
+    let incidentIndex = Math.floor(Math.random() * incidents.length);
+    function showIncident(index) {
+      const item = incidents[index];
+      fluffLead.textContent = item.lead;
+      fluffPunchline.textContent = item.punchline;
+      incidentTitle.textContent = item.title;
+      item.readings.forEach(([label, value], i) => {
+        diagnosticLabels[i].textContent = label;
+        diagnosticValues[i].textContent = value;
+      });
+    }
+    // Every visit may begin with a different report. Rotation excludes immediate repeats.
+    showIncident(incidentIndex);
+    setInterval(() => {
+      incidentIndex = (incidentIndex + 1 + Math.floor(Math.random() * (incidents.length - 1))) % incidents.length;
+      showIncident(incidentIndex);
+    }, 12000);
     const failures = [
       "REPAIR FAILED: Spellbook found upside down.",
       "REPAIR FAILED: Goblin ate the incident report.",
@@ -222,13 +411,6 @@ footer{font-size:7px}
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => document.body.classList.remove("trying"), 830);
     });
-    // Keep the original invisible preview entrance.
-    const secretV239Entrance = document.getElementById("secret-placeholder");
-    if (secretV239Entrance) {
-      secretV239Entrance.addEventListener("click", () => {
-        window.location.assign("/terravale-preview/veiled-codex/");
-      });
-    }
   })();
 </script>
 </body>
