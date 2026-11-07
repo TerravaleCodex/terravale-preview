@@ -107,9 +107,10 @@
       const blood=Number(c.bloodState??0);
       if((blood<=-40||blood>=40)&&c.ancestry==='Crimsonborn'){
         const unlocked=await refreshUnlocks();
-        if(unlocked.includes('seeing_red')&&db.theme!=='crimson'&&!document.body.dataset.tvCrimsonSeen){
-          document.body.dataset.tvCrimsonSeen='1';
-          setTheme('crimson');
+        if(unlocked.includes('seeing_red')&&!document.body.dataset.tvSeeingRedNotified){
+          document.body.dataset.tvSeeingRedNotified='1';
+          window.dispatchEvent(new CustomEvent('terravale-achievement-unlocked',{detail:{key:'seeing_red'}}));
+          toast('Seeing Red discovered · Crimson Court is ready to activate');
         }
       }
     }
