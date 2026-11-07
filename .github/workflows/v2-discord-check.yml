@@ -139,7 +139,7 @@ jobs:
           ):
             assert expected in script, f"Missing campaign-story bridge behavior: {expected}"
             assert expected in html, f"Hosted V2 missing campaign-story behavior: {expected}"
-          assert "maxLength=12000" in script
+          assert "campaign.longDescription,12,12000" in script
           assert "intro.textContent=campaign.longDescription||''" in script
           for expected in ("add column if not exists long_description","grant update (description,long_description)","char_length(long_description) <= 12000"):
             assert expected in sql
