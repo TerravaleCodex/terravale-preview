@@ -91,8 +91,10 @@ async function startDiscord(isRetry = false) {
   gateRetry.disabled = true;
   sessionStorage.setItem("tv-v2-oauth-started", "1");
   try {
+    // V2.50 cutover: canonical Discord return is the new public dashboard root.
+    // The historic /veiled-codex/ address continues to work as a legacy link.
     const redirectTo = location.origin === "https://terravalecodex.github.io"
-      ? "https://terravalecodex.github.io/terravale-preview/veiled-codex/"
+      ? "https://terravalecodex.github.io/terravale-preview/"
       : location.origin + location.pathname;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "discord", options: { redirectTo }
