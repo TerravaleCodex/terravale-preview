@@ -4,10 +4,10 @@
  */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/+esm";
 
-const URL = "https://emwlvbmnrrhxhrmlwkhs.supabase.co";
+const SUPABASE_URL = "https://emwlvbmnrrhxhrmlwkhs.supabase.co";
 const PUBLISHABLE = "sb_publishable_4kf7TddSu-mzjRGr2J5ACA_OrNFF_5T";
 const AVATAR_BUCKET = "terravale-profile-avatars";
-const supabase = createClient(URL, PUBLISHABLE, {
+const supabase = createClient(SUPABASE_URL, PUBLISHABLE, {
   auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
 });
 const state = { user: null, profile: null, ready: false };
