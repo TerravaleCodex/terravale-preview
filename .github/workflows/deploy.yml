@@ -35,6 +35,9 @@ on:
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v250-dm-backpack-editor.js"
       - "site-overrides/v251-live-item-actions.js"
+      - "site-overrides/v253-backpack-gifts.js"
+      - "site-overrides/v253-item-gifts.css"
+      - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
       - "site-overrides/sql/v252_permanent_demo_items_tutorial.sql"
       - "site-overrides/sql/v252_tutorial_progress_range.sql"
@@ -86,6 +89,7 @@ jobs:
           node --check site-overrides/v248-curated-demo-sheets.js
           node --check site-overrides/v250-dm-backpack-editor.js
           node --check site-overrides/v251-live-item-actions.js
+          node --check site-overrides/v253-backpack-gifts.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
@@ -131,7 +135,7 @@ jobs:
           assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
           assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
           assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
-          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js","v251-live-item-actions.js"):
+          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js","v251-live-item-actions.js","v253-backpack-gifts.js"):
               assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
           print("PASS: randomized humorous fluff and incident logs, with no secret button; Discord callback preserved")
           print("PASS: only two root holding files plus one public-safe V2 preview")
@@ -207,6 +211,8 @@ jobs:
           assert b'data-source="v2-ads-atelier.mjs"' in raw, "In-site Atelier integration missing"
           assert b'data-source="v250-dm-backpack-editor.js"' in raw, "DM mechanics integration missing"
           assert b'data-source="v251-live-item-actions.js"' in raw, "Interactive item actions missing"
+          assert b'data-source="v253-backpack-gifts.js"' in raw, "Backpack gifts missing"
+          assert b'window.addEventListener(\'click\',e=>{' in raw, "Pre-native item rest listener missing"
           assert b'If you have already received an invite code' in raw, "Invitation tutorial missing"
           assert b'tv-demo-permanent-party' in raw, "Permanent demo roster bridge missing"
           assert b'Campaign creation is intentionally NAME ONLY' in raw, "Simple campaign creation missing"
