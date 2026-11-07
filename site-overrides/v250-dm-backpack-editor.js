@@ -32,6 +32,8 @@
    if(Number(properties.attack_bonus))entries.push(signed(Number(properties.attack_bonus))+' to hit');
    if(properties.damage_dice)entries.push(properties.damage_dice+(properties.damage_type?' '+properties.damage_type:''));
    if(Number(properties.max_charges)>0)entries.push((properties.charges??0)+' / '+properties.max_charges+' charges');
+   if(properties.recovery==='short'||properties.recovery==='long')entries.push(properties.recovery+' rest recharge');
+   if(properties.recovery==='dawn')entries.push('recharges at dawn');
    if(properties.attunement===true)entries.push('Attunement');
    if(properties.rarity)entries.push(properties.rarity);
    return entries;
@@ -123,12 +125,30 @@
    combatAdd('Attack bonus','attack_bonus',value(original,'attack_bonus'),{type:'number',min:-20,max:20,placeholder:'e.g. 1'});
    combatAdd('Weapon damage','damage_dice',value(original,'damage_dice'),{maxLength:80,placeholder:'1d8 + 2'});
    combatAdd('Damage type','damage_type',value(original,'damage_type'),{maxLength:80,placeholder:'Cold / slashing / fire'});
+   combatAdd('Attack ability','attack_ability',value(original,'attack_ability')||'none',{
+     choices:[['none','No ability modifier'],['str','Strength'],['dex','Dexterity'],['int','Intelligence'],['wis','Wisdom'],['cha','Charisma']]
+   });
+   combatAdd('Damage ability','damage_ability',value(original,'damage_ability')||'none',{
+     choices:[['none','Use damage as written'],['str','Strength'],['dex','Dexterity'],['int','Intelligence'],['wis','Wisdom'],['cha','Charisma']]
+   });
+   combatAdd('Character is proficient with this item','proficient',Boolean(original.proficient),{type:'checkbox'});
+   combatAdd('Show weapon action in Session Room','weapon_action',original.weapon_action!==undefined?Boolean(original.weapon_action):Boolean(original.damage_dice),{type:'checkbox'});
+   const combatHint=node('p','tv-item-editor-hint','Attack rolls use d20 + selected ability + proficiency (only if ticked) + attack bonus. Damage adds the selected modifier only when you choose one; the dice formula stays intact. AC bonuses count only while equipped and attuned where required.');
+   combat.append(combatHint);
    form.append(node('h5','tv-item-subhead','Charges and additional features'));
    const extras=node('div','tv-item-editor-grid');form.append(extras);
    const extra=(label,key,val,opts)=>{const f=formField(label,key,val,opts);extras.append(f.wrap);fields[key]=f.input;};
    extra('Current charges','charges',value(original,'charges'),{type:'number',min:0,max:999,placeholder:'0'});
    extra('Maximum charges','max_charges',value(original,'max_charges'),{type:'number',min:0,max:999,placeholder:'5'});
-   extra('Recharge rule','recharge',value(original,'recharge'),{maxLength:180,placeholder:'Regains 1d4 charges at dawn'});
+   extra('Activation cost (charges)','charge_cost',value(original,'charge_cost')??1,{type:'number',min:1,max:999,placeholder:'1'});
+   extra('Recharge trigger','recovery',value(original,'recovery')||'manual',{
+     choices:[['manual','Manual — DM decides'],['short','Short or long rest'],['long','Long rest only'],['dawn','At dawn — DM confirms']]
+   });
+   extra('Recharge amount (0 = full)','recharge_amount',value(original,'recharge_amount')??0,
+     {type:'number',min:0,max:999,placeholder:'0 for full'});
+   extra('Recharge dice (overrides amount)','recharge_dice',value(original,'recharge_dice'),{maxLength:60,placeholder:'1d4'});
+   extra('Recharge rule — description','recharge',value(original,'recharge'),{maxLength:180,placeholder:'Regains 1d4 charges at dawn'});
+   extra('Track item charges in Resources','resource_tracker',original.resource_tracker!==false&&Number(original.max_charges||0)>0,{type:'checkbox'});
    extra('Rarity','rarity',value(original,'rarity'),{maxLength:80,placeholder:'Rare'});
    extra('Requires attunement','attunement',Boolean(original.attunement),{type:'checkbox'});
    const feature=formField('Special abilities, conditions and limitations','features',
@@ -168,9 +188,27 @@
        ac_bonus:ac,attack_bonus:atk,damage_dice:fields.damage_dice.value.trim(),
        damage_type:fields.damage_type.value.trim(),charges,max_charges:maxCharges,
        recharge:fields.recharge.value.trim(),rarity:fields.rarity.value.trim(),
-       features:fields.features.value.trim()
-     }))if(val!=='')props[key]=['ac_bonus','attack_bonus','charges','max_charges'].includes(key)?Number(val):val;
+       features:fields.features.value.trim(),
+       attack_ability:fields.attack_ability.value==='none'?'':fields.attack_ability.value,
+       damage_ability:fields.damage_ability.value==='none'?'':fields.damage_ability.value,
+       recovery:fields.recovery.value==='manual'?'':fields.recovery.value,
+       recharge_amount:fields.recharge_amount.value.trim(),
+       recharge_dice:fields.recharge_dice.value.trim(),
+       charge_cost:fields.charge_cost.value.trim()
+     }))if(val!=='')props[key]=['ac_bonus','attack_bonus','charges','max_charges','recharge_amount','charge_cost'].includes(key)?Number(val):val;
      if(fields.attunement.checked)props.attunement=true;
+     if(fields.proficient.checked)props.proficient=true;
+     if(fields.weapon_action.checked)props.weapon_action=true;
+     if(fields.resource_tracker.checked&&Number(maxCharges)>0)props.resource_tracker=true;
+     if(!maxCharges||Number(maxCharges)===0){
+       for(const key of ['charge_cost','recovery','recharge_amount','recharge_dice','resource_tracker'])delete props[key];
+     }
+     if(props.recharge_dice&&!/^([1-9]|1\d|20)d(4|6|8|10|12|20)(\s*[+-]\s*\d{1,2})?$/i.test(props.recharge_dice)){
+       status.textContent='Recharge dice must be like 1d4, 2d6 + 1, etc.';return;
+     }
+     if(props.damage_dice&&!/^([1-9]|1\d|20)d(4|6|8|10|12|20|100)(\s*[+-]\s*\d{1,2})?$/i.test(props.damage_dice)){
+       status.textContent='Weapon damage must be a dice expression such as 1d8 + 2.';return;
+     }
      await saveItem(ch,item?.id||'',payload,props,status,save);
    });
    host.append(form);form.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
