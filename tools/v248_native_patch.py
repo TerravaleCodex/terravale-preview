@@ -12,4 +12,13 @@ def patch(source):
  one("function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(db))}catch{}window.TerravaleV2Bridge?.onLocalPersist?.()}",
      "function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(db))}catch{}window.TerravaleV2Bridge?.onLocalPersist?.();window.TerravaleAchievementNotify?.pulse?.()}",
      "Notify only new achievement completions after local save")
+ one("function setTheme(theme){db.theme=theme;",
+     "function setTheme(theme){db.theme=theme;window.TerravaleLivePreferences?.queueTheme?.(theme);",
+     "Save theme selection online to verified Discord identity")
+ one("This choice is stored only in your browser.",
+     "Appearance and theme variants sync to your verified Discord account.",
+     "No longer claim the appearance settings are offline-only")
+ one("Themes apply instantly across Terravale and are saved for this browser. The green and red palettes are available for review before we finalise their related achievements.",
+     "Appearance changes apply across Terravale and synchronise securely to your Discord account. Unlocking Seeing Red reveals the Crimson Court moon mode.",
+     "Show accurate cloud-backed theme help")
  return source
