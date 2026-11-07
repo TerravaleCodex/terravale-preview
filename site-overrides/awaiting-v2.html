@@ -387,12 +387,12 @@
       <h1 class="standby">Awaiting <em>2.0</em> update</h1>
       <section class="countdown" aria-labelledby="countdown-title">
         <h2 id="countdown-title" class="countdown-title">The final seal breaks in</h2>
-        <div class="timer" role="timer" aria-label="Time remaining until 21:30 GMT">
+        <div class="timer" role="timer" aria-label="Time remaining until the final seal breaks">
           <div class="timer-unit"><span class="timer-value" id="countdown-hours">02</span><span class="timer-label">Hours</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-seconds">00</span><span class="timer-label">Seconds</span></div>
         </div>
-        <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div><p class="countdown-note" id="countdown-note">7 November 2026 · 21:30 GMT</p>
+        <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div>
       </section>
       <div class="rule"></div>
       <p class="footnote">From the ashes, a new chapter rises</p>
@@ -425,7 +425,6 @@
       const hours = document.getElementById("countdown-hours");
       const minutes = document.getElementById("countdown-minutes");
       const seconds = document.getElementById("countdown-seconds");
-      const note = document.getElementById("countdown-note");
       const title = document.getElementById("countdown-title");
       const pad = value => String(value).padStart(2, "0");
       function updateCountdown() {
@@ -438,7 +437,6 @@
         document.body.classList.toggle("imminent", remaining > 0 && remaining <= 300);
         if (remaining === 0) {
           title.textContent = "The appointed hour has arrived";
-          note.textContent = "The Living Codex awaits its next chapter.";
           document.body.classList.add("unsealed");
           clearInterval(ticker);
         }

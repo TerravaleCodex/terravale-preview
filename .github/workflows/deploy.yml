@@ -76,6 +76,7 @@ jobs:
               'opacity:0;box-shadow:none;appearance:none',
               'class="storm"',
               'id="countdown-hours"',
+              'Time remaining until the final seal breaks',
               'The final seal breaks in',
               'From the ashes, a new chapter rises',
               'h1 class="standby"',
@@ -85,6 +86,7 @@ jobs:
           )
           for check in checks:
               assert check in home, f"Countdown design/control changed unexpectedly: {check}"
+          assert 'id="countdown-note"' not in home, "Countdown deadline text should not be visible"
           assert "supabase.co" not in home.lower()
           redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
           fallback = home.replace("</head>", redirect + "</head>", 1)
