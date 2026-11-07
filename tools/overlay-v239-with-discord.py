@@ -29,6 +29,7 @@ assert '--bg:#07080c' in source and '--accent:#c3a5ff' in source, "Actual V2 the
 assert '<script type="application/json" id="tv238-v14-content">' in source, "Original protected lore manifest missing"
 
 css = (ROOT / "site-overrides/v2-discord-atelier.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v244-fixed-gallery.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -93,6 +94,8 @@ assert source.count('id="tv-v2-ads-manifest"') == 1
 assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
 assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
+assert 'cabinet-grid' in source and 'cab-featured' in source
+assert 'repeat(auto-fill,236px)' in source
 assert 'Join a campaign first' in source and 'Played by ' in source
 assert 'Want to test <strong>Adblockn’t' not in source
 assert source.count('data-source="v2-ads-atelier.mjs"') == 1

@@ -9,6 +9,7 @@ const random = n => Math.floor(Math.random()*Math.max(1,n));
 const manifestImage = art => './ads/' + art.id + '.webp';
 function enabledOnThisPage() {
   if (!settings || !settings.enabled) return false;
+  if(window.TerravaleV2Bridge?.getAdProgress?.()?.enabled)return false;
   const route = location.hash.toLowerCase();
   if (settings.coverage === "dashboard" && !(route === "" || route === "#/" || route.includes("dashboard"))) return false;
   if (settings.coverage === "cabinet" && !route.includes("cabinet")) return false;
@@ -95,7 +96,7 @@ function clearAds(){for(const item of [...openAds])closeAd(item.popup,false);}
 function beginSchedule() {
   if(autoTimer)clearInterval(autoTimer);
   autoTimer=null;
-  if(!settings?.enabled || !settings.automatic)return;
+  if(!settings?.enabled || !settings.automatic || window.TerravaleV2Bridge?.getAdProgress?.()?.enabled)return;
   const seconds=Math.max(5,Number(settings.interval_seconds)||120);
   autoTimer=setInterval(()=>{
     if(Math.random()*100 < (settings.chance_percent ?? 100))spawnAd();
@@ -161,7 +162,7 @@ function refreshAdblockStatus(panel=document.getElementById("tv-live-atelier")){
   if(!output)return;
   output.textContent=state?String(Math.min(25,state.count))+" / 25 closed · "+(state.unlocked?"Discovered":"Locked"):"Progress is stored against your Discord account";
 }
-window.addEventListener("terravale-adblocknt-progress",()=>refreshAdblockStatus());
+window.addEventListener("terravale-adblocknt-progress",()=>{refreshAdblockStatus();beginSchedule();});
 function fillForm(){
   const panel=document.getElementById("tv-live-atelier");
   if(!panel || !settings)return;

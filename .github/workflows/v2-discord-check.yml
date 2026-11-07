@@ -43,6 +43,9 @@ jobs:
           assert 'data-source="v2-ads-atelier.mjs"' in html
           assert 'data-source="v243-campaign-achievement-bridge.js"' in html
           assert 'Want to test <strong>Adblockn’t' not in html
+          assert 'repeat(auto-fill,236px)' in html
+          assert 'cabinet-grid' in html
+          assert 'tv-personal-adblocker' in html
           assert 'Join a campaign first' in html
           assert 'Played by ' in html
           assert 'adblocknt_swarm_size' in html

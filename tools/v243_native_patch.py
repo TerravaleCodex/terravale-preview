@@ -91,6 +91,39 @@ def patch(source):
     once('Your account-wide achievements in the eventual live design. For now, this sandbox keeps all progress local and separate from real players.',
          'Your Adblockn’t progress is recorded on your Discord account. Other V2-only discoveries are still stored locally until migrated.',
          'Cabinet descriptions')
+    # V2.44: The approved Cabinet has an asymmetric curated gallery, not four
+    # uniformly stretching tiles. Fixed-size tiles are repositioned by the
+    # existing 1500 ms sidebar morph, which already tracks .cabinet-grid.
+    once('<div class="v2-grid four">${items.map(r=>',
+         '<div class="v2-grid four cabinet-grid">${items.map((r,i)=>',
+         'Cabinet feature grid')
+    once('class="cab-card ${earned?\'earned\':\'\'}" data-rarity=',
+         'class="cab-card ${earned?\'earned\':\'\'} ${r.rarity===\'legendary\'||(r.rarity===\'epic\'&&i%4===0)||((r.rarity===\'rare\')&&i%11===0)?\'cab-featured\':\'\'}" data-rarity=',
+         'Varied rarity tile sizes')
+    once("const s=campaignStats(c),active=c.id===db.campaign,canEdit=db.role==='dm';",
+         "const s=campaignStats(c),active=c.id===db.campaign,canEdit=db.role==='dm'&&!window.TerravaleV2Bridge?.isDemo?.(id);",
+         'Protect demo campaign editing')
+    once("function renderSheet(id){return renderSheetV220(id)}",
+         """function renderSheet(id){
+ const ch=db.characters.find(x=>x.id===id);
+ if(ch && !window.TerravaleV2Bridge?.hasCampaign?.(ch.campaign))
+  return pageHeader('CAMPAIGN ACCESS','Rejoin this campaign first','Your character record has not been deleted.')+
+   empty('Campaign membership required','You can access this character again after rejoining its campaign.','/campaigns','Choose campaign')+foot();
+ return renderSheetV220(id);
+}""",
+         'Block sheet access after leaving a campaign')
+    once("const dmControls=db.role==='dm'?\x60<button class=",
+         "const dmControls=db.role==='dm'&&!window.TerravaleV2Bridge?.isDemo?.(db.campaign)?\x60<button class=",
+         'Restrict demo Session Room DM controls')
+    once("function renderDM(){let pending=db.characters.filter(c=>c.status==='Pending');",
+         """function renderDM(){
+ if(window.TerravaleV2Bridge?.isDemo?.(db.campaign))
+  return pageHeader('DEMONSTRATION TABLE','Limited demo access','This table is for testing, not live DM management.')+
+   empty('DM controls disabled in demo','Create a regular campaign to manage approvals, encounters and invitations.','/campaigns','Manage campaigns')+foot();
+ let pending=db.characters.filter(c=>c.status==='Pending');""",
+         'Protect demo DM Chronicle')
+
     # Remove labels that incorrectly claim the signed-in V2 website is fully offline.
     source=source.replace('OFFLINE PREVIEW','V2 BETA')
+    source=source.replace('Permanent & account-wide in the intended live design','One continuous archive · Account-wide Adblockn’t')
     return source
