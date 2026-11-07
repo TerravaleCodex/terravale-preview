@@ -238,7 +238,7 @@ begin
   raise exception 'Choose exactly % different proficiencies',req.choice_count using errcode='22023';end if;
  insert into public.terravale_character_proficiencies(character_id)
  values(req.character_id) on conflict do nothing;
- select case when req.kind='tool' then tools else languages end into existing
+ select (case when req.kind='tool' then tools else languages end)||dm_bonus into existing
  from public.terravale_character_proficiencies
  where character_id=req.character_id for update;
  foreach v in array chosen_ids loop
