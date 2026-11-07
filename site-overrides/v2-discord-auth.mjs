@@ -11,7 +11,7 @@ const supabase = createClient(SUPABASE_URL, PUBLISHABLE, {
   auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
 });
 const state = { user: null, profile: null, ready: false };
-window.TerravaleVerifiedAccount = { supabase, state, openProfile: () => openProfile() };
+window.TerravaleVerifiedAccount = { supabase, state, openProfile: () => openProfile(), avatarUrl: (profile) => avatarUrl(profile) };
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -295,6 +295,12 @@ function mountAccount(force = false) {
     return meta;
   })());
   accountButton.dataset.signature = signature;
+  }
+  const nativeAccount=document.querySelector(".top-right .account");
+  if(nativeAccount && nativeAccount.isConnected){
+    nativeAccount.replaceWith(accountButton);
+    accountButton.removeAttribute("style");
+    return;
   }
   const candidates = Array.from(document.querySelectorAll("button"))
     .filter(b => b !== accountButton && /\bTraveller\b/i.test(b.textContent || ""));
