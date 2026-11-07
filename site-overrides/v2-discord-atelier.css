@@ -1,0 +1,56 @@
+/* Terravale V2 authenticated account & Atelier overlays.
+   Inherit the ACTUAL V2 CSS custom properties; never create a separate theme. */
+:root{--tv-account-radius:13px}
+#previewTray{display:none!important}
+#tv-v2-auth-gate{position:fixed;inset:0;z-index:999999;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse 60% 35% at 62% 15%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 85%),var(--bg,#07080c);color:var(--ink,#ebe8ef);font-family:var(--font,system-ui,sans-serif)}
+#tv-v2-auth-gate[hidden]{display:none!important}
+.tv-auth-card{width:min(100%,490px);padding:38px 36px;border:1px solid var(--edge,#33313f);border-radius:18px;background:linear-gradient(145deg,var(--raised,#171821),var(--surface,#101119));box-shadow:0 32px 90px #0008}
+.tv-eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold,#d8b781);font-weight:800}
+.tv-auth-card h1{font-family:var(--serif,Georgia,serif);font-size:clamp(32px,6vw,49px);font-weight:500;margin:13px 0 12px;line-height:1.09}
+.tv-auth-card p{line-height:1.7;color:var(--soft,#b2aebd);font-size:13px}
+.tv-auth-card button,.tv-account-btn,.tv-account-modal button,.tv-ad-controls button{background:var(--raised,#171821);border:1px solid var(--edge,#33313f);color:var(--ink,#ebe8ef);border-radius:9px;font:inherit;cursor:pointer;padding:10px 13px}
+.tv-auth-card .tv-primary,.tv-account-modal .tv-primary,.tv-ad-controls .tv-primary{background:var(--accent,#c3a5ff);color:var(--bg,#07080c);border-color:var(--accent,#c3a5ff);font-weight:750}
+.tv-auth-card .tv-error{color:#ffb8bc;min-height:14px}
+.tv-auth-card button:focus-visible,.tv-account-btn:focus-visible,.tv-account-modal button:focus-visible,.tv-account-modal input:focus-visible,.tv-ad-controls input:focus-visible{outline:2px solid var(--accent,#c3a5ff);outline-offset:3px}
+.tv-account-btn{display:inline-flex;align-items:center;gap:9px;padding:5px 10px;font-size:12px;max-width:230px;background:var(--surface,#101119)}
+.tv-account-btn img,.tv-account-modal .tv-avatar{width:34px;height:34px;border:1px solid var(--edge,#33313f);border-radius:50%;object-fit:cover;background:var(--raised,#171821);flex-shrink:0}
+.tv-account-btn .tv-account-meta{display:flex;min-width:0;flex-direction:column;text-align:left;gap:2px}
+.tv-account-btn .tv-account-meta strong{max-width:155px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.tv-account-btn .tv-account-meta small{font-size:10px;color:var(--accent,#c3a5ff)}
+#tv-account-fallback{position:fixed;top:16px;right:20px;z-index:7000}
+.tv-account-modal-backdrop{position:fixed;inset:0;z-index:95000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.74);backdrop-filter:blur(7px)}
+.tv-account-modal-backdrop[hidden]{display:none!important}
+.tv-account-modal{color:var(--ink,#ebe8ef);background:var(--surface,#101119);border:1px solid var(--edge,#33313f);border-radius:18px;box-shadow:0 35px 95px #000a;padding:26px;width:min(100%,610px);max-height:calc(100dvh - 40px);overflow:auto;font-family:var(--font,system-ui,sans-serif)}
+.tv-account-modal .tv-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.tv-account-modal h2,.tv-ad-controls h2{margin:5px 0;font-family:var(--serif,Georgia,serif);font-weight:500;font-size:31px}
+.tv-account-modal .tv-avatar{height:74px;width:74px}
+.tv-account-modal .tv-person{display:flex;align-items:center;gap:16px;padding:12px 0 20px}
+.tv-account-modal .tv-person strong{display:block;font-size:18px}
+.tv-account-modal .tv-person small{color:var(--accent);display:block;margin-top:5px}
+.tv-id-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 20px}
+.tv-id-grid>div{border:1px solid var(--edge);background:var(--raised);border-radius:10px;padding:12px;min-width:0}
+.tv-id-grid small{display:block;letter-spacing:.09em;color:var(--dim);text-transform:uppercase;font-size:9px;margin-bottom:7px}
+.tv-id-grid code{font:700 13px/1.3 ui-monospace,monospace;color:var(--ink);overflow-wrap:anywhere}
+.tv-account-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tv-account-modal input[type=file]{width:100%;border:1px dashed var(--edge);border-radius:9px;padding:11px;font:inherit;font-size:12px}
+.tv-account-modal .tv-hint,.tv-ad-controls .tv-hint{color:var(--soft);font-size:12px;line-height:1.65}
+.tv-account-modal .tv-status{min-height:18px;color:var(--accent);font-size:12px}
+.tv-account-modal .tv-directory{margin-top:18px;padding-top:17px;border-top:1px solid var(--edge)}
+.tv-account-modal .tv-directory .tv-player{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--edge)}
+.tv-account-modal .tv-directory .tv-player img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.tv-account-modal .tv-directory .tv-player small{color:var(--dim);display:block;margin-top:3px}
+.tv-ad-controls{color:var(--ink);background:var(--surface);border:1px solid var(--edge);border-radius:16px;padding:20px;margin-top:18px;font-family:var(--font,system-ui,sans-serif)}
+.tv-ad-controls header{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.tv-ad-controls .tv-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:19px 0}
+.tv-ad-controls label{font-size:12px;display:flex;flex-direction:column;gap:8px;color:var(--soft)}
+.tv-ad-controls select,.tv-ad-controls input[type=number]{font:inherit;background:var(--raised);color:var(--ink);border:1px solid var(--edge);border-radius:9px;padding:9px 10px;min-width:0;width:100%}
+.tv-ad-controls .tv-toggle{flex-direction:row;align-items:center;gap:10px}
+.tv-ad-controls .tv-toggle input{accent-color:var(--accent);width:16px;height:16px}
+.tv-ad-controls .tv-toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.tv-ad-popup{position:fixed;z-index:10020;overflow:hidden;border:1px solid var(--edge,#33313f);border-radius:9px;background:var(--surface);box-shadow:0 15px 60px #000b;touch-action:none;cursor:grab;line-height:0}
+.tv-ad-popup:active{cursor:grabbing}
+.tv-ad-popup img{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
+.tv-ad-popup .tv-close{position:absolute;top:7px;right:7px;width:29px;height:29px;display:grid;place-items:center;border:1px solid #fff5;border-radius:8px;color:white;background:#0008;backdrop-filter:blur(5px);font-size:19px;line-height:1;cursor:pointer;transition:background .15s;touch-action:manipulation}
+.tv-ad-popup .tv-close:hover{background:#000d}
+@media(max-width:700px){.tv-account-modal{padding:18px}.tv-id-grid,.tv-ad-controls .tv-form{grid-template-columns:1fr}.tv-account-btn .tv-account-meta{display:none}#tv-account-fallback{top:8px;right:8px}.tv-auth-card{padding:25px 22px}}
+@media(prefers-reduced-motion:reduce){.tv-ad-popup,.tv-account-btn{transition:none!important}}
