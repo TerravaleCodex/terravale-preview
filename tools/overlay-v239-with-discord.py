@@ -47,17 +47,41 @@ assert len(list(public_ads.glob("*.webp"))) == len(catalog)
 inline_css = '<style data-source="v2-discord-atelier.css">\n' + css + '\n</style>\n'
 source = source.replace("</head>", inline_css + "</head>", 1)
 catalog_json = json.dumps(catalog,ensure_ascii=True,separators=(',',':')).replace("</","<\\/")
+reset_script = r'''<script data-source="v2-empty-workspace-integration">
+/* Operate on the original V2 store, not a second mock store. */
+window.TerravaleClearDemoWorkspace = function () {
+  if (typeof db === 'undefined' || typeof persist !== 'function' || typeof renderPage !== 'function') return false;
+  db.campaigns = [];
+  db.characters = [];
+  db.campaign = '';
+  db.mode = 'empty';
+  db.notes = [];
+  db.queue = [];
+  db.chat = [];
+  db.activity = [];
+  db.featuredCharacters = {};
+  db.v229Featured = {};
+  db.v230MainFeatured = {};
+  db.sessionRoster = [];
+  db.pendingApprovals = [];
+  persist();
+  renderPage(false);
+  return true;
+};
+</script>
+'''
 inline_js = (
     '\n<script type="application/json" id="tv-v2-ads-manifest">' + catalog_json + '</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
-source = source.replace("</body>", inline_js + "</body>", 1)
+source = source.replace("</body>", reset_script + inline_js + "</body>", 1)
 
 # Do not recreate old sample characters in the source; the actual preview's
 # first verified visit uses its genuine Empty-state action, then keeps new work.
 assert source.count('id="tv238-v14-content"') == 1
 assert source.count('id="tv-v2-ads-manifest"') == 1
+assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
 assert source.count('data-source="v2-ads-atelier.mjs"') == 1
 assert "terravale-profile-avatars" in source
