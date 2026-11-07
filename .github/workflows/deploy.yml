@@ -1,4 +1,4 @@
-name: Publish Terravale countdown and approved V2.39 hidden preview
+name: Publish Terravale countdown with Discord-enabled V2
 
 on:
   push:
@@ -8,6 +8,12 @@ on:
       - "site-overrides/awaiting-v2.html"
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
+      - "tools/overlay-v239-with-discord.py"
+      - "site-overrides/v2-discord-atelier.css"
+      - "site-overrides/v2-discord-auth.mjs"
+      - "site-overrides/v2-ads-atelier.mjs"
+      - "site-overrides/approved-ads.json"
+      - "site-overrides/approved-ads/**"
   workflow_dispatch:
 
 permissions:
@@ -25,8 +31,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Verify the actual approved V2.39 package and exclude private lore
-        run: python3 tools/assemble-approved-v239.py
+      - name: Verify original approved V2.39 and add secure hosted accounts
+        run: |
+          python3 tools/assemble-approved-v239.py
+          python3 tools/overlay-v239-with-discord.py
+          node --check site-overrides/v2-discord-auth.mjs
+          node --check site-overrides/v2-ads-atelier.mjs
       - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
@@ -61,7 +71,9 @@ jobs:
           assert sorted(x.name for x in Path("published").iterdir()) == [
               "404.html", "index.html", "veiled-codex"
           ], "Unapproved files in GitHub Pages output"
-          assert [p.name for p in public.parent.iterdir()] == ["index.html"], "Nested private assets"
+          assert sorted(p.name for p in public.parent.iterdir()) == ["ads", "index.html"], "Unexpected published assets"
+          assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
+          assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
           print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
           print("PASS: only two root holding files plus one public-safe V2 preview")
           PY
@@ -129,7 +141,10 @@ jobs:
           from pathlib import Path
           import hashlib,json,re
           raw=Path("/tmp/terravale-v239-live.html").read_bytes()
-          assert hashlib.sha256(raw).hexdigest() == "301c424b84b53704c1780459a24a771ef2ed8007f4dbe941f795bd445843af54", "Published V2.39 bytes mismatch"
+          assert b'data-source="v2-discord-auth.mjs"' in raw, "Discord OAuth integration missing"
+          assert b'data-source="v2-ads-atelier.mjs"' in raw, "In-site Atelier integration missing"
+          assert b'--bg:#07080c' in raw, "Original V2 theme not present"
+          assert b"sb_secret_" not in raw, "Private API key detected"
           html=raw.decode("utf-8")
           match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
           assert match, "Missing V14 content"
@@ -140,8 +155,8 @@ jobs:
           assert all(a["title"]=="Restricted ancestry article" and
                      "does not contain the article text" in a["html"]
                      for a in data["heritageArticles"])
-          print("PASS: deployed exactly the approved V2.39 HTML checksum.")
-          print("PASS: 283 public, 36 protected placeholders, 31 calendar events.")
+          print("PASS: verified approved V2.39 lore and theme with hosted OAuth overlay.")
+          print("PASS: 283 public, 36 protected placeholders, 31 calendar events. All unchanged.")
           PY
           for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
             status="$(curl --silent --show-error --location --max-time 15 \

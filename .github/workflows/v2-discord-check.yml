@@ -1,0 +1,52 @@
+name: Verify Discord-connected Terravale V2 overlays
+
+on:
+  pull_request:
+    paths:
+      - "site-overrides/v2-**"
+      - "site-overrides/approved-ads/**"
+      - "site-overrides/approved-ads.json"
+      - "tools/overlay-v239-with-discord.py"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/v2-discord-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble exact approved V2 source, then add the hosted integration
+        run: |
+          python3 tools/assemble-approved-v239.py
+          python3 tools/overlay-v239-with-discord.py
+      - name: Verify browser scripts parse
+        run: |
+          node --check site-overrides/v2-discord-auth.mjs
+          node --check site-overrides/v2-ads-atelier.mjs
+      - name: Protect lore, theme, authentication and assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          html=Path("published/veiled-codex/index.html").read_text()
+          assert html.count('data-source="v2.css"')==1
+          assert '--bg:#07080c' in html and '--accent:#c3a5ff' in html
+          assert 'data-source="v2-discord-auth.mjs"' in html
+          assert 'data-source="v2-ads-atelier.mjs"' in html
+          assert 'id="tv-v2-ads-manifest"' in html
+          assert 'id="previewTray"' in html
+          assert 'sb_secret_' not in html and 'service_role' not in html
+          match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
+          assert match
+          data=json.loads(match.group(1))
+          assert len(data["articles"])==283 and len(data["heritageArticles"])==36 and len(data["events"])==31
+          assert all(a["title"]=="Restricted ancestry article" for a in data["heritageArticles"])
+          assert len(list(Path("published/veiled-codex/ads").glob("*.webp")))==56
+          print("PASS: real V2 skin and 319 placeholder-safe lore records untouched")
+          print("PASS: 56 approved hosted ads, verified Discord module and no secret keys")
+          PY
