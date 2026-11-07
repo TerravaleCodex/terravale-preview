@@ -133,8 +133,10 @@ begin
  if not authz.is_dm(src.campaign_id) and not
    (src.owner_id=caller and authz.is_member(src.campaign_id))
  then raise exception 'Not permitted to spend from that character' using errcode='42501';end if;
- if dst.owner_id is null or not exists(select 1 from public.campaign_members cm
-   where cm.campaign_id=dst.campaign_id and cm.user_id=dst.owner_id)
+ if dst.owner_id is null or
+  (dst.owner_id<>(select c.owner_id from public.campaigns c where c.id=dst.campaign_id)
+   and not exists(select 1 from public.campaign_members cm
+    where cm.campaign_id=dst.campaign_id and cm.user_id=dst.owner_id))
  then raise exception 'Recipient is not an active player' using errcode='42501';end if;
  select * into coin from public.terravale_currency_denominations where id=target_denomination and enabled;
  if coin.id is null then raise exception 'Unknown denomination' using errcode='22023';end if;
