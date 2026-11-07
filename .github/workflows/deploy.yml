@@ -36,6 +36,15 @@ on:
       - "site-overrides/v250-dm-backpack-editor.js"
       - "site-overrides/v251-live-item-actions.js"
       - "site-overrides/v253-backpack-gifts.js"
+      - "site-overrides/v254-rules-registry.js"
+      - "site-overrides/v254-character-proficiencies-wallet.js"
+      - "site-overrides/v254-dm-vault.js"
+      - "site-overrides/v254-dm-vault.css"
+      - "site-overrides/v254-proficiencies-wallet.css"
+      - "site-overrides/sql/v254_native_currency_wallet.sql"
+      - "site-overrides/sql/v254_proficiency_choices.sql"
+      - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
+      - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -90,6 +99,9 @@ jobs:
           node --check site-overrides/v250-dm-backpack-editor.js
           node --check site-overrides/v251-live-item-actions.js
           node --check site-overrides/v253-backpack-gifts.js
+          node --check site-overrides/v254-rules-registry.js
+          node --check site-overrides/v254-dm-vault.js
+          node --check site-overrides/v254-character-proficiencies-wallet.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
@@ -212,6 +224,9 @@ jobs:
           assert b'data-source="v250-dm-backpack-editor.js"' in raw, "DM mechanics integration missing"
           assert b'data-source="v251-live-item-actions.js"' in raw, "Interactive item actions missing"
           assert b'data-source="v253-backpack-gifts.js"' in raw, "Backpack gifts missing"
+          assert b'data-source="v254-rules-registry.js"' in raw, "V4 rules registry missing"
+          assert b'data-source="v254-dm-vault.js"' in raw, "DM vault and treasury missing"
+          assert b'data-source="v254-character-proficiencies-wallet.js"' in raw, "Creator wallet and proficiencies missing"
           assert b'window.addEventListener(\'click\',e=>{' in raw, "Pre-native item rest listener missing"
           assert b'If you have already received an invite code' in raw, "Invitation tutorial missing"
           assert b'tv-demo-permanent-party' in raw, "Permanent demo roster bridge missing"
