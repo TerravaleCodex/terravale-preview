@@ -105,6 +105,23 @@
    }
    panel.append(eyebrow,title,p,wrap);
  }
+ function mountCrimsonSwitch(){
+   const panel=document.querySelector('.v231-hunger-panel:has(.v231-state-critical)');
+   if(!panel)return;
+   let button=panel.querySelector('.tv-crimson-theme-toggle');
+   if(!button){
+     button=document.createElement('button');button.type='button';
+     button.className='tv-crimson-theme-toggle';
+     panel.append(button);
+     button.addEventListener('click',()=>{
+       if(db.theme==='crimson'){setTheme(window.TerravaleBeforeCrimson||'classic');}
+       else{window.TerravaleBeforeCrimson=db.theme||'classic';setTheme('crimson');}
+       renderPage(false);
+     });
+   }
+   button.setAttribute('aria-pressed',String(db.theme==='crimson'));
+   button.textContent=db.theme==='crimson'?'Return to previous theme':'Activate Crimson Court';
+ }
  function installSecrets(){
    const list=window.TERRAVALE_DATA?.achievements;
    if(!Array.isArray(list)||list.some(x=>x.id==='roots_in_margins'))return;
@@ -146,7 +163,7 @@
  let queued=false;
  function decorate(){
    queued=false;
-   installSecrets();mountFeatMechanics();mountASI();mountTechniqueBack();
+   installSecrets();mountFeatMechanics();mountASI();mountTechniqueBack();mountCrimsonSwitch();
    mountActualHeritage();playerPreview();
  }
  const observer=new MutationObserver(()=>{
