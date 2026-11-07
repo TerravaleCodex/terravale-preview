@@ -109,8 +109,8 @@
   async function leaveCampaign(id){
     const current=db.campaigns.find(x=>x.id===id);
     if(!current || !hasCampaign(id))return;
-    if(current.role==='dm'){toastText('Campaign owners cannot leave their own campaigns.');return;}
-    const promptText='Leave '+current.name+'? You will lose access to its campaign and character records until you are invited back. Your characters will not be deleted.';
+    if(current.role==='dm'&&!isDemo(id)){toastText('Transfer or delete a regular campaign before leaving ownership.');return;}
+    const promptText=isDemo(id)&&current.role==='dm' ? 'Leave The Wayfarers’ Table demo? This will remove it from your active campaigns without deleting the shared demo. Your DM identity remains reserved so the demo can continue. Rejoin later using TV-DEMO.' : 'Leave '+current.name+'? You will lose access to its campaign and character records until you are invited back. Your characters will not be deleted.';
     if(!window.confirm(promptText))return;
     const {data,error}=await client().rpc('terravale_leave_campaign',{target_campaign:id});
     if(error){toastText('Could not leave campaign: '+error.message);return;}
@@ -157,16 +157,12 @@
         section.innerHTML='<div class="tv-eyebrow">CAMPAIGN MEMBERSHIP</div>'+
           '<h3>Your place at the table</h3><p>You can leave this campaign without deleting your character records.</p>';
       }
-      if(current.role!=='dm'){
+      if(current.role!=='dm'||isDemo(id)){
         const button=document.createElement('button');
         button.type='button';button.className='btn ghost small tv-leave-btn';
         button.textContent='Leave campaign';
         button.onclick=()=>leaveCampaign(id);
         section.append(button);
-      }else if(isDemo(id)){
-        const hint=document.createElement('small');
-        hint.textContent='The demo’s owner account cannot leave this protected shared campaign.';
-        section.append(hint);
       }
       root.append(section);
     }
