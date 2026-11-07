@@ -26,6 +26,7 @@ assert '<script type="application/json" id="tv238-v14-content">' in source, "Ori
 css = (ROOT / "site-overrides/v2-discord-atelier.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
+bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -74,7 +75,7 @@ window.TerravaleClearDemoWorkspace = function () {
 '''
 inline_js = (
     '\n<script type="application/json" id="tv-v2-ads-manifest">' + catalog_json + '</script>\n'
-    '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
+    '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'\n    '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
 source = source.replace("</body>", reset_script + inline_js + "</body>", 1)
@@ -85,6 +86,9 @@ assert source.count('id="tv238-v14-content"') == 1
 assert source.count('id="tv-v2-ads-manifest"') == 1
 assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
+assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
+assert 'Join a campaign first' in source and 'Played by ' in source
+assert 'Want to test <strong>Adblockn’t' not in source
 assert source.count('data-source="v2-ads-atelier.mjs"') == 1
 assert "terravale-profile-avatars" in source
 target.write_text(source,encoding="utf-8")
