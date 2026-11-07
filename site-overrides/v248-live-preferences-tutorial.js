@@ -25,7 +25,7 @@ const steps=[
  {title:"Your table, live",eyebrow:"14 · SESSION ROOM",description:"The Session Room brings together your party's initiative, dice, chat and DM-approved item actions. Rest and charge changes are saved to the actual character record.",where:"#/session-room",nav:"session",targets:["#pageRoot #tv-v251-session-items","#pageRoot .sr-root","#pageRoot .sr-queue","#pageRoot h1"]},
  {title:"Make the Codex yours",eyebrow:"15 · APPEARANCE",description:"Your appearance follows your verified Discord account. Some additional variants unlock through achievements; you can change themes whenever you like.",where:"#/appearance",nav:"appearance",targets:["#pageRoot .theme-card","#pageRoot .v2-hero","#pageRoot .theme-grid","#pageRoot h1"]},
  {title:"Your story is ready",eyebrow:"16 · REPLAY ANY TIME",description:"You've found the campaign, roster and character-creation entry point. You can revisit this walkthrough whenever you like from Help & Tutorial. Enjoy your first chapter.",where:"#/help",nav:"help",targets:["#tv-tutorial-launch","#pageRoot .v2-hero","#pageRoot h1"]}
-
+];
 function toastText(s){if(typeof toast==="function")toast(s);else console.info(s)}
 function setBodyTheme(theme){
  if(!themes.has(theme))return;
