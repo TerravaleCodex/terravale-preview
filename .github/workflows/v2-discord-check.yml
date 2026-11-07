@@ -31,6 +31,10 @@ on:
       - "site-overrides/v246-theme-creator-gallery.css"
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
+      - "site-overrides/v250-dm-backpack-editor.js"
+      - "site-overrides/v250-campaign-items.css"
+      - "site-overrides/sql/v250_campaign_theme_genre.sql"
+      - "site-overrides/sql/v250_dm_item_mechanics.sql"
       - "site-overrides/sql/v249_short_campaign_join_codes.sql"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/v2-discord-check.yml"
@@ -61,6 +65,7 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+          node --check site-overrides/v250-dm-backpack-editor.js
       - name: Verify V2.49 guided tour and botanical lifecycle
         run: |
           python3 - <<'PY'
@@ -135,6 +140,37 @@ jobs:
           assert "The final seal breaks in" not in html
           print("PASS: separate preserved short campaign quote and online long-form editor")
           print("PASS: both campaign creation and existing campaign pages support long description")
+          PY
+      - name: Verify real campaign tabs and secure DM item property integration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path("published/veiled-codex/index.html").read_text()
+          bridge=Path("site-overrides/v243-campaign-achievement-bridge.js").read_text()
+          editor=Path("site-overrides/v250-dm-backpack-editor.js").read_text()
+          cloud=Path("site-overrides/v246-real-characters.js").read_text()
+          props=Path("site-overrides/sql/v250_dm_item_mechanics.sql").read_text()
+          meta=Path("site-overrides/sql/v250_campaign_theme_genre.sql").read_text()
+          assert 'data-source="v250-dm-backpack-editor.js"' in html
+          assert 'tv-item-property-summary' in html
+          assert "const tab=selectedCampaignTab(root)" in bridge
+          assert "body.prepend(panel)" in bridge
+          assert "if(currentTab!=='settings'" in bridge
+          assert "campaign.genre" in bridge and "campaign.theme" in bridge
+          assert "description:tagline.control.value.trim()" in bridge
+          assert "long_description:story.control.value.trim()" in bridge
+          assert "character_item_properties(item_id,properties)" in cloud
+          assert "const {dmItemProperties,...playerSheet}=c" in cloud
+          assert "terravale_dm_edit_inventory_item" in editor
+          assert "data-value=\"equipment\"" in editor
+          assert "create policy dm_item_properties_read" in props
+          assert "grant select on table public.character_item_properties to authenticated" in props
+          assert "grant execute on function public.terravale_dm_edit_inventory_item" in props
+          assert "add column if not exists theme" in meta
+          assert "add column if not exists genre" in meta
+          assert "This is the short quote" in bridge
+          print("PASS: native Overview/Settings split, Theme/Genre, no duplicate local-only editor")
+          print("PASS: backpack DM item changes and server-authoritative mechanics embedded safely")
           PY
       - name: Protect lore, theme, authentication and assets
         run: |
