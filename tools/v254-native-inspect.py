@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 s=Path('published/veiled-codex/index.html').read_text()
-for term in ['function renderCreate(', 'id="createForm"', 'id="characterForm"', 'data-action="saveCharacter"', 'function createCharacter(', 'case \'createCharacter\'', 'data-action="createChar"', 'name="ancestry"', 'name="class"', 'data-action="create"','data-action="creator"', 'function renderSheetV220(']:
+for term in ['function renderCreatorV2(', 'function renderCreatorV217(', 'function renderCreator', 'function creator', 'data-action="creatorClass"', 'data-action="creatorAncestry"', 'id="creatorForm"', 'id="creatorName"', 'name="className"', 'data-action="creatorSave"']:
  hits=[m.start() for m in re.finditer(re.escape(term),s)]
- print('\n===== '+term+' : '+str(len(hits))+' =====')
- for i in hits[:2]:print(s[max(0,i-850):i+8000])
+ print('\n####',term,len(hits))
+ for i in hits[:1]:print(s[i:i+7500])
