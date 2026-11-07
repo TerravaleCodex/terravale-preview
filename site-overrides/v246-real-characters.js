@@ -167,7 +167,7 @@
          window.dispatchEvent(new CustomEvent('terravale-achievement-unlocked',{detail:{key:'roots_in_margins'}}));
          if(data.new)toast('Curiosity discovered · Roots in the Margins');
        }
-     },11000);
+     },118000);
    }
  }
  const observer=new MutationObserver(records=>{
