@@ -238,6 +238,38 @@ async function loadDirectory() {
     row.append(copy); container.append(row);
   }
 }
+
+// Keep the existing DM Chronicle intact; add a verified Discord account register.
+async function mountDmChronicleDirectory() {
+  if (!state.profile?.is_dm) return;
+  const route = location.hash.toLowerCase();
+  if (!route.includes("/dm") && !route.includes("chronicle")) return;
+  const root = document.getElementById("pageRoot");
+  if (!root || root.querySelector("#tv-dm-verified-players")) return;
+  const panel = el("section", "tv-dm-verified-players");
+  panel.id = "tv-dm-verified-players";
+  const heading = el("div", "tv-eyebrow", "DM CHRONICLE · VERIFIED ACCOUNTS");
+  const title = el("h2", "", "Connected Discord players");
+  const description = el("p", "tv-hint", "Permanent Discord identity, current username and short TvUID. This directory is visible only to the verified site DM.");
+  const list = el("div");
+  panel.append(heading, title, description, list);
+  root.append(panel);
+  const { data, error } = await supabase.from("terravale_profiles")
+    .select("tvuid,discord_uid,discord_username,discord_avatar_url,custom_avatar_path")
+    .order("tvuid").limit(250);
+  if (!panel.isConnected) return;
+  if (error) { list.replaceChildren(el("p", "tv-hint", error.message)); return; }
+  list.replaceChildren();
+  for (const profile of data || []) {
+    const row = el("div", "tv-dm-player");
+    row.append(avatar(profile));
+    const names = el("div");
+    names.append(el("strong", "", profile.tvuid + " · " + profile.discord_username),
+      el("small", "", profile.discord_uid));
+    row.append(names);list.append(row);
+  }
+}
+
 function openProfile() {
   if (!state.profile) return;
   const m = ensureModal();
@@ -285,9 +317,10 @@ function startPageObserver() {
   const observer = new MutationObserver(() => {
     if (mountQueued) return;
     mountQueued = true;
-    requestAnimationFrame(() => { mountQueued = false; if (state.profile) mountAccount(); });
+    requestAnimationFrame(() => { mountQueued = false; if (state.profile) { mountAccount(); mountDmChronicleDirectory(); } });
   });
   observer.observe(document.body, { childList: true, subtree: true });
-  window.addEventListener("hashchange", () => setTimeout(mountAccount, 100));
+  window.addEventListener("hashchange", () => setTimeout(() => { mountAccount(); mountDmChronicleDirectory(); }, 100));
+  mountDmChronicleDirectory();
 }
 await initAuth();
