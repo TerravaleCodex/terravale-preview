@@ -22,7 +22,8 @@
      status:row.status==='approved'?'Approved':'Pending',
      owner:mine?'You':'Party member',
      ownerUid:mine?current().profile.discord_uid:(c.ownerUid||''),
-     ownerName:mine?current().profile.discord_username:(c.ownerName||'Party member'),
+     ownerName:mine?current().profile.discord_username:'Adventurer',
+     sheetVisibleToParty:Boolean(row.sheet_visible_to_party),
      hp:row.character_state?.hp??c.hp,
      bloodState:row.character_state?.blood_state??c.bloodState??0,
      inventory:row.character_state?.inventory??c.inventory??[]};
@@ -39,11 +40,19 @@
    syncing=true;
    try{
      const {data,error}=await client().from('characters')
-      .select('id,campaign_id,owner_id,name,status,approved_build,character_state(hp,blood_state,inventory)')
+      .select('id,campaign_id,owner_id,name,status,sheet_visible_to_party,approved_build,character_state(hp,blood_state,inventory)')
       .order('created_at',{ascending:true}).limit(300);
      if(error)throw error;
      const inCampaign=new Set(db.campaigns.map(c=>c.id));
      const characters=(data||[]).filter(c=>inCampaign.has(c.campaign_id)).map(formatRemote);
+     const verified=await client().rpc('terravale_character_owner_labels');
+     if(!verified.error){
+       const names=new Map((verified.data||[]).map(x=>[x.character_id,x]));
+       for(const ch of characters){
+         const owner=names.get(ch.id);
+         if(owner){ch.ownerName=owner.discord_username;ch.ownerTvUID=owner.tvuid}
+       }
+     }
      const local=db.characters.filter(c=>owned(c)&&inCampaign.has(c.campaign)&&!uuid.test(c.id)
        &&Number(c.level||1)===1&&c.name&&c.className&&c.ancestry&&!String(c.id).startsWith('showcase-'));
      const knownNames=new Set(characters.filter(owned).map(c=>c.campaign+'|'+c.name.trim().toLowerCase()));
