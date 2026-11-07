@@ -39,6 +39,8 @@ jobs:
           assert 'data-source="v2-discord-auth.mjs"' in html
           assert 'data-source="v2-ads-atelier.mjs"' in html
           assert 'id="tv-v2-ads-manifest"' in html
+          assert 'data-source="v2-empty-workspace-integration"' in html
+          assert "db.characters = []" in html and "db.campaigns = []" in html
           assert 'id="previewTray"' in html
           assert 'sb_secret_' not in html and 'service_role' not in html
           match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
