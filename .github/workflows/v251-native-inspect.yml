@@ -1,0 +1,18 @@
+name: Inspect V2 native combat rest and item actions (no publish)
+on:
+  pull_request:
+    paths:
+      - "tools/v251-native-inspect.py"
+      - ".github/workflows/v251-native-inspect.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 tools/assemble-approved-v239.py
+          python3 tools/overlay-v239-with-discord.py
+          python3 tools/v251-native-inspect.py
