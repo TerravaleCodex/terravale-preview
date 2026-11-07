@@ -106,6 +106,36 @@ jobs:
           assert "TV-DEMO" in client
           print("PASS: short invite generation, legacy validation and UI copy controls")
           PY
+      - name: Verify two-field campaign story integration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path("published/veiled-codex/index.html").read_text()
+          script=Path("site-overrides/v243-campaign-achievement-bridge.js").read_text()
+          sql=Path("site-overrides/sql/v249_campaign_long_description.sql").read_text()
+          css=Path("site-overrides/v247-admin-and-themes.css").read_text()
+          for expected in (
+            ".select('id,name,description,long_description,owner_id')",
+            "longDescription:c.long_description||''",
+            ".insert({name,description,long_description:story,owner_id:identity().user.id})",
+            ".update({description:quote,long_description:full})",
+            "function decorateCampaignCreator()",
+            "function decorateCampaignStory(root,campaign)",
+            "Full campaign description",
+            "Tagline / opening quote",
+            "await syncCampaigns()"
+          ):
+            assert expected in script, f"Missing campaign-story bridge behavior: {expected}"
+            assert expected in html, f"Hosted V2 missing campaign-story behavior: {expected}"
+          assert "maxLength=12000" in script
+          assert "textContent=campaign.longDescription" in script or "story.textContent=campaign.longDescription||''" in script
+          for expected in ("add column if not exists long_description","grant update (description,long_description)","char_length(long_description) <= 12000"):
+            assert expected in sql
+          assert "tv-campaign-story-content" in css and "white-space:pre-wrap" in css
+          assert "The final seal breaks in" not in html
+          print("PASS: separate preserved short campaign quote and online long-form editor")
+          print("PASS: both campaign creation and existing campaign pages support long description")
+          PY
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
