@@ -298,3 +298,122 @@ body[data-theme="gloamglass"] .cab-head .eyebrow{
 @media(max-width:550px){
  .tv-demo-level-row{grid-template-columns:1fr;gap:3px}
 }
+
+
+/* V2.49 — the Verdant Archive grows only leaf silhouettes. No vines,
+   dark framing geometry, rapid motion, or permanently full foliage. */
+body[data-theme="verdant"] #tv-growing-vines{opacity:1}
+body:not([data-theme="verdant"]) #tv-growing-vines{opacity:0;visibility:hidden}
+#tv-growing-vines .tv-season-leaf{
+ opacity:0;transform-origin:42% 86%;
+ animation:tv-v249-leaf-cycle var(--leaf-dur) cubic-bezier(.32,.14,.43,.94) var(--leaf-delay) infinite both;
+ will-change:transform,opacity;
+ filter:drop-shadow(0 2px 1px #03150b34);
+}
+#tv-growing-vines .tv-season-leaf .tv-leaf-body{
+ fill:#81bf89;fill-opacity:.67;
+ stroke:#afd49f;stroke-opacity:.2;stroke-width:.75;
+}
+#tv-growing-vines .tv-season-leaf:nth-child(4n) .tv-leaf-body{
+ fill:#a0ce8f;fill-opacity:.5;
+}
+#tv-growing-vines .tv-season-leaf:nth-child(7n) .tv-leaf-body{
+ fill:#4e9f77;fill-opacity:.7;
+}
+#tv-growing-vines .tv-season-leaf .tv-leaf-line{
+ stroke:#d4e3b2;stroke-width:.8;stroke-opacity:.22;fill:none;stroke-linecap:round;
+}
+@keyframes tv-v249-leaf-cycle{
+ 0%{opacity:0;transform:translate3d(0,9px,0) rotate(var(--leaf-tilt)) scale(.02)}
+ 11%{opacity:.14;transform:translate3d(0,7px,0) rotate(var(--leaf-tilt)) scale(.16)}
+ 30%{opacity:.31;transform:translate3d(0,3px,0) rotate(calc(var(--leaf-tilt) * .48)) scale(.64)}
+ 47%,61%{opacity:.54;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+ 68%{opacity:.52;transform:translate3d(8px,14px,0) rotate(16deg) scale(1)}
+ 80%{opacity:.39;transform:translate3d(-12px,85px,0) rotate(77deg) scale(.97)}
+ 96%,100%{opacity:0;transform:translate3d(var(--fall-x),var(--fall-y),0) rotate(calc(var(--leaf-rot) + 183deg)) scale(.83)}
+}
+
+/* V2.49 — real spotlight walkthrough, with a clear cutout around the
+   actual navigated section instead of an opaque, centre-only dialog. */
+.tv-tutorial-overlay{
+ display:block;place-items:initial;padding:0;
+ background:rgba(1,2,4,.79);
+ backdrop-filter:blur(3px);
+ isolation:isolate;
+}
+.tv-tutorial-overlay.has-target{
+ background:transparent;backdrop-filter:none;
+}
+.tv-tutorial-spotlight{
+ position:fixed;z-index:0;display:none;
+ box-shadow:
+   0 0 0 200vmax rgba(0,1,1,.82),
+   0 0 0 6px color-mix(in srgb,var(--accent) 14%,transparent),
+   0 0 37px color-mix(in srgb,var(--accent) 37%,transparent);
+ border:2px solid color-mix(in srgb,var(--accent) 82%,#fff);
+ border-radius:13px;
+ background:transparent;pointer-events:none;
+ transition:left .42s cubic-bezier(.22,.8,.22,1),
+   top .42s cubic-bezier(.22,.8,.22,1),
+   width .42s ease,height .42s ease;
+}
+.tv-tutorial-panel{
+ position:fixed;z-index:2;
+ width:min(420px,calc(100vw - 24px));
+ max-height:calc(100dvh - 24px);
+ padding:29px 30px 25px;
+ border-radius:17px;
+ box-shadow:0 24px 82px #000d,0 0 0 1px color-mix(in srgb,var(--accent) 12%,transparent);
+ transition:left .42s cubic-bezier(.22,.8,.22,1),
+   top .42s cubic-bezier(.22,.8,.22,1);
+}
+.tv-tutorial-title{
+ font-size:clamp(26px,3vw,37px);
+ line-height:1.15;
+ margin-bottom:13px;
+}
+.tv-tutorial-description{
+ font-size:13px;line-height:1.7;min-height:0;margin-bottom:11px;
+}
+.tv-tutorial-hint{
+ color:var(--dim);font-size:10px;line-height:1.6;
+ margin:0 0 18px;
+}
+.tv-tutorial-panel .tv-tutorial-meter{
+ margin:12px 0 19px;grid-template-columns:repeat(9,minmax(0,1fr));
+}
+.tv-tutorial-panel .tv-tutorial-meter button{
+ height:7px;min-height:7px;transition:background .25s ease;
+}
+.tv-tutorial-panel [data-tour="visit"][hidden]{display:none}
+.tv-tutorial-panel .tv-tutorial-actions{
+ display:grid;grid-template-columns:1fr 1fr 1.2fr;
+ justify-content:stretch;gap:7px;
+}
+.tv-tutorial-panel .tv-tutorial-actions button{
+ padding:11px 8px;min-width:0;font-size:11px;
+}
+.tv-tutorial-panel [data-tour="next"]{
+ box-shadow:0 0 19px color-mix(in srgb,var(--accent) 13%,transparent);
+}
+@media(max-width:720px){
+ .tv-tutorial-overlay{backdrop-filter:none}
+ .tv-tutorial-panel{
+   padding:23px 21px 21px;
+   border-radius:16px;
+   max-height:min(52dvh,420px);
+   overflow-y:auto;
+   transition:left .24s,top .24s;
+ }
+ .tv-tutorial-title{font-size:26px}
+ .tv-tutorial-description{font-size:12px;line-height:1.55}
+ .tv-tutorial-panel .tv-tutorial-actions{grid-template-columns:1fr 1fr;gap:6px}
+ .tv-tutorial-panel [data-tour="next"]{grid-column:1 / -1;grid-row:1}
+}
+@media(prefers-reduced-motion:reduce){
+ #tv-growing-vines .tv-season-leaf{
+   animation:none!important;opacity:.16;transform:scale(.76);
+   will-change:auto;filter:none;
+ }
+ .tv-tutorial-spotlight,.tv-tutorial-panel{transition:none!important}
+}

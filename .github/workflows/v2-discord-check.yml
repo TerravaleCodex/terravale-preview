@@ -60,6 +60,32 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+      - name: Verify V2.49 guided tour and botanical lifecycle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          tour=Path("site-overrides/v248-live-preferences-tutorial.js").read_text()
+          leaves=Path("site-overrides/v247-theme-variants.js").read_text()
+          css=Path("site-overrides/v248-themes-achievements.css").read_text()
+          html=Path("published/veiled-codex/index.html").read_text()
+          assert 'Welcome to the 2.0 Codex' in tour
+          assert len(re.findall(r'eyebrow:"\d\d ·',tour))==9
+          for fragment in ('#/campaigns','#/characters','#/lore','#/cabinet-of-curiosities','#/session-room','#/appearance','#/help'):
+              assert fragment in tour, fragment
+          for fragment in ('offerWelcome();','tv-tutorial-spotlight','scrollIntoView','placeTour()','startTutorial(true)','Replay the guided 2.0 tutorial'):
+              assert fragment in tour, fragment
+          assert 'v249-leaves' in leaves
+          assert 'const count=28' in leaves
+          assert 'const delay=random()*12' in leaves
+          assert 'tv-v249-leaf-cycle' in css
+          assert '@media(prefers-reduced-motion:reduce)' in css
+          assert "Welcome to the 2.0 Codex" in html
+          assert "tv-v249-leaf-cycle" in html
+          assert 'id="secret-placeholder"' not in html
+          print("PASS: nine-step pop-up tour highlights live routes and can replay")
+          print("PASS: Verdant grows/falls/regrows with reduced-motion fallback")
+          PY
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
