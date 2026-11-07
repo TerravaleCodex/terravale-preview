@@ -243,18 +243,22 @@ function closeProfile() { if (modal) modal.hidden = true; }
 let accountButton = null;
 function mountAccount(force = false) {
   if (!state.profile) return;
-  if (!accountButton || force) {
+  if (!accountButton) {
     accountButton = el("button", "tv-account-btn");
     accountButton.id = "tv-verified-account";
     accountButton.type = "button";
     accountButton.onclick = openProfile;
   }
   const p = state.profile;
+  const signature = [p.tvuid, p.discord_username, p.discord_avatar_url, p.custom_avatar_path].join("|");
+  if (force || accountButton.dataset.signature !== signature) {
   accountButton.replaceChildren(avatar(p), (() => {
     const meta = el("span", "tv-account-meta");
     meta.append(el("strong", "", p.discord_username), el("small", "", p.tvuid));
     return meta;
   })());
+  accountButton.dataset.signature = signature;
+  }
   const candidates = Array.from(document.querySelectorAll("button"))
     .filter(b => b !== accountButton && /\bTraveller\b/i.test(b.textContent || ""));
   const source = candidates.find(b => !b.closest("#tv-v2-auth-gate"));
