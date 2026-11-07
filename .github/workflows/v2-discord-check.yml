@@ -53,6 +53,7 @@ on:
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
+      - "site-overrides/sql/v255_creator_slot_validation.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -452,7 +453,9 @@ jobs:
           assert 'TerravaleV255Wallet.render(section,c' in old
           assert 'TerravaleV255Training.renderSheet(section,c)' in old
           vault=Path('site-overrides/v254-dm-vault.js').read_text()
-          assert all("#/dm/"+x in vault for x in ('vault','party','treasury','feats','training'))
+          assert all("['"+x+"'" in vault for x in ('vault','party','treasury','feats','training'))
+          assert "b.href=id==='overview'?'#/dm':'#/dm/'+id" in vault
+          assert 'slot_cursor' in Path('site-overrides/sql/v255_creator_slot_validation.sql').read_text()
           for name in ('v255_custom_feat_forge.sql','v255_character_training_overrides.sql','v255_player_wallet.sql'):
             assert (Path('site-overrides/sql')/name).is_file()
           feat=Path('site-overrides/v255-custom-feat-forge.js').read_text()
