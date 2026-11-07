@@ -1,4 +1,4 @@
-name: Publish Terravale 2.0 Holding Page
+name: Publish Terravale countdown and approved V2.39 hidden preview
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
     paths:
       - ".github/workflows/deploy.yml"
       - "site-overrides/awaiting-v2.html"
+      - ".preview-v239-approved/**"
+      - "tools/assemble-approved-v239.py"
   workflow_dispatch:
 
 permissions:
@@ -20,43 +22,50 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble one visual page with a custom 404 fallback
+      - name: Verify the actual approved V2.39 package and exclude private lore
+        run: python3 tools/assemble-approved-v239.py
+      - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p published
           cp site-overrides/awaiting-v2.html published/index.html
           python3 - <<'PY'
           from pathlib import Path
-          import html
-          home = Path('published/index.html').read_text()
-          assert 'Awaiting <em>2.0</em> update' in home
-          assert 'animation:sigil-spin' in home
-          assert 'id="countdown-progress"' in home
-          assert '--scene-fit' in home
-          assert 'overscroll-behavior:none' in home
-          assert 'function fitScene()' in home
-          assert 'id="secret-placeholder"' in home
-          assert 'opacity:0;box-shadow:none;appearance:none' in home
-          assert 'class="storm"' in home
-          assert 'id="countdown-hours"' in home
-          assert '2026-11-08T00:00:00Z' in home
-          assert 'supabase.co' not in home.lower()
-          # GitHub Pages requires a 404.html file to replace its generic error
-          # on retired routes. It displays exactly the same holding design and
-          # returns visitors to the canonical root URL automatically.
+          home = Path("published/index.html").read_text()
+          checks = (
+              'Awaiting <em>2.0</em> update',
+              'animation:sigil-spin',
+              'id="countdown-progress"',
+              '--scene-fit',
+              'overscroll-behavior:none',
+              'function fitScene()',
+              'id="secret-placeholder"',
+              'opacity:0;box-shadow:none;appearance:none',
+              'class="storm"',
+              'id="countdown-hours"',
+              '2026-11-08T00:00:00Z',
+              'window.location.assign("/terravale-preview/veiled-codex/")',
+          )
+          for check in checks:
+              assert check in home, f"Countdown design/control changed unexpectedly: {check}"
+          assert "supabase.co" not in home.lower()
           redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
-          fallback = home.replace('</head>', redirect + '</head>', 1)
+          fallback = home.replace("</head>", redirect + "</head>", 1)
           assert redirect in fallback
-          Path('published/404.html').write_text(fallback)
-          files = sorted(p.name for p in Path('published').iterdir() if p.is_file())
-          assert files == ['404.html', 'index.html'], files
-          assert 'Awaiting <em>2.0</em> update' in fallback
-          print('Publishing one visual page: index.html + matching GitHub Pages fallback.')
+          Path("published/404.html").write_text(fallback)
+          public = Path("published/veiled-codex/index.html")
+          assert public.stat().st_size > 7000000
+          assert sorted(x.name for x in Path("published").iterdir()) == [
+              "404.html", "index.html", "veiled-codex"
+          ], "Unapproved files in GitHub Pages output"
+          assert [p.name for p in public.parent.iterdir()] == ["index.html"], "Nested private assets"
+          print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
+          print("PASS: only two root holding files plus one public-safe V2 preview")
           PY
-      - name: Upload single-page site
+      - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
         with:
           path: published
@@ -64,6 +73,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       pages: write
       id-token: write
@@ -71,47 +81,80 @@ jobs:
       name: github-pages
       url: https://terravalecodex.github.io/terravale-preview/
     steps:
-      - name: Deploy the one-page artifact
+      - name: Deploy countdown with actual approved V2.39 preview
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify holding page and retired routes
+      - name: Verify live countdown, V2.39 HTML, restricted lore protection and retired routes
         shell: bash
         run: |
           set -euo pipefail
           base="https://terravalecodex.github.io/terravale-preview"
           for attempt in $(seq 1 12); do
-            html="$(curl --fail --silent --show-error --location --max-time 15 \
+            curl --fail --silent --show-error --location --max-time 15 \
               --header 'Cache-Control: no-cache' \
-              "${base}/?verify=${GITHUB_SHA}-${attempt}" || true)"
-            if grep -q 'Awaiting <em>2.0</em> update' <<< "$html" &&
-               grep -q 'id="countdown-hours"' <<< "$html" &&
-               grep -q 'animation:sigil-spin' <<< "$html" &&
-               grep -q 'id="countdown-progress"' <<< "$html" &&
-               grep -q '2026-11-08T00:00:00Z' <<< "$html"; then
-              echo "PASS: 2.0 holding page is live."
+              "$base/?verify=$GITHUB_SHA-$attempt" > /tmp/terravale-home.html || true
+            if grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-home.html &&
+               grep -q 'id="countdown-hours"' /tmp/terravale-home.html &&
+               grep -q 'animation:sigil-spin' /tmp/terravale-home.html &&
+               grep -q '2026-11-08T00:00:00Z' /tmp/terravale-home.html &&
+               grep -q 'window.location.assign("/terravale-preview/veiled-codex/")' /tmp/terravale-home.html; then
+              echo "PASS: public holding page and invisible V2 entrance are live."
               break
             fi
             if [ "$attempt" -eq 12 ]; then
-              echo "::error::Holding page did not appear."
+              echo "::error::Holding page with hidden V2 entrance did not appear."
               exit 1
             fi
             sleep 5
           done
-          for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
-            response_file="/tmp/terravale-retired.html"
-            status="$(curl --silent --show-error --location --max-time 15 \
-              --output "$response_file" --write-out '%{http_code}' \
+
+          for attempt in $(seq 1 12); do
+            status="$(curl --silent --show-error --location --max-time 30 \
               --header 'Cache-Control: no-cache' \
-              "${base}${path}?retired=${GITHUB_SHA}")"
-            expected_status="404"
-            if [ "$path" = "/404.html" ]; then
-              expected_status="200"
+              --output /tmp/terravale-v239-live.html --write-out '%{http_code}' \
+              "$base/veiled-codex/?verify=$GITHUB_SHA-$attempt" || true)"
+            if [ "$status" = 200 ] &&
+               grep -q 'data-source="v2.css"' /tmp/terravale-v239-live.html &&
+               grep -q 'window.TERRAVALE_V238={version:' /tmp/terravale-v239-live.html; then
+              echo "PASS: actual V2.39 offline page is serving."
+              break
             fi
-            if [ "$status" != "$expected_status" ] ||
-               ! grep -q 'Awaiting <em>2.0</em> update' "$response_file" ||
-               ! grep -q 'location.replace("/terravale-preview/")' "$response_file"; then
-              echo "::error::Retired path ${path} did not serve the branded fallback (HTTP ${status})."
+            if [ "$attempt" -eq 12 ]; then
+              echo "::error::Genuine V2.39 hidden page missing (HTTP $status)."
               exit 1
             fi
-            echo "PASS: ${path} displays branded 2.0 fallback and redirects to homepage"
+            sleep 5
           done
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re
+          raw=Path("/tmp/terravale-v239-live.html").read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == "301c424b84b53704c1780459a24a771ef2ed8007f4dbe941f795bd445843af54", "Published V2.39 bytes mismatch"
+          html=raw.decode("utf-8")
+          match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
+          assert match, "Missing V14 content"
+          data=json.loads(match.group(1))
+          assert len(data["articles"])==283
+          assert len(data["heritageArticles"])==36
+          assert len(data["events"])==31
+          assert all(a["title"]=="Restricted ancestry article" and
+                     "does not contain the article text" in a["html"]
+                     for a in data["heritageArticles"])
+          print("PASS: deployed exactly the approved V2.39 HTML checksum.")
+          print("PASS: 283 public, 36 protected placeholders, 31 calendar events.")
+          PY
+          for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
+            status="$(curl --silent --show-error --location --max-time 15 \
+              --output /tmp/terravale-retired.html --write-out '%{http_code}' \
+              --header 'Cache-Control: no-cache' \
+              "$base$path?retired=$GITHUB_SHA")"
+            expected_status=404
+            if [ "$path" = "/404.html" ]; then expected_status=200; fi
+            if [ "$status" != "$expected_status" ] ||
+               ! grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-retired.html ||
+               ! grep -q 'location.replace("/terravale-preview/")' /tmp/terravale-retired.html; then
+              echo "::error::Retired root path $path did not show the fallback (HTTP $status)."
+              exit 1
+            fi
+          done
+          echo "PASS: retired root routes still return the holding page."
