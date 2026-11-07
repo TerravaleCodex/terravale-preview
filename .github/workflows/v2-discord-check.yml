@@ -330,7 +330,8 @@ jobs:
           assert 'tv-tutorial-overlay' in html
           assert 'terravale_set_user_appearance' in html
           assert 'tv-demo-party-grid' in html and 'tv-crimson-variant' in html
-          assert '118000' in html and 'RESET DEMO' in html
+          assert '118000' in html and 'tv-demo-permanent-party' in html
+          assert 'Restore original demo party' not in html
           assert 'Verdant Archive' in html and 'Crimson Court' in html and 'Bone Zone' in html
           assert 'cab-title-long' in html and 'tv-lore-title-long' in html
           assert 'body[data-theme="zero"] .tv-lore .lore-history' in html
