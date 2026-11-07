@@ -28,7 +28,7 @@
      inventory:row.character_state?.inventory??c.inventory??[]};
  }
  async function createCharacter(ch){
-   if(!current()?.ready||!bridge.canCreate(ch?.campaign))return {error:'Campaign membership required'};
+   if(!current()?.ready||!bridge.hasCampaign(ch?.campaign))return {error:'Campaign membership required'};
    const {data,error}=await client().rpc('terravale_create_character',
        {target_campaign:ch.campaign,sheet:ch});
    if(error)return {error:error.message};
