@@ -26,7 +26,10 @@
      sheetVisibleToParty:Boolean(row.sheet_visible_to_party),
      hp:row.character_state?.hp??c.hp,
      bloodState:row.character_state?.blood_state??c.bloodState??0,
-     inventory:row.character_state?.inventory??c.inventory??[]};
+     inventory:row.character_state?.inventory??c.inventory??[],
+     dmItemProperties:Object.fromEntries((row.character_item_properties||[])
+       .filter(x=>x?.item_id&&x?.properties&&typeof x.properties==='object')
+       .map(x=>[x.item_id,x.properties]))};
  }
  async function createCharacter(ch){
    if(!current()?.ready||!bridge.hasCampaign(ch?.campaign))return {error:'Campaign membership required'};
@@ -40,7 +43,7 @@
    syncing=true;
    try{
      const {data,error}=await client().from('characters')
-      .select('id,campaign_id,owner_id,name,status,sheet_visible_to_party,approved_build,character_state(hp,blood_state,inventory)')
+      .select('id,campaign_id,owner_id,name,status,sheet_visible_to_party,approved_build,character_state(hp,blood_state,inventory),character_item_properties(item_id,properties)')
       .order('created_at',{ascending:true}).limit(300);
      if(error)throw error;
      const inCampaign=new Set(db.campaigns.map(c=>c.id));
@@ -118,7 +121,9 @@
     for(const c of db.characters.filter(c=>owned(c)&&uuid.test(c.id)&&bridge.hasCampaign(c.campaign))){
       const raw=capture(c);
       if(lastRemote.get(c.id)===raw)continue;
-      const {error}=await client().rpc('terravale_save_character_sheet',{target_character:c.id,sheet:c});
+      // Never send server-authoritative DM item mechanics through a player-owned sheet save.
+      const {dmItemProperties,...playerSheet}=c;
+      const {error}=await client().rpc('terravale_save_character_sheet',{target_character:c.id,sheet:playerSheet});
       if(error){console.warn('Unable to save character',c.name,error.message);continue;}
       lastRemote.set(c.id,raw);
       const blood=Number(c.bloodState??0);

@@ -53,7 +53,7 @@
   function mapCampaign(c){
     const previous=db.campaigns.find(x=>x.id===c.id);
     return {
-      id:c.id,name:c.name,description:c.description||'',longDescription:c.long_description||'',isDemo:isDemo(c.id),
+      id:c.id,name:c.name,description:c.description||'',longDescription:c.long_description||'',theme:c.theme||'',genre:c.genre||'',isDemo:isDemo(c.id),
       role:c.owner_id===identity().user.id?'dm':'player',
       status:previous?.status==='Archived'?'Archived':c.owner_id===identity().user.id?'Ongoing':'Joined'
     };
@@ -68,7 +68,7 @@
         demoCampaignId=demo.data||null;
       }
       const {data,error}=await client().from('campaigns')
-        .select('id,name,description,long_description,owner_id').order('created_at',{ascending:true});
+        .select('id,name,description,long_description,theme,genre,owner_id').order('created_at',{ascending:true});
       if(error)throw error;
       const serverIds=new Set((data||[]).map(x=>x.id));
       members.clear();for(const id of serverIds)members.add(id);
@@ -94,12 +94,13 @@
       toastText(isDemo(result.data)?'Joined the demo: one level-one test character.':'Campaign joined. You can now create a character.');
     }else toastText('Joined online, but could not load campaign details.');
   }
-  async function createCampaign(name,description,longDescription=''){
+  async function createCampaign(name,description,longDescription='',theme='',genre=''){
     const story=String(longDescription||'').trim();
     if(story.length>12000){toastText('Campaign description must be 12,000 characters or fewer.');return}
+    if(theme.length>240||genre.length>240){toastText('Theme and Genre must be under 240 characters.');return}
     if(!identity()?.profile?.is_dm){toastText('Only the verified DM can create campaigns.');return}
     const {data,error}=await client().from('campaigns')
-      .insert({name,description,long_description:story,owner_id:identity().user.id})
+      .insert({name,description,long_description:story,theme:theme.trim(),genre:genre.trim(),owner_id:identity().user.id})
       .select('id,name,description,owner_id').single();
     if(error){toastText('Campaign not created: '+error.message);return}
     await syncCampaigns();
@@ -129,7 +130,7 @@
     if(form.id==='joinForm'){joinCampaign(data.get('code'));return}
     const name=String(data.get('name')||'').trim();
     if(name.length<2){toastText('Enter a campaign name of at least two characters');return}
-    createCampaign(name,String(data.get('description')||'').trim(),String(data.get('long_description')||'').trim());
+    createCampaign(name,String(data.get('description')||'').trim(),String(data.get('long_description')||'').trim(),String(data.get('theme')||'').trim(),String(data.get('genre')||'').trim());
   }
   document.addEventListener('submit',submit,true);
 
@@ -172,122 +173,142 @@
     meter.textContent='0 / 12,000';
     area.addEventListener('input',()=>{meter.textContent=area.value.length.toLocaleString()+' / 12,000'});
     field.append(heading,help,area,meter);
+    const metadata=document.createElement('div');
+    metadata.className='tv-campaign-story-metadata-editor';
+    for(const [key,label,placeholder] of [
+      ['genre','Genre','Dark fantasy · supernatural mystery'],
+      ['theme','Theme','Isolation · grief · endurance']
+    ]){
+      const labelNode=document.createElement('label');labelNode.className='tv-campaign-story-create-field';
+      const span=document.createElement('span');span.textContent=label;
+      const input=document.createElement('input');input.name=key;input.type='text';input.maxLength=240;input.placeholder=placeholder;
+      labelNode.append(span,input);metadata.append(labelNode);
+    }
     const submit=form.querySelector('button[type="submit"],input[type="submit"]');
     const before=submit?.closest('.v2-actions,.form-actions,.actions')||submit;
-    if(before&&before.parentElement)before.insertAdjacentElement('beforebegin',field);
-    else form.append(field);
+    if(before&&before.parentElement){
+      before.insertAdjacentElement('beforebegin',metadata);
+      before.insertAdjacentElement('beforebegin',field);
+    }else form.append(metadata,field);
   }
 
-  // Present the actual campaign overview on the real campaign reading page,
-  // not an expanding card or a second fake dashboard.
-  const renderedStory=new WeakMap();
+  // Campaign details belong WITHIN their native tabs, never below the page footer.
+  // All members can read Overview; only a verified campaign DM sees Settings editor.
+  function selectedCampaignTab(root){
+    return root.querySelector('.campaign-detail-tabs [data-value="settings"][aria-selected="true"]')?'settings':
+      root.querySelector('.campaign-detail-tabs [data-value="overview"][aria-selected="true"]')?'overview':null;
+  }
+  function makeInfo(label,value){
+    const item=document.createElement('div');item.className='tv-campaign-story-meta';
+    const head=document.createElement('span');head.textContent=label;
+    const text=document.createElement('strong');text.textContent=value||'Not specified';
+    if(!value)item.classList.add('is-empty');
+    item.append(head,text);return item;
+  }
   function decorateCampaignStory(root,campaign){
     if(isDemo(campaign.id))return;
-    let panel=root.querySelector('#tv-campaign-story');
-    if(!panel){
-      panel=document.createElement('section');
-      panel.id='tv-campaign-story';
-      panel.className='tv-campaign-story';
-      // Place the longer description immediately after the campaign heading
-      // when the native page exposes one; otherwise before membership controls.
-      const heading=root.querySelector('.v2-hero,.v2-page-header,.page-header');
-      const membership=root.querySelector('#tv-campaign-membership');
-      if(heading)heading.insertAdjacentElement('afterend',panel);
-      else if(membership)membership.insertAdjacentElement('beforebegin',panel);
-      else root.prepend(panel);
+    const tab=selectedCampaignTab(root);
+    const body=root.querySelector('.campaign-detail-content');
+    if(!body||!tab)return;
+    if(tab==='overview'){
+      if(body.querySelector('#tv-campaign-story'))return;
+      const panel=document.createElement('section');
+      panel.id='tv-campaign-story';panel.className='tv-campaign-story tv-campaign-story-overview';
+      const over=document.createElement('div');over.className='v2-overline';
+      over.textContent='THE STORY YOU ARE STEPPING INTO';
+      const h=document.createElement('h2');h.textContent='About this campaign';
+      const quote=document.createElement('blockquote');quote.className='tv-campaign-story-quote';
+      quote.textContent=campaign.description||'A chapter awaiting its first words.';
+      const meta=document.createElement('div');meta.className='tv-campaign-story-meta-grid';
+      meta.append(makeInfo('Genre',campaign.genre),makeInfo('Theme',campaign.theme));
+      const intro=document.createElement('div');intro.className='tv-campaign-story-content';
+      intro.textContent=campaign.longDescription||'';
+      if(!campaign.longDescription){
+        intro.classList.add('tv-empty');
+        intro.textContent='The Dungeon Master has not yet published the full campaign introduction.';
+      }
+      panel.append(over,h,quote,meta,intro);
+      body.prepend(panel);
+    }else{
+      // The original native settings form saves only a local preview. On the live
+      // site it MUST NOT be offered alongside the database-backed editor.
+      const offlineForm=body.querySelector('#campaignSettingsForm');
+      if(offlineForm)offlineForm.remove();
+      const hint=body.querySelector('.campaign-detail-title p');
+      if(hint)hint.textContent='Campaign details are saved to your verified Terravale account.';
+      if(body.querySelector('#tv-campaign-story-settings'))return;
+      const allowed=Boolean(identity()?.profile?.is_dm&&campaign.role==='dm');
+      if(allowed)body.querySelector('.campaign-settings-locked')?.remove();
+      if(!allowed){
+        const locked=body.querySelector('.campaign-settings-locked p');
+        if(locked)locked.textContent='Only this campaign’s verified Dungeon Master can edit the campaign story.';
+        return;
+      }
+      const area=body.querySelector('.campaign-detail-section')||body;
+      const panel=document.createElement('section');
+      panel.id='tv-campaign-story-settings';panel.className='tv-campaign-story tv-campaign-story-settings';
+      area.append(panel);
+      renderCampaignEditor(panel,campaign);
     }
-    if(panel.dataset.editing==='1'||renderedStory.get(panel)===campaign)return;
-    renderedStory.set(panel,campaign);
-    renderCampaignStory(panel,campaign);
   }
-  function renderCampaignStory(panel,campaign){
+  function renderCampaignEditor(panel,campaign){
     panel.replaceChildren();
-    const over=document.createElement('div');
-    over.className='v2-overline';
-    over.textContent='A WORLD BEYOND THE TAGLINE';
-    const title=document.createElement('h3');
-    title.textContent='About this campaign';
-    const story=document.createElement('div');
-    story.className='tv-campaign-story-content';
-    story.textContent=campaign.longDescription||'';
-    const canEdit=Boolean(identity()?.profile?.is_dm&&campaign.role==='dm'&&!isDemo(campaign.id));
-    if(!campaign.longDescription){
-      story.classList.add('tv-empty');
-      story.textContent=canEdit
-        ? 'Your tagline sets the mood. Now give your players the fuller story behind it.'
-        : 'The Dungeon Master has not published a full campaign description yet.';
+    const over=document.createElement('div');over.className='v2-overline';
+    over.textContent='DM EDITOR · VISIBLE TO CAMPAIGN PLAYERS';
+    const title=document.createElement('h3');title.textContent='Your campaign’s story';
+    const subtitle=document.createElement('p');subtitle.className='tv-campaign-editor-intro';
+    subtitle.textContent='Changes appear in the Overview tab for every campaign member. The quote, genre, theme and full introduction are independent fields.';
+    const form=document.createElement('form');form.className='tv-campaign-story-editor';
+    function field(label,key,value,rows,max,placeholder){
+      const wrap=document.createElement('label');
+      const head=document.createElement('span');head.textContent=label;
+      const control=rows?document.createElement('textarea'):document.createElement('input');
+      control.name=key;control.maxLength=max;control.value=value||'';
+      if(rows)control.rows=rows;else control.type='text';
+      control.placeholder=placeholder;
+      wrap.append(head,control);
+      return {wrap,control};
     }
-    panel.append(over,title,story);
-    if(canEdit){
-      const button=document.createElement('button');
-      button.type='button';button.className='btn ghost small tv-campaign-story-edit';
-      button.textContent=campaign.longDescription?'Edit campaign description':'Write the campaign description';
-      button.addEventListener('click',()=>editCampaignStory(panel,campaign));
-      panel.append(button);
-    }
-  }
-  function editCampaignStory(panel,campaign){
-    panel.dataset.editing='1';
-    panel.replaceChildren();
-    const heading=document.createElement('div');
-    heading.className='v2-overline';
-    heading.textContent='CAMPAIGN DETAILS · DM EDITOR';
-    const title=document.createElement('h3');
-    title.textContent='Tell your campaign’s story';
-    const form=document.createElement('form');
-    form.className='tv-campaign-story-editor';
-    const shortLabel=document.createElement('label');
-    shortLabel.textContent='Tagline / opening quote';
-    const tagline=document.createElement('textarea');
-    tagline.name='tagline';tagline.rows=2;tagline.maxLength=320;
-    tagline.value=campaign.description||'';
-    tagline.placeholder='A single line that captures your campaign.';
-    shortLabel.append(tagline);
-    const longLabel=document.createElement('label');
-    longLabel.textContent='Full campaign description';
-    const description=document.createElement('textarea');
-    description.name='long_description';description.rows=10;description.maxLength=12000;
-    description.value=campaign.longDescription||'';
-    description.placeholder='Describe the campaign’s setting, premise, tone, and what the players can expect. Paragraph breaks are preserved.';
-    const counter=document.createElement('small');
-    counter.className='tv-campaign-story-count';
-    const updateCount=()=>{counter.textContent=description.value.length.toLocaleString()+' / 12,000 characters'};
-    description.addEventListener('input',updateCount);updateCount();
-    longLabel.append(description,counter);
-    const buttons=document.createElement('div');
-    buttons.className='tv-campaign-story-actions';
-    const cancel=document.createElement('button');
-    cancel.type='button';cancel.className='btn ghost small';cancel.textContent='Cancel';
-    cancel.addEventListener('click',()=>{panel.dataset.editing='0';renderCampaignStory(panel,campaign)});
-    const save=document.createElement('button');
-    save.type='submit';save.className='btn primary small';save.textContent='Save to campaign';
-    const status=document.createElement('p');
-    status.className='tv-campaign-story-status';status.setAttribute('role','status');
-    buttons.append(cancel,save);
-    form.append(shortLabel,longLabel,buttons,status);
-    form.addEventListener('submit',async event=>{
-      event.preventDefault();
-      const quote=tagline.value.trim(),full=description.value.trim();
-      if(full.length>12000){status.textContent='Please keep the description under 12,000 characters.';return}
-      save.disabled=true;cancel.disabled=true;
-      save.textContent='Saving…';status.textContent='Saving your campaign description online…';
+    const tagline=field('Tagline / opening quote','tagline',campaign.description,2,320,'Not every soul buried beneath the ice is dead.');
+    const genre=field('Genre','genre',campaign.genre,0,240,'Dark fantasy · survival horror · mystery');
+    const theme=field('Theme','theme',campaign.theme,0,240,'Loss · isolation · hope · sacrifice');
+    const story=field('Full campaign description','long_description',campaign.longDescription,12,12000,'The real campaign introduction, with the premise, setting and what awaits the players…');
+    const counter=document.createElement('small');counter.className='tv-campaign-story-count';
+    const tally=()=>{counter.textContent=story.control.value.length.toLocaleString()+' / 12,000 characters'};
+    story.control.addEventListener('input',tally);tally();
+    story.wrap.append(counter);
+    const actions=document.createElement('div');actions.className='tv-campaign-story-actions';
+    const save=document.createElement('button');save.type='submit';save.className='btn primary small';
+    save.textContent='Save campaign details';
+    const message=document.createElement('p');message.className='tv-campaign-story-status';
+    message.setAttribute('role','status');
+    actions.append(save);
+    form.append(tagline.wrap,genre.wrap,theme.wrap,story.wrap,actions,message);
+    form.addEventListener('submit',async e=>{
+      e.preventDefault();
+      const values={
+        description:tagline.control.value.trim(),
+        genre:genre.control.value.trim(),
+        theme:theme.control.value.trim(),
+        long_description:story.control.value.trim()
+      };
+      if(values.long_description.length>12000||values.genre.length>240||values.theme.length>240){
+        message.textContent='The description is limited to 12,000 characters and Theme/Genre to 240 each.';return;
+      }
+      save.disabled=true;save.textContent='Saving…';message.textContent='Saving to your campaign…';
       try{
-        const {data,error}=await client().from('campaigns')
-          .update({description:quote,long_description:full})
-          .eq('id',campaign.id)
-          .select('id,description,long_description')
-          .single();
-        if(error||!data)throw error||new Error('Campaign update did not return a saved record.');
-        panel.dataset.editing='0';
+        const {data,error}=await client().from('campaigns').update(values)
+          .eq('id',campaign.id).select('id,description,long_description,theme,genre').single();
+        if(error||!data)throw error||new Error('Campaign details were not returned by the server.');
+        message.textContent='Saved. Everyone in your campaign can now read the updated Overview.';
         await syncCampaigns();
-        toastText('Campaign description saved online.');
-      }catch(err){
-        status.textContent='Could not save your campaign: '+(err.message||String(err));
-        save.disabled=false;cancel.disabled=false;save.textContent='Save to campaign';
+        toastText('Campaign details saved online.');
+      }catch(error){
+        message.textContent='Unable to save: '+(error.message||String(error));
+        save.disabled=false;save.textContent='Save campaign details';
       }
     });
-    panel.append(heading,title,form);
-    tagline.focus({preventScroll:true});
+    panel.append(over,title,subtitle,form);
   }
 
   // Adjust the existing dashboard link rather than rendering a fake second dashboard.
@@ -307,7 +328,8 @@
     if(!current || !hasCampaign(id))return;
     const root=document.getElementById('pageRoot');
     if(!root)return;
-    if(!root.querySelector('#tv-campaign-membership')){
+    const currentTab=selectedCampaignTab(root);
+    if(currentTab==='settings'&&!root.querySelector('#tv-campaign-membership')){
       const section=document.createElement('section');
       section.id='tv-campaign-membership';section.className='tv-campaign-membership';
       if(isDemo(id)){
@@ -325,10 +347,10 @@
         button.onclick=()=>leaveCampaign(id);
         section.append(button);
       }
-      root.append(section);
+      (root.querySelector('.campaign-detail-content')||root).append(section);
     }
     decorateCampaignStory(root,current);
-    if(!identity()?.profile?.is_dm || current.role!=='dm' || isDemo(id))return;
+    if(currentTab!=='settings'||!identity()?.profile?.is_dm || current.role!=='dm' || isDemo(id))return;
     if(root.querySelector('#tv-campaign-invites'))return;
     const panel=document.createElement('section');
     panel.id='tv-campaign-invites';
@@ -338,7 +360,7 @@
       '<button type="button" class="btn ghost small" id="tv-invite-create">Create short join code</button>'+
       '<code class="tv-code" id="tv-invite-result" aria-live="polite"></code>'+
       '<button type="button" class="btn ghost small" id="tv-invite-copy" hidden>Copy invite code</button>';
-    root.append(panel);
+    (root.querySelector('.campaign-detail-content')||root).append(panel);
     panel.querySelector('#tv-invite-create').onclick=async ()=>{
       const {data,error}=await client().rpc('create_campaign_join_code',{
         target_campaign:current.id,days_valid:7,allowed_uses:100});
