@@ -146,8 +146,10 @@ jobs:
               --output /tmp/terravale-hidden-index.html --write-out '%{http_code}' \
               --header 'Cache-Control: no-cache' \
               "${base}/veiled-codex/?verify=${GITHUB_SHA}-${attempt}" || true)"
+            # The Next.js app initially renders its loading shell; dashboard
+            # copy appears after client hydration, so don't require hero text.
             if [ "$hidden_status" = "200" ] &&
-               grep -q 'Every world begins' /tmp/terravale-hidden-index.html &&
+               grep -q '<html lang="en">' /tmp/terravale-hidden-index.html &&
                grep -q '/terravale-preview/veiled-codex/_next/' /tmp/terravale-hidden-index.html; then
               hidden_ready=true
               echo "PASS: public-safe hidden V2 homepage served correctly."
@@ -163,9 +165,12 @@ jobs:
             fi
             sleep 5
           done
-          codex="$(curl --fail --silent --show-error --location --max-time 20 "${base}/veiled-codex/codex/")"
-          if ! grep -q 'Lore Codex' <<< "$codex"; then
-            echo "::error::Hidden V2 Lore Codex page is missing."
+          codex_status="$(curl --silent --show-error --location --max-time 20 \
+            --output /tmp/terravale-hidden-codex.html --write-out '%{http_code}' \
+            "${base}/veiled-codex/codex/?verify=${GITHUB_SHA}")"
+          if [ "$codex_status" != "200" ] ||
+             ! grep -q '/terravale-preview/veiled-codex/_next/' /tmp/terravale-hidden-codex.html; then
+            echo "::error::Hidden V2 Lore Codex route or assets are missing (HTTP ${codex_status})."
             exit 1
           fi
           curl --fail --silent --show-error --location --max-time 20 "${base}/veiled-codex/lore-v14-public.json" > /tmp/terravale-v239-public-lore.json
