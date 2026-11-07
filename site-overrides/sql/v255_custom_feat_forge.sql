@@ -22,16 +22,6 @@ create index if not exists tv55_feat_campaign_idx
 alter table public.terravale_dm_custom_feats enable row level security;
 revoke all on public.terravale_dm_custom_feats from anon,authenticated;
 grant select on public.terravale_dm_custom_feats to authenticated;
-drop policy if exists tv55_feat_read on public.terravale_dm_custom_feats;
-create policy tv55_feat_read on public.terravale_dm_custom_feats
- for select to authenticated using(
- authz.is_dm(campaign_id) or
- exists(select 1 from public.terravale_character_custom_feats g
- join public.characters c on c.id=g.character_id
- where g.feat_id=terravale_dm_custom_feats.id and g.status='active'
- and c.owner_id=(select auth.uid()))
-);
-
 create table if not exists public.terravale_character_custom_feats(
  id uuid primary key default gen_random_uuid(),
  feat_id uuid not null references public.terravale_dm_custom_feats(id) on delete restrict,
@@ -59,13 +49,23 @@ create policy tv55_character_feat_read on public.terravale_character_custom_feat
    where c.id=character_id and c.owner_id=(select auth.uid()))
 );
 
+drop policy if exists tv55_feat_read on public.terravale_dm_custom_feats;
+create policy tv55_feat_read on public.terravale_dm_custom_feats
+ for select to authenticated using(
+ authz.is_dm(campaign_id) or
+ exists(select 1 from public.terravale_character_custom_feats g
+ join public.characters c on c.id=g.character_id
+ where g.feat_id=terravale_dm_custom_feats.id and g.status='active'
+ and c.owner_id=(select auth.uid()))
+);
+
 create or replace function public.terravale_dm_save_custom_feat(
  target_campaign uuid,existing_feat uuid,feat_spec jsonb,
  delete_feat boolean default false
 ) returns jsonb language plpgsql security definer set search_path=''
 as $v255featsave$
 declare caller uuid:=(select auth.uid()); feat_id uuid;
- name text;summary text;req text;rules text;action_name text;
+ feat_name text;summary text;req text;rules text;action_name text;
  recover text;rarity_label text;minlevel integer;uses integer;feat_state text;
 begin
  if caller is null or not exists(select 1 from auth.identities
@@ -85,7 +85,7 @@ begin
  end if;
  if jsonb_typeof(feat_spec)<>'object' or pg_column_size(feat_spec)>14000 then
   raise exception 'Invalid feat data' using errcode='22023';end if;
- name:=btrim(coalesce(feat_spec->>'name',''));
+ feat_name:=btrim(coalesce(feat_spec->>'name',''));
  summary:=btrim(coalesce(feat_spec->>'short_description',''));
  req:=btrim(coalesce(feat_spec->>'prerequisites',''));
  rules:=btrim(coalesce(feat_spec->>'rules_text',''));
@@ -93,7 +93,7 @@ begin
  recover:=coalesce(feat_spec->>'recovery','manual');
  rarity_label:=btrim(coalesce(feat_spec->>'rarity','Custom'));
  feat_state:=coalesce(feat_spec->>'state','ready');
- if length(name) not between 1 and 120 or length(summary)>600
+ if length(feat_name) not between 1 and 120 or length(summary)>600
   or length(req)>1200 or length(rules)>7000 or length(rarity_label)>60 then
   raise exception 'Custom feat text exceeds limits' using errcode='22023';end if;
  if action_name not in('passive','action','bonus action','reaction','special')
@@ -114,11 +114,11 @@ begin
   insert into public.terravale_dm_custom_feats(
    campaign_id,created_by,name,short_description,prerequisites,rules_text,
    action_type,uses_per_rest,recovery,minimum_level,rarity,state)
-  values(target_campaign,caller,name,summary,req,rules,action_name,
+  values(target_campaign,caller,feat_name,summary,req,rules,action_name,
    uses,recover,minlevel,rarity_label,feat_state) returning id into feat_id;
  else
   update public.terravale_dm_custom_feats set
-   name=name,short_description=summary,prerequisites=req,rules_text=rules,
+   name=feat_name,short_description=summary,prerequisites=req,rules_text=rules,
    action_type=action_name,uses_per_rest=uses,recovery=recover,
    minimum_level=minlevel,rarity=rarity_label,state=feat_state,updated_at=now()
   where id=existing_feat returning id into feat_id;
