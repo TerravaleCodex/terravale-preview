@@ -31,6 +31,7 @@ on:
       - "site-overrides/v246-theme-creator-gallery.css"
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
+      - "site-overrides/sql/v249_short_campaign_join_codes.sql"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/v2-discord-check.yml"
   workflow_dispatch:
@@ -85,6 +86,25 @@ jobs:
           assert 'id="secret-placeholder"' not in html
           print("PASS: nine-step pop-up tour highlights live routes and can replay")
           print("PASS: Verdant grows/falls/regrows with reduced-motion fallback")
+          PY
+      - name: Validate human-length campaign invitations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          sql=Path('site-overrides/sql/v249_short_campaign_join_codes.sql').read_text()
+          client=Path('site-overrides/v243-campaign-achievement-bridge.js').read_text()
+          assert "entropy := extensions.gen_random_bytes(6)" in sql
+          assert "get_byte(entropy,i) % 32" in sql
+          assert "exception when unique_violation" in sql
+          assert "TV-[A-F0-9]{32}" in sql, "Previously issued invites must still work"
+          assert "TV-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}" in sql
+          assert "authz.is_dm(target_campaign)" in sql
+          assert "allowed_uses not between 1 and 100" in sql
+          assert "create_campaign_join_code" in client
+          assert "Copy invite code" in client
+          assert "TV-XXXXXX" in client
+          assert "TV-DEMO" in client
+          print("PASS: short invite generation, legacy validation and UI copy controls")
           PY
       - name: Protect lore, theme, authentication and assets
         run: |
