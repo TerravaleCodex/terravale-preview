@@ -41,6 +41,12 @@ def patch(source):
     one(gate,'','Remove blanket demo DM lockout')
     one("const dmControls=db.role==='dm'&&!window.TerravaleV2Bridge?.isDemo?.(db.campaign)?",
         "const dmControls=db.role==='dm'?",'Enable demo room DM controls')
+    one("if(tab){e.preventDefault();view.mode=tab.dataset.v228Tab;view.key='';",
+        "if(tab){window.TerravaleReaderRequestedMode=tab.dataset.v228Tab;e.preventDefault();view.mode=tab.dataset.v228Tab;view.key='';",
+        'Reset Bloodforger reader state from native V228 reader tabs')
+    one("const original=e.target.closest('[data-v227-reader-tab]');if(original)",
+        "const original=e.target.closest('[data-v228-tab]');if(original)",
+        'Observe actual reader tab dataset used by V228')
     one("if(tab){e.preventDefault();reader.mode=tab.dataset.v227ReaderTab;reader.index=0;",
         "if(tab){window.TerravaleReaderRequestedMode=tab.dataset.v227ReaderTab;e.preventDefault();reader.mode=tab.dataset.v227ReaderTab;reader.index=0;",
         'Record reader tab selection before earlier document listeners render')
