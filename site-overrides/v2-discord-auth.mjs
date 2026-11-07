@@ -2,7 +2,7 @@
  * Uses public Supabase publishable credentials; all protected operations use RLS.
  * The verified identity is read from auth.identities by the server RPC.
  */
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.80.0/+esm";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/+esm";
 
 const URL = "https://emwlvbmnrrhxhrmlwkhs.supabase.co";
 const PUBLISHABLE = "sb_publishable_4kf7TddSu-mzjRGr2J5ACA_OrNFF_5T";
