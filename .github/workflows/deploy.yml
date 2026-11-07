@@ -37,6 +37,10 @@ on:
       - "site-overrides/v244-fixed-gallery.css"
       - "site-overrides/v2-discord-auth.mjs"
       - "site-overrides/v2-ads-atelier.mjs"
+      - "site-overrides/v248-*.js"
+      - "site-overrides/v248-*.css"
+      - "tools/v248_native_patch.py"
+      - "site-overrides/sql/v248_site_ad_settings_update_grant.sql"
       - "site-overrides/approved-ads.json"
       - "site-overrides/approved-ads/**"
   workflow_dispatch:
@@ -70,6 +74,9 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+          node --check site-overrides/v248-achievement-notices.js
+          node --check site-overrides/v248-live-preferences-tutorial.js
+          node --check site-overrides/v248-curated-demo-sheets.js
       - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
@@ -100,6 +107,7 @@ jobs:
           for check in checks:
               assert check in home, f"Countdown design/control changed unexpectedly: {check}"
           assert 'id="countdown-note"' not in home, "Countdown deadline text should not be visible"
+          assert "function restoreDiscordCallback()" in home, "OAuth return rescue missing from holding page"
           assert "supabase.co" not in home.lower()
           redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
           fallback = home.replace("</head>", redirect + "</head>", 1)
@@ -114,6 +122,8 @@ jobs:
           assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
           assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
           assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
+          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js"):
+              assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
           print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
           print("PASS: only two root holding files plus one public-safe V2 preview")
           PY
