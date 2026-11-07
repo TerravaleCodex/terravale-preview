@@ -198,12 +198,57 @@
     return root.querySelector('.campaign-detail-tabs [data-value="settings"][aria-selected="true"]')?'settings':
       root.querySelector('.campaign-detail-tabs [data-value="overview"][aria-selected="true"]')?'overview':null;
   }
+  // Small reading cards for the right-hand dossier rail. Never infer campaign
+  // tone or write prose on the DM's behalf: show only saved metadata and stats.
   function makeInfo(label,value){
-    const item=document.createElement('div');item.className='tv-campaign-story-meta';
-    const head=document.createElement('span');head.textContent=label;
-    const text=document.createElement('strong');text.textContent=value||'Not specified';
+    const item=document.createElement('section');
+    item.className='tv-campaign-story-meta tv-campaign-dossier-card';
+    const head=document.createElement('h3');
+    head.textContent=label;
+    const content=document.createElement('p');
+    content.textContent=value||'Not specified';
     if(!value)item.classList.add('is-empty');
-    item.append(head,text);return item;
+    item.append(head,content);
+    return item;
+  }
+  function campaignDossier(campaign){
+    const aside=document.createElement('aside');
+    aside.className='tv-campaign-story-aside';
+    aside.setAttribute('aria-label','Campaign details and chapter information');
+
+    // Only real DM-entered genre and themes appear here, never placeholder lore.
+    aside.append(
+      makeInfo('Genre',campaign.genre),
+      makeInfo('Theme',campaign.theme)
+    );
+    const summary=document.createElement('section');
+    summary.className='tv-campaign-dossier-card tv-campaign-chapter-card';
+    const heading=document.createElement('h3');
+    heading.textContent='At a glance';
+    const intro=document.createElement('p');
+    intro.className='tv-campaign-chapter-caption';
+    intro.textContent='A quick look at this chapter';
+    summary.append(heading,intro);
+    const list=document.createElement('dl');
+    list.className='tv-campaign-chapter-facts';
+    let stats=null;
+    try{
+      if(typeof campaignStats==='function')stats=campaignStats(campaign);
+    }catch(error){console.warn('Campaign overview statistics unavailable:',error)}
+    const facts=[
+      ['Status',campaign.status||'Not specified'],
+      ['Adventurers',Array.isArray(stats?.chars)?String(stats.chars.length):'—'],
+      ['Journal entries',Array.isArray(stats?.notes)?String(stats.notes.length):'—']
+    ];
+    for(const [label,value] of facts){
+      const row=document.createElement('div');
+      const dt=document.createElement('dt');dt.textContent=label;
+      const dd=document.createElement('dd');dd.textContent=value;
+      row.append(dt,dd);list.append(row);
+    }
+    summary.append(list);
+    aside.append(summary);
+    return aside;
   }
   function decorateCampaignStory(root,campaign){
     if(isDemo(campaign.id))return;
@@ -213,21 +258,32 @@
     if(tab==='overview'){
       if(body.querySelector('#tv-campaign-story'))return;
       const panel=document.createElement('section');
-      panel.id='tv-campaign-story';panel.className='tv-campaign-story tv-campaign-story-overview';
-      const over=document.createElement('div');over.className='v2-overline';
+      panel.id='tv-campaign-story';
+      panel.className='tv-campaign-story tv-campaign-story-overview tv-campaign-dossier';
+      const over=document.createElement('div');
+      over.className='v2-overline';
       over.textContent='THE STORY YOU ARE STEPPING INTO';
-      const h=document.createElement('h2');h.textContent='About this campaign';
-      const quote=document.createElement('blockquote');quote.className='tv-campaign-story-quote';
+      const h=document.createElement('h2');
+      h.textContent='About this campaign';
+
+      const layout=document.createElement('div');
+      layout.className='tv-campaign-story-layout';
+      const reading=document.createElement('div');
+      reading.className='tv-campaign-story-reading';
+
+      const quote=document.createElement('blockquote');
+      quote.className='tv-campaign-story-quote';
       quote.textContent=campaign.description||'A chapter awaiting its first words.';
-      const meta=document.createElement('div');meta.className='tv-campaign-story-meta-grid';
-      meta.append(makeInfo('Genre',campaign.genre),makeInfo('Theme',campaign.theme));
-      const intro=document.createElement('div');intro.className='tv-campaign-story-content';
+      const intro=document.createElement('div');
+      intro.className='tv-campaign-story-content';
       intro.textContent=campaign.longDescription||'';
       if(!campaign.longDescription){
         intro.classList.add('tv-empty');
         intro.textContent='The Dungeon Master has not yet published the full campaign introduction.';
       }
-      panel.append(over,h,quote,meta,intro);
+      reading.append(quote,intro);
+      layout.append(reading,campaignDossier(campaign));
+      panel.append(over,h,layout);
       body.prepend(panel);
     }else{
       // The original native settings form saves only a local preview. On the live
