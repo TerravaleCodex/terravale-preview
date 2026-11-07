@@ -53,8 +53,13 @@
          if(owner){ch.ownerName=owner.discord_username;ch.ownerTvUID=owner.tvuid}
        }
      }
-     const local=db.characters.filter(c=>owned(c)&&inCampaign.has(c.campaign)&&!uuid.test(c.id)
+     const recoveryKey='tv-v246-local-drafts:'+current().user.id;
+     let recovered=[];
+     try{const saved=JSON.parse(localStorage.getItem(recoveryKey)||'[]');if(Array.isArray(saved))recovered=saved;}
+     catch(e){console.warn('Cannot read saved draft recovery cache',e)}
+     const local=[...db.characters,...recovered].filter(c=>owned(c)&&inCampaign.has(c.campaign)&&!uuid.test(c.id)
        &&Number(c.level||1)===1&&c.name&&c.className&&c.ancestry&&!String(c.id).startsWith('showcase-'));
+     const failures=[];
      const knownNames=new Set(characters.filter(owned).map(c=>c.campaign+'|'+c.name.trim().toLowerCase()));
      for(const ghost of local){
        if(knownNames.has(ghost.campaign+'|'+ghost.name.trim().toLowerCase()))continue;
@@ -63,10 +68,17 @@
          const copy={...ghost,id:response.id,status:response.status};
          characters.push(copy);knownNames.add(ghost.campaign+'|'+ghost.name.trim().toLowerCase());
        }else{
-         console.warn('Local sheet retained; cloud import unavailable:',response.error);
-         characters.push({...ghost,remoteError:response.error});
+         console.warn('Local draft saved to recovery; online import unavailable:',response.error);
+         failures.push({...ghost,remoteError:response.error});
        }
      }
+     // Never present an unsaved local draft as a real campaign-owned character.
+     // Retain it in a recoverable account-scoped cache, and retry on next sync.
+     try{
+       if(failures.length)localStorage.setItem(recoveryKey,JSON.stringify(failures));
+       else localStorage.removeItem(recoveryKey);
+     }catch(e){console.warn('Cannot persist character draft recovery cache',e)}
+     if(failures.length)toast('Some previous local drafts could not be imported. They were preserved for recovery, not shown as saved characters.');
      db.characters=characters;
      for(const ch of characters)if(uuid.test(ch.id))lastRemote.set(ch.id,capture(ch));
      if(!db.featuredCharacters)db.featuredCharacters={};
