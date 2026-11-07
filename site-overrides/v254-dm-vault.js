@@ -72,8 +72,10 @@ async function fetchAllVault(){
 }
 async function refreshCurrent(){
  try{
-  await bridge()?.syncCharacters?.();
+  // Fetch first: syncCharacters re-renders the native page, and the
+  // remounted vault should already have its current stock before it opens.
   await fetchAllVault();
+  await bridge()?.syncCharacters?.();
   renderVaultBody();
  }catch(e){notify('Vault refresh failed: '+(e.message||String(e)))}
 }
@@ -153,7 +155,7 @@ function renderItemEditor(host,mode,existing){
     api().rpc('terravale_vault_save_item',{target_campaign:campaign.id,existing_item:existing.id,item_payload:{},mechanics_payload:{},delete_item:true}):
     api().rpc('terravale_dm_edit_inventory_item',{target_character:c.id,item_id:item.id,item_payload:{},mechanics:{},delete_item:true});
    const result=await act(promise,'Item deleted from '+(isVault?'DM vault':c.name)+'.');
-   if(result)panelState.editing=null;
+   if(result){panelState.editing=null;renderVaultBody();}
   },'btn ghost small tv254-danger'));
  }
  form.append(actions);
@@ -189,7 +191,7 @@ function renderItemEditor(host,mode,existing){
     target_character:target.id,item_id:existing?.item?.id||'',item_payload:payload,mechanics,delete_item:false
    });
   const result=await act(promise,existing?'Item updated.':'Item created.');
-  if(result)panelState.editing=null;
+  if(result){panelState.editing=null;renderVaultBody();}
  });
  host.append(form);
 }
@@ -269,7 +271,7 @@ function dispatchEditor(host){
   const result=await act(api().rpc('terravale_vault_issue_item',{
    vault_item_id:row.id,recipient_character:targetChar.id,send_quantity:Number(qty.el.value)
   }),'Sent '+row.item_data.name+' to '+targetChar.name+'.');
-  if(result)panelState.editing=null;
+  if(result){panelState.editing=null;renderVaultBody();}
  });
  section.append(form);host.append(section);
 }
