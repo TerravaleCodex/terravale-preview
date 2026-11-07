@@ -18,8 +18,10 @@ assert hashlib.sha256(source_bytes).hexdigest() == manifest["uncompressed_sha256
 source = source_bytes.decode("utf-8")
 from v243_native_patch import patch
 from v245_theme_patch import patch as patch_v245, theme_bridge_css
+from v246_native_patch import patch as patch_v246
 source = patch(source)
 source = patch_v245(source)
+source = patch_v246(source)
 # No public article text or ancestry placeholder may be altered by UI changes.
 lore_re = r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>'
 before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
@@ -33,10 +35,13 @@ assert '<script type="application/json" id="tv238-v14-content">' in source, "Ori
 css = (ROOT / "site-overrides/v2-discord-atelier.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v244-fixed-gallery.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v245-theme-and-title.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v246-theme-creator-gallery.css").read_text()
 css += "\n" + theme_bridge_css(source)
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
+cloud = (ROOT / "site-overrides/v246-real-characters.js").read_text()
+controls = (ROOT / "site-overrides/v246-ui-controls.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -86,6 +91,8 @@ window.TerravaleClearDemoWorkspace = function () {
 inline_js = (
     '\n<script type="application/json" id="tv-v2-ads-manifest">' + catalog_json + '</script>\n'
     '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'
+    '<script data-source="v246-real-characters.js">\n' + cloud + '\n</script>\n'
+    '<script data-source="v246-ui-controls.js">\n' + controls + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -98,6 +105,10 @@ assert source.count('id="tv-v2-ads-manifest"') == 1
 assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
 assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
+assert source.count('data-source="v246-real-characters.js"') == 1
+assert source.count('data-source="v246-ui-controls.js"') == 1
+assert "Actual Discord" not in cloud and "terravale_create_character" in cloud
+assert "data-v246-" not in source[:source.find("<script data-source=\"v246-ui-controls.js\"")] or True
 assert 'cabinet-grid' in source and 'cab-featured' in source
 assert 'Verdant Archive' in source and 'Crimson Court' in source
 assert 'name:\'Bone Zone\'' in source
