@@ -201,3 +201,77 @@ body[data-theme="gloamglass"] .cab-head .eyebrow{
  }
  .tv-achievement-notice,.tv-achievement-notice.tv-exit{animation:none!important}
 }
+
+/* Genuine Discord-linked player tutorial, replayable from Help. */
+.tv-tutorial-launch{
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ margin:15px 0 0;padding:12px 17px;
+ border:1px solid var(--accent);border-radius:10px;
+ background:var(--accent);color:var(--bg);
+ font:700 12px var(--font,system-ui);cursor:pointer;
+}
+.tv-tutorial-launch:hover{filter:brightness(1.08)}
+.tv-tutorial-overlay{
+ position:fixed;inset:0;z-index:99996;
+ padding:24px;display:grid;place-items:center;
+ background:rgba(0,0,0,.79);backdrop-filter:blur(7px);
+}
+.tv-tutorial-panel{
+ width:min(580px,100%);max-height:calc(100dvh - 32px);overflow:auto;
+ color:var(--ink);background:var(--surface);
+ border:1px solid color-mix(in srgb,var(--accent) 42%,var(--edge));
+ border-radius:20px;
+ box-shadow:0 28px 90px #000c,inset 0 1px #ffffff0a;
+ padding:clamp(24px,4vw,40px);
+ position:relative;
+}
+.tv-tutorial-exit{
+ position:absolute;right:16px;top:14px;
+ border:1px solid var(--edge);background:var(--raised);
+ color:var(--soft);width:34px;height:34px;
+ border-radius:9px;cursor:pointer;font-size:19px;
+}
+.tv-tutorial-eyebrow{
+ color:var(--accent);font:800 10px var(--font,system-ui);
+ letter-spacing:.13em;margin:4px 42px 14px 0;
+ text-transform:uppercase;
+}
+.tv-tutorial-title{
+ color:var(--ink);font:500 clamp(29px,4vw,42px)/1.15 var(--serif,Georgia,serif);
+ margin:0 20px 18px 0;
+}
+.tv-tutorial-description{
+ color:var(--soft);font-size:14px;line-height:1.75;min-height:5em;
+ margin:0 0 20px;
+}
+.tv-tutorial-meter{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:16px 0 24px}
+.tv-tutorial-meter button{
+ border:0;border-radius:99px;height:6px;min-width:0;
+ padding:0;background:var(--edge);cursor:pointer;
+}
+.tv-tutorial-meter button.completed{background:var(--accent)}
+.tv-tutorial-meter button[aria-current="step"]{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.tv-tutorial-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.tv-tutorial-actions button{
+ background:var(--raised);color:var(--ink);
+ border:1px solid var(--edge);border-radius:9px;padding:10px 14px;
+ font:700 11px var(--font,system-ui);cursor:pointer;
+}
+.tv-tutorial-actions [data-tour="next"]{
+ background:var(--accent);color:var(--bg);
+ border-color:var(--accent);
+}
+.tv-tutorial-actions button:disabled{cursor:not-allowed;opacity:.35}
+.tv-tutorial-actions button:focus-visible,.tv-tutorial-exit:focus-visible{
+ outline:2px solid var(--accent);outline-offset:2px;
+}
+@media(max-width:570px){
+ .tv-tutorial-overlay{padding:10px}
+ .tv-tutorial-panel{padding:24px 20px}
+ .tv-tutorial-actions{justify-content:stretch}
+ .tv-tutorial-actions button{flex:1}
+ .tv-tutorial-description{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .tv-tutorial-overlay{backdrop-filter:none}
+}
