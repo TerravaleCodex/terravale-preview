@@ -46,6 +46,15 @@ on:
       - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
       - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
       - "site-overrides/sql/v254_dm_owner_membership_hotfix.sql"
+      - "site-overrides/v255-creator-native-choices.js"
+      - "site-overrides/v255-character-training.js"
+      - "site-overrides/v255-native-wallet.js"
+      - "site-overrides/v255-custom-feat-forge.js"
+      - "site-overrides/v255-shell-role-version.js"
+      - "site-overrides/v255-chronicle-wallet-creator.css"
+      - "site-overrides/sql/v255_custom_feat_forge.sql"
+      - "site-overrides/sql/v255_character_training_overrides.sql"
+      - "site-overrides/sql/v255_player_wallet.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -103,6 +112,11 @@ jobs:
           node --check site-overrides/v254-rules-registry.js
           node --check site-overrides/v254-dm-vault.js
           node --check site-overrides/v254-character-proficiencies-wallet.js
+          node --check site-overrides/v255-creator-native-choices.js
+          node --check site-overrides/v255-character-training.js
+          node --check site-overrides/v255-native-wallet.js
+          node --check site-overrides/v255-custom-feat-forge.js
+          node --check site-overrides/v255-shell-role-version.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
@@ -228,6 +242,10 @@ jobs:
           assert b'data-source="v254-rules-registry.js"' in raw, "V4 rules registry missing"
           assert b'data-source="v254-dm-vault.js"' in raw, "DM vault and treasury missing"
           assert b'data-source="v254-character-proficiencies-wallet.js"' in raw, "Creator wallet and proficiencies missing"
+          assert b'data-source="v255-custom-feat-forge.js"' in raw, "V2.55 feat forge missing"
+          assert b'data-source="v255-character-training.js"' in raw, "V2.55 languages missing"
+          assert b'data-source="v255-native-wallet.js"' in raw, "V2.55 wallet missing"
+          assert b'data-source="v255-creator-native-choices.js"' in raw, "V2.55 creator missing"
           assert b'window.addEventListener(\'click\',e=>{' in raw, "Pre-native item rest listener missing"
           assert b'If you have already received an invite code' in raw, "Invitation tutorial missing"
           assert b'tv-demo-permanent-party' in raw, "Permanent demo roster bridge missing"
