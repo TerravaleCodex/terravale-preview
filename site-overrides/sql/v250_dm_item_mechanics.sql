@@ -152,7 +152,7 @@ begin
     else
       insert into public.character_item_properties(character_id,item_id,properties)
        values(target_character,item_key,props)
-       on conflict(character_id,item_id) do update set
+       on conflict on constraint character_item_properties_pkey do update set
         properties=excluded.properties,updated_at=now();
     end if;
   end if;
