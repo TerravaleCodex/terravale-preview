@@ -1,0 +1,108 @@
+/* Terravale V2.54 — Chronicle Vault & Treasury, designed for desktop + mobile. */
+#tv254-chronicle-tabs{
+ display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:15px 0 22px;
+ padding:10px;border:1px solid var(--edge);border-radius:12px;
+ background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+}
+.tv254-tab{
+ color:var(--soft);cursor:pointer;border:1px solid transparent;
+ padding:10px 17px;border-radius:8px;background:transparent;
+ font-size:12px;font-weight:700;
+}
+.tv254-tab[aria-selected="true"]{
+ color:var(--ink);border-color:color-mix(in srgb,var(--accent) 54%,var(--edge));
+ background:color-mix(in srgb,var(--accent) 13%,var(--raised));
+}
+#tv254-dm-vault{min-width:0;max-width:100%;padding-bottom:60px}
+.tv254-vault-hero{
+ padding:clamp(24px,3.5vw,48px);
+ border:1px solid color-mix(in srgb,var(--accent) 35%,var(--edge));
+ border-radius:17px;
+ background:radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 45%),var(--raised);
+}
+.tv254-vault-hero h1{
+ font:500 clamp(32px,4vw,57px)/1.08 var(--serif,Georgia,serif);
+ margin:11px 0 16px;color:var(--ink);
+}
+.tv254-vault-hero p{color:var(--soft);max-width:82ch;line-height:1.7;font-size:13px}
+.tv254-eyebrow{
+ color:var(--accent);letter-spacing:.13em;font-size:10px;
+ font-weight:800;line-height:1.5;text-transform:uppercase;
+}
+.tv254-campaign-picker{
+ display:flex;align-items:center;flex-wrap:wrap;gap:14px;
+ margin:20px 0;padding:16px 18px;border:1px solid var(--edge);
+ background:var(--surface);border-radius:11px;
+}
+.tv254-campaign-picker>span{font-size:10px;font-weight:800;letter-spacing:.12em}
+.tv254-campaign-picker select{max-width:min(440px,100%);flex:1}
+.tv254-status{min-height:1.1em;font-size:12px;color:var(--soft);margin:8px 0}
+.tv254-vault-grid{
+ display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);
+ align-items:start;gap:18px;margin:16px 0 26px;
+}
+.tv254-vault-lower{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.tv254-panel{
+ background:var(--surface);border:1px solid var(--edge);border-radius:14px;
+ padding:clamp(18px,2vw,25px);min-width:0;
+}
+.tv254-panel h2{font:500 26px var(--serif,Georgia,serif);margin:9px 0 14px}
+.tv254-panel h3{font:500 22px var(--serif,Georgia,serif);margin:5px 0 11px}
+.tv254-muted{color:var(--soft);font-size:12px;line-height:1.75;margin:4px 0 15px}
+.tv254-panel-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:16px}
+.tv254-panel-head p{margin:3px 0 0}
+.tv254-input{
+ min-width:0;width:100%;box-sizing:border-box;
+ border:1px solid var(--edge);border-radius:8px;
+ padding:11px 12px;font-size:12px;color:var(--ink);
+ background:var(--raised);line-height:1.5;
+}
+.tv254-input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tv254-label{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1}
+.tv254-label>span{color:var(--ink);font-size:11px;font-weight:750;line-height:1.4}
+.tv254-form-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:13px;margin:12px 0}
+.tv254-form-row>.tv254-label{flex:1 1 160px}
+.tv254-form-row>button{align-self:flex-end}
+.tv254-form-heading{font-size:10px;color:var(--accent);letter-spacing:.11em;font-weight:850;text-transform:uppercase;padding:17px 0 5px}
+.tv254-item-editor>h3{margin-top:0}
+.tv254-item-editor>.tv254-label{margin-top:12px}
+.tv254-item-editor>.tv254-label textarea{resize:vertical}
+.tv254-check{display:flex;gap:8px;align-items:center;color:var(--soft);font-size:11px}
+.tv254-check input{accent-color:var(--accent);width:16px;height:16px}
+.tv254-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:14px}
+.tv254-stock-list,.tv254-character-list{
+ display:flex;flex-direction:column;gap:8px;margin-top:13px;
+}
+.tv254-stock-row{
+ display:flex;justify-content:space-between;align-items:center;gap:14px;
+ flex-wrap:wrap;min-width:0;padding:13px 15px;
+ border:1px solid var(--edge);border-radius:10px;
+ background:color-mix(in srgb,var(--accent) 4%,var(--raised));
+}
+.tv254-stock-row>div:first-child{
+ display:flex;flex:1 1 170px;flex-direction:column;min-width:0;gap:4px;
+}
+.tv254-stock-row strong{font-size:12px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.tv254-stock-row small{font-size:10px;line-height:1.5;color:var(--soft);overflow-wrap:anywhere}
+.tv254-stock-actions{display:flex;align-items:center;gap:7px}
+.tv254-danger{color:#fb9ba3!important;border-color:#b95563!important}
+.tv254-wallet-status{
+ display:flex;gap:7px;flex-direction:column;
+ padding:13px 0;color:var(--soft);font-size:11px;line-height:1.55;
+}
+.tv254-wallet-status strong{color:var(--ink);font-size:12px}
+.tv254-vault-help{
+ background:radial-gradient(circle at 82% 24%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 60%),var(--surface);
+}
+@media(max-width:960px){
+ .tv254-vault-grid{grid-template-columns:1fr}
+ .tv254-vault-lower{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+ .tv254-panel{padding:16px}
+ .tv254-vault-hero{padding:23px 18px}
+ .tv254-stock-row{align-items:stretch}
+ .tv254-stock-actions{width:100%}
+ .tv254-stock-actions button{flex:1}
+ .tv254-actions button{flex:1}
+}
