@@ -38,6 +38,15 @@ function avatar(profile, className = "") {
     img.src = imageUrl;
     img.alt = profile.discord_username + " profile picture";
     img.referrerPolicy = "no-referrer";
+    img.onerror = () => {
+      const discord = safeImage(profile?.discord_avatar_url);
+      if (!img.dataset.fallbackUsed && discord && img.src !== discord) {
+        img.dataset.fallbackUsed = "1"; img.src = discord; return;
+      }
+      const text = el("span", className + " tv-avatar", (profile?.discord_username || "?").slice(0,1).toUpperCase());
+      text.style.display="grid";text.style.placeItems="center";
+      img.replaceWith(text);
+    };
     return img;
   }
   const fallback = el("span", className + " tv-avatar", (profile?.discord_username || "?").slice(0, 1).toUpperCase());
@@ -157,12 +166,12 @@ function ensureModal() {
       <div><small>Discord username</small><code id="tv-acc-name"></code></div>
       <div style="grid-column:1/-1"><small>Discord UID · verified, permanent</small><code id="tv-acc-discord"></code></div></div>
     <p class="tv-hint">Your Discord avatar is used automatically unless you upload a custom picture.</p>
-    <input id="tv-acc-photo" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Upload profile picture">
-    <div class="tv-account-actions"><button type="button" id="tv-acc-restore">Use Discord picture</button>
+    <input id="tv-acc-photo" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose custom profile picture" hidden>
+    <div class="tv-account-actions"><button type="button" id="tv-acc-upload">Upload a picture</button><button type="button" id="tv-acc-restore">Use Discord picture</button>
       <button type="button" id="tv-acc-copy">Copy TvUID</button>
       <button type="button" id="tv-acc-signout">Sign out</button></div>
     <p class="tv-status" id="tv-acc-status" aria-live="polite"></p>
-    <p class="tv-hint">Account and avatar changes are saved online. Characters and campaigns are still browser-local V2 previews, not cloud saved. Switching Discord accounts clears that local preview workspace.</p>
+    <p class="tv-hint">Your Discord identity, profile picture, and campaign character records are saved online. Pictures must be PNG, JPG, or WebP and under 2 MB.</p>
     <div id="tv-acc-directory" class="tv-directory" hidden><div class="tv-eyebrow">DM ONLY · CONNECTED DISCORD ACCOUNTS</div>
       <h2>Player directory</h2><div id="tv-acc-players"></div></div>
   </section>`;
@@ -174,6 +183,7 @@ function ensureModal() {
     try { await navigator.clipboard.writeText(state.profile.tvuid); profileStatus("Copied " + state.profile.tvuid); }
     catch { profileStatus("Copy " + state.profile.tvuid + " manually."); }
   };
+  modal.querySelector("#tv-acc-upload").onclick = () => modal.querySelector("#tv-acc-photo").click();
   modal.querySelector("#tv-acc-restore").onclick = () => updateCustomAvatar(null);
   modal.querySelector("#tv-acc-photo").onchange = event => uploadAvatar(event.target.files?.[0]);
   modal.querySelector("#tv-acc-signout").onclick = async () => {
@@ -187,25 +197,45 @@ function ensureModal() {
 function profileStatus(message) { ensureModal().querySelector("#tv-acc-status").textContent = message; }
 async function updateCustomAvatar(path) {
   if (!state.user) return;
+  const previous = state.profile.custom_avatar_path;
   const { error } = await supabase.from("terravale_profiles")
     .update({ custom_avatar_path: path }).eq("user_id", state.user.id);
-  if (error) { profileStatus(error.message); return; }
+  if (error) { profileStatus("Picture was not changed: " + error.message); return false; }
   state.profile.custom_avatar_path = path;
-  profileStatus(path ? "Custom profile picture saved." : "Discord profile picture restored.");
+  profileStatus(path ? "Your new picture is saved and visible." : "Your Discord picture has been restored.");
   fillProfile(); mountAccount(true);
+  if (previous && previous!==path && previous.startsWith(state.user.id + "/")) {
+    const { error: cleanupError } = await supabase.storage.from(AVATAR_BUCKET).remove([previous]);
+    if (cleanupError) console.warn("Previous avatar could not be cleaned up:", cleanupError.message);
+  }
+  return true;
 }
 async function uploadAvatar(file) {
-  if (!file) return;
+  if (!file || !state.user || !state.profile) return;
+  const input=ensureModal().querySelector("#tv-acc-photo");
+  const button=ensureModal().querySelector("#tv-acc-upload");
+  input.value="";
   const types = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
   if (!types[file.type]) return profileStatus("Choose a PNG, JPEG or WebP image.");
-  if (file.size > 2097152) return profileStatus("Profile pictures must be no larger than 2 MB.");
-  const path = state.user.id + "/avatar." + types[file.type];
-  profileStatus("Uploading picture…");
-  const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file,
-    { upsert: true, contentType: file.type, cacheControl: "60" });
-  if (error) return profileStatus("Upload failed: " + error.message);
-  await updateCustomAvatar(path);
+  if (!file.size || file.size > 2097152) return profileStatus("Profile pictures must be under 2 MB.");
+  // A new immutable path avoids stale CDN/image-cache copies and overwrite RLS.
+  const path = state.user.id + "/avatar-" + crypto.randomUUID() + "." + types[file.type];
+  button.disabled=true;
+  profileStatus("Uploading your picture…");
+  try {
+    const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file,
+      { upsert:false, contentType:file.type, cacheControl:"3600" });
+    if(error) { profileStatus("Upload failed: " + error.message); return; }
+    const changed=await updateCustomAvatar(path);
+    if(!changed) {
+      await supabase.storage.from(AVATAR_BUCKET).remove([path]);
+      profileStatus("Upload completed, but your profile could not save the picture. Please retry.");
+    }
+  } catch(error) {
+    profileStatus("Picture upload failed: " + (error?.message||String(error)));
+  } finally { button.disabled=false; }
 }
+
 function fillProfile() {
   if (!state.profile) return;
   const m = ensureModal(), p = state.profile;

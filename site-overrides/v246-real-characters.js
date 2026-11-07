@@ -53,6 +53,23 @@
          if(owner){ch.ownerName=owner.discord_username;ch.ownerTvUID=owner.tvuid}
        }
      }
+     // Curated demo characters have no forged Discord account. Their owner
+     // byline comes from a protected server-side demo curator record.
+     const curator=await client().rpc('terravale_demo_curator_labels');
+     if(!curator.error){
+       const credited=new Map((Array.isArray(curator.data)?curator.data:[]).map(x=>[x.character_id,x]));
+       for(const ch of characters){
+         const credit=credited.get(ch.id);
+         if(credit){
+           ch.ownerName=credit.display_player;
+           ch.owner='Demo Party';
+           ch.demoCurator=credit.display_player;
+           ch.demoTemplateSlot=credit.template_slot;
+           ch.ownerUid='';
+           ch.ownerTvUID='';
+         }
+       }
+     }
      const recoveryKey='tv-v246-local-drafts:'+current().user.id;
      let recovered=[];
      try{const saved=JSON.parse(localStorage.getItem(recoveryKey)||'[]');if(Array.isArray(saved))recovered=saved;}
@@ -150,7 +167,7 @@
          window.dispatchEvent(new CustomEvent('terravale-achievement-unlocked',{detail:{key:'roots_in_margins'}}));
          if(data.new)toast('Curiosity discovered · Roots in the Margins');
        }
-     },11000);
+     },118000);
    }
  }
  const observer=new MutationObserver(records=>{

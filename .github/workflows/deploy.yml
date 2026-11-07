@@ -14,6 +14,12 @@ on:
       - "tools/v246_native_patch.py"
       - "site-overrides/v246-real-characters.js"
       - "site-overrides/v246-ui-controls.js"
+      - "site-overrides/v247-demo-party-admin.js"
+      - "site-overrides/v247-theme-variants.js"
+      - "site-overrides/v247-admin-and-themes.css"
+      - "site-overrides/sql/v247_avatar_filename_fix.sql"
+      - "site-overrides/sql/v247_demo_reset_and_delete.sql"
+      - "site-overrides/sql/v248_aster_vaelith_demo_party.sql"
       - "site-overrides/v246-theme-creator-gallery.css"
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
@@ -49,6 +55,8 @@ jobs:
           node --check site-overrides/v243-campaign-achievement-bridge.js
           node --check site-overrides/v246-real-characters.js
           node --check site-overrides/v246-ui-controls.js
+          node --check site-overrides/v247-demo-party-admin.js
+          node --check site-overrides/v247-theme-variants.js
       - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
