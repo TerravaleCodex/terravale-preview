@@ -172,6 +172,48 @@ jobs:
           print("PASS: native Overview/Settings split, Theme/Genre, no duplicate local-only editor")
           print("PASS: backpack DM item changes and server-authoritative mechanics embedded safely")
           PY
+      - name: Confirm editorial campaign Overview layout and unchanged DM editor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path("published/veiled-codex/index.html").read_text()
+          js=Path("site-overrides/v243-campaign-achievement-bridge.js").read_text()
+          css=Path("site-overrides/v250-campaign-items.css").read_text()
+          for token in (
+            "tv-campaign-story-layout",
+            "tv-campaign-story-reading",
+            "tv-campaign-story-aside",
+            "tv-campaign-chapter-facts",
+            "campaignDossier(campaign)",
+            "makeInfo('Genre',campaign.genre)",
+            "makeInfo('Theme',campaign.theme)",
+            "reading.append(quote,intro)",
+            "layout.append(reading,campaignDossier(campaign))",
+            "intro.textContent=campaign.longDescription||''",
+            "body.prepend(panel)",
+            "renderCampaignEditor(panel,campaign)",
+            "if(tab==='overview')"
+          ):
+            assert token in js, f"Missing editorial campaign DOM token: {token}"
+            assert token in html, f"Not present in hosted V2: {token}"
+          for token in (
+            "grid-template-columns:minmax(0,1.85fr) minmax(260px,.95fr)",
+            ".tv-campaign-story-aside",
+            "position:sticky",
+            "max-width:78ch",
+            "white-space:pre-wrap",
+            "@media(max-width:1020px)",
+            "@media(max-width:620px)"
+          ):
+            assert token in css, f"Missing reading layout or responsive styling: {token}"
+          assert "meta.append(makeInfo('Genre'" not in js, "Old inline metadata must not remain"
+          assert "tv-campaign-story-settings" in js
+          assert "from('campaigns').update(values)" in js
+          assert "data-source=\"v250-dm-backpack-editor.js\"" in html
+          assert "<!-- REPLACE CAMPAIGN STORY -->" not in html
+          print("PASS: editorial two-column campaign reading view with stacked metadata and at-a-glance sidebar")
+          print("PASS: original story text, DM Settings editor, live inventory and responsive layout retained")
+          PY
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
