@@ -211,3 +211,21 @@ body.tv-player-preview:after{
   animation:none!important;opacity:.21;transform:scale(1);
  }
 }
+
+/* Seeing Red reveals an intentional, reversible thematic switch. */
+.v231-hunger-panel .tv-crimson-theme-toggle{
+ display:inline-flex;align-items:center;justify-content:center;
+ margin:10px 0 5px;padding:10px 15px;border-radius:9px;
+ border:1px solid #b7485f;background:#42111f;color:#ffd9d9;
+ font-size:12px;font-weight:750;cursor:pointer;
+ box-shadow:0 0 18px #b73b4926;
+}
+.v231-hunger-panel .tv-crimson-theme-toggle:hover{
+ background:#63202e;border-color:#f0788e;box-shadow:0 0 18px #d5455b60;
+}
+.v231-hunger-panel .tv-crimson-theme-toggle[aria-pressed=true]{
+ border-color:#ff8b91;background:#832c3d;color:#fff;
+}
+.v231-hunger-panel .tv-crimson-theme-toggle:focus-visible{
+ outline:2px solid #ffc0c0;outline-offset:3px;
+}
