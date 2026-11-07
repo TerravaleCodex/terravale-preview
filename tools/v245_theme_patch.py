@@ -12,7 +12,9 @@ def patch(source):
 
     # 'shady' ID stays: existing user preferences survive the display-name change.
     a=source.index('const themes=[{id:')
-    b=source.index(']; function renderAppearance()',a)+2
+    render_start=source.index('function renderAppearance()',a)
+    b=source.rfind('];',a,render_start)+2
+    if b<=a:raise AssertionError('V2 native theme catalogue ending unavailable')
     new_themes="""const themes=[
 {id:'classic',name:'Classic Codex',sub:'The original violet-and-ink design',bg:'#0d0c14',a:'#c3a5ff'},
 {id:'shady',name:'Bone Zone',sub:'Carved bone, charcoal and antique ivory',bg:'#0d0d0a',a:'#e6d7b6'},
