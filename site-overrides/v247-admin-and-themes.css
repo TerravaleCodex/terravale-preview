@@ -1,0 +1,201 @@
+/* V2.47 — native theme tokens, authenticated party and DM controls */
+.tv-demo-party,.tv-demo-admin,.tv-character-admin{
+  color:var(--ink);background:var(--surface);
+  border:1px solid var(--edge);border-radius:16px;padding:24px;
+  margin:23px 0;
+}
+.tv-demo-party-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:22px}
+.tv-demo-party-heading h2,.tv-demo-admin h2{
+  font:500 32px/1.18 var(--serif,Georgia,serif);
+  margin:8px 0 10px;
+}
+.tv-demo-party-heading p,.tv-demo-admin>p{
+  color:var(--soft);font-size:13px;line-height:1.65;max-width:77ch;
+}
+.tv-demo-party-count{
+  border:1px solid var(--edge);border-radius:99px;
+  padding:7px 11px;color:var(--accent);font-size:11px;
+  white-space:nowrap;
+}
+.tv-demo-party-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,220px);
+  grid-auto-flow:row dense;
+  gap:13px;justify-content:start;margin-top:22px;
+}
+.tv-demo-character{
+  min-height:194px;width:220px;
+  display:flex;flex-direction:column;gap:9px;
+  padding:16px;border:1px solid var(--edge);border-radius:12px;
+  background:linear-gradient(150deg,var(--raised),var(--surface));
+  box-sizing:border-box;overflow:hidden;
+}
+.tv-demo-featured{
+  grid-column:span 2;width:453px;min-height:194px;
+  border-color:color-mix(in srgb,var(--gold) 62%,var(--edge));
+  background:radial-gradient(ellipse at 89% 0%,color-mix(in srgb,var(--gold) 17%,transparent),transparent 70%),var(--raised);
+}
+.tv-demo-mark{font-size:15px;line-height:22px;color:var(--accent);height:23px}
+.tv-demo-featured .tv-demo-mark{color:var(--gold)}
+.tv-demo-character-title{
+  font:500 20px/1.15 var(--serif,Georgia,serif);
+  color:var(--ink);text-decoration:none;
+}
+.tv-demo-featured .tv-demo-character-title{font-size:27px}
+.tv-demo-character-title:hover{color:var(--accent)}
+.tv-demo-character p{margin:0;color:var(--soft);font-size:12px;line-height:1.5}
+.tv-demo-character .tv-demo-role{color:var(--ink);font-size:11px}
+.tv-demo-character small{margin-top:auto;color:var(--accent);font-size:10px}
+.tv-demo-character .tv-demo-margin{margin-top:4px;color:var(--gold);font-size:11px}
+.tv-demo-admin-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px;margin-top:22px}
+.tv-demo-admin-row{
+  border:1px solid var(--edge);border-radius:11px;padding:13px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--raised);
+}
+.tv-demo-admin-row a{font:500 17px var(--serif,Georgia,serif);color:var(--ink);text-decoration:none}
+.tv-demo-admin-row a:hover{color:var(--accent)}
+.tv-demo-admin-row small{display:block;color:var(--soft);font-size:10px;margin-top:6px}
+.tv-demo-admin-bottom{
+  display:flex;justify-content:space-between;align-items:center;gap:18px;
+  margin-top:20px;padding:20px;border:1px solid color-mix(in srgb,#cb536b 35%,var(--edge));
+  border-radius:11px;background:color-mix(in srgb,#7f2334 8%,var(--surface));
+}
+.tv-demo-admin-bottom p{color:var(--soft);font-size:12px;line-height:1.6;max-width:68ch}
+.tv-demo-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:9px 12px;border:1px solid var(--edge);
+  border-radius:9px;background:var(--raised);
+  color:var(--ink);font:600 11px var(--font,system-ui);
+  cursor:pointer;white-space:nowrap;min-height:36px;
+}
+.tv-demo-btn:hover{border-color:var(--accent)}
+.tv-demo-btn.tv-danger{border-color:#c4597280;color:#f2aebb;background:#3e142024}
+.tv-demo-btn.tv-danger:hover{border-color:#e4778d;background:#7f273a33}
+.tv-confirm-backdrop{
+  position:fixed;inset:0;z-index:99990;
+  display:grid;place-items:center;padding:18px;
+  background:rgba(0,0,0,.79);backdrop-filter:blur(8px);
+}
+.tv-confirm-dialog{
+  width:min(100%,460px);max-height:90dvh;overflow:auto;
+  background:var(--surface);color:var(--ink);
+  border:1px solid var(--edge);border-radius:16px;
+  padding:28px;box-shadow:0 30px 90px #000a;
+}
+.tv-confirm-dialog h2{font:500 29px var(--serif,Georgia,serif);margin:0 0 12px}
+.tv-confirm-dialog p{font-size:13px;line-height:1.7;color:var(--soft)}
+.tv-confirm-dialog label{
+  display:flex;flex-direction:column;gap:9px;
+  color:var(--accent);font-size:11px;margin:20px 0;
+}
+.tv-confirm-dialog input{
+  color:var(--ink);background:var(--raised);
+  border:1px solid var(--edge);border-radius:9px;
+  padding:12px;font:600 13px var(--font,system-ui);
+}
+.tv-confirm-actions{display:flex;justify-content:flex-end;gap:9px}
+.tv-confirm-actions button{
+  border:1px solid var(--edge);background:var(--raised);
+  color:var(--ink);border-radius:9px;padding:10px 13px;
+  font:600 12px var(--font,system-ui);cursor:pointer;
+}
+.tv-confirm-actions .tv-danger{background:#ad3a51;color:#fff;border-color:#d47487}
+.tv-confirm-actions button:disabled{opacity:.4;cursor:not-allowed}
+.tv-character-admin{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.tv-account-modal #tv-acc-upload{
+  background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;
+}
+.tv-account-modal .tv-person .tv-avatar{
+  width:74px;height:74px;object-fit:cover;border-radius:50%;
+}
+
+/* Crimson Court option lives in Appearance, not inside a hunger panel. */
+.v231-hunger-panel .tv-crimson-theme-toggle{display:none!important}
+.tv-crimson-variant{
+  border-top:1px solid var(--edge);margin:18px 0 0;padding-top:14px;
+}
+.tv-crimson-variant p{font-size:11px;line-height:1.55;color:var(--soft);margin:8px 0 12px}
+.tv-crimson-choices{display:flex;gap:7px;flex-wrap:wrap}
+.tv-crimson-choices button{
+  border:1px solid var(--edge);border-radius:9px;
+  background:var(--raised);color:var(--soft);
+  padding:9px 11px;font:600 11px var(--font,system-ui);
+  cursor:pointer;
+}
+.tv-crimson-choices button[aria-pressed="true"]{
+  border-color:var(--accent);background:var(--accent);
+  color:var(--bg);font-weight:700;
+}
+/* Semantic rarity/category hues continue to work because they stay on their
+ * individual item tokens, not global --accent.
+ */
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"]{
+ --bg:#030305;--surface:#0a090b;--raised:#180b10;
+ --ink:#f3e7e9;--soft:#c8abb1;--dim:#99777e;
+ --accent:#eb6074;--gold:#d5a182;--edge:#4c202a;
+ background:
+   radial-gradient(ellipse 53% 27% at 90% -12%,#5c10272f,transparent 86%),
+   linear-gradient(145deg,#020204,#0b0307 54%,#030305)!important;
+}
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .v2-card,
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .cab-card:not([data-rarity]){
+ background:linear-gradient(150deg,#120b10,#060508)!important;
+ border-color:#38202b!important;
+}
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .sidebar,
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .topbar{
+ background:#060507!important;border-color:#331622!important;
+}
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .nav-item.active,
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .btn.primary{
+ background:#5c192c!important;color:#ffdee4!important;border-color:#a43750!important;
+}
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .page-cabinet .cab-card[data-rarity="epic"],
+body[data-theme="crimson"][data-tv-crimson-variant="obsidian"] .page-cabinet .cab-card[data-rarity="legendary"]{
+ border-top-color:var(--rarity)!important;
+}
+/* Remove the rudimentary oversized two-path image entirely. */
+#tv-growing-vines:before,#tv-growing-vines:after{content:none!important;animation:none!important}
+#tv-growing-vines{
+  z-index:1;position:fixed;inset:0;
+  overflow:hidden;pointer-events:none;opacity:1;
+}
+#tv-growing-vines .tv-botanical-art{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:visible;
+}
+.tv-botanical-stem{
+ fill:none;stroke:#71b385;stroke-width:1.65;
+ stroke-linejoin:round;stroke-linecap:round;
+ stroke-opacity:.34;vector-effect:non-scaling-stroke;
+ stroke-dasharray:var(--grow-length);
+ stroke-dashoffset:var(--grow-length);
+ animation:tv-botanical-draw 98s cubic-bezier(.29,.13,.45,.95) var(--grow-delay) forwards;
+}
+.tv-botanical-stem:nth-child(n+3){stroke-width:1.1;stroke-opacity:.24}
+@keyframes tv-botanical-draw{
+  0%{stroke-dashoffset:var(--grow-length);opacity:.22}
+  100%{stroke-dashoffset:0;opacity:1}
+}
+.tv-botanical-leaf{
+  opacity:0;transform-box:fill-box;transform-origin:center bottom;
+  animation:tv-botanical-unfurl 31s ease-out var(--leaf-delay) both;
+}
+@keyframes tv-botanical-unfurl{
+  0%{opacity:0;filter:blur(3px)}
+  40%{opacity:.08;filter:blur(1px)}
+  100%{opacity:.72;filter:blur(0)}
+}
+@media(max-width:550px){
+  .tv-demo-party-grid{grid-template-columns:1fr!important}
+  .tv-demo-character,.tv-demo-featured{
+    grid-column:span 1!important;width:100%!important;
+  }
+  .tv-demo-party-heading{flex-direction:column;gap:9px}
+  .tv-demo-admin-bottom{flex-direction:column;align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+  .tv-botanical-stem,.tv-botanical-leaf{animation:none!important;opacity:.35;stroke-dashoffset:0}
+  .tv-confirm-backdrop{backdrop-filter:none}
+}
