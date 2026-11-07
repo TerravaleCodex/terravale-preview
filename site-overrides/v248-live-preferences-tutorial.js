@@ -7,17 +7,25 @@ const account=()=>window.TerravaleVerifiedAccount?.state;
 const api=()=>window.TerravaleVerifiedAccount?.supabase;
 const themes=new Set(["classic","shady","zero","night","guildie","verdant","crimson","nullmeridian","gloamglass"]);
 let loaded=false,hydrating=false,writing=false,pending=null,server=null,tutorialOpen=false,step=0,finishTutorial=false;
+let awaitingInvite=false,invitedCampaignId=null;
 const steps=[
- {title:"Welcome to the 2.0 Codex",eyebrow:"01 · YOUR STORY BEGINS",description:"A new chapter of Terravale is yours to explore. This little guided tour will show you around the real Codex: its campaigns, characters, lore and curiosities. Follow the spotlight; nothing here will spend resources or change your character.",where:null,targets:[]},
- {title:"Your new home",eyebrow:"02 · THE DASHBOARD",description:"The Dashboard is your home base. Your campaign and featured adventurers live here; the sidebar is your route to everything else. You can collapse that sidebar when you need more space.",where:"#/",targets:["#pageRoot .v2-hero","#pageRoot .hero","#pageRoot .v2-page-header",".sidebar"]},
- {title:"Find your campaign",eyebrow:"03 · THE CAMPAIGN TABLE",description:"Campaigns determine which adventurers and party records you can access. Join using your DM's invitation, or try the Wayfarers' Table demo with TV-DEMO.",where:"#/campaigns",nav:"campaign",targets:["#pageRoot .v2-hero","#pageRoot .v2-page-header","#pageRoot h1","#pageRoot .v2-card"]},
- {title:"Make your adventurer",eyebrow:"04 · THE CHARACTER STUDIO",description:"Create your character, choose your ancestry feats and class progression, and open your sheet to see HP, equipment, backpack and abilities. The real campaign's DM approves non-demo builds.",where:"#/characters",nav:"character",targets:["#pageRoot .v2-hero","#pageRoot .v2-page-header","#pageRoot .tv-demo-party","#pageRoot h1"]},
- {title:"The world's secrets",eyebrow:"05 · THE LORE CODEX",description:"Browse the lore as real reading pages, with the calendar, search and related articles close to hand. Some entries are accessible only when your character's ancestry allows it.",where:"#/lore",nav:"lore",targets:["#pageRoot .lore-grid .lore-card","#pageRoot .v2-hero","#pageRoot .tv-lore .lore-card","#pageRoot h1"]},
- {title:"The Cabinet of Curiosities",eyebrow:"06 · ACHIEVEMENTS",description:"Your discoveries and earned account-wide achievements are kept in the Cabinet. Permanent unlocks stay yours; some earned surprises unlock special appearance options.",where:"#/cabinet-of-curiosities",nav:"cabinet",targets:["#pageRoot .cabinet-grid .cab-card","#pageRoot .cab-head","#pageRoot .v2-hero","#pageRoot h1"]},
- {title:"Your table, live",eyebrow:"07 · SESSION ROOM",description:"Visit the Session Room for your party's initiative, dice and chat. The room is bound to your campaign, and your DM controls the encounter.",where:"#/session-room",nav:"session",targets:["#pageRoot .v2-hero","#pageRoot .sr-root","#pageRoot .sr-queue","#pageRoot h1"]},
- {title:"Make the Codex yours",eyebrow:"08 · APPEARANCE",description:"Themes change the entire Codex. Your selected theme follows your verified Discord account, and a few additional looks unlock through achievements.",where:"#/appearance",nav:"appearance",targets:["#pageRoot .theme-card","#pageRoot .v2-hero","#pageRoot .theme-grid","#pageRoot h1"]},
- {title:"Your journey continues",eyebrow:"09 · REPLAY ANY TIME",description:"That's the 2.0 Codex. Whenever you'd like a refresher, open Help & Tutorial and choose Replay the guided tour. You can also restart this tour from the Help control in the sidebar.",where:"#/help",nav:"help",targets:["#tv-tutorial-launch","#pageRoot .v2-hero","#pageRoot h1"]}
-];
+ {title:"Welcome to the 2.0 Codex",eyebrow:"01 · YOUR STORY BEGINS",description:"Welcome to Terravale 2.0. We'll walk through the Codex together, from joining a campaign to beginning your first character. The tour is safe to replay and won't create or spend anything without you choosing to.",where:null,targets:[]},
+ {title:"Your new home",eyebrow:"02 · THE DASHBOARD",description:"The Dashboard is your home base. Your campaign and featured adventurers live here; the sidebar takes you throughout Terravale.",where:"#/",targets:["#pageRoot .v2-hero","#pageRoot .hero","#pageRoot .v2-page-header",".sidebar"]},
+ {title:"Find your campaign",eyebrow:"03 · CAMPAIGN HUB",description:"Every adventurer belongs to a campaign. Open Campaigns to find your invitation form, the campaigns you've joined, and the Wayfarers' Table demonstration.",where:"#/campaigns",nav:"campaign",targets:["#pageRoot #joinForm","#pageRoot .campaign-entry-panel","#pageRoot .v2-hero","#pageRoot h1"]},
+ {title:"Have an invitation code?",eyebrow:"04 · JOIN YOUR TABLE",description:"If you have already received an invite code, please enter it now. Choose 'Enter invite code' to type your code and join the actual campaign. TV-DEMO is available if you want to try the shared demonstration first. If you've already joined, or you don't have a code yet, simply Continue.",where:"#/campaigns",invite:true,targets:["#pageRoot #joinForm input[name='code']","#pageRoot #joinForm","#pageRoot .campaign-entry-panel"]},
+ {title:"Your campaign overview",eyebrow:"05 · THE STORY",description:"This is the campaign's introduction: its opening quote, full story, genre and themes. Read what your DM has prepared before deciding who your character will be. If you haven't joined yet, come back once you have an invitation.",where:"campaign",tab:"overview",targets:["#pageRoot #tv-campaign-story","#pageRoot .campaign-overview-layout","#pageRoot .campaign-detail-content"]},
+ {title:"Meet the party",eyebrow:"06 · PARTY ROSTER",description:"In Party roster, meet the approved adventurers already travelling through your campaign. Select a character to open its sheet. The shared demo includes Aster Vaelith and his six companions.",where:"campaign",tab:"party",targets:["#pageRoot #tv-demo-party","#pageRoot .campaign-detail-content .campaign-roster","#pageRoot .campaign-detail-title"]},
+ {title:"Read the journal",eyebrow:"07 · CAMPAIGN JOURNAL",description:"The Journal tab collects the party's chapter notes and discoveries. Visit the main Journal page to create your own private entry or share one with the party.",where:"campaign",tab:"journal",targets:["#pageRoot .campaign-detail-content .campaign-journal-grid","#pageRoot .campaign-detail-content .campaign-detail-section"]},
+ {title:"Campaign settings",eyebrow:"08 · THE DM'S DESK",description:"The Settings tab is where the Dungeon Master can edit the quote, full description, Theme and Genre. Players can explore the campaign but cannot change the DM's settings.",where:"campaign",tab:"settings",targets:["#pageRoot #tv-campaign-story-settings","#pageRoot .campaign-settings-locked","#pageRoot .campaign-detail-content .campaign-detail-section"]},
+ {title:"Where character creation begins",eyebrow:"09 · YOUR NEXT STEP",description:"Once you've joined, return to Overview and select Create character. That's the starting point for your own adventurer. Your DM can review your character when you're ready.",where:"campaign",tab:"overview",targets:["#pageRoot .campaign-detail-end a[href*='/characters/create']","#pageRoot .campaign-detail-content a[href*='/characters/create']","#pageRoot .campaign-detail-content .campaign-detail-end"]},
+ {title:"The Character Studio",eyebrow:"10 · BUILD YOUR ADVENTURER",description:"Character Studio is where you create and manage characters. Choose ancestry and class, record your backstory, then open your sheet to see HP, feats, equipment and your backpack. Your campaign DM approves real character builds.",where:"#/characters",nav:"character",targets:["#pageRoot a[href*='/characters/create']","#pageRoot .v2-hero","#pageRoot .v2-page-header","#pageRoot h1"]},
+ {title:"Items become real abilities",eyebrow:"11 · EQUIPMENT & RESOURCES",description:"DM-approved weapons can appear as Session Room actions. Rings and other charged items can show interactive charges in Resources, recharging on the rests chosen by the DM. You can rearrange your backpack without losing the item rules.",where:"#/characters",nav:"character",targets:["#pageRoot a[href*='/characters/create']","#pageRoot .v2-hero","#pageRoot h1"]},
+ {title:"The world's secrets",eyebrow:"12 · LORE CODEX",description:"Read lore as dedicated pages, explore the calendar, and follow article references. Some entries unlock only for the ancestry of your character.",where:"#/lore",nav:"lore",targets:["#pageRoot .lore-grid .lore-card","#pageRoot .v2-hero","#pageRoot .tv-lore .lore-card","#pageRoot h1"]},
+ {title:"The Cabinet of Curiosities",eyebrow:"13 · ACHIEVEMENTS",description:"Your discoveries are recorded in the Cabinet. Earned account-wide achievements stay yours, and some unlock extra appearances.",where:"#/cabinet-of-curiosities",nav:"cabinet",targets:["#pageRoot .cabinet-grid .cab-card","#pageRoot .cab-head","#pageRoot .v2-hero","#pageRoot h1"]},
+ {title:"Your table, live",eyebrow:"14 · SESSION ROOM",description:"The Session Room brings together your party's initiative, dice, chat and DM-approved item actions. Rest and charge changes are saved to the actual character record.",where:"#/session-room",nav:"session",targets:["#pageRoot #tv-v251-session-items","#pageRoot .sr-root","#pageRoot .sr-queue","#pageRoot h1"]},
+ {title:"Make the Codex yours",eyebrow:"15 · APPEARANCE",description:"Your appearance follows your verified Discord account. Some additional variants unlock through achievements; you can change themes whenever you like.",where:"#/appearance",nav:"appearance",targets:["#pageRoot .theme-card","#pageRoot .v2-hero","#pageRoot .theme-grid","#pageRoot h1"]},
+ {title:"Your story is ready",eyebrow:"16 · REPLAY ANY TIME",description:"You've found the campaign, roster and character-creation entry point. You can revisit this walkthrough whenever you like from Help & Tutorial. Enjoy your first chapter.",where:"#/help",nav:"help",targets:["#tv-tutorial-launch","#pageRoot .v2-hero","#pageRoot h1"]}
+
 function toastText(s){if(typeof toast==="function")toast(s);else console.info(s)}
 function setBodyTheme(theme){
  if(!themes.has(theme))return;
@@ -134,8 +142,47 @@ function findSection(d){
  }
  return Array.from(document.querySelectorAll("#pageRoot .v2-card,#pageRoot header,#pageRoot h1")).find(isVisible)||null;
 }
-function followRoute(d){
- if(d?.where && location.hash!==d.where)location.hash=d.where;
+function tourCampaignId(){
+ const candidates=Array.isArray(db?.campaigns)?db.campaigns:[];
+ if(invitedCampaignId&&candidates.some(c=>c.id===invitedCampaignId))return invitedCampaignId;
+ if(db?.campaign&&candidates.some(c=>c.id===db.campaign))return db.campaign;
+ return candidates[0]?.id||null;
+}
+function targetRoute(d){
+ if(d?.where==="campaign"){
+   const id=tourCampaignId();
+   return id?"#/campaigns/"+encodeURIComponent(id):"#/campaigns";
+ }
+ return d?.where||null;
+}
+function activateCampaignTab(d,token){
+ if(!tutorialOpen||token!==viewToken||!d?.tab)return;
+ const target=targetRoute(d);
+ if(location.hash!==target)return;
+ const button=document.querySelector('.campaign-detail-tabs [data-action="campaignTab"][data-value="'+d.tab+'"]');
+ if(button&&button.getAttribute("aria-selected")!=="true")button.click();
+}
+function followRoute(d,token){
+ const target=targetRoute(d);
+ if(target&&location.hash!==target)location.hash=target;
+ if(d.tab){
+   setTimeout(()=>activateCampaignTab(d,token),80);
+   setTimeout(()=>activateCampaignTab(d,token),280);
+ }
+}
+function openInvitationEntry(){
+ awaitingInvite=true;
+ closeTutorial(true);
+ location.hash="#/campaigns";
+ const focus=()=>{
+   const input=document.querySelector("#joinForm input[name='code']");
+   if(!input)return;
+   input.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+   input.focus({preventScroll:true});
+ };
+ setTimeout(focus,130);
+ setTimeout(focus,400);
+ toastText("Enter your invitation code and choose Join a table. The guided tour will continue after you join.");
 }
 function mountTour(){
  if(dialog)return dialog;
@@ -163,7 +210,9 @@ function mountTour(){
  panel.querySelector('[data-tour="next"]').onclick=()=>updateStep(step+1);
  panel.querySelector('[data-tour="visit"]').onclick=()=>{
    const d=steps[step];
-   if(d.where)window.location.hash=d.where;
+   if(d.invite){openInvitationEntry();return}
+   const url=targetRoute(d);
+   if(url)window.location.hash=url;
    closeTutorial();
  };
  dialog={backdrop,panel,spotlight};
@@ -224,6 +273,7 @@ function placeTour(){
 function refreshSpotlight(token,scroll=true){
  if(!tutorialOpen||token!==viewToken)return;
  const d=steps[step];
+ activateCampaignTab(d,token);
  activeTarget=findSection(d);
  if(activeTarget&&scroll){
    const r=activeTarget.getBoundingClientRect();
@@ -258,23 +308,27 @@ function showStep(){
    meter.append(button);
  }
  panel.querySelector('[data-tour="back"]').disabled=step===0;
- panel.querySelector('[data-tour="visit"]').hidden=step===0;
- panel.querySelector('[data-tour="next"]').textContent=step===steps.length-1?"Finish tutorial":"Continue";
+ const visit=panel.querySelector('[data-tour="visit"]');
+ visit.hidden=step===0;
+ visit.textContent=d.invite?"Enter invite code":"Explore here";
+ panel.querySelector('[data-tour="next"]').textContent=step===steps.length-1?"Finish tutorial":d.invite?"Already joined / Skip for now":"Continue";
  if(!backdrop.isConnected)document.body.append(backdrop);
- followRoute(d);
+ followRoute(d,token);
  placeTour();
  for(const delay of [90,260,600,1550]){
    setTimeout(()=>refreshSpotlight(token,delay===90),delay);
  }
  panel.querySelector('[data-tour="next"]').focus({preventScroll:true});
 }
-function closeTutorial(){
+function closeTutorial(keepInvitation=false){
+ if(!keepInvitation)awaitingInvite=false;
  if(dialog?.backdrop.isConnected)dialog.backdrop.remove();
  tutorialOpen=false;activeTarget=null;++viewToken;
  if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
  previousFocus=null;
 }
 function updateStep(newStep){
+ awaitingInvite=false;
  if(newStep>=steps.length){
    syncTutorial(steps.length-1,true);
    closeTutorial();
@@ -293,6 +347,21 @@ function startTutorial(fromStart=true){
 }
 function mountReplay(){
  const root=document.getElementById("pageRoot");
+ if(awaitingInvite && root && location.hash.startsWith("#/campaigns")){
+   const join=root.querySelector("#joinForm");
+   if(join&&!join.querySelector("#tv-tutorial-invite-resume")){
+     const resume=document.createElement("button");
+     resume.id="tv-tutorial-invite-resume";
+     resume.type="button";
+     resume.className="btn ghost small tv-tutorial-invite-resume";
+     resume.textContent="Resume guided tutorial";
+     resume.addEventListener("click",()=>{
+       awaitingInvite=false;
+       startTutorial(false);
+     });
+     join.append(resume);
+   }
+ }
  if(!root||!location.hash.toLowerCase().includes("/help"))return;
  if(root.querySelector("#tv-tutorial-launch"))return;
  const button=document.createElement("button");button.id="tv-tutorial-launch";
@@ -308,6 +377,14 @@ const observer=new MutationObserver(()=>{
  requestAnimationFrame(()=>{scheduled=false;mountReplay();if(tutorialOpen)queueSpotlight()});
 });
 observer.observe(document.getElementById("pageRoot")||document.body,{childList:true,subtree:true});
+window.addEventListener("terravale-campaign-joined",event=>{
+ const id=event.detail?.campaignId;
+ if(id)invitedCampaignId=id;
+ if(!awaitingInvite)return;
+ awaitingInvite=false;
+ step=4; // after the code, show the real campaign overview first
+ setTimeout(()=>startTutorial(false),140);
+});
 window.addEventListener("hashchange",()=>{setTimeout(mountReplay,60);if(tutorialOpen)setTimeout(()=>queueSpotlight(true),90)});
 window.addEventListener("resize",()=>queueSpotlight());
 window.addEventListener("scroll",()=>queueSpotlight(),{capture:true,passive:true});
