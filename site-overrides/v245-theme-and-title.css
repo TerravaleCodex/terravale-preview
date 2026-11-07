@@ -1,0 +1,147 @@
+
+/* V2.45 · theme and typography refinements layered after the actual V2.
+   Existing Classic Codex tokens untouched, as requested. */
+body[data-theme="shady"]{
+ --bg:#080807;--surface:#11100d;--raised:#1c1a14;
+ --ink:#f1e7d2;--soft:#bcb19c;--dim:#8f8575;
+ --accent:#e3d0a7;--gold:#dbb77d;--edge:#4e483b;
+ background:radial-gradient(ellipse 55% 36% at 80% -9%,#77684c23,transparent 82%),
+   radial-gradient(ellipse 23% 37% at 0% 70%,#786e4c14,transparent 90%),#080807;
+}
+body[data-theme="shady"] .v2-card,body[data-theme="shady"] .cab-card{
+ border-color:color-mix(in srgb,var(--accent) 17%,var(--edge));
+}
+body[data-theme="night"]{
+ --bg:#020512;--surface:#080f24;--raised:#101b35;
+ --ink:#eaf2ff;--soft:#b8c8e5;--dim:#8396bd;
+ --accent:#aecbff;--gold:#d2dcff;--edge:#283b63;
+ background-image:
+   radial-gradient(circle at 15% 21%,#d2e4ff8a 0 1px,transparent 2px),
+   radial-gradient(circle at 77% 13%,#d2e4ff66 0 1px,transparent 2px),
+   radial-gradient(circle at 49% 40%,#d2e4ff77 0 1px,transparent 2px),
+   radial-gradient(circle at 90% 65%,#d2e4ff66 0 1px,transparent 2px),
+   radial-gradient(circle at 24% 75%,#d2e4ff5a 0 1px,transparent 2px),
+   radial-gradient(ellipse 60% 30% at 72% 0%,#233b853c,transparent 82%),
+   linear-gradient(155deg,#020512,#07122d 48%,#030711);
+ background-attachment:fixed;
+}
+body[data-theme="night"] .hero:after,body[data-theme="night"] .v2-hero:after{color:#b8d2ff20}
+body[data-theme="guildie"]{
+ --bg:#08040e;--surface:#160b22;--raised:#251130;
+ --ink:#f7eafc;--soft:#cbb3d9;--dim:#977caa;
+ --accent:#c797f3;--gold:#f4c76e;--edge:#64416f;
+ background:radial-gradient(ellipse 63% 36% at 83% -8%,#77339b30,transparent 83%),
+   linear-gradient(145deg,#0a0410,#160820 58%,#09050e);
+}
+body[data-theme="guildie"] .v2-overline,
+body[data-theme="guildie"] .cab-head .eyebrow,
+body[data-theme="guildie"] .v2-hero .eyebrow{color:var(--gold)}
+body[data-theme="guildie"] .v2-card.active{
+ border-color:color-mix(in srgb,var(--gold) 60%,var(--edge));
+ box-shadow:inset 0 1px 0 #f4c76e4a;
+}
+body[data-theme="guildie"] .cab-card[data-rarity="legendary"]{
+ --rarity:#efc66e;
+ background:radial-gradient(circle at 94% 9%,#efc66e25,transparent 65%),var(--surface);
+}
+body[data-theme="verdant"]{
+ --bg:#041009;--surface:#0b1d13;--raised:#163020;
+ --ink:#e8f7e7;--soft:#b9d0bc;--dim:#89a491;
+ --accent:#93ddac;--gold:#d7be82;--green:#93ddac;--edge:#2d5940;
+ background:radial-gradient(ellipse 65% 32% at 75% 0%,#225f3850,transparent 83%),
+   linear-gradient(140deg,#031009,#0b2418 54%,#07130d);
+}
+body[data-theme="verdant"] .topbar,
+body[data-theme="verdant"] .sidebar{border-color:#2b513a}
+body[data-theme="crimson"]{
+ --bg:#12060a;--surface:#1e0d13;--raised:#30131b;
+ --ink:#f9e9e9;--soft:#d8b9bc;--dim:#aa858f;
+ --accent:#ef9aa5;--gold:#e9bd83;--edge:#66343f;
+ background:radial-gradient(ellipse 60% 30% at 80% -3%,#922e5052,transparent 83%),
+   linear-gradient(145deg,#11060a,#280e16 52%,#10070b);
+}
+body[data-theme="crimson"] .nav-item.active{box-shadow:inset 3px 0 #e9bd83}
+body[data-theme="verdant"] .nav-item.active{box-shadow:inset 3px 0 #93ddac}
+body[data-theme="verdant"] .v2-hero:after{color:#91d8ae24}
+body[data-theme="crimson"] .v2-hero:after{color:#e992a52b}
+
+/* Absolute Zero is still OLED black; contextual semantic colours survive.
+   Do not recolour everything: only meaningful rarity, lore access, and status. */
+body[data-theme="zero"] .tv-lore .lore-history{--topic:#ebc47a}
+body[data-theme="zero"] .tv-lore .lore-places{--topic:#9ccdf2}
+body[data-theme="zero"] .tv-lore .lore-peoples{--topic:#8ed3af}
+body[data-theme="zero"] .tv-lore .lore-faith{--topic:#c9a1f0}
+body[data-theme="zero"] .tv-lore .lore-institutions{--topic:#f0a6a5}
+body[data-theme="zero"] .tv-lore .lore-world{--topic:#b9abea}
+body[data-theme="zero"] .tv-lore .lore-card.heritage{--topic:#e3a1c9}
+body[data-theme="zero"] .tv-lore .lore-card{
+ border-top-color:color-mix(in srgb,var(--topic) 80%,#333)!important;
+ background:radial-gradient(ellipse at 95% 1%,color-mix(in srgb,var(--topic) 10%,transparent),transparent 72%),#060606!important;
+}
+body[data-theme="zero"] .tv-lore .lore-card .card-top,
+body[data-theme="zero"] .tv-lore .lore-card .card-symbol{color:var(--topic)!important}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="uncommon"]{--rarity:#96cbae}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="rare"]{--rarity:#91bafb}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="epic"]{--rarity:#c39bfb}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="legendary"]{--rarity:#f0c875}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="common"]{--rarity:#bababa}
+body[data-theme="zero"] .page-cabinet .cab-card .rare-title,
+body[data-theme="zero"] .page-cabinet .cab-card .medal{color:var(--rarity)!important}
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="epic"],
+body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="legendary"]{
+ border-top-color:var(--rarity)!important;
+}
+
+/* Fixed-unit cards: smaller multi-line headings, flex-priority, full-text
+   native tooltips for extremely long names, no hidden/title overlap. */
+.page-cabinet .cabinet-grid>.cab-card{
+ padding:13px 14px 12px!important;
+ gap:5px!important;
+ min-width:0!important;
+}
+.page-cabinet .cabinet-grid>.cab-card .v2-card-top{flex:0 0 auto;min-height:33px}
+.page-cabinet .cabinet-grid>.cab-card h3.cab-title{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ font-size:16px!important;line-height:1.18!important;
+ max-height:3.54em!important;min-height:0!important;
+ margin:2px 0 1px!important;overflow:hidden;
+ overflow-wrap:anywhere;word-break:normal;flex:0 1 auto;
+}
+.page-cabinet .cabinet-grid>.cab-card.cab-featured h3.cab-title{
+ font-size:18px!important;max-height:3.55em!important;
+}
+.page-cabinet .cabinet-grid>.cab-card h3.cab-title-long{
+ font-size:14.5px!important;-webkit-line-clamp:3;
+}
+.page-cabinet .cabinet-grid>.cab-card.cab-featured h3.cab-title-long{
+ font-size:16px!important;
+}
+.page-cabinet .cabinet-grid>.cab-card p{
+ font-size:11px!important;line-height:1.4!important;
+ margin:0!important;min-height:0;max-height:2.8em;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ overflow:hidden;flex-shrink:1;
+}
+.page-cabinet .cabinet-grid>.cab-card .state-line{margin-top:auto!important;flex:0 0 auto}
+.page-cabinet .cabinet-grid>.cab-card .cab-progress{height:3px!important;flex:0 0 auto}
+.page-cabinet .cabinet-grid>.cab-card .v2-dim{font-size:10px!important;flex:0 0 auto}
+.page-cabinet .cabinet-grid>.cab-card.cab-tall h3.cab-title{font-size:19px!important;max-height:4.72em!important;-webkit-line-clamp:4}
+.page-library .tv-lore .lore-grid>.lore-card h2{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ font-size:19px!important;line-height:1.18!important;
+ max-height:3.54em!important;margin:7px 0 5px!important;
+ overflow:hidden;overflow-wrap:anywhere;word-break:normal;
+}
+.page-library .tv-lore .lore-grid>.lore-card h2.tv-lore-title-long{font-size:16.5px!important}
+.page-library .tv-lore .lore-grid>.lore-card.spotlight h2{font-size:27px!important;max-height:3.6em!important}
+.page-library .tv-lore .lore-grid>.lore-card.spotlight h2.tv-lore-title-long{font-size:22px!important}
+.page-library .tv-lore .lore-grid>.lore-card p{
+ line-height:1.4!important;
+ overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+}
+.page-library .tv-lore .lore-grid>.lore-card .card-bottom{flex:0 0 auto;margin-top:auto!important}
+
+/* Materially reduce motion only when a user requests reduced motion. */
+@media(prefers-reduced-motion:reduce){
+ body[data-theme="night"]{background-attachment:scroll}
+}
