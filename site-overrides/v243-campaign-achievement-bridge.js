@@ -296,7 +296,8 @@
       }
     }
     if(path==='/cabinet-of-curiosities')mountPersonalAdblocker();
-    if(path==='/campaigns')decorateCampaignCreator();
+    // The native creator can be presented from several campaign routes.
+    decorateCampaignCreator();
     if(!path.startsWith('/campaigns/'))return;
     const id=path.split('/')[2],current=db.campaigns.find(x=>x.id===id);
     if(!current || !hasCampaign(id))return;
