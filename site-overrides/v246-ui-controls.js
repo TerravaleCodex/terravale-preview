@@ -71,7 +71,7 @@
    b.type='button';b.className='tv-back-technique';
    b.textContent='← Back to class abilities';
    b.onclick=()=>{
-     const original=panel.querySelector('[data-v227-reader-tab="class"]');
+     const original=panel.querySelector('[data-v228-tab="class"]');
      original?.click();
    };
    const tabs=panel.querySelector('.sheet227-reader-tabs');
