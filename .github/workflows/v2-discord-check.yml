@@ -339,7 +339,7 @@ jobs:
           assert 'tv-v253-gift-notification' in html
           assert 'position:fixed' in css
           assert 'character_item_properties' in migration
-          assert "attuned','false'" in migration
+          assert "jsonb_set(new_props,'{attuned}','false'::jsonb,true)" in migration
           assert 'recipient_user_id=(select auth.uid())' in migration
           assert "if(!native.querySelector" in demo
           assert "The Wayfarers’ Table is a shared live demonstration" in bridge
