@@ -80,7 +80,8 @@ window.TerravaleClearDemoWorkspace = function () {
 '''
 inline_js = (
     '\n<script type="application/json" id="tv-v2-ads-manifest">' + catalog_json + '</script>\n'
-    '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'\n    '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
+    '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'
+    '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
 source = source.replace("</body>", reset_script + inline_js + "</body>", 1)
