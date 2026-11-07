@@ -34,6 +34,9 @@ on:
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v250-dm-backpack-editor.js"
+      - "site-overrides/v251-live-item-actions.js"
+      - "site-overrides/v251-interactive-item-actions.css"
+      - "site-overrides/sql/v251_interactive_item_mechanics.sql"
       - "site-overrides/v250-campaign-items.css"
       - "site-overrides/sql/v250_campaign_theme_genre.sql"
       - "site-overrides/sql/v250_dm_item_mechanics.sql"
@@ -79,6 +82,7 @@ jobs:
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
           node --check site-overrides/v250-dm-backpack-editor.js
+          node --check site-overrides/v251-live-item-actions.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
@@ -127,7 +131,7 @@ jobs:
           assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
           assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
           assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
-          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js"):
+          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js","v251-live-item-actions.js"):
               assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
           print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
           print("PASS: only two root holding files plus one public-safe V2 preview")
@@ -201,6 +205,7 @@ jobs:
           assert b'data-source="v2-discord-auth.mjs"' in raw, "Discord OAuth integration missing"
           assert b'data-source="v2-ads-atelier.mjs"' in raw, "In-site Atelier integration missing"
           assert b'data-source="v250-dm-backpack-editor.js"' in raw, "DM mechanics integration missing"
+          assert b'data-source="v251-live-item-actions.js"' in raw, "Interactive item actions missing"
           assert b'--bg:#07080c' in raw, "Original V2 theme not present"
           assert b"sb_secret_" not in raw, "Private API key detected"
           html=raw.decode("utf-8")
