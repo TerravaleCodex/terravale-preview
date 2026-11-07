@@ -120,10 +120,10 @@ jobs:
           sql=Path("site-overrides/sql/v249_campaign_long_description.sql").read_text()
           css=Path("site-overrides/v247-admin-and-themes.css").read_text()
           for expected in (
-            ".select('id,name,description,long_description,owner_id')",
+            ".select('id,name,description,long_description,theme,genre,owner_id')",
             "longDescription:c.long_description||''",
-            ".insert({name,description,long_description:story,owner_id:identity().user.id})",
-            ".update({description:quote,long_description:full})",
+            ".insert({name,description,long_description:story,theme:theme.trim(),genre:genre.trim(),owner_id:identity().user.id})",
+            ".update(values)",
             "function decorateCampaignCreator()",
             "function decorateCampaignStory(root,campaign)",
             "Full campaign description",
@@ -133,7 +133,7 @@ jobs:
             assert expected in script, f"Missing campaign-story bridge behavior: {expected}"
             assert expected in html, f"Hosted V2 missing campaign-story behavior: {expected}"
           assert "maxLength=12000" in script
-          assert "textContent=campaign.longDescription" in script or "story.textContent=campaign.longDescription||''" in script
+          assert "intro.textContent=campaign.longDescription||''" in script
           for expected in ("add column if not exists long_description","grant update (description,long_description)","char_length(long_description) <= 12000"):
             assert expected in sql
           assert "tv-campaign-story-content" in css and "white-space:pre-wrap" in css
