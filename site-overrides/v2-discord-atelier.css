@@ -54,3 +54,6 @@
 .tv-ad-popup .tv-close:hover{background:#000d}
 @media(max-width:700px){.tv-account-modal{padding:18px}.tv-id-grid,.tv-ad-controls .tv-form{grid-template-columns:1fr}.tv-account-btn .tv-account-meta{display:none}#tv-account-fallback{top:8px;right:8px}.tv-auth-card{padding:25px 22px}}
 @media(prefers-reduced-motion:reduce){.tv-ad-popup,.tv-account-btn{transition:none!important}}
+
+.tv-account-btn .tv-avatar{width:34px;height:34px;border:1px solid var(--edge);border-radius:50%;background:var(--raised);flex-shrink:0}
+[aria-label="Rules Foundation"]{display:none!important}
