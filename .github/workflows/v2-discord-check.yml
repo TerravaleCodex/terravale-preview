@@ -8,6 +8,8 @@ on:
       - "site-overrides/approved-ads.json"
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
+      - "tools/v245_theme_patch.py"
+      - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/v2-discord-check.yml"
@@ -45,6 +47,9 @@ jobs:
           assert 'Want to test <strong>Adblockn’t' not in html
           assert 'repeat(auto-fill,236px)' in html
           assert 'cabinet-grid' in html
+          assert 'Verdant Archive' in html and 'Crimson Court' in html and 'Bone Zone' in html
+          assert 'cab-title-long' in html and 'tv-lore-title-long' in html
+          assert 'body[data-theme="zero"] .tv-lore .lore-history' in html
           assert 'tv-personal-adblocker' in html
           assert 'Join a campaign first' in html
           assert 'Played by ' in html
