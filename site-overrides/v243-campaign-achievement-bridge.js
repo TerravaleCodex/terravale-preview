@@ -90,6 +90,11 @@
     await syncCampaigns();
     if(members.has(result.data)){
       db.campaign=result.data;db.mode='sample';persist();
+      // Pull freshly joined characters before displaying the roster. This also
+      // restores the demo curator labels for Aster and his six companions.
+      try{await window.TerravaleV2Bridge?.syncCharacters?.()}catch(error){
+        console.warn('Campaign joined; character refresh will retry:',error);
+      }
       navigate('/campaigns/'+result.data);
       toastText(isDemo(result.data)?'Joined the demo: you can create your own level-one character.':'Campaign joined. You can now create a character.');
       window.dispatchEvent(new CustomEvent('terravale-campaign-joined',{
