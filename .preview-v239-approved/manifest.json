@@ -1,0 +1,16 @@
+{
+  "format": "gzip-base64-chunks",
+  "source": "approved-v2.39-offline-html",
+  "source_original_sha256": "1c2326dad62b09f78daf90816500364f87a5c22168ee5ec2f89d78c5cb10b78b",
+  "compressed_sha256": "52d0e925bb14e2c9e7712237a9a651fe4414ddf24afd7807fa67a800dfd7ac3c",
+  "uncompressed_sha256": "301c424b84b53704c1780459a24a771ef2ed8007f4dbe941f795bd445843af54",
+  "gzip_bytes": 1547328,
+  "html_bytes": 7345315,
+  "parts": 19,
+  "base64_chars": 2063104,
+  "public_articles": 283,
+  "restricted_placeholders": 36,
+  "calendar_events": 31,
+  "server_side_auth": false,
+  "production_supabase_access": false
+}
