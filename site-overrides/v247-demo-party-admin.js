@@ -146,10 +146,15 @@
       const native=host.querySelector(".campaign-roster");
       if(native){
         const curatedIds=new Set(list.map(ch=>String(ch.character_id)));
-        for(const link of native.querySelectorAll('a[href*="#/characters/"]')){
+        for(const link of native.querySelectorAll('.campaign-detail-row')){
           const id=(link.getAttribute("href")||"").split("/").pop();
-          if(curatedIds.has(decodeURIComponent(id)))link.remove();
+          const character=db.characters.find(x=>String(x.id)===decodeURIComponent(id));
+          if(curatedIds.has(decodeURIComponent(id))||
+             (character?.demoCurator==='Aster'&&character?.demoTemplateSlot)){
+            link.remove();
+          }
         }
+        // Preserve new players' characters, but never repeat curated Wayfarers.
         if(!native.querySelector(".campaign-detail-row"))native.hidden=true;
       }
       const caption=host.querySelector(".campaign-detail-title p");
