@@ -162,3 +162,14 @@ body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="legendary"]{
    -webkit-line-clamp:2!important;
  }
 }
+
+/* In compact mobile spotlight tiles, text itself must not be flex-shrunk. */
+@media(max-width:540px){
+ .page-library .tv-lore .lore-grid>.lore-card.spotlight h2{
+   font-size:16.5px!important;line-height:1.16!important;
+   flex:0 0 auto!important;
+ }
+ .page-library .tv-lore .lore-grid>.lore-card.spotlight p{
+   min-height:0!important;flex:1 1 auto!important;-webkit-line-clamp:2!important;
+ }
+}
