@@ -3,7 +3,7 @@
 (function(){
   'use strict';
   const members=new Set();
-  let syncing=false;
+  let syncing=false, adProgress=null;
   const account=()=>window.TerravaleVerifiedAccount;
   const client=()=>account()?.supabase;
   const identity=()=>account()?.state;
@@ -20,6 +20,7 @@
     if(!progress)return;
     const count=Math.max(0,Number(progress.closed_count)||0);
     db.dismissedAds=count;
+    adProgress={count,unlocked:Boolean(progress.unlocked)};
     if(progress.unlocked && !db.unlocked.includes('adblocknt'))db.unlocked.push('adblocknt');
     // Permanent server unlocks are authoritative; never clear other unrelated achievements.
     persist();
@@ -56,7 +57,7 @@
       db.mode=data?.length?'sample':'empty';
       persist();renderPage(false);
     }catch(e){console.error('Unable to load verified campaigns:',e);toastText('Could not synchronise your campaign memberships.')}
-    finally{syncing=false}
+    finally{syncing=false;if(route()==='/characters/create')renderPage(false)}
   }
   async function joinCampaign(code){
     const sb=client(),acct=identity();
@@ -138,7 +139,7 @@
   }
 
   window.TerravaleV2Bridge={
-    canCreate,hasCampaign,applyAdProgress,refreshAdProgress,syncCampaigns,joinCampaign,createCampaign
+    canCreate,hasCampaign,applyAdProgress,refreshAdProgress,syncCampaigns,joinCampaign,createCampaign,getAdProgress:()=>adProgress
   };
   async function ready(){
     watch();
