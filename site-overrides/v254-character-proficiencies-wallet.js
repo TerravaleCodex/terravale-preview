@@ -365,8 +365,59 @@ function mountWallet(c){
  fillWallet(sec,c);
  loadWallet(c);
 }
+function mountReferenceTraining(){
+ const m=location.hash.match(/^#\/(classes|ancestries)\/([^/?#]+)/);
+ const root=document.getElementById('pageRoot');
+ if(!m||!root||root.querySelector('#tv254-reference-proficiency'))return;
+ const slug=m[2].toLowerCase();
+ const slugify=x=>x.normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+ const isClass=m[1]==='classes';
+ const name=isClass?
+  Object.keys(rules().classes).find(x=>slugify(x)===slug):
+  ['Flügel','Daemon'].find(x=>slugify(x)===slug);
+ if(!name)return;
+ const section=node('section','tv254-reference-training');
+ section.id='tv254-reference-proficiency';
+ section.append(node('div','tv254-eyebrow','STARTING TRAINING · V4 APPROVED REGISTRY'),
+  node('h2','','Languages & tool proficiencies'));
+ if(isClass){
+  const cfg=rules().classes[name]||{};
+  const fixed=(cfg.fixed||[]).map(id=>toolById(id)?.name||id);
+  const languages=(cfg.languages||[]).map(id=>languageById(id)?.name||id);
+  if(fixed.length)section.append(node('p','tv254-small',
+   'Automatic tools: '+fixed.join(', ')));
+  if(languages.length)section.append(node('p','tv254-small',
+   'Automatic class languages: '+languages.join(', ')));
+  for(const slot of cfg.slots||[]){
+   const pool=categorised(slot.pool);
+   section.append(node('p','tv254-small',
+    'Choose '+slot.count+' · '+slot.label+' · '+pool.length+' eligible options.'));
+   const preview=node('div','tv254-proficiency-pills');
+   for(const t of pool.slice(0,12))preview.append(node('span','tv254-proficiency-pill',t.name));
+   if(pool.length>12)preview.append(node('span','tv254-proficiency-pill','+'+(pool.length-12)+' more in creator'));
+   section.append(preview);
+  }
+  if(!fixed.length&&!languages.length&&!cfg.slots?.length){
+   section.append(node('p','tv254-small',
+    'No mandatory starting tool or language grant is confirmed in the V4 class audit. This does not prohibit DM-approved backstory training.'));
+  }
+  if(cfg.review)section.append(node('p','tv254-warning',cfg.review));
+ }else{
+  const keys=name==='Flügel'?['common','fl-gel']:['common','daemonic'];
+  section.append(node('p','tv254-small','Starting languages: '+
+   keys.map(x=>languageById(x)?.name||x).join(', ')+'.'));
+  if(name==='Flügel')section.append(node('p','tv254-small',
+   'At creation, choose two additional distinct languages. Restricted selections remain pending DM approval.'));
+ }
+ section.append(node('p','tv254-muted',
+  'Gaming sets and musical instruments are proficiencies, not playable activities or automatically granted inventory. Class eligibility uses reviewed rules; DM exceptions remain separate.'));
+ const header=root.querySelector('.page-intro,.v2-page-header');
+ if(header)header.insertAdjacentElement('afterend',section);else root.prepend(section);
+}
 function mount(){
  if(!ready()||!rules())return;
+ mountReferenceTraining();
  installCreatorBridge();
  creatorPanel();
  const c=charOfRoute();
