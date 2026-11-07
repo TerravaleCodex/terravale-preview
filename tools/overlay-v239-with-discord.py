@@ -145,7 +145,7 @@ assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
 assert 'nullmeridian' in source and 'gloamglass' in source
-assert "118000" in source and "RESET DEMO" in source
+assert "118000" in source and "tv-demo-permanent-party" in party and "resetDemo" not in party
 assert "tv-crimson-variant" in source and "tv-growing-vines" in source
 assert "Actual Discord" not in cloud and "terravale_create_character" in cloud
 assert "data-v246-" not in source[:source.find("<script data-source=\"v246-ui-controls.js\"")] or True
