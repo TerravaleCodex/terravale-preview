@@ -10,6 +10,8 @@ on:
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
+      - "tools/v245_theme_patch.py"
+      - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v2-discord-atelier.css"
       - "site-overrides/v244-fixed-gallery.css"

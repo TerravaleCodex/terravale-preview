@@ -17,7 +17,9 @@ manifest = json.loads((ROOT / ".preview-v239-approved/manifest.json").read_text(
 assert hashlib.sha256(source_bytes).hexdigest() == manifest["uncompressed_sha256"], "Unexpected V2 source"
 source = source_bytes.decode("utf-8")
 from v243_native_patch import patch
+from v245_theme_patch import patch as patch_v245, theme_bridge_css
 source = patch(source)
+source = patch_v245(source)
 # No public article text or ancestry placeholder may be altered by UI changes.
 lore_re = r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>'
 before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
@@ -30,6 +32,8 @@ assert '<script type="application/json" id="tv238-v14-content">' in source, "Ori
 
 css = (ROOT / "site-overrides/v2-discord-atelier.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v244-fixed-gallery.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v245-theme-and-title.css").read_text()
+css += "\n" + theme_bridge_css(source)
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -95,6 +99,9 @@ assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
 assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
 assert 'cabinet-grid' in source and 'cab-featured' in source
+assert 'Verdant Archive' in source and 'Crimson Court' in source
+assert 'name:\'Bone Zone\'' in source
+assert 'cab-title-long' in source and 'tv-lore-title-long' in source
 assert 'repeat(auto-fill,236px)' in source
 assert 'Join a campaign first' in source and 'Played by ' in source
 assert 'Want to test <strong>Adblockn’t' not in source
