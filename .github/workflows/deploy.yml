@@ -11,6 +11,10 @@ on:
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
       - "tools/v245_theme_patch.py"
+      - "tools/v246_native_patch.py"
+      - "site-overrides/v246-real-characters.js"
+      - "site-overrides/v246-ui-controls.js"
+      - "site-overrides/v246-theme-creator-gallery.css"
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v2-discord-atelier.css"
@@ -43,6 +47,8 @@ jobs:
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
           node --check site-overrides/v243-campaign-achievement-bridge.js
+          node --check site-overrides/v246-real-characters.js
+          node --check site-overrides/v246-ui-controls.js
       - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
