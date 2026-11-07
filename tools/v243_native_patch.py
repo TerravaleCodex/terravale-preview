@@ -93,4 +93,7 @@ def patch(source):
          'Cabinet descriptions')
     # Remove labels that incorrectly claim the signed-in V2 website is fully offline.
     source=source.replace('OFFLINE PREVIEW','V2 BETA')
+    once('<div class="v2-grid four">${items.map(r=>{let earned=', '<div class="v2-grid four cabinet-grid">${items.map(r=>{let earned=', 'Cabinet participates in fixed card morph')
+    once('class="cab-card ${earned?\'earned\':\'\'}" data-rarity=', 'class="cab-card ${earned?\'earned\':\'\'} ${r.id===\'adblocknt\'||r.rarity===\'legendary\'||r.rarity===\'epic\'?\'cab-featured\':r.rarity===\'rare\'&&r.order%4===0?\'cab-tall\':\'\'}" data-rarity=', 'Restore rarity sizes in one gallery')
+    source=source.replace('Permanent & account-wide in the intended live design','One continuous archive · Account-wide Adblockn’t')
     return source
