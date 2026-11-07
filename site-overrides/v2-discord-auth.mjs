@@ -112,8 +112,8 @@ async function initAuth() {
     state.user = userData.user;
     state.profile = profile;
     state.ready = true;
-    hideGate();
     clearOldShowcaseOnce();
+    hideGate();
     updateVerifiedRole();
     mountAccount();
     window.dispatchEvent(new CustomEvent("terravale-auth-ready", { detail: { isDm: Boolean(profile.is_dm) } }));
@@ -124,16 +124,22 @@ async function initAuth() {
 }
 
 function clearOldShowcaseOnce() {
-  // The actual V2.39 page still has demonstration state in localStorage.
-  // Clear it ONCE per signed-in browser, never every visit; otherwise new work would be lost.
-  const flag = "tv-v2-showcase-cleared-" + state.user.id;
-  if (localStorage.getItem(flag) === "1") return;
+  // The V2.39 showcase is still local browser data. It must not be shared
+  // between Discord accounts: reset it whenever the authenticated user changes.
+  const activeKey = "tv-v2-active-preview-account";
+  let previous;
+  try { previous = localStorage.getItem(activeKey); } catch { previous = null; }
+  if (previous === state.user.id) return;
   const empty = document.querySelector("#previewTray [data-state='empty']");
-  if (!empty) { console.warn("V2 Empty sample control unavailable; not deleting unknown local data"); return; }
+  if (!empty) {
+    throw new Error("The V2 Empty workspace action is unavailable; refusing to display another account's local preview data.");
+  }
   empty.click();
   localStorage.removeItem("terravalecodex-v238-heritage-preview");
-  localStorage.setItem(flag, "1");
+  localStorage.removeItem("terravalecodex-v238-tvuid-preview");
+  localStorage.setItem(activeKey, state.user.id);
 }
+
 function updateVerifiedRole() {
   const roleButton = document.querySelector("#previewTray [data-role='" + (state.profile?.is_dm ? "dm" : "player") + "']");
   roleButton?.click();
@@ -157,7 +163,7 @@ function ensureModal() {
       <button type="button" id="tv-acc-copy">Copy TvUID</button>
       <button type="button" id="tv-acc-signout">Sign out</button></div>
     <p class="tv-status" id="tv-acc-status" aria-live="polite"></p>
-    <p class="tv-hint">Account and avatar changes are saved online. Characters and campaigns remain V2 local-preview features until their cloud sync is migrated.</p>
+    <p class="tv-hint">Account and avatar changes are saved online. Characters and campaigns are still browser-local V2 previews, not cloud saved. Switching Discord accounts clears that local preview workspace.</p>
     <div id="tv-acc-directory" class="tv-directory" hidden><div class="tv-eyebrow">DM ONLY · CONNECTED DISCORD ACCOUNTS</div>
       <h2>Player directory</h2><div id="tv-acc-players"></div></div>
   </section>`;
