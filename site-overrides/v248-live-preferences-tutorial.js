@@ -12,10 +12,10 @@ const steps=[
  {title:"Your new home",eyebrow:"02 · THE DASHBOARD",description:"The Dashboard is your home base. Your campaign and featured adventurers live here; the sidebar is your route to everything else. You can collapse that sidebar when you need more space.",where:"#/",targets:["#pageRoot .v2-hero","#pageRoot .hero","#pageRoot .v2-page-header",".sidebar"]},
  {title:"Find your campaign",eyebrow:"03 · THE CAMPAIGN TABLE",description:"Campaigns determine which adventurers and party records you can access. Join using your DM's invitation, or try the Wayfarers' Table demo with TV-DEMO.",where:"#/campaigns",nav:"campaign",targets:["#pageRoot .v2-hero","#pageRoot .v2-page-header","#pageRoot h1","#pageRoot .v2-card"]},
  {title:"Make your adventurer",eyebrow:"04 · THE CHARACTER STUDIO",description:"Create your character, choose your ancestry feats and class progression, and open your sheet to see HP, equipment, backpack and abilities. The real campaign's DM approves non-demo builds.",where:"#/characters",nav:"character",targets:["#pageRoot .v2-hero","#pageRoot .v2-page-header","#pageRoot .tv-demo-party","#pageRoot h1"]},
- {title:"The world's secrets",eyebrow:"05 · THE LORE CODEX",description:"Browse the lore as real reading pages, with the calendar, search and related articles close to hand. Some entries are accessible only when your character's ancestry allows it.",where:"#/lore",nav:"lore",targets:["#pageRoot .tv-lore","#pageRoot .v2-hero","#pageRoot .lore-grid","#pageRoot h1"]},
- {title:"The Cabinet of Curiosities",eyebrow:"06 · ACHIEVEMENTS",description:"Your discoveries and earned account-wide achievements are kept in the Cabinet. Permanent unlocks stay yours; some earned surprises unlock special appearance options.",where:"#/cabinet-of-curiosities",nav:"cabinet",targets:["#pageRoot .cabinet-grid","#pageRoot .cab-head","#pageRoot h1"]},
+ {title:"The world's secrets",eyebrow:"05 · THE LORE CODEX",description:"Browse the lore as real reading pages, with the calendar, search and related articles close to hand. Some entries are accessible only when your character's ancestry allows it.",where:"#/lore",nav:"lore",targets:["#pageRoot .lore-grid .lore-card","#pageRoot .v2-hero","#pageRoot .tv-lore .lore-card","#pageRoot h1"]},
+ {title:"The Cabinet of Curiosities",eyebrow:"06 · ACHIEVEMENTS",description:"Your discoveries and earned account-wide achievements are kept in the Cabinet. Permanent unlocks stay yours; some earned surprises unlock special appearance options.",where:"#/cabinet-of-curiosities",nav:"cabinet",targets:["#pageRoot .cabinet-grid .cab-card","#pageRoot .cab-head","#pageRoot .v2-hero","#pageRoot h1"]},
  {title:"Your table, live",eyebrow:"07 · SESSION ROOM",description:"Visit the Session Room for your party's initiative, dice and chat. The room is bound to your campaign, and your DM controls the encounter.",where:"#/session-room",nav:"session",targets:["#pageRoot .v2-hero","#pageRoot .sr-root","#pageRoot .sr-queue","#pageRoot h1"]},
- {title:"Make the Codex yours",eyebrow:"08 · APPEARANCE",description:"Themes change the entire Codex. Your selected theme follows your verified Discord account, and a few additional looks unlock through achievements.",where:"#/appearance",nav:"appearance",targets:["#pageRoot .theme-grid","#pageRoot .theme-card","#pageRoot .v2-hero","#pageRoot h1"]},
+ {title:"Make the Codex yours",eyebrow:"08 · APPEARANCE",description:"Themes change the entire Codex. Your selected theme follows your verified Discord account, and a few additional looks unlock through achievements.",where:"#/appearance",nav:"appearance",targets:["#pageRoot .theme-card","#pageRoot .v2-hero","#pageRoot .theme-grid","#pageRoot h1"]},
  {title:"Your journey continues",eyebrow:"09 · REPLAY ANY TIME",description:"That's the 2.0 Codex. Whenever you'd like a refresher, open Help & Tutorial and choose Replay the guided tour. You can also restart this tour from the Help control in the sidebar.",where:"#/help",nav:"help",targets:["#tv-tutorial-launch","#pageRoot .v2-hero","#pageRoot h1"]}
 ];
 function toastText(s){if(typeof toast==="function")toast(s);else console.info(s)}
@@ -182,7 +182,9 @@ function placeTour(){
    panel.dataset.placement="center";
    return;
  }
- const bounds=target.getBoundingClientRect();
+ const raw=target.getBoundingClientRect();
+ // Spotlight a readable portion of extensive galleries, never the entire scroll height.
+ const bounds={left:raw.left,top:raw.top,right:Math.min(raw.right,raw.left+740),bottom:Math.min(raw.bottom,raw.top+270)};
  const pad=9,viewW=window.innerWidth,viewH=window.innerHeight;
  const left=Math.max(6,bounds.left-pad),top=Math.max(6,bounds.top-pad);
  const right=Math.min(viewW-6,bounds.right+pad),bottom=Math.min(viewH-6,bounds.bottom+pad);
@@ -196,8 +198,9 @@ function placeTour(){
  const width=Math.min(420,viewW-24),height=Math.min(panel.offsetHeight,viewH-20);
  let x,y,placement;
  if(viewW<720){
-   x=(viewW-width)/2;y=Math.max(10,viewH-height-13);
-   placement="bottom";
+   x=(viewW-width)/2;
+   y=top>height+24?12:Math.max(10,viewH-height-13);
+   placement=y===12?"top":"bottom";
  }else{
    const spaceRight=viewW-right,spaceLeft=left,spaceBelow=viewH-bottom,spaceAbove=top;
    if(spaceRight>=width+22){
