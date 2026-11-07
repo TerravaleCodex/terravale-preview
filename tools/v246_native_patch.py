@@ -49,6 +49,9 @@ def patch(source):
     one("const able=a=>!a.heritageOf||roster.some(r=>r.ancestry===a.heritageOf);",
         "const able=a=>!a.heritageOf||(Array.isArray(db?.characters)&&db.characters.some(c=>c.ancestry===a.heritageOf&&window.TerravaleV2Bridge?.hasCampaign?.(c.campaign)));",
         "Use real character ancestry for V14 article locks")
+    one("function activeCharacters(){return db.mode==='empty'?[]:db.characters.filter(c=>c.campaign===db.campaign)}",
+        "function activeCharacters(){return db.mode==='empty'?[]:db.characters.filter(c=>c.campaign===db.campaign&&(!window.TerravalePlayerPreview||c.owner==='You'||(c.status==='Approved'&&c.sheetVisibleToParty)))}",
+        'Player-view hides DM-private characters')
     one("Offline design build · source-backed starting calculations only. Your DM determines starting equipment; players can organise their personal inventory. No live character data is accessed.",
         "Character sheet associated with your verified Discord account and campaign. Your DM still controls approvals, level progression and starting equipment.",
         "Remove obsolete offline sheet disclaimer")
