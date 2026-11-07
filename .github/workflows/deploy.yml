@@ -35,6 +35,9 @@ jobs:
           assert 'Awaiting <em>2.0</em> update' in home
           assert 'animation:sigil-spin' in home
           assert 'id="countdown-progress"' in home
+          assert '--scene-fit' in home
+          assert 'overscroll-behavior:none' in home
+          assert 'function fitScene()' in home
           assert 'class="storm"' in home
           assert 'id="countdown-hours"' in home
           assert '2026-11-08T00:00:00Z' in home

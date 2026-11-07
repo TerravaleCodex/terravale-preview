@@ -253,7 +253,23 @@
       h1{font-size:clamp(58px,6vw,79px);margin:7px}
       .countdown{margin-top:18px}.timer-unit{padding:12px 8px}.timer-value{font-size:57px}
     }
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+    
+    /* Fit the cinematic landing scene into exactly one viewport, including mobile browsers. */
+    html,body{height:100%;min-height:0;overflow:hidden;overscroll-behavior:none}
+    body{height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+    .top,footer{flex:0 0 auto}
+    .top{padding-top:clamp(9px,2.5vh,20px);padding-bottom:clamp(9px,2.5vh,20px)}
+    main{flex:1 1 0;min-height:0;height:auto;overflow:hidden;
+         padding:clamp(4px,1.5vh,16px) clamp(10px,2.2vw,22px);
+         display:grid;place-items:center}
+    main>.inner{min-width:0;max-width:100%;transform:scale(var(--scene-fit,1));transform-origin:center;
+                animation:fit-scene-enter .85s ease-out both}
+    footer{padding-block:clamp(7px,1.4vh,15px)}
+    @keyframes fit-scene-enter{from{opacity:0}to{opacity:1}}
+    @media(max-height:560px){.top{padding-block:7px}.brand small{display:none}footer{padding-block:6px}}
+    @media(max-width:420px){.top{gap:7px}.version{white-space:nowrap}}
+
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 
   </style>
 </head>
@@ -345,6 +361,36 @@
           clearInterval(ticker);
         }
       }
+
+      // Use the same scene on every screen: fit its natural dimensions rather than scrolling.
+      const scene = document.querySelector("main > .inner");
+      const stage = document.querySelector("main");
+      function fitScene() {
+        if (!scene || !stage) return;
+        scene.style.setProperty("--scene-fit", "1");
+        const style = getComputedStyle(stage);
+        const allowedHeight = Math.max(1, stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - 4);
+        const allowedWidth = Math.max(1, stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 4);
+        const naturalHeight = Math.max(1, scene.scrollHeight);
+        const naturalWidth = Math.max(1, scene.scrollWidth);
+        const scale = Math.min(1, allowedHeight / naturalHeight, allowedWidth / naturalWidth);
+        scene.style.setProperty("--scene-fit", Math.max(.1, scale).toFixed(4));
+      }
+      let resizeFrame = 0;
+      function scheduleSceneFit() {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(fitScene);
+      }
+      window.addEventListener("resize", scheduleSceneFit, {passive:true});
+      window.addEventListener("orientationchange", scheduleSceneFit, {passive:true});
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", scheduleSceneFit, {passive:true});
+      if (window.ResizeObserver) {
+        const observer = new ResizeObserver(scheduleSceneFit);
+        observer.observe(stage);
+      }
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleSceneFit);
+      scheduleSceneFit();
+
       const ticker = setInterval(updateCountdown, 250);
       updateCountdown();
     })();
