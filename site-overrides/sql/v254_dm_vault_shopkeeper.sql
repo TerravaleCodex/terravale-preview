@@ -109,8 +109,10 @@ begin
  select * into target from public.characters where id=recipient_character;
  if target.id is null or target.campaign_id<>v.campaign_id then
   raise exception 'Recipient belongs to another campaign' using errcode='42501';end if;
- if target.owner_id is not null and not exists(select 1 from public.campaign_members cm
-  where cm.campaign_id=target.campaign_id and cm.user_id=target.owner_id) then
+ if target.owner_id is not null and
+   target.owner_id<>(select c.owner_id from public.campaigns c where c.id=target.campaign_id)
+   and not exists(select 1 from public.campaign_members cm
+    where cm.campaign_id=target.campaign_id and cm.user_id=target.owner_id) then
    raise exception 'Recipient player is not a member of the campaign' using errcode='42501';end if;
  qty:=(v.item_data->>'qty')::integer;
  if send_quantity is null or send_quantity<1 or send_quantity>qty then
@@ -170,8 +172,8 @@ begin
  if src.id is null or src.owner_id<>caller or not authz.is_member(src.campaign_id) then
   raise exception 'Only the real character owner can sell or return an item to the DM' using errcode='42501';end if;
  select owner_id into dm_user from public.campaigns where id=src.campaign_id;
- if dm_user is null or not exists(select 1 from public.campaign_members
-  where campaign_id=src.campaign_id and user_id=dm_user and role='dm') then
+ if dm_user is null or not exists(select 1 from auth.identities
+  where user_id=dm_user and provider='discord') then
   raise exception 'The campaign has no available Dungeon Master vault' using errcode='42501';end if;
  if source_item_id is null or source_item_id !~ '^[A-Za-z0-9_-]{1,96}$' then
   raise exception 'Invalid item ID' using errcode='22023';end if;
