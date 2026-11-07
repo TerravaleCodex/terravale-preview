@@ -61,6 +61,7 @@
 
   async function deleteCharacter(ch){
     if(!isDm()||!ch?.id)return;
+    if(ch.demoCurator==='Aster'||ch.demoTemplateSlot){showNotice('The curated Wayfarers are permanent campaign characters.');return}
     const answer=await typedConfirmation({
       title:"Delete "+ch.name+"?",
       message:"This deletes this real character sheet from the selected campaign, including its live HP, inventory and roster slot. An archive snapshot is retained for recovery; the action cannot be undone in the interface.",
@@ -79,25 +80,6 @@
     showNotice("Deleted "+(data?.name||ch.name)+". A recovery snapshot was archived.");
     schedule();
   }
-  async function resetDemo(){
-    if(!isDm())return;
-    const accepted=await typedConfirmation({
-      title:"Restore the demonstration table?",
-      message:"Every current character in this demo, including changes made by test players, will be archived and replaced with Aster Vaelith and his six companions at their starting levels, equipment, HP and Blood State. This does not affect any other campaign.",
-      phrase:"RESET DEMO",submitLabel:"Reset all demo characters"
-    });
-    if(!accepted)return;
-    const {data,error}=await client().rpc("terravale_reset_demo",
-      {confirm_text:"RESET DEMO"});
-    if(error){showNotice("Demo reset failed: "+error.message);return}
-    partyCache=null;
-    await bridge()?.syncCharacters?.();
-    await loadParty(true);
-    if(path().startsWith("/characters/"))navigate("/campaigns/"+db.campaign);
-    showNotice("Demo restored: "+data.seeded+" starting party sheets.");
-    schedule();
-  }
-
   const makeButton=(text,action,className="")=>{
     const b=document.createElement("button");b.type="button";
     b.className="tv-demo-btn "+className;b.textContent=text;
@@ -176,7 +158,10 @@
   }
   function characterButtons(ch){
     const area=document.createElement("div");area.className="tv-admin-inline";
-    area.append(makeButton("Delete character",()=>deleteCharacter(ch),"tv-danger"));
+    if(ch.demoCurator==='Aster'||ch.demoTemplateSlot){
+      const note=document.createElement("small");note.className="tv-demo-permanent-note";
+      note.textContent="Permanent · played by Aster";area.append(note);
+    }else area.append(makeButton("Delete character",()=>deleteCharacter(ch),"tv-danger"));
     return area;
   }
   function mountAdmin(){
@@ -185,15 +170,13 @@
     const route=path(), demoId=db.campaigns.find(c=>bridge()?.isDemo?.(c.id))?.id;
     const selectedCampaign=db.campaign;
     // DM Chronicle and demo campaign: manager shows actual synced records.
-    if((route.startsWith("/dm")||
-       (route.startsWith("/campaigns/")&&route.split("/")[2]===demoId))
-       &&!el.querySelector("#tv-demo-admin")){
+    if(route.startsWith("/dm")&&!el.querySelector("#tv-demo-admin")){
       const panel=document.createElement("section");panel.id="tv-demo-admin";panel.className="tv-demo-admin";
       const eyebrow=document.createElement("div");eyebrow.className="tv-eyebrow";
       eyebrow.textContent="DM CHRONICLE · CHARACTER MANAGEMENT";
-      const h=document.createElement("h2");h.textContent="Characters & demo reset";
+      const h=document.createElement("h2");h.textContent="Campaign characters";
       const note=document.createElement("p");
-      note.textContent="Delete individual characters with name confirmation. Restore the demo to its curated initial state without affecting other campaigns.";
+      note.textContent="The seven Aster-curated characters are permanent. Other campaign characters can be deleted individually with name confirmation.";
       const list=document.createElement("div");list.className="tv-demo-admin-list";
       const characters=(db.characters||[]).filter(c=>c.campaign===selectedCampaign);
       for(const ch of characters){
@@ -207,20 +190,14 @@
       }
       if(!characters.length)list.textContent="No characters in the currently selected campaign.";
       panel.append(eyebrow,h,note,list);
-      if(demoId&&bridge()?.hasCampaign?.(demoId)&&(
-        selectedCampaign===demoId||route.startsWith("/campaigns/"+demoId))){
-        const bottom=document.createElement("div");bottom.className="tv-demo-admin-bottom";
-        const resetText=document.createElement("p");
-        resetText.textContent="Demo reset archives the current party and restores seven starting sheets, including Aster Vaelith. Other campaigns remain untouched.";
-        bottom.append(resetText,makeButton("Restore original demo party",resetDemo,"tv-danger"));
-        panel.append(bottom);
-      }
+      // No demo reset: curated characters now have permanent saved records.
       el.append(panel);
     }
     // Also expose direct delete in character sheet when it's a DM-owned campaign.
     if(route.startsWith("/characters/")&&!el.querySelector("#tv-character-admin")){
       const id=route.split("/")[2],ch=(db.characters||[]).find(c=>c.id===id);
       if(!ch||!bridge()?.hasCampaign?.(ch.campaign))return;
+      if(ch.demoCurator==='Aster'||ch.demoTemplateSlot)return;
       const sec=document.createElement("section");sec.id="tv-character-admin";sec.className="tv-character-admin";
       sec.append(document.createTextNode("DM actions"),characterButtons(ch));
       el.append(sec);
