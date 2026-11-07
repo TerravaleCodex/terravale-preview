@@ -38,6 +38,8 @@ jobs:
           assert '--scene-fit' in home
           assert 'overscroll-behavior:none' in home
           assert 'function fitScene()' in home
+          assert 'id="secret-placeholder"' in home
+          assert 'opacity:0;box-shadow:none;appearance:none' in home
           assert 'class="storm"' in home
           assert 'id="countdown-hours"' in home
           assert '2026-11-08T00:00:00Z' in home
