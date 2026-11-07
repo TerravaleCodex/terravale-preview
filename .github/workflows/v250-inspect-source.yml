@@ -1,0 +1,18 @@
+name: Inspect campaign tabs and inventory sheet source (no publish)
+on:
+  pull_request:
+    paths:
+      - "tools/v250-inspect-source.py"
+      - ".github/workflows/v250-inspect-source.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 tools/assemble-approved-v239.py
+          python3 tools/overlay-v239-with-discord.py
+          python3 tools/v250-inspect-source.py
