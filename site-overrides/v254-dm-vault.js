@@ -33,6 +33,23 @@ function select(options,value){
  }
  return s;
 }
+function chipSelect(options,current){
+ const group=node('div','tv255-tile-options tv255-item-chips');
+ group.setAttribute('role','group');
+ group.value=String(current??options[0]?.[0]??'');
+ const update=()=>{
+  group.querySelectorAll('button').forEach(b=>{
+   const active=b.dataset.choice===group.value;
+   b.classList.toggle('selected',active);
+   b.setAttribute('aria-pressed',String(active));
+  });
+ };
+ for(const [id,title] of options){
+  const b=button(title,()=>{group.value=String(id);update()},'tv255-option');
+  b.dataset.choice=String(id);group.append(b);
+ }
+ update();return group;
+}
 function field(label,value,opts={}){
  const wrap=node('label','tv254-label');
  wrap.append(node('span','',label));
@@ -120,9 +137,9 @@ function renderItemEditor(host,mode,existing){
  const damage=field('Weapon damage',p.damage_dice||'',{maxLength:80});
  const damageType=field('Damage type',p.damage_type||'',{maxLength:80});
  row(form,ac,bonus,damage,damageType);
- const attackAbility=select(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'No ability modifier':x.toUpperCase()]),p.attack_ability||'none');
- const damageAbility=select(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'No ability modifier':x.toUpperCase()]),p.damage_ability||'none');
- const addSelect=(text,el)=>{const label=node('label','tv254-label');label.append(node('span','',text),el);return label};
+ const attackAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.attack_ability||'none');
+ const damageAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.damage_ability||'none');
+ const addSelect=(text,el)=>{const label=node('div','tv254-label');label.append(node('span','',text),el);return label};
  row(form,addSelect('Attack ability',attackAbility),addSelect('Damage ability',damageAbility));
  const weapon=checkbox('Weapon action in Session Room',p.weapon_action);
  const proficient=checkbox('Proficient with attack',p.proficient);
@@ -133,7 +150,7 @@ function renderItemEditor(host,mode,existing){
  const cost=field('Activation cost',p.charge_cost??1,{type:'number',min:1,max:999});
  const amount=field('Flat recovery amount (0 = all)',p.recharge_amount??0,{type:'number',min:0,max:999});
  row(form,charges,maximum,cost,amount);
- const recovery=select([['manual','Manual / DM'],['short','Short or long rest'],['long','Long rest'],['dawn','DM-confirmed dawn']],p.recovery||'manual');
+ const recovery=chipSelect([['manual','Manual / DM'],['short','Short or long rest'],['long','Long rest'],['dawn','Dawn']],p.recovery||'manual');
  const rechargeDice=field('Recharge dice (optional)',p.recharge_dice||'',{maxLength:80});
  row(form,addSelect('Recharge trigger',recovery),rechargeDice);
  const attunement=checkbox('Requires attunement',p.attunement);
@@ -265,9 +282,9 @@ function dispatchEditor(host){
    node('h2','','Issue '+row.item_data.name));
  if(!recipients.length){section.append(node('p','','No campaign characters available yet.'));host.append(section);return}
  const form=node('form','tv254-form-row');
- const target=select(recipients.map(c=>[c.id,c.name+' · '+c.ancestry]),recipients[0].id);
+ const target=chipSelect(recipients.map(c=>[c.id,c.name+' · '+c.ancestry]),recipients[0].id);
  const qty=field('Quantity to issue',1,{type:'number',min:1,max:Number(row.item_data.qty)||1});
- form.append((()=>{const label=node('label','tv254-label');label.append(node('span','','Recipient character'),target);return label})(),
+ form.append((()=>{const label=node('div','tv254-label');label.append(node('span','','Recipient character'),target);return label})(),
   qty.wrap);
  const actions=node('div','tv254-actions');
  const send=node('button','btn primary small','Send prepared item');send.type='submit';
@@ -292,8 +309,10 @@ function inventoryManager(host){
  if(!characters.length){sec.append(node('p','tv254-muted','Characters appear here when they join this campaign.'));host.append(sec);return}
  const active=characters.find(c=>c.id===panelState.character)||characters[0];
  panelState.character=active.id;
- const pick=select(characters.map(c=>[c.id,c.name+' · '+c.level+' · '+(c.ownerName||'Player')]),active.id);
- pick.addEventListener('change',()=>{panelState.character=pick.value;panelState.editing=null;renderVaultBody()});
+ const pick=chipSelect(characters.map(c=>[c.id,c.name+' · '+c.level+' · '+(c.ownerName||'Player')]),active.id);
+ pick.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  panelState.character=pick.value;panelState.editing=null;renderVaultBody();
+ }));
  sec.append(pick);
  const menu=node('div','tv254-actions');
  menu.append(button('+ Add item directly',()=>{panelState.editing={mode:'character',id:null};renderVaultBody()},'btn primary small'));
