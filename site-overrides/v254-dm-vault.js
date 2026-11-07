@@ -387,7 +387,39 @@ function bonusManager(host){
   }),'An extra '+kind.value+' choice is waiting on the player’s character sheet.');
  });
  sec.append(form);
+ const pending=node('div','tv254-pending-languages');
+ pending.append(node('div','tv254-form-heading','Restricted ancestry language approvals'));
+ pending.append(node('p','tv254-small','Checking player language requests…'));
+ sec.append(pending);
  host.append(sec);
+ // The pending list comes from the actual character record, never an invented
+ // choice. Only the campaign DM may confirm a restricted language.
+ const ids=members.map(m=>m.id);
+ api().from('terravale_character_proficiencies')
+  .select('character_id,pending_languages').in('character_id',ids)
+  .then(({data,error})=>{
+   if(!pending.isConnected)return;
+   pending.replaceChildren(node('div','tv254-form-heading','Restricted ancestry language approvals'));
+   if(error){pending.append(node('p','tv254-small','Unable to retrieve pending languages: '+error.message));return}
+   let count=0;
+   for(const record of data||[]){
+    const character=members.find(x=>x.id===record.character_id);
+    for(const entry of record.pending_languages||[]){
+     const language=tools().languages.find(x=>x.id===entry.id);
+     if(!character||!language)continue;
+     count++;
+     const row=node('div','tv254-stock-row');
+     row.append(node('span','',character.name+' · '+language.name),
+       button('Approve language',async()=>{
+        await act(api().rpc('terravale_dm_approve_language',{
+         target_character:character.id,language_id:language.id
+        }),'Approved '+language.name+' for '+character.name+'.');
+       },'btn primary small'));
+     pending.append(row);
+    }
+   }
+   if(!count)pending.append(node('p','tv254-small','No restricted language requests are waiting.'));
+  });
 }
 function renderVaultBody(){
  const root=document.getElementById('tv254-dm-vault');
