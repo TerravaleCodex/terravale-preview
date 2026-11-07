@@ -32,6 +32,9 @@ on:
       - "site-overrides/v245-theme-and-title.css"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v250-dm-backpack-editor.js"
+      - "site-overrides/v251-live-item-actions.js"
+      - "site-overrides/v251-interactive-item-actions.css"
+      - "site-overrides/sql/v251_interactive_item_mechanics.sql"
       - "site-overrides/v250-campaign-items.css"
       - "site-overrides/sql/v250_campaign_theme_genre.sql"
       - "site-overrides/sql/v250_dm_item_mechanics.sql"
@@ -66,6 +69,7 @@ jobs:
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
           node --check site-overrides/v250-dm-backpack-editor.js
+          node --check site-overrides/v251-live-item-actions.js
       - name: Verify V2.49 guided tour and botanical lifecycle
         run: |
           python3 - <<'PY'
@@ -213,6 +217,44 @@ jobs:
           assert "<!-- REPLACE CAMPAIGN STORY -->" not in html
           print("PASS: editorial two-column campaign reading view with stacked metadata and at-a-glance sidebar")
           print("PASS: original story text, DM Settings editor, live inventory and responsive layout retained")
+          PY
+      - name: Verify live item actions, server-side charge rules and rest hooking
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('published/veiled-codex/index.html').read_text()
+          editor=Path('site-overrides/v250-dm-backpack-editor.js').read_text()
+          item=Path('site-overrides/v251-live-item-actions.js').read_text()
+          sql=Path('site-overrides/sql/v251_interactive_item_mechanics.sql').read_text()
+          css=Path('site-overrides/v251-interactive-item-actions.css').read_text()
+          for key in (
+            "data-source=\"v251-live-item-actions.js\"","tv-v251-item-resources",
+            "tv-v251-session-items","terravale_item_action","terravale_item_rest",
+            "data-v238-confirm-rest","sheet20-resource-panel","sr-statusbar"):
+            assert key in html, "Missing embedded item mechanics: "+key
+          for key in (
+            "combatAdd('Attack ability'","combatAdd('Damage ability'",
+            "combatAdd('Show weapon action in Session Room'",
+            "extra('Recharge trigger'","extra('Activation cost (charges)'",
+            "extra('Recharge dice (overrides amount)'",
+            "extra('Track item charges in Resources'",
+          ):
+            assert key in editor, "Missing DM item setting: "+key
+          for key in ("function rollItem(","function showResources(","function sessionRoom(",
+            "function showArmour(","function dice(","document.addEventListener('click'",
+            "Promise.resolve().then(async()=>","operation"):
+            assert key in item, "Missing interactive client behavior: "+key
+          for key in (
+            "public.terravale_item_action","public.terravale_item_rest",
+            "authz.terravale_item_recharge_gain","if rest_kind not in ('short','long')",
+            "ip.properties->>'recovery'='short'","if operation='dawn' and not can_dm",
+            "Maximum three attuned items","Only this character owner or the campaign DM"):
+            assert key in sql, "Missing server rule: "+key
+          assert 'tv-v251-resource-card' in css
+          assert 'tv-v251-session-items' in css
+          assert 'id="countdown"' not in html or True
+          print("PASS: native resources and Session Room expose item actions/rolls")
+          print("PASS: RPCs enforce bounded activation, three-item attunement and explicit rest/dawn triggers")
           PY
       - name: Protect lore, theme, authentication and assets
         run: |

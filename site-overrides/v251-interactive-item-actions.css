@@ -1,0 +1,80 @@
+/* V2.51 — native-sheet item resource and Session Room action integration. */
+.tv-v251-armour{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;
+ margin:13px 0 19px;padding:14px 19px;
+ background:color-mix(in srgb,var(--accent) 8%,var(--surface));
+ border:1px solid color-mix(in srgb,var(--accent) 28%,var(--edge));
+ border-radius:12px;color:var(--ink);
+}
+.tv-v251-armour>strong{font:600 18px var(--serif,Georgia,serif)}
+.tv-v251-armour>span{font-size:11px;color:var(--soft);line-height:1.5}
+.tv-v251-armour>small{display:block;flex-basis:100%;font-size:10px;color:var(--dim);line-height:1.6}
+.tv-v251-item-resources{
+ margin-top:19px;padding-top:18px;border-top:1px solid var(--edge);
+ min-width:0;
+}
+.tv-v251-item-resources h4{
+ font:500 20px var(--serif,Georgia,serif);margin:7px 0 14px;color:var(--ink);
+}
+.tv-v251-resource-card{
+ margin:10px 0;padding:14px 15px;
+ background:color-mix(in srgb,var(--accent) 5%,var(--raised));
+ border:1px solid color-mix(in srgb,var(--accent) 22%,var(--edge));
+ border-radius:11px;
+}
+.tv-v251-resource-title{
+ display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;
+}
+.tv-v251-resource-title strong{font-size:12px;color:var(--ink);overflow-wrap:anywhere}
+.tv-v251-resource-title small{font-size:10px;color:var(--dim)}
+.tv-v251-count{font-size:17px;font-weight:650;letter-spacing:.02em;margin:13px 0 7px;color:var(--ink)}
+.tv-v251-bar{
+ width:100%;height:7px;overflow:hidden;border-radius:99px;
+ background:color-mix(in srgb,var(--edge) 76%,transparent);
+}
+.tv-v251-bar>span{
+ display:block;height:100%;border-radius:99px;
+ background:var(--accent);transition:width .26s ease;
+}
+.tv-v251-resource-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.tv-v251-resource-actions button,.tv-v251-weapon-actions button{font-size:11px}
+.tv-v251-resource-actions button:disabled,.tv-v251-weapon-actions button:disabled{opacity:.4;cursor:not-allowed}
+.tv-v251-warning{font-size:11px;color:var(--soft);margin:10px 0 0}
+.tv-v251-rule{font-size:11px;line-height:1.75;color:var(--soft);margin:11px 0 0;overflow-wrap:anywhere}
+.tv-v251-ability{margin-top:13px}
+.tv-v251-ability summary{font-size:11px;color:var(--accent);cursor:pointer;font-weight:700}
+.tv-v251-ability p{font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--soft)}
+.tv-v251-session-items{
+ border:1px solid color-mix(in srgb,var(--accent) 30%,var(--edge));
+ border-radius:15px;padding:clamp(17px,2.5vw,27px);margin:21px 0;
+ background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 4%,var(--surface)),var(--surface));
+}
+.tv-v251-session-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.tv-v251-session-heading h3{font:500 clamp(24px,2.3vw,31px) var(--serif,Georgia,serif);margin:7px 0}
+.tv-v251-annotation{font-size:11px;color:var(--soft)}
+.tv-v251-actors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
+.tv-v251-actor{min-width:0;padding:15px 17px;border:1px solid var(--edge);border-radius:11px;background:var(--raised)}
+.tv-v251-actor h4{font:500 20px var(--serif,Georgia,serif);color:var(--ink);margin:0 0 13px}
+.tv-v251-weapon-row{padding:11px 0;border-top:1px solid var(--edge);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:11px}
+.tv-v251-weapon-details{min-width:110px;flex:1;display:flex;flex-direction:column;gap:5px}
+.tv-v251-weapon-details strong{font-size:12px;color:var(--ink);overflow-wrap:anywhere}
+.tv-v251-weapon-details small{font-size:10px;line-height:1.5;color:var(--dim)}
+.tv-v251-weapon-actions{display:flex;gap:6px;flex-wrap:wrap}
+.tv-v251-roll-history{margin-top:22px;padding-top:16px;border-top:1px solid var(--edge)}
+.tv-v251-roll-history h4{font:550 16px var(--serif,Georgia,serif);margin:0 0 12px}
+.tv-v251-roll-lines{display:flex;flex-direction:column;gap:7px}
+.tv-v251-roll-log{display:flex;justify-content:space-between;gap:13px;flex-wrap:wrap;background:color-mix(in srgb,var(--accent) 4%,var(--raised));border:1px solid var(--edge);border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.65;color:var(--ink)}
+.tv-v251-roll-log time{color:var(--dim);font-size:10px;white-space:nowrap}
+.tv-v251-muted{font-size:11px;color:var(--dim);line-height:1.7}
+.tv-item-editor .tv-item-editor-hint{grid-column:1 / -1}
+@media(max-width:700px){
+ .tv-v251-weapon-row{flex-direction:column;align-items:stretch}
+ .tv-v251-weapon-actions{width:100%}
+ .tv-v251-weapon-actions button{flex:1}
+ .tv-v251-actor{padding:13px}
+ .tv-v251-session-heading{align-items:flex-start}
+ .tv-v251-roll-log{flex-direction:column;gap:2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .tv-v251-bar>span{transition:none}
+}

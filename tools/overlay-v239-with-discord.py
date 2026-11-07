@@ -48,6 +48,7 @@ css += "\n" + theme_bridge_css(source)
 css += "\n" + (ROOT / "site-overrides/v247-admin-and-themes.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v248-themes-achievements.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v250-campaign-items.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v251-interactive-item-actions.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -59,6 +60,7 @@ achievements = (ROOT / "site-overrides/v248-achievement-notices.js").read_text()
 preferences = (ROOT / "site-overrides/v248-live-preferences-tutorial.js").read_text()
 demo_sheets = (ROOT / "site-overrides/v248-curated-demo-sheets.js").read_text()
 dm_items = (ROOT / "site-overrides/v250-dm-backpack-editor.js").read_text()
+live_items = (ROOT / "site-overrides/v251-live-item-actions.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -116,6 +118,7 @@ inline_js = (
     '<script data-source="v248-live-preferences-tutorial.js">\n' + preferences + '\n</script>\n'
     '<script data-source="v248-curated-demo-sheets.js">\n' + demo_sheets + '\n</script>\n'
     '<script data-source="v250-dm-backpack-editor.js">\n' + dm_items + '\n</script>\n'
+    '<script data-source="v251-live-item-actions.js">\n' + live_items + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -136,6 +139,7 @@ assert source.count('data-source="v248-achievement-notices.js"') == 1
 assert source.count('data-source="v248-live-preferences-tutorial.js"') == 1
 assert source.count('data-source="v248-curated-demo-sheets.js"') == 1
 assert source.count('data-source="v250-dm-backpack-editor.js"') == 1
+assert source.count('data-source="v251-live-item-actions.js"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
