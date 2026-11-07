@@ -32,7 +32,7 @@ function mountGiftForm(){
  const c=currentChar();
  const backpack=document.querySelector('#pageRoot .sheet20-content .sheet21-backpack-zone');
  const existing=document.getElementById('tv-v253-gift-form');
- if(!backpack||!c||!canSend(c)||!sendable(c).length||!recipients(c).length){
+ if(!backpack||!c||!canSend(c)||!sendable(c).length){
    existing?.remove();
    return;
  }
@@ -42,7 +42,7 @@ function mountGiftForm(){
  panel.id='tv-v253-gift-form';panel.dataset.character=String(c.id);
  panel.append(node('summary','','Give an item to another player'));
  const help=node('p','tv-v253-gift-help',
-   'Send an item from this backpack to another player in the same campaign. Charged or enchanted items keep their current properties, but the recipient must attune again. Equipped items must be unequipped first.');
+   'Send an item to the Dungeon Master’s shopkeeper vault or another player in this campaign. Charged items keep their charges and rules; the recipient must attune again. Unequip items before transferring.');
  panel.append(help);
  const form=node('form','tv-v253-gift-fields');
  const itemLabel=node('label','','Choose an item');
@@ -54,6 +54,9 @@ function mountGiftForm(){
  itemLabel.append(itemSelect);
  const targetLabel=node('label','','Send to character');
  const targetSelect=node('select');targetSelect.name='recipient';targetSelect.required=true;
+ const dmOption=node('option','','Dungeon Master · Shopkeeper vault');
+ dmOption.value='dm-vault';
+ targetSelect.append(dmOption);
  for(const target of recipients(c)){
    const option=node('option','',target.name+' · '+(target.ownerName||'Party member'));
    option.value=String(target.id);targetSelect.append(option);
@@ -83,10 +86,11 @@ function mountGiftForm(){
  form.addEventListener('submit',async e=>{
    e.preventDefault();
    if(busy||!state()?.ready)return;
-   const item=chosen(),target=recipients(c).find(x=>String(x.id)===String(targetSelect.value));
+   const item=chosen(),toDm=targetSelect.value==='dm-vault';
+   const target=toDm?null:recipients(c).find(x=>String(x.id)===String(targetSelect.value));
    const qty=Number(number.value);
    const available=Number(item?.qty??item?.quantity)||1;
-   if(!item||!target||!Number.isInteger(qty)||qty<1||qty>available){
+   if(!item||(!toDm&&!target)||!Number.isInteger(qty)||qty<1||qty>available){
      status.textContent='Please select an available item, another player, and a valid quantity.';return;
    }
    const powers=c.dmItemProperties?.[item.id];
@@ -95,17 +99,21 @@ function mountGiftForm(){
    }
    busy=true;send.disabled=true;status.textContent='Moving the item securely…';
    try{
-     const {data,error}=await client().rpc('terravale_send_backpack_item',{
-       source_character:c.id,recipient_character:target.id,
-       source_item_id:String(item.id),send_quantity:qty
-     });
+     const {data,error}=toDm?
+       await client().rpc('terravale_send_item_to_dm_vault',{
+         source_character:c.id,source_item_id:String(item.id),send_quantity:qty
+       }):
+       await client().rpc('terravale_send_backpack_item',{
+         source_character:c.id,recipient_character:target.id,
+         source_item_id:String(item.id),send_quantity:qty
+       });
      if(error||!data?.sent)throw error||new Error('The server did not confirm the transfer.');
      c.inventory=data.source_inventory;
-     target.inventory=data.recipient_inventory;
+     if(target)target.inventory=data.recipient_inventory;
      if(typeof persist==='function')persist();
      await bridge()?.syncCharacters?.();
      if(typeof renderPage==='function')renderPage(false);
-     toastStatus(qty+' × '+(data.item_name||item.name)+' sent from '+c.name+' to '+target.name+'.');
+     toastStatus(qty+' × '+(data.item_name||item.name)+' sent from '+c.name+' to '+(toDm?'the Dungeon Master vault':target.name)+'.');
    }catch(error){
      status.textContent='Could not send item: '+(error?.message||String(error));
      send.disabled=false;
@@ -140,7 +148,8 @@ function renderNotification(){
  const from=node('strong','',current.source_character_name);
  const item=node('strong','',current.item_quantity+' × '+current.item_name);
  const target=node('strong','',current.target_character_name);
- message.append(player,' playing ',from,' sent ',item,' to your character ',target,'.');
+ if(current.target_character_name==='DM Vault')message.append(player,' playing ',from,' delivered ',item,' into your DM Vault.');
+ else message.append(player,' playing ',from,' sent ',item,' to your character ',target,'.');
  card.append(message,node('p','tv-v253-gift-small',
    'The item is already in their backpack. Its remaining charges and powers travelled with it. This notice stays until you dismiss it.'));
  const actions=node('div','tv-v253-gift-actions');

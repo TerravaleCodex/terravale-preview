@@ -172,7 +172,14 @@ function sessionRoom(){
  else{const grid=node('div','tv-v251-actors');for(const c of actors)grid.append(roomCard(c));panel.append(grid)}
  const history=node('div','tv-v251-roll-history');history.append(node('h4','','Recent item rolls'));
  const lines=node('div','tv-v251-roll-lines');lines.id='tv-v251-roll-lines';history.append(lines);panel.append(history);
- top.insertAdjacentElement('afterend',panel);renderLog();
+ // Keep the original initiative first. Item actions belong BELOW both the
+ // party chat and dice/checks grid, immediately before combat activity.
+ const workspace=document.querySelector('#pageRoot .sr-workspace');
+ const activity=workspace?.querySelector('.sr-pulse,.sr-pulse-log,.sr-activity-log');
+ if(activity)activity.insertAdjacentElement('beforebegin',panel);
+ else if(workspace)workspace.append(panel);
+ else top.insertAdjacentElement('afterend',panel);
+ renderLog();
 }
 function mount(){
  if(typeof db==='undefined'||!ready())return;
