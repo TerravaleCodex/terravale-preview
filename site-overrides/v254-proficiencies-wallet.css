@@ -1,0 +1,77 @@
+/* V2.54 — readable class starting choices, tools, languages and wallet in Equipment. */
+.tv254-creator-proficiency,.tv254-proficiency-card{
+ margin:20px 0 15px;padding:clamp(17px,2vw,26px);
+ border:1px solid color-mix(in srgb,var(--accent) 28%,var(--edge));
+ border-radius:12px;background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+}
+.tv254-creator-proficiency h3,.tv254-proficiency-card h3{
+ font:500 25px/1.3 var(--serif,Georgia,serif);
+ margin:8px 0 14px;color:var(--ink);
+}
+.tv254-creator-proficiency .tv254-eyebrow,.tv254-proficiency-card .tv254-eyebrow{
+ color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800;
+}
+.tv254-proficiency-fields{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:13px;margin:14px 0;
+}
+.tv254-proficiency-label{
+ display:flex;flex-direction:column;gap:7px;
+ color:var(--ink);font-size:11px;font-weight:700;min-width:0;
+}
+.tv254-proficiency-select{
+ width:100%;min-width:0;padding:11px 12px;
+ background:var(--raised);color:var(--ink);
+ border:1px solid var(--edge);border-radius:9px;font-size:12px;
+}
+.tv254-proficiency-select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tv254-small{
+ font-size:11px;line-height:1.7;color:var(--soft);margin:7px 0;
+}
+.tv254-warning{
+ font-size:11px;line-height:1.7;color:#e6b67e;
+ padding:9px 0;margin:8px 0;
+}
+.tv254-proficiency-group{
+ padding:13px 0;border-bottom:1px solid var(--edge);
+}
+.tv254-proficiency-group>strong{
+ font-size:12px;line-height:1.4;color:var(--ink);
+}
+.tv254-proficiency-pills{
+ display:flex;gap:7px;flex-wrap:wrap;margin:11px 0 0;
+}
+.tv254-proficiency-pill{
+ padding:6px 10px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--edge));
+ background:color-mix(in srgb,var(--accent) 7%,var(--raised));
+ border-radius:999px;color:var(--ink);font-size:10px;
+}
+.tv254-bonus-request,.tv254-starting-choice{
+ padding:17px;margin:14px 0;border:1px solid var(--edge);
+ border-radius:10px;background:var(--raised);
+}
+.tv254-bonus-request>strong{font-size:13px;line-height:1.5}
+.tv254-starting-choice h4{
+ font:500 20px var(--serif,Georgia,serif);margin:0 0 12px;
+}
+#tv254-sheet-wallet{margin-top:19px}
+.tv254-wallet-total{
+ display:block;font-size:15px;color:var(--ink);margin-bottom:14px;
+}
+.tv254-wallet-equivalent{
+ font:550 17px var(--serif,Georgia,serif);
+ color:var(--ink);margin:14px 0 6px;line-height:1.5;
+}
+.tv254-wallet-holdings{margin:10px 0;display:flex;flex-direction:column;gap:7px}
+.tv254-wallet-line{
+ padding:11px;border:1px solid var(--edge);border-radius:7px;
+ background:var(--raised);color:var(--ink);font-size:11px;line-height:1.65;
+}
+.tv254-wallet-ledger{margin:15px 0}
+.tv254-wallet-ledger summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:700}
+.tv254-wallet-ledger p{padding:7px 0;border-bottom:1px solid var(--edge)}
+/* Keep a reader-focused font scale even on a wide 24-inch desktop display. */
+@media(max-width:750px){
+ .tv254-proficiency-fields{grid-template-columns:1fr}
+ .tv254-proficiency-card,.tv254-creator-proficiency{padding:17px}
+}
