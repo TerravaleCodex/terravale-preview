@@ -19,9 +19,9 @@ const button=(txt,fn,cls='btn ghost small')=>{
 const sourceChars=()=>typeof db==='undefined'?[]:db.characters||[];
 const ownedCampaigns=()=>typeof db==='undefined'?[]:db.campaigns.filter(c=>c.role==='dm');
 const currentCampaign=()=>ownedCampaigns().find(c=>c.id===panelState.campaign)||ownedCampaigns()[0];
-const actorIsDm=()=>ready()&&auth().state.profile?.is_dm&&ownedCampaigns().length>0;
+const actorIsDm=()=>ready()&&auth().state.profile?.is_dm&&db.role==='dm'&&ownedCampaigns().length>0;
 const notify=text=>typeof toast==='function'?toast(text):console.info('[Vault]',text);
-const panelState={mode:'chronicle',campaign:null,character:null,vault:[],busy:false,loadedCampaign:null,search:'',editing:null};
+const panelState={mode:'chronicle',view:'overview',campaign:null,character:null,vault:[],busy:false,loadedCampaign:null,search:'',editing:null};
 const tools=()=>window.TerravaleRulesV4||{currencies:[],tools:[],languages:[]};
 const charsForCampaign=()=>sourceChars().filter(c=>c.campaign===currentCampaign()?.id);
 function select(options,value){
@@ -196,13 +196,21 @@ function renderItemEditor(host,mode,existing){
  host.append(form);
 }
 function createCampaignPicker(host){
- const campaign=currentCampaign();
- const box=node('div','tv254-campaign-picker');
- box.append(node('span','','ACTIVE DM CAMPAIGN'));
- const picker=select(ownedCampaigns().map(c=>[c.id,c.name]),campaign?.id);
- picker.addEventListener('change',async()=>{panelState.campaign=picker.value;panelState.character=null;panelState.editing=null;await refreshCurrent()});
- box.append(picker);
- host.append(box);
+ const active=currentCampaign();
+ const panel=node('div','tv254-campaign-picker tv255-campaign-chips');
+ panel.append(node('span','tv254-eyebrow','ACTIVE DM CAMPAIGN'));
+ const group=node('div','tv255-chip-row');
+ for(const c of ownedCampaigns()){
+  const chip=button(c.name,async()=>{
+   if(panelState.campaign===c.id)return;
+   panelState.campaign=c.id;panelState.character=null;panelState.editing=null;
+   panelState.loadedCampaign=null;panelState.vault=[];
+   await refreshCurrent();
+  },'tv255-choice-chip'+(active?.id===c.id?' chosen':''));
+  chip.setAttribute('aria-pressed',String(active?.id===c.id));
+  group.append(chip);
+ }
+ panel.append(group);host.append(panel);
 }
 function listVault(host){
  const campaign=currentCampaign();
@@ -423,87 +431,172 @@ function bonusManager(host){
    if(!count)pending.append(node('p','tv254-small','No restricted language requests are waiting.'));
   });
 }
+const V255_CHRONICLE_SECTIONS=[
+ ['overview','Overview','layout-dashboard'],
+ ['vault','Item Vault','package'],
+ ['party','Party Inventories','users'],
+ ['treasury','Treasury','coins'],
+ ['feats','Feat Forge','sparkles'],
+ ['training','Training & Languages','book-open']
+];
+function v255SectionTitle(){
+ return Object.fromEntries(V255_CHRONICLE_SECTIONS.map(([id,name])=>[id,name]));
+}
+function v255Overview(host){
+ const chars=charsForCampaign();
+ const pending=chars.filter(c=>c.status==='Pending');
+ const cards=node('div','tv255-overview-stats');
+ for(const [number,name] of [
+  [chars.length,'Campaign characters'],
+  [panelState.vault.length,'Prepared item entries'],
+  [pending.length,'Awaiting character approval']]){
+  const c=node('div','tv255-stat-card');
+  c.append(node('strong','',number),node('span','',name));cards.append(c);
+ }
+ host.append(cards);
+ const intro=node('div','tv255-page-notice');
+ intro.append(node('h2','','One task, one room.'),
+ node('p','','Pick a workshop below. Your campaign data stays connected: prepared items, character backpacks, wallets, feats and training each have their own space.'));
+ host.append(intro);
+ const grid=node('div','tv255-hub-grid');
+ const menu=[
+  ['vault','Item Vault','Build weapons, trinkets and enchanted items ahead of time. Issue them when the story calls for it.','Prepare items'],
+  ['party','Party Inventories','Open any character’s real backpack without opening their character sheet.','Manage backpacks'],
+  ['treasury','Treasury','Grant native currency and review what your party actually carries.','Move money'],
+  ['feats','Feat Forge','Write reusable custom feats and give or revoke them on characters.','Create feats'],
+  ['training','Training & Languages','Grant extra picks, suppress proficiencies or set spoken/read/written language abilities.','Adjust training']
+ ];
+ for(const [id,title,description,cta] of menu){
+  const a=node('a','tv255-hub-card');a.href='#/dm/'+id;
+  a.append(node('strong','',title),node('p','',description),node('span','',cta+' ›'));grid.append(a);
+ }
+ host.append(grid);
+ if(pending.length){
+  const queue=node('section','tv254-panel tv255-approval-queue');
+  queue.append(node('div','tv254-eyebrow','CAMPAIGN APPROVALS'),node('h2','','Characters awaiting review'));
+  for(const ch of pending){
+   const row=node('div','tv254-stock-row');
+   const label=node('div','');
+   label.append(node('strong','',ch.name),node('small','',ch.ancestry+' · '+ch.className));
+   const actions=node('div','tv254-stock-actions');
+   const link=node('a','btn ghost small','Open sheet');link.href='#/characters/'+encodeURIComponent(ch.id);
+   const approve=button('Approve',()=>{},'btn primary small');
+   approve.dataset.action='approveCharacter';approve.dataset.id=ch.id;
+   actions.append(link,approve);row.append(label,actions);queue.append(row);
+  }
+  host.append(queue);
+ }
+}
 function renderVaultBody(){
  const root=document.getElementById('tv254-dm-vault');
  if(!root||panelState.mode!=='vault')return;
  root.replaceChildren();
- const intro=node('header','tv254-vault-hero');
- intro.append(node('div','tv254-eyebrow','DM CHRONICLE · VAULT & TREASURY'),
-  node('h1','','The Keeper’s Inventory'),
-  node('p','','A permanent stockroom for prebuilt items, a shopkeeper desk for trades, and direct control over the party’s equipment, currency and additional choices.'));
- root.append(intro);
+ const view=V255_CHRONICLE_SECTIONS.some(x=>x[0]===panelState.view)?panelState.view:'overview';
+ const text={
+  overview:['DM CHRONICLE · OPERATIONS','The Dungeon Master’s Desk','Your campaign controls, organised into dedicated workspaces.'],
+  vault:['DM CHRONICLE · PREPARED STOCK','The Item Vault','Design and store items with full powers and charges, ready to issue later.'],
+  party:['DM CHRONICLE · EQUIPMENT','Party Inventories','Open the real contents of each adventurer’s backpack, no character sheet required.'],
+  treasury:['DM CHRONICLE · FINANCES','The Treasury','Issue native currency to adventurers, keep accounts and inspect holdings.'],
+  feats:['DM CHRONICLE · CUSTOM POWERS','The Feat Forge','Write, save and assign custom feats that become real additions to player records.'],
+  training:['DM CHRONICLE · LANGUAGE & TRAINING','The Training Ledger','Grant extra choices, review restricted language requests and adjust individual proficiencies.']
+ }[view];
+ const header=node('header','tv254-vault-hero tv255-vault-hero');
+ header.append(node('div','tv254-eyebrow',text[0]),node('h1','',text[1]),node('p','',text[2]));
+ root.append(header);
  createCampaignPicker(root);
- const status=node('div','tv254-status');
- status.id='tv254-vault-status';status.setAttribute('role','status');root.append(status);
- if(!currentCampaign()){root.append(node('p','tv254-muted','Create or select a campaign where you are the verified Dungeon Master.'));return}
- const main=node('div','tv254-vault-grid');
- listVault(main);
- if(panelState.editing?.mode==='vault'){
-  const item=panelState.vault.find(x=>x.id===panelState.editing.id);
-  const editor=node('section','tv254-panel tv254-editor-panel');
-  renderItemEditor(editor,'vault',item);main.append(editor);
- }else if(panelState.editing?.mode==='issue'){
-  dispatchEditor(main);
- }else if(panelState.editing?.mode==='character'){
-  const c=charsForCampaign().find(x=>x.id===panelState.character);
-  const item=c?.inventory?.find(x=>x.id===panelState.editing.id);
-  const editor=node('section','tv254-panel tv254-editor-panel');
-  renderItemEditor(editor,'character',item?{item,properties:c.dmItemProperties?.[item.id]||{}}:null);
-  main.append(editor);
- }else{
-  const tips=node('section','tv254-panel tv254-vault-help');
-  tips.append(node('div','tv254-eyebrow','YOUR WORKSHOP'),
-   node('h2','','Ready before the party arrives'),
-   node('p','', 'Create enchanted rings, weapons, consumables and equipment here now. When the party finds or buys one, choose Send: its remaining charges and features move into their real backpack.')),
-   main.append(tips);
+ const status=node('div','tv254-status');status.id='tv254-vault-status';
+ status.setAttribute('role','status');root.append(status);
+ if(!currentCampaign()){
+  root.append(node('p','tv254-muted','Create or select a campaign where you are the verified Dungeon Master.'));
+  return;
  }
- root.append(main);
- const lower=node('div','tv254-vault-lower');
- inventoryManager(lower);
- financeManager(lower);
- bonusManager(lower);
- root.append(lower);
+ const body=node('div','tv255-dm-page');
+ root.append(body);
+ if(view==='overview'){v255Overview(body);return}
+ if(view==='vault'){
+  if(panelState.editing?.mode==='vault'){
+   body.append(button('← Back to Item Vault',()=>{panelState.editing=null;renderVaultBody();},'tv255-back-link'));
+   const item=panelState.vault.find(x=>x.id===panelState.editing.id);
+   const section=node('section','tv254-panel tv255-focused-form');renderItemEditor(section,'vault',item);
+   body.append(section);
+  }else if(panelState.editing?.mode==='issue'){
+   body.append(button('← Back to Item Vault',()=>{panelState.editing=null;renderVaultBody();},'tv255-back-link'));
+   dispatchEditor(body);
+  }else listVault(body);
+  return;
+ }
+ if(view==='party'){
+  if(panelState.editing?.mode==='character'){
+   body.append(button('← Back to Party Inventories',()=>{panelState.editing=null;renderVaultBody();},'tv255-back-link'));
+   const c=charsForCampaign().find(x=>x.id===panelState.character);
+   const item=c?.inventory?.find(x=>x.id===panelState.editing.id);
+   const section=node('section','tv254-panel tv255-focused-form');
+   renderItemEditor(section,'character',
+    item?{item,properties:c.dmItemProperties?.[item.id]||{}}:null);
+   body.append(section);
+  }else inventoryManager(body);
+  return;
+ }
+ if(view==='treasury'){
+  if(window.TerravaleV255Wallet?.renderTreasury)window.TerravaleV255Wallet.renderTreasury(body,currentCampaign(),charsForCampaign());
+  else financeManager(body);
+  return;
+ }
+ if(view==='training'){
+  if(window.TerravaleV255Training?.renderDM)
+   window.TerravaleV255Training.renderDM(body,currentCampaign(),charsForCampaign());
+  else bonusManager(body);
+  return;
+ }
+ if(view==='feats'){
+  if(window.TerravaleV255Feats?.renderForge)
+   window.TerravaleV255Feats.renderForge(body,currentCampaign(),charsForCampaign());
+  else body.append(node('p','tv254-muted','Loading feat workshop…'));
+ }
 }
-function activate(mode){
- panelState.mode=mode;
+function activate(){
+ panelState.mode='vault';
  const root=document.getElementById('pageRoot');
  if(!root)return;
  const nav=root.querySelector('#tv254-chronicle-tabs');
- if(!nav)return;
  const vault=root.querySelector('#tv254-dm-vault');
+ if(!nav||!vault)return;
  for(const child of Array.from(root.children)){
   if(child===nav||child===vault)continue;
-  if(mode==='vault'){
-   if(child.dataset.tv254WasHidden===undefined)child.dataset.tv254WasHidden=child.hidden?'yes':'no';
-   child.hidden=true;
-  }else if(child.dataset.tv254WasHidden!==undefined){
-   child.hidden=child.dataset.tv254WasHidden==='yes';
-   delete child.dataset.tv254WasHidden;
-  }
+  child.hidden=true;
  }
- if(vault)vault.hidden=mode!=='vault';
- nav.querySelectorAll('[data-tv254-tab]').forEach(b=>
-  b.setAttribute('aria-selected',String(b.dataset.tv254Tab===mode)));
- if(mode==='vault'){
-  renderVaultBody();
-  if(panelState.loadedCampaign!==currentCampaign()?.id)refreshCurrent();
- }
+ vault.hidden=false;
+ nav.querySelectorAll('[data-tv254-tab]').forEach(b=>{
+  const selected=b.dataset.tv254Tab===panelState.view;
+  b.setAttribute('aria-current',selected?'page':'false');
+  b.setAttribute('aria-selected',String(selected));
+ });
+ renderVaultBody();
+ if(panelState.loadedCampaign!==currentCampaign()?.id)refreshCurrent();
 }
 function mount(){
- if(location.hash.replace(/^#/,'').split('?')[0]!=='/dm'){panelState.mode='chronicle';return}
+ const routePath=location.hash.replace(/^#/,'').split('?')[0];
+ if(!/^\/dm(\/|$)/.test(routePath)){panelState.mode='chronicle';return}
  if(!actorIsDm())return;
+ const allowed=V255_CHRONICLE_SECTIONS.map(x=>x[0]);
+ const sub=routePath.split('/')[2]||'overview';
+ const view=allowed.includes(sub)?sub:'overview';
  const root=document.getElementById('pageRoot');
- if(!root||root.querySelector('#tv254-chronicle-tabs'))return;
- const tabs=node('nav','tv254-chronicle-tabs');tabs.id='tv254-chronicle-tabs';
- for(const [id,title] of [['chronicle','Chronicle overview'],['vault','Vault & Treasury']]){
-  const b=button(title,()=>activate(id),'tv254-tab');
-  b.dataset.tv254Tab=id;b.setAttribute('aria-selected',String(panelState.mode===id));
+ if(!root)return;
+ if(panelState.view!==view)panelState.editing=null;
+ panelState.view=view;
+ if(root.querySelector('#tv254-chronicle-tabs'))return;
+ const tabs=node('nav','tv254-chronicle-tabs tv255-chronicle-tabs');
+ tabs.id='tv254-chronicle-tabs';tabs.setAttribute('aria-label','DM Chronicle workspaces');
+ for(const [id,title] of V255_CHRONICLE_SECTIONS){
+  const b=node('a','tv254-tab tv255-nav-link',title);
+  b.href=id==='overview'?'#/dm':'#/dm/'+id;
+  b.dataset.tv254Tab=id;
   tabs.append(b);
  }
  const vault=node('section','tv254-dm-vault');vault.id='tv254-dm-vault';
- root.prepend(tabs);
- root.append(vault);
- activate(panelState.mode);
+ root.prepend(tabs);root.append(vault);
+ activate();
 }
 let queued=false;
 const observer=new MutationObserver(()=>{
