@@ -56,6 +56,10 @@ jobs:
               'opacity:0;box-shadow:none;appearance:none',
               'class="storm"',
               'id="countdown-hours"',
+              'The final seal breaks in',
+              'From the ashes, a new chapter rises',
+              'h1 class="standby"',
+              'border:0!important;border-radius:0!important;background:transparent!important',
               '2026-11-08T00:00:00Z',
               'window.location.assign("/terravale-preview/veiled-codex/")',
           )
@@ -107,6 +111,8 @@ jobs:
               "$base/?verify=$GITHUB_SHA-$attempt" > /tmp/terravale-home.html || true
             if grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-home.html &&
                grep -q 'id="countdown-hours"' /tmp/terravale-home.html &&
+               grep -q 'The final seal breaks in' /tmp/terravale-home.html &&
+               grep -q 'From the ashes, a new chapter rises' /tmp/terravale-home.html &&
                grep -q 'animation:sigil-spin' /tmp/terravale-home.html &&
                grep -q '2026-11-08T00:00:00Z' /tmp/terravale-home.html &&
                grep -q 'window.location.assign("/terravale-preview/veiled-codex/")' /tmp/terravale-home.html; then

@@ -276,6 +276,82 @@
     #secret-placeholder:hover,#secret-placeholder:active,#secret-placeholder:focus{
       background:transparent;color:transparent;opacity:0;outline:none;box-shadow:none}
 
+
+    /* Editorial hierarchy: fewer words, more emphasis on the two ritual phrases. */
+    .inner{width:min(100%,960px)}
+    .halo{margin-bottom:clamp(5px,1.4vh,15px)}
+    h1.standby{
+      font:500 clamp(13px,1.45vw,19px)/1.25 Georgia,"Times New Roman",serif;
+      letter-spacing:.24em;text-transform:uppercase;color:#d9bfdc;
+      margin:10px auto 0;text-shadow:0 0 22px #a66ec15c}
+    h1.standby em{
+      font-style:normal;color:#f5decc;background:none;-webkit-background-clip:initial;
+      background-clip:initial;filter:none;animation:none}
+    .countdown{max-width:780px;margin:clamp(12px,2.4vh,25px) auto 0}
+    .countdown::before{display:none}
+    .countdown-title{
+      margin:0 auto clamp(10px,2vh,20px);
+      font:400 clamp(33px,4.2vw,56px)/1.13 Georgia,"Times New Roman",serif;
+      text-transform:none;letter-spacing:-.014em;color:#fff0d6;
+      text-shadow:0 0 38px #e0a2ff83,0 2px 15px #05010b;
+      max-width:100%;text-wrap:balance}
+    .timer{display:flex;align-items:flex-start;justify-content:center;gap:clamp(9px,2.7vw,36px);max-width:710px;margin:auto}
+    .timer-unit{
+      flex:1 1 0;min-width:0;position:relative;padding:0 3px 0;
+      border:0!important;border-radius:0!important;background:transparent!important;
+      box-shadow:none!important;transform:none!important;overflow:visible!important}
+    .timer-unit::after{display:none!important}
+    .timer-unit::before{display:none!important}
+    .timer-unit + .timer-unit::before{
+      display:block!important;content:":";
+      position:absolute;left:calc(-.5 * clamp(9px,2.7vw,36px) - 7px);top:.06em;
+      width:14px;text-align:center;
+      font:400 clamp(43px,6.5vw,80px)/1 Georgia,"Times New Roman",serif;
+      color:#cf9dd8;text-shadow:0 0 18px #b46cef;
+      background:none!important;inset-block-end:auto;opacity:.8}
+    .timer-value{
+      font:400 clamp(68px,8vw,108px)/1.02 Georgia,"Times New Roman",serif;
+      letter-spacing:-.025em;color:#ffeacc;
+      text-shadow:0 0 34px #ddafffa1,0 4px 12px #040108}
+    .timer-label{margin-top:4px;font-size:10px;letter-spacing:.34em;color:#d9bcdc}
+    .countdown-progress{max-width:600px;margin:clamp(11px,2vh,23px) auto 0;height:2px}
+    .countdown-note{margin:12px auto 0;font-size:11px;letter-spacing:.22em;color:#af91b8}
+    .rule{width:min(100%,430px);margin:clamp(15px,2.6vh,28px) auto 11px;
+      background:linear-gradient(90deg,transparent,#e3baed74,transparent)}
+    p.footnote{
+      margin:0 auto;font:400 clamp(25px,3.5vw,45px)/1.2 Georgia,"Times New Roman",serif;
+      text-transform:none;letter-spacing:-.015em;text-wrap:balance;
+      color:#f5d6ec;text-shadow:0 0 29px #d17bea86,0 2px 13px #040109}
+    body.urgent .timer-unit,body.imminent .timer-unit{animation:none}
+    body.urgent .timer-value{animation:hour-glow 2.8s ease-in-out infinite}
+    body.imminent .timer-value{animation:hour-glow 1.4s ease-in-out infinite}
+    @keyframes hour-glow{0%,100%{filter:drop-shadow(0 0 0px #e6afff)}
+      50%{filter:drop-shadow(0 0 22px #db91ff)}}
+    footer{padding:0;height:1px;min-height:1px}
+    @media(max-width:700px){
+      .halo{margin-bottom:clamp(2px,1vh,10px)}
+      h1.standby{font-size:clamp(11px,3vw,15px);letter-spacing:.17em;margin:6px auto 0}
+      .countdown{margin-top:clamp(11px,1.7vh,22px)}
+      .countdown-title{font-size:clamp(25px,7vw,39px);margin-bottom:14px}
+      .timer{gap:clamp(5px,1.8vw,10px)}
+      .timer-unit{padding:0 2px}
+      .timer-unit + .timer-unit::before{
+        font-size:clamp(27px,8.4vw,43px);
+        left:calc(-.5 * clamp(5px,1.8vw,10px) - 3px);width:7px}
+      .timer-value{font-size:clamp(41px,13vw,70px)}
+      .timer-label{font-size:8px;letter-spacing:.15em;margin-top:2px}
+      .countdown-note{font-size:9px;letter-spacing:.1em;margin-top:10px}
+      .rule{margin:clamp(13px,2.2vh,22px) auto 9px}
+      p.footnote{font-size:clamp(22px,5.2vw,33px);line-height:1.2}
+    }
+    @media(max-height:700px) and (min-width:701px){
+      .countdown{margin-top:10px}
+      .countdown-title{font-size:clamp(28px,3.2vw,44px);margin-bottom:9px}
+      .timer-value{font-size:clamp(55px,6vw,78px)}
+      p.footnote{font-size:clamp(24px,2.8vw,36px)}
+      .rule{margin:12px auto 8px}
+    }
+
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 
   </style>
@@ -308,11 +384,9 @@
           <circle cx="50" cy="90" r="2" fill="#e6c1ff"/>
         </svg>
       </div>
-      <div class="omen"><span>✧</span> THE SEAL IS FRACTURING <span>✧</span></div><div class="eyebrow">The hour of awakening approaches</div>
-      <h1>Awaiting <em>2.0</em> update</h1>
-      <p class="lead">The old world falls silent. Beneath the veil, ancient powers awaken.<br><strong>One final night separates what was from what will be.</strong></p>
+      <h1 class="standby">Awaiting <em>2.0</em> update</h1>
       <section class="countdown" aria-labelledby="countdown-title">
-        <p id="countdown-title" class="countdown-title">The final seal breaks in</p>
+        <h2 id="countdown-title" class="countdown-title">The final seal breaks in</h2>
         <div class="timer" role="timer" aria-label="Time remaining until midnight GMT">
           <div class="timer-unit"><span class="timer-value" id="countdown-hours">24</span><span class="timer-label">Hours</span></div>
           <div class="timer-unit"><span class="timer-value" id="countdown-minutes">00</span><span class="timer-label">Minutes</span></div>
@@ -321,10 +395,10 @@
         <div class="countdown-progress" aria-hidden="true"><span id="countdown-progress"></span></div><p class="countdown-note" id="countdown-note">8 November 2026 · 00:00 GMT</p>
       </section>
       <div class="rule"></div>
-      <div class="footnote">✦ &nbsp; From the ashes, a new chapter rises &nbsp; ✦</div>
+      <p class="footnote">From the ashes, a new chapter rises</p>
     </div>
   </main>
-  <footer>Terravale · The Living Codex · Version 2.0 in preparation</footer>
+  <footer aria-hidden="true"></footer>
   <script>
     (() => {
       "use strict";
