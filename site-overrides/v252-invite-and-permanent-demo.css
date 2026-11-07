@@ -13,7 +13,7 @@
  border:1px solid color-mix(in srgb,var(--accent) 37%,var(--edge));
  color:var(--accent);background:transparent;
 }
-.tv-tutorial-panel .tv-tutorial-meter{grid-template-columns:repeat(16,minmax(0,1fr));gap:5px}
+.tv-tutorial-panel .tv-tutorial-meter{grid-template-columns:repeat(15,minmax(0,1fr));gap:5px}
 .tv-tutorial-panel .tv-tutorial-meter button{min-width:0;height:7px;min-height:7px}
 .tv-tutorial-panel [data-tour="visit"]{white-space:normal}
 .tv-tutorial-panel [data-tour="next"]{white-space:normal}
