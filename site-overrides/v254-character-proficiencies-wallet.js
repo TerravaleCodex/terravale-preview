@@ -158,7 +158,7 @@ function installCreatorBridge(){
  const original=object.createCharacter;
  const wrapped=async character=>{
   const draft=typeof db!=='undefined'?db.creatorDraft||{}:{};
-  const fromCreator=character?.name&&draft.name===character.name&&
+  const fromCreator=character?.name&&draft.name?.trim()===character.name?.trim()&&
    draft.ancestry===character.ancestry&&draft.className===character.className;
   const chosen=fromCreator?storeDraft():character?.tv254ProficiencyChoices;
   if(fromCreator){
