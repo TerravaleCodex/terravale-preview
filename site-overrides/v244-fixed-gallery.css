@@ -115,3 +115,17 @@
 .tv-campaign-safety p{color:var(--soft);line-height:1.6;font-size:12px}
 .tv-campaign-safety button{border:1px solid #d69b9b70;color:#efb7bd;background:transparent;border-radius:9px;padding:10px 15px;cursor:pointer}
 .tv-demo-label{color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+/* Player-facing earned blocker and voluntary campaign controls. */
+#tv-personal-adblocker{margin:18px 0;padding:21px;border:1px solid color-mix(in srgb,var(--accent) 37%,var(--edge));border-radius:14px;background:radial-gradient(ellipse at 92% 5%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 67%),var(--surface);display:flex;align-items:center;justify-content:space-between;gap:20px}
+#tv-personal-adblocker h3{font:500 24px var(--serif,Georgia,serif);margin:8px 0}
+#tv-personal-adblocker p{font-size:12px;line-height:1.65;color:var(--soft);max-width:65ch}
+#tv-personal-adblocker small{font-size:11px;color:var(--accent)}
+#tv-personal-adblocker .tv-adblock-toggle{border:1px solid var(--accent);color:var(--accent);background:var(--raised);padding:11px 14px;border-radius:9px;cursor:pointer;flex-shrink:0;min-width:185px;font:700 12px var(--font,system-ui)}
+#tv-personal-adblocker .tv-adblock-toggle.is-active{color:var(--bg);background:var(--accent)}
+#tv-personal-adblocker .tv-adblock-toggle:disabled{cursor:not-allowed;opacity:.7;border-color:var(--edge);color:var(--dim)}
+#tv-campaign-membership{margin:24px 0;padding:23px;border:1px solid var(--edge);border-radius:14px;background:var(--surface);color:var(--ink)}
+#tv-campaign-membership h3{font:500 24px var(--serif,Georgia,serif);margin:10px 0 7px}
+#tv-campaign-membership p{font-size:12px;color:var(--soft);line-height:1.7}
+#tv-campaign-membership button{margin-top:12px;border:1px solid #e1a0a066;color:#eab5b5;background:transparent}
+@media(max-width:650px){#tv-personal-adblocker{flex-direction:column;align-items:stretch}}
