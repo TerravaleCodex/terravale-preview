@@ -7,6 +7,8 @@ on:
       - "site-overrides/approved-ads/**"
       - "site-overrides/approved-ads.json"
       - "tools/overlay-v239-with-discord.py"
+      - "tools/v243_native_patch.py"
+      - "site-overrides/v243-campaign-achievement-bridge.js"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/v2-discord-check.yml"
   workflow_dispatch:
@@ -28,6 +30,7 @@ jobs:
         run: |
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
+          node --check site-overrides/v243-campaign-achievement-bridge.js
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
@@ -38,6 +41,12 @@ jobs:
           assert '--bg:#07080c' in html and '--accent:#c3a5ff' in html
           assert 'data-source="v2-discord-auth.mjs"' in html
           assert 'data-source="v2-ads-atelier.mjs"' in html
+          assert 'data-source="v243-campaign-achievement-bridge.js"' in html
+          assert 'Want to test <strong>Adblockn’t' not in html
+          assert 'Join a campaign first' in html
+          assert 'Played by ' in html
+          assert 'adblocknt_swarm_size' in html
+          assert 'autocomplete="off" autocorrect="off"' in html
           assert 'id="tv-v2-ads-manifest"' in html
           assert 'data-source="v2-empty-workspace-integration"' in html
           assert "db.characters = []" in html and "db.campaigns = []" in html

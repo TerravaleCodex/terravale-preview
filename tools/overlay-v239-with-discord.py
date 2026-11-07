@@ -16,6 +16,13 @@ source_bytes = target.read_bytes()
 manifest = json.loads((ROOT / ".preview-v239-approved/manifest.json").read_text())
 assert hashlib.sha256(source_bytes).hexdigest() == manifest["uncompressed_sha256"], "Unexpected V2 source"
 source = source_bytes.decode("utf-8")
+from v243_native_patch import patch
+source = patch(source)
+# No public article text or ancestry placeholder may be altered by UI changes.
+lore_re = r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>'
+before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
+after_lore = re.search(lore_re, source)
+assert before_lore and after_lore and before_lore.group(1) == after_lore.group(1), "Lore content changed by V2.43 patch"
 assert source.count("</head>") == 1 and source.count("</body>") == 1
 assert source.count('id="previewTray"') == 1, "Expected exact V2.39 preview controls"
 assert '--bg:#07080c' in source and '--accent:#c3a5ff' in source, "Actual V2 theme tokens missing"
@@ -24,6 +31,7 @@ assert '<script type="application/json" id="tv238-v14-content">' in source, "Ori
 css = (ROOT / "site-overrides/v2-discord-atelier.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
+bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -72,6 +80,7 @@ window.TerravaleClearDemoWorkspace = function () {
 '''
 inline_js = (
     '\n<script type="application/json" id="tv-v2-ads-manifest">' + catalog_json + '</script>\n'
+    '<script data-source="v243-campaign-achievement-bridge.js">\n' + bridge + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -83,6 +92,9 @@ assert source.count('id="tv238-v14-content"') == 1
 assert source.count('id="tv-v2-ads-manifest"') == 1
 assert source.count('data-source="v2-empty-workspace-integration"') == 1
 assert source.count('data-source="v2-discord-auth.mjs"') == 1
+assert source.count('data-source="v243-campaign-achievement-bridge.js"') == 1
+assert 'Join a campaign first' in source and 'Played by ' in source
+assert 'Want to test <strong>Adblockn’t' not in source
 assert source.count('data-source="v2-ads-atelier.mjs"') == 1
 assert "terravale-profile-avatars" in source
 target.write_text(source,encoding="utf-8")

@@ -9,6 +9,8 @@ on:
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
+      - "tools/v243_native_patch.py"
+      - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v2-discord-atelier.css"
       - "site-overrides/v2-discord-auth.mjs"
       - "site-overrides/v2-ads-atelier.mjs"
@@ -37,6 +39,7 @@ jobs:
           python3 tools/overlay-v239-with-discord.py
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
+          node --check site-overrides/v243-campaign-achievement-bridge.js
       - name: Assemble original countdown and hidden public-safe V2 site
         shell: bash
         run: |
@@ -78,6 +81,7 @@ jobs:
           assert sorted(p.name for p in public.parent.iterdir()) == ["ads", "index.html"], "Unexpected published assets"
           assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
           assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
+          assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
           print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
           print("PASS: only two root holding files plus one public-safe V2 preview")
           PY

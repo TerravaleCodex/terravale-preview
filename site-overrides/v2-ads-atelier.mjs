@@ -32,9 +32,28 @@ function adPosition(w,h) {
   if(mode==="corners"){const pick=random(4);return {x:pick%2?maxX:9,y:pick>1?maxY:9};}
   return {x:Math.round(9+Math.random()*Math.max(0,maxX-9)),y:Math.round(9+Math.random()*Math.max(0,maxY-9))};
 }
-function closeAd(popup) {
+async function recordAdDismissal(){
+  const sb=auth()?.supabase, user=auth()?.state?.user;
+  if(!sb || !user)return;
+  const {data,error}=await sb.rpc("terravale_register_ad_dismissal");
+  if(error){console.warn("Adblockn’t could not record a dismissal:",error.message);return;}
+  window.TerravaleV2Bridge?.applyAdProgress?.(data);
+  if(data.just_unlocked){
+    const heading=document.createElement("div");
+    heading.className="tv-adblock-unlock";
+    heading.setAttribute("role","status");
+    heading.textContent="✦ Adblockn’t unlocked · 25 real pop-ups dismissed";
+    document.body.append(heading);
+    setTimeout(()=>heading.remove(),8500);
+  }
+  const burst=Math.max(0,Math.min(50,Number(data.burst)||0));
+  if(burst)for(let i=0;i<burst;i++)spawnAd(true);
+}
+function closeAd(popup,credit=false) {
+  if(!popup.isConnected)return;
   popup.remove();openAds=openAds.filter(x=>x.popup!==popup);
   window.dispatchEvent(new CustomEvent("terravale-ad-dismissed"));
+  if(credit)recordAdDismissal();
 }
 function spawnAd(force=false) {
   if (!force && !enabledOnThisPage()) return;
@@ -51,7 +70,7 @@ function spawnAd(force=false) {
   img.alt=art.alt || art.title;img.src=manifestImage(art);img.draggable=false;
   const close=document.createElement("button");close.className="tv-close";close.textContent="×";
   close.type="button";close.setAttribute("aria-label","Close advertisement");
-  close.addEventListener("click",e=>{e.stopPropagation();closeAd(popup)});
+  close.addEventListener("click",e=>{e.stopPropagation();closeAd(popup,true)});
   popup.append(img,close);document.body.append(popup);openAds.push({popup,art});
   let drag=null;
   popup.addEventListener("pointerdown",e=>{
@@ -69,10 +88,10 @@ function spawnAd(force=false) {
   const stop=e=>{if(drag&&e.pointerId===drag.id)drag=null;};
   popup.addEventListener("pointerup",stop);popup.addEventListener("pointercancel",stop);
   if(settings?.auto_dismiss_seconds){
-    setTimeout(()=>{if(popup.isConnected)closeAd(popup)},settings.auto_dismiss_seconds*1000);
+    setTimeout(()=>{if(popup.isConnected)closeAd(popup,false)},settings.auto_dismiss_seconds*1000);
   }
 }
-function clearAds(){for(const item of [...openAds])closeAd(item.popup);}
+function clearAds(){for(const item of [...openAds])closeAd(item.popup,false);}
 function beginSchedule() {
   if(autoTimer)clearInterval(autoTimer);
   autoTimer=null;
@@ -112,6 +131,17 @@ function layout(){
       ${selectField("Auto-dismiss",[["","Never"],[10,"10 seconds"],[20,"20 seconds"],[30,"30 seconds"],[60,"1 minute"],[120,"2 minutes"],[300,"5 minutes"]],"auto_dismiss_seconds")}
       <label class="tv-toggle"><input type="checkbox" data-ad-setting="repeat_ads">Allow duplicate artwork</label>
     </div>
+    <section class="tv-adblock-config" aria-label="Adblockn’t progression controls">
+      <div class="tv-eyebrow">THE CABINET · EPIC ACHIEVEMENT</div>
+      <h3>Adblockn’t</h3>
+      <p class="tv-hint">Award the permanent account-wide achievement after a player closes 25 actual advertisement pop-ups. Closing a test advertisement also counts; clearing windows or automatic dismissal does not.</p>
+      <div class="tv-adblock-count" id="tv-adblock-progress">Checking your account’s progress…</div>
+      <div class="tv-form">
+        <label class="tv-toggle"><input type="checkbox" data-ad-setting="adblocknt_enabled">Record real ad dismissals</label>
+        <label class="tv-toggle"><input type="checkbox" data-ad-setting="adblocknt_swarm_enabled">Trigger a one-time unlock burst</label>
+        ${selectField("Unlock burst size",[[0,"None"],[5,"5 ads"],[10,"10 ads"],[15,"15 ads"],[20,"20 ads (original)"],[25,"25 ads"],[30,"30 ads"],[40,"40 ads"],[50,"50 ads"]],"adblocknt_swarm_size")}
+      </div>
+    </section>
     <div class="tv-toolbar"><button class="tv-primary" type="button" id="tv-ad-save">Save DM settings</button>
       <button type="button" id="tv-ad-test">Test a random ad</button>
       <button type="button" id="tv-ad-testfive">Test five ads</button>
@@ -122,8 +152,16 @@ function layout(){
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
   panel.querySelector("#tv-ad-clear").onclick=clearAds;
+  refreshAdblockStatus(panel);
   return panel;
 }
+function refreshAdblockStatus(panel=document.getElementById("tv-live-atelier")){
+  const state=window.TerravaleV2Bridge?.getAdProgress?.();
+  const output=panel?.querySelector("#tv-adblock-progress");
+  if(!output)return;
+  output.textContent=state?String(Math.min(25,state.count))+" / 25 closed · "+(state.unlocked?"Discovered":"Locked"):"Progress is stored against your Discord account";
+}
+window.addEventListener("terravale-adblocknt-progress",()=>refreshAdblockStatus());
 function fillForm(){
   const panel=document.getElementById("tv-live-atelier");
   if(!panel || !settings)return;
@@ -146,13 +184,16 @@ async function saveSettings(){
     chance_percent:Number(get("chance_percent").value),
     size_mode:get("size_mode").value,position_mode:get("position_mode").value,
     coverage:get("coverage").value,auto_dismiss_seconds:optionalNumber("auto_dismiss_seconds"),
-    repeat_ads:get("repeat_ads").checked
+    repeat_ads:get("repeat_ads").checked,
+    adblocknt_enabled:get("adblocknt_enabled").checked,
+    adblocknt_swarm_enabled:get("adblocknt_swarm_enabled").checked,
+    adblocknt_swarm_size:Number(get("adblocknt_swarm_size").value)
   };
   const label=panel.querySelector("#tv-ad-save-status");label.textContent="Saving to Terravale…";
   const {data,error}=await auth().supabase.from("site_ad_settings")
     .update(patch).eq("id",1).select("*").single();
   if(error){label.textContent="Save failed: "+error.message;return;}
-  settings=data;beginSchedule();label.textContent="Saved securely. Changes apply throughout Terravale.";
+  settings=data;beginSchedule();fillForm();refreshAdblockStatus();label.textContent="Saved securely. Changes apply throughout Terravale.";
 }
 function mountAtelier(){
   if(!auth()?.state.profile?.is_dm)return;
