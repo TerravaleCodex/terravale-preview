@@ -45,6 +45,7 @@ on:
       - "site-overrides/sql/v254_proficiency_choices.sql"
       - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
       - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
+      - "site-overrides/sql/v254_dm_owner_membership_hotfix.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
