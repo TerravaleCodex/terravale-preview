@@ -198,8 +198,10 @@
      }))if(val!=='')props[key]=['ac_bonus','attack_bonus','charges','max_charges','recharge_amount','charge_cost'].includes(key)?Number(val):val;
      if(fields.attunement.checked)props.attunement=true;
      if(fields.proficient.checked)props.proficient=true;
-     if(fields.weapon_action.checked)props.weapon_action=true;
-     if(fields.resource_tracker.checked&&Number(maxCharges)>0)props.resource_tracker=true;
+     // Explicit false is important: unchecking a display toggle must disable
+     // the action, even when the item already has damage dice or charges.
+     props.weapon_action=fields.weapon_action.checked;
+     if(Number(maxCharges)>0)props.resource_tracker=fields.resource_tracker.checked;
      if(!maxCharges||Number(maxCharges)===0){
        for(const key of ['charge_cost','recovery','recharge_amount','recharge_dice','resource_tracker'])delete props[key];
      }
