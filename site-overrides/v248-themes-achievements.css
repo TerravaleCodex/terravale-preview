@@ -126,7 +126,7 @@ body[data-theme="gloamglass"] .cab-head .eyebrow{
  }
 }
 /* Never prevent interacting with a theme by covering its content. */
-#pageRoot,.sidebar,.topbar{position:relative;z-index:2}
+#pageRoot{position:relative;z-index:2}
 
 /* Discrete, screen-reader friendly, stacked achievement-completion notices. */
 #tv-achievement-notifications{
