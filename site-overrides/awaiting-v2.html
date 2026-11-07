@@ -269,7 +269,7 @@
     @media(max-height:560px){.top{padding-block:7px}.brand small{display:none}footer{padding-block:6px}}
     @media(max-width:420px){.top{gap:7px}.version{white-space:nowrap}}
 
-    /* Reserved invisible control: intentionally has no action or visual feedback. */
+    /* Invisible early-access entrance. Visual appearance and position remain unchanged. */
     #secret-placeholder{position:absolute;top:10px;right:2.7vw;width:28px;height:28px;
       margin:0;padding:0;border:0;border-radius:0;background:transparent;color:transparent;
       opacity:0;box-shadow:none;appearance:none;outline:none;cursor:default;z-index:20}
@@ -289,7 +289,7 @@
     <div class="version">Codex 2.0</div>
   </header>
   <main>
-    <button type="button" id="secret-placeholder" aria-label="Inactive hidden control" tabindex="-1"></button>
+    <button type="button" id="secret-placeholder" aria-label="Hidden V2 preview entrance" tabindex="-1"></button>
     <div class="stage-glow" aria-hidden="true"></div><div class="storm" aria-hidden="true"><i></i><i></i><i></i></div><div class="motes" id="motes" aria-hidden="true"></div><div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="inner">
       <div class="halo" aria-hidden="true"><div class="outer-runewheel"></div><div class="inner-runewheel"></div><div class="great-flare"></div><div class="shards"></div>
@@ -401,6 +401,15 @@
 
       const ticker = setInterval(updateCountdown, 250);
       updateCountdown();
+
+      // Early V2 entrance. The countdown remains the only visible public page.
+      // This is a discovery shortcut, NOT an authentication/security boundary.
+      const secretEntrance = document.getElementById("secret-placeholder");
+      if (secretEntrance) {
+        secretEntrance.addEventListener("click", () => {
+          window.location.assign("/terravale-preview/veiled-codex/");
+        });
+      }
     })();
   </script>
 </body>

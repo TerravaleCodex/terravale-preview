@@ -1,0 +1,11 @@
+{
+  "source_commit": "9d49c3c82e0b83fb520dfc3bcc5560ff712d3b66",
+  "sha256": "a9fd90c942ce78bb9e4ba34de5162af5536d7412545f6b7e734582d2abde55f3",
+  "file_count": 2195,
+  "parts": 90,
+  "base_path": "/terravale-preview/veiled-codex",
+  "auth_mode": "demo-only",
+  "public_lore": 283,
+  "restricted_ids_only": 36,
+  "status": "passed"
+}
