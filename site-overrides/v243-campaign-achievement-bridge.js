@@ -184,11 +184,12 @@
       const input=document.createElement('input');input.name=key;input.type='text';input.maxLength=240;input.placeholder=placeholder;
       labelNode.append(span,input);metadata.append(labelNode);
     }
-    field.insertAdjacentElement('beforebegin',metadata);
     const submit=form.querySelector('button[type="submit"],input[type="submit"]');
     const before=submit?.closest('.v2-actions,.form-actions,.actions')||submit;
-    if(before&&before.parentElement)before.insertAdjacentElement('beforebegin',field);
-    else form.append(field);
+    if(before&&before.parentElement){
+      before.insertAdjacentElement('beforebegin',metadata);
+      before.insertAdjacentElement('beforebegin',field);
+    }else form.append(metadata,field);
   }
 
   // Campaign details belong WITHIN their native tabs, never below the page footer.
@@ -237,6 +238,7 @@
       if(hint)hint.textContent='Campaign details are saved to your verified Terravale account.';
       if(body.querySelector('#tv-campaign-story-settings'))return;
       const allowed=Boolean(identity()?.profile?.is_dm&&campaign.role==='dm');
+      if(allowed)body.querySelector('.campaign-settings-locked')?.remove();
       if(!allowed){
         const locked=body.querySelector('.campaign-settings-locked p');
         if(locked)locked.textContent='Only this campaign’s verified Dungeon Master can edit the campaign story.';
@@ -326,7 +328,8 @@
     if(!current || !hasCampaign(id))return;
     const root=document.getElementById('pageRoot');
     if(!root)return;
-    if(!root.querySelector('#tv-campaign-membership')){
+    const currentTab=selectedCampaignTab(root);
+    if(currentTab==='settings'&&!root.querySelector('#tv-campaign-membership')){
       const section=document.createElement('section');
       section.id='tv-campaign-membership';section.className='tv-campaign-membership';
       if(isDemo(id)){
@@ -344,10 +347,10 @@
         button.onclick=()=>leaveCampaign(id);
         section.append(button);
       }
-      root.append(section);
+      (root.querySelector('.campaign-detail-content')||root).append(section);
     }
     decorateCampaignStory(root,current);
-    if(!identity()?.profile?.is_dm || current.role!=='dm' || isDemo(id))return;
+    if(currentTab!=='settings'||!identity()?.profile?.is_dm || current.role!=='dm' || isDemo(id))return;
     if(root.querySelector('#tv-campaign-invites'))return;
     const panel=document.createElement('section');
     panel.id='tv-campaign-invites';
@@ -357,7 +360,7 @@
       '<button type="button" class="btn ghost small" id="tv-invite-create">Create short join code</button>'+
       '<code class="tv-code" id="tv-invite-result" aria-live="polite"></code>'+
       '<button type="button" class="btn ghost small" id="tv-invite-copy" hidden>Copy invite code</button>';
-    root.append(panel);
+    (root.querySelector('.campaign-detail-content')||root).append(panel);
     panel.querySelector('#tv-invite-create').onclick=async ()=>{
       const {data,error}=await client().rpc('create_campaign_join_code',{
         target_campaign:current.id,days_valid:7,allowed_uses:100});
