@@ -145,3 +145,20 @@ body[data-theme="zero"] .page-cabinet .cab-card[data-rarity="legendary"]{
 @media(prefers-reduced-motion:reduce){
  body[data-theme="night"]{background-attachment:scroll}
 }
+
+/* Mobile spotlights revert to one compact slot, so typography must also revert. */
+@media(max-width:540px){
+ .page-library .tv-lore .lore-grid>.lore-card.spotlight h2{
+   font-size:17.5px!important;
+   line-height:1.16!important;
+   margin:5px 0 3px!important;
+   max-height:3.5em!important;
+   -webkit-line-clamp:3!important;
+ }
+ .page-library .tv-lore .lore-grid>.lore-card.spotlight h2.tv-lore-title-long{
+   font-size:15px!important;
+ }
+ .page-library .tv-lore .lore-grid>.lore-card.spotlight p{
+   -webkit-line-clamp:2!important;
+ }
+}
