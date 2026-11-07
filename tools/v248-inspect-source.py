@@ -26,3 +26,19 @@ for term in ['const TVR','const TV','const ancestry','feats:','featureId:','clas
 print("\n=== SAFE ANCESTRY FEAT IDS ===")
 for term in ['TERRAVALE_V225_FEATS','TVR.FEAT','TVR.anc','v225Feat']:
  print(term,'count=',s.count(term))
+
+
+print("\n=== RULE ENGINE MANIFEST CONTEXT ===")
+p=s.find('const cls=n=>M.classes')
+print(s[p-950:p+850])
+print("\n=== SAVED CREATOR EXACT FIELDS ===")
+a=s.find('async function creatorDoSave(){');print(s[a:a+4000])
+print("\n=== FULL FEAT MANIFEST ENTRIES FOR DEMO ANCESTRIES ===")
+matches=re.findall(r'\{"id":"([^"]+)","name":"([^"]+)","ancestry":"([^"]+)","prerequisites":"([^"]+)","bonus":(\[[^\]]*\])\}',s)
+print("FEAT_META_COUNT",len(matches))
+for id,name,ancestry,prerequisites,bonuses in matches:
+ if ancestry in ['crimsonborn','beastfolk','elf','dvergr','flugel','human']:
+  print(ancestry,"|",id,"|",name,"|",prerequisites,"|",bonuses)
+print("\n=== RULE FIELDS / SHEET FEATURE PANEL ===")
+for term in ['function sheetV222Feats','function sheetV222AncestryPanel','function sheetV225','function sheetV228','function sheetV227','const TVR=']:
+ p=s.find(term);print(term,p,s[max(0,p):p+2100])
