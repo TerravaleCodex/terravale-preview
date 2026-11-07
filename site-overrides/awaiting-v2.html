@@ -7,6 +7,17 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="Terravale Living Codex is preparing for its 2.0 update.">
   <title>Awaiting 2.0 Update · Terravale Living Codex</title>
+  <script>
+    // Supabase may return an OAuth code to the allowed GitHub Pages project root.
+    // Forward it unchanged to the real V2 client so its PKCE verifier can be used.
+    // Ordinary countdown visitors are never redirected by this bridge.
+    (function restoreDiscordCallback() {
+      const params = new URLSearchParams(location.search);
+      if (params.has("code") || params.has("error") || params.has("error_description")) {
+        location.replace("/terravale-preview/veiled-codex/" + location.search + location.hash);
+      }
+    })();
+  </script>
   <style>
     :root{color-scheme:dark;--bg:#0c0a10;--violet:#c5a0ef;--ivory:#f6e6cb;--muted:#aba0b4;--line:#46334f}
     *,*::before,*::after{box-sizing:border-box}
