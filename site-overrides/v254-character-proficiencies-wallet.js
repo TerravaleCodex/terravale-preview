@@ -325,9 +325,10 @@ function fillWallet(section,c){
   'View equivalent value in'));
  section.lastChild.append(toggle);
  const selected=systems.find(x=>x.id===current)||systems[0];
- const reference=Math.min(...selected.denominations.map(d=>d.valueGC));
+ const smallest=selected.denominations.reduce((a,b)=>a.valueGC<=b.valueGC?a:b);
+ const reference=smallest.valueGC;
  section.append(node('p','tv254-wallet-equivalent',
-  Math.floor(gc/reference).toLocaleString()+' '+(selected.name)+
+  selected.name+' · '+Math.floor(gc/reference).toLocaleString()+' × '+smallest.name+
   (gc%reference?' + '+(gc%reference)+' GC remainder':'')+
   ' · read-only valuation'));
  const detail=node('div','tv254-wallet-holdings');
