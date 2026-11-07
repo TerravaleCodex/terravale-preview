@@ -28,6 +28,9 @@ function role(){
  if(typeof db==='undefined')return;
  const r=db.role==='dm'?'dm':'player';
  if(document.body.dataset.tv255Role!==r)document.body.dataset.tv255Role=r;
+ // A player-mode switch must never leave the previously rendered DM workspace
+ // visible in the same SPA DOM, even before the native route repaints.
+ if(r==='player'&&/^#\/dm(?:\/|$)/.test(location.hash))location.hash='#/';
  const nav=document.getElementById('nav');
  if(!nav)return;
  for(const link of nav.querySelectorAll('[data-path="/dm"]')){
