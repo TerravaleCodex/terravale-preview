@@ -9,7 +9,7 @@
  const auth=()=>window.TerravaleVerifiedAccount;
  const current=()=>auth()?.state;
  const client=()=>auth()?.supabase;
- const owned=ch=>!!ch && ch.owner==='You' && ch.ownerUid===current()?.profile?.discord_uid;
+ const owned=ch=>!!ch && ch.owner==='You' && (ch.ownerUid===current()?.profile?.discord_uid || (!ch.ownerUid&&!uuid.test(ch.id)));
  const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
  const capture=ch=>JSON.stringify(Object.fromEntries(Object.entries(ch||{}).filter(([key])=>!['status','ownerName','ownerUid','owner','remoteStatus'].includes(key))));
  function formatRemote(row){
@@ -109,6 +109,7 @@
      if(keys.includes(key))db.unlocked.push(key);
    }
    persist();
+   if(location.hash.includes('/cabinet-of-curiosities'))renderPage(false);
    return keys;
  }
  let verdantTimer=null;
@@ -118,7 +119,7 @@
    if(active&&!vines){vines=document.createElement('div');vines.id='tv-growing-vines';vines.setAttribute('aria-hidden','true');document.body.append(vines)}
    if(vines)vines.hidden=!active;
    clearTimeout(verdantTimer);
-   if(active&&current()?.ready&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+   if(active&&current()?.ready){
      verdantTimer=setTimeout(async()=>{
        if(document.body.dataset.theme!=='verdant'||document.hidden)return;
        const {data,error}=await client().rpc('terravale_unlock_verdant_growth');
