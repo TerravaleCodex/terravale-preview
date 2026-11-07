@@ -12,6 +12,7 @@ on:
       - "tools/v243_native_patch.py"
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v2-discord-atelier.css"
+      - "site-overrides/v244-fixed-gallery.css"
       - "site-overrides/v2-discord-auth.mjs"
       - "site-overrides/v2-ads-atelier.mjs"
       - "site-overrides/approved-ads.json"
