@@ -1,4 +1,4 @@
-name: Publish Terravale countdown with Discord-enabled V2
+name: Publish Terravale technical difficulties and Discord-enabled V2
 
 on:
   push:
@@ -82,7 +82,7 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
-      - name: Assemble original countdown and hidden public-safe V2 site
+      - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
           set -euo pipefail
@@ -91,28 +91,20 @@ jobs:
           from pathlib import Path
           home = Path("published/index.html").read_text()
           checks = (
-              'Awaiting <em>2.0</em> update',
-              'animation:sigil-spin',
-              'id="countdown-progress"',
-              '--scene-fit',
-              'overscroll-behavior:none',
-              'function fitScene()',
+              'WE ARE EXPERIENCING',
+              'SOME TECHNICAL DIFFICULTIES',
+              'ERROR: ARCANE_CORE_UNRESPONSIVE',
+              'id="repair"',
               'id="secret-placeholder"',
-              'opacity:0;box-shadow:none;appearance:none',
-              'class="storm"',
-              'id="countdown-hours"',
-              'Time remaining until the final seal breaks',
-              'The final seal breaks in',
-              'From the ashes, a new chapter rises',
-              'h1 class="standby"',
-              'border:0!important;border-radius:0!important;background:transparent!important',
-              '2026-11-07T21:30:00Z',
+              'opacity:0;box-shadow:none;',
+              'function restoreDiscordCallback()',
               'window.location.assign("/terravale-preview/veiled-codex/")',
+              'overscroll-behavior:none',
           )
           for check in checks:
-              assert check in home, f"Countdown design/control changed unexpectedly: {check}"
-          assert 'id="countdown-note"' not in home, "Countdown deadline text should not be visible"
-          assert "function restoreDiscordCallback()" in home, "OAuth return rescue missing from holding page"
+              assert check in home, f"Technical difficulties page missing required content: {check}"
+          assert 'id="countdown-hours"' not in home, "Old countdown remains"
+          assert '2026-11-07T21:30:00Z' not in home, "Old countdown deadline remains"
           assert "supabase.co" not in home.lower()
           redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
           fallback = home.replace("</head>", redirect + "</head>", 1)
@@ -129,7 +121,7 @@ jobs:
           assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
           for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js"):
               assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
-          print("PASS: countdown unchanged visually; hidden button opens genuine V2.39")
+          print("PASS: technical difficulties page, invisible V2 entrance and Discord callback preserved")
           print("PASS: only two root holding files plus one public-safe V2 preview")
           PY
       - name: Upload safe GitHub Pages site
@@ -148,10 +140,10 @@ jobs:
       name: github-pages
       url: https://terravalecodex.github.io/terravale-preview/
     steps:
-      - name: Deploy countdown with actual approved V2.39 preview
+      - name: Deploy technical difficulties page with approved V2 preview
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify live countdown, V2.39 HTML, restricted lore protection and retired routes
+      - name: Verify live technical difficulties page, V2 HTML and retired routes
         shell: bash
         run: |
           set -euo pipefail
@@ -160,18 +152,17 @@ jobs:
             curl --fail --silent --show-error --location --max-time 15 \
               --header 'Cache-Control: no-cache' \
               "$base/?verify=$GITHUB_SHA-$attempt" > /tmp/terravale-home.html || true
-            if grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-home.html &&
-               grep -q 'id="countdown-hours"' /tmp/terravale-home.html &&
-               grep -q 'The final seal breaks in' /tmp/terravale-home.html &&
-               grep -q 'From the ashes, a new chapter rises' /tmp/terravale-home.html &&
-               grep -q 'animation:sigil-spin' /tmp/terravale-home.html &&
-               grep -q '2026-11-07T21:30:00Z' /tmp/terravale-home.html &&
+            if grep -q 'WE ARE EXPERIENCING' /tmp/terravale-home.html &&
+               grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-home.html &&
+               grep -q 'id="repair"' /tmp/terravale-home.html &&
+               grep -q 'id="secret-placeholder"' /tmp/terravale-home.html &&
+               ! grep -q 'id="countdown-hours"' /tmp/terravale-home.html &&
                grep -q 'window.location.assign("/terravale-preview/veiled-codex/")' /tmp/terravale-home.html; then
-              echo "PASS: public holding page and invisible V2 entrance are live."
+              echo "PASS: humorous glitch page and invisible V2 entrance are live."
               break
             fi
             if [ "$attempt" -eq 12 ]; then
-              echo "::error::Holding page with hidden V2 entrance did not appear."
+              echo "::error::Glitch page with hidden V2 entrance did not appear."
               exit 1
             fi
             sleep 5
@@ -224,7 +215,7 @@ jobs:
             expected_status=404
             if [ "$path" = "/404.html" ]; then expected_status=200; fi
             if [ "$status" != "$expected_status" ] ||
-               ! grep -q 'Awaiting <em>2.0</em> update' /tmp/terravale-retired.html ||
+               ! grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-retired.html ||
                ! grep -q 'location.replace("/terravale-preview/")' /tmp/terravale-retired.html; then
               echo "::error::Retired root path $path did not show the fallback (HTTP $status)."
               exit 1
