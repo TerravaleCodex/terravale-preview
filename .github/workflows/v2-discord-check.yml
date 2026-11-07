@@ -277,9 +277,9 @@ jobs:
           for token in (
             'If you have already received an invite code, please enter it now.',
             'openInvitationEntry()','terravale-campaign-joined',
-            'step=4','targetRoute(d)','data-value="party"',
-            'data-value="overview"','data-value="settings"',
-            'data-value="journal"','Resume guided tutorial',
+            'step=4','targetRoute(d)','tab:"party"',
+            'tab:"overview"','tab:"settings"',
+            'tab:"journal"','Resume guided tutorial',
             'Where character creation begins','16 · REPLAY ANY TIME'
           ):
             assert token in tour, f"Missing new tutorial behaviour: {token}"
