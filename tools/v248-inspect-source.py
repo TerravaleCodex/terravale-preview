@@ -20,7 +20,7 @@ for name,term,count in tests:
  p=s.find(term)
  print(f"\n=== {name}: index={p} ===\n"+(s[max(0,p-150):p+count] if p>=0 else '<not found>'))
 print("\n=== ANCESTRY META SCANS ===")
-for term in ['const TVR','const TV','const ancestry','feats:','featureId:','classSkills','racialFeats','Hunter’s Instinct','Hunter\\'s Instinct','Controlled Feeding','Beastfolk','Gatewarden','Flugel','featsV225']:
+for term in ['const TVR','const TV','const ancestry','feats:','featureId:','classSkills','racialFeats','Hunter’s Instinct',"Hunter's Instinct",'Controlled Feeding','Beastfolk','Gatewarden','Flugel','featsV225']:
  starts=[m.start() for m in re.finditer(re.escape(term),s)]
  print(term,len(starts),"first",[s[max(0,i-95):i+200].replace('\n',' ') for i in starts[:2]])
 print("\n=== SAFE ANCESTRY FEAT IDS ===")
