@@ -44,6 +44,15 @@ on:
       - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
       - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
       - "site-overrides/sql/v254_dm_owner_membership_hotfix.sql"
+      - "site-overrides/v255-creator-native-choices.js"
+      - "site-overrides/v255-character-training.js"
+      - "site-overrides/v255-native-wallet.js"
+      - "site-overrides/v255-custom-feat-forge.js"
+      - "site-overrides/v255-shell-role-version.js"
+      - "site-overrides/v255-chronicle-wallet-creator.css"
+      - "site-overrides/sql/v255_custom_feat_forge.sql"
+      - "site-overrides/sql/v255_character_training_overrides.sql"
+      - "site-overrides/sql/v255_player_wallet.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -90,6 +99,11 @@ jobs:
           node --check site-overrides/v254-rules-registry.js
           node --check site-overrides/v254-dm-vault.js
           node --check site-overrides/v254-character-proficiencies-wallet.js
+          node --check site-overrides/v255-creator-native-choices.js
+          node --check site-overrides/v255-character-training.js
+          node --check site-overrides/v255-native-wallet.js
+          node --check site-overrides/v255-custom-feat-forge.js
+          node --check site-overrides/v255-shell-role-version.js
       - name: Verify V2.49 guided tour and botanical lifecycle
         run: |
           python3 - <<'PY'
@@ -413,6 +427,56 @@ jobs:
           print("PASS: 64 tools (18 instruments, 9 game sets), 18 languages, 14 currencies, 33 class rules")
           print("PASS: DM Vault/Treasury, player shopkeeper gifts, role-secured choices and wallets")
           print("PASS: live creator and equipment fields; Session Room actions follow chat and dice")
+          PY
+      - name: Verify V2.55 focused Chronicle, custom feats and integrated training
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          html=Path('published/veiled-codex/index.html').read_text()
+          for tag in ('v255-build','v255-creator-native-choices.js','v255-character-training.js',
+            'v255-native-wallet.js','v255-custom-feat-forge.js','v255-shell-role-version.js'):
+            assert html.count('data-source="'+tag+'"')==1,tag
+          assert "p.startsWith('/dm/')" in html, 'Dedicated DM Chronicle subroutes missing'
+          assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
+          assert "Choose people & languages" in html
+          assert "Choose class & tools" in html
+          assert "Terravale Codex V2.55" in html
+          creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
+          assert "current===1" in creator and "current===3" in creator
+          assert 'tv255-creator-training' in creator
+          assert 'new Set(v.languages).size' in creator
+          assert 'req.slots.some((slot,i)=>!v.tools[i])' in creator
+          old=Path('site-overrides/v254-character-proficiencies-wallet.js').read_text()
+          assert 'if(window.TerravaleV255Creator)return' in old
+          assert 'TerravaleV255Wallet.render(section,c' in old
+          assert 'TerravaleV255Training.renderSheet(section,c)' in old
+          vault=Path('site-overrides/v254-dm-vault.js').read_text()
+          assert all("#/dm/"+x in vault for x in ('vault','party','treasury','feats','training'))
+          for name in ('v255_custom_feat_forge.sql','v255_character_training_overrides.sql','v255_player_wallet.sql'):
+            assert (Path('site-overrides/sql')/name).is_file()
+          feat=Path('site-overrides/v255-custom-feat-forge.js').read_text()
+          training=Path('site-overrides/v255-character-training.js').read_text()
+          wallet=Path('site-overrides/v255-native-wallet.js').read_text()
+          assert 'terravale_dm_assign_custom_feat' in feat
+          assert 'tv255-player-feats' in feat
+          assert 'terravale_dm_set_character_training' in training
+          assert all(x in training for x in ('Speak','Read','Write','restore','hide'))
+          assert 'terravale_wallet_self_adjust' in wallet
+          assert 'terravale_wallet_adjust' in wallet
+          assert 'tv255-wallet-system-list' in wallet
+          assert 'db.role===\\'dm\\'' in Path('site-overrides/v250-dm-backpack-editor.js').read_text()
+          assert '.sheet21-backpack-buttons [data-action="sheetDMGear"]' in Path('site-overrides/v255-chronicle-wallet-creator.css').read_text()
+          assert 'tv255-version-tag' in html
+          assert 'tv254-chronicle-tabs' in html
+          match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
+          assert match
+          lore=json.loads(match.group(1))
+          assert (len(lore['articles']),len(lore['heritageArticles']),len(lore['events']))==(283,36,31)
+          print('PASS: 6 routed DM workspaces, owner-wallet controls and feat forge present')
+          print('PASS: ancestry-language/class-tool creator tiles and DM-only workshop')
+          print('PASS: personal language speak/read/write overrides and build version badge')
+          print('PASS: 319 lore records and all calendar events preserved')
           PY
       - name: Protect lore, theme, authentication and assets
         run: |
