@@ -127,29 +127,52 @@
   }
   async function mountParty(){
     const el=root();
-    if(!el)return;
-    const route=path();
-    const demoId=db.campaigns.find(c=>bridge()?.isDemo?.(c.id))?.id;
-    const relevant=Boolean(demoId && bridge()?.hasCampaign?.(demoId) &&
-      (route==="/campaigns/"+demoId ||
-       ((route.startsWith("/dm")||route.includes("session-room"))&&db.campaign===demoId)));
-    if(!relevant||el.querySelector("#tv-demo-party"))return;
-    const panel=document.createElement("section");panel.id="tv-demo-party";panel.className="tv-demo-party";
+    if(!el||typeof db==='undefined')return;
+    const route=path(),demoId=db.campaigns.find(c=>bridge()?.isDemo?.(c.id))?.id;
+    const inCampaign=Boolean(demoId&&route==="/campaigns/"+demoId);
+    const rosterTab=inCampaign&&Boolean(el.querySelector(
+      '.campaign-detail-tabs [data-action="campaignTab"][data-value="party"][aria-selected="true"]'));
+    const chronicle=Boolean(demoId&&db.campaign===demoId&&route.startsWith("/dm"));
+    if(!demoId||!bridge()?.hasCampaign?.(demoId)||(!rosterTab&&!chronicle))return;
+    const host=rosterTab?
+      el.querySelector(".campaign-detail-content .campaign-detail-section"):
+      el.querySelector(".dm-content,.dm-root,.dm-chronicle")||el;
+    if(!host||host.querySelector("#tv-demo-party"))return;
+    const panel=document.createElement("section");
+    panel.id="tv-demo-party";panel.className="tv-demo-party tv-demo-permanent-party";
     const heading=document.createElement("div");heading.className="tv-demo-party-heading";
-    heading.innerHTML='<div><div class="tv-eyebrow">THE WAYFARERS’ TABLE · DEMONSTRATION PARTY</div><h2>Aster’s Wayfarers</h2><p>Seven real, approved character sheets. One shared party, coordinated by Aster Vaelith and accompanied by the memory-crow Margin.</p></div>';
-    const count=document.createElement("span");count.className="tv-demo-party-count";count.textContent="7 adventurers";
-    heading.append(count);
+    heading.innerHTML='<div><div class="tv-eyebrow">THE WAYFARERS’ TABLE · PERMANENT PARTY</div><h2>Aster’s Wayfarers</h2><p>Seven real, approved, permanent adventurers. Their character IDs, equipment, abilities and progress now remain intact — they are not rebuilt or reset.</p></div>';
+    const count=document.createElement("span");count.className="tv-demo-party-count";
+    count.textContent="7 adventurers";heading.append(count);
     const grid=document.createElement("div");grid.className="tv-demo-party-grid";
-    grid.textContent="Loading the party…";
-    panel.append(heading,grid);
-    const prior=el.querySelector("#tv-campaign-membership");
-    if(prior)prior.before(panel);else el.append(panel);
+    grid.textContent="Loading the party…";panel.append(heading,grid);
+    if(rosterTab){
+      const before=host.querySelector(".campaign-roster");
+      if(before)before.insertAdjacentElement("beforebegin",panel);
+      else host.append(panel);
+    }else host.append(panel);
     const list=await loadParty();
     if(!panel.isConnected)return;
     grid.replaceChildren();
-    if(!list.length){grid.append(document.createTextNode("Party entries cannot be loaded for this account."));return}
+    if(!list.length){
+      grid.textContent="The permanent party could not be loaded. Try refreshing the page.";
+      return;
+    }
     for(const ch of list)grid.append(partyTile(ch,ch.character_name==="Aster Vaelith"));
     count.textContent=list.length+" adventurers";
+    if(rosterTab){
+      const native=host.querySelector(".campaign-roster");
+      if(native){
+        const curatedIds=new Set(list.map(ch=>String(ch.character_id)));
+        for(const link of native.querySelectorAll('a[href*="#/characters/"]')){
+          const id=(link.getAttribute("href")||"").split("/").pop();
+          if(curatedIds.has(decodeURIComponent(id)))link.remove();
+        }
+        if(!native.querySelector(".campaign-detail-row"))native.hidden=true;
+      }
+      const caption=host.querySelector(".campaign-detail-title p");
+      if(caption)caption.textContent="The Wayfarers and any additional adventurers who joined the real campaign.";
+    }
   }
   function characterButtons(ch){
     const area=document.createElement("div");area.className="tv-admin-inline";
