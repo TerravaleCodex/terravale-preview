@@ -124,20 +124,19 @@ async function initAuth() {
 }
 
 function clearOldShowcaseOnce() {
-  // The V2.39 showcase is still local browser data. It must not be shared
-  // between Discord accounts: reset it whenever the authenticated user changes.
-  const activeKey = "tv-v2-active-preview-account";
-  let previous;
-  try { previous = localStorage.getItem(activeKey); } catch { previous = null; }
-  if (previous === state.user.id) return;
-  const empty = document.querySelector("#previewTray [data-state='empty']");
-  if (!empty) {
-    throw new Error("The V2 Empty workspace action is unavailable; refusing to display another account's local preview data.");
+  // Remove V2 sample records from the actual V2 browser store, not merely hide them.
+  // A versioned per-account marker preserves all future user-created local records.
+  const key = "tv-v2-cleared-real-samples-v3";
+  let lastAccount = "";
+  try { lastAccount = localStorage.getItem(key) || ""; } catch {}
+  if (lastAccount === state.user.id) return;
+  if (typeof window.TerravaleClearDemoWorkspace !== "function" ||
+      !window.TerravaleClearDemoWorkspace()) {
+    throw new Error("Cannot clear V2 showcase state safely; no workspace was modified.");
   }
-  empty.click();
   localStorage.removeItem("terravalecodex-v238-heritage-preview");
   localStorage.removeItem("terravalecodex-v238-tvuid-preview");
-  localStorage.setItem(activeKey, state.user.id);
+  localStorage.setItem(key, state.user.id);
 }
 
 function updateVerifiedRole() {
