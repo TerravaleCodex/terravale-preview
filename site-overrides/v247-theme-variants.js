@@ -1,126 +1,109 @@
-/* V2.47: Crimson Court variant belongs to Appearance, not the hunger widget.
- * Verdant's animation is decorative; server unlock follows prolonged growth. */
+/* V2.48. Earned-only Crimson variant and seasonal Verdant leaves.
+   Cosmetic controls never grant privileges or achievements. */
 (function(){
   "use strict";
   const KEY="tv-crimson-court-appearance-variant";
-  let variant="standard";
-  try{variant=localStorage.getItem(KEY)==="obsidian"?"obsidian":"standard"}catch{}
-  const setVariant=v=>{
-    variant=v==="obsidian"?"obsidian":"standard";
-    try{localStorage.setItem(KEY,variant)}catch{}
-    document.body.dataset.tvCrimsonVariant=variant;
-    repaintButtons();
-  };
-  const isCrimson=()=>document.body.dataset.theme==="crimson";
-  const repaintButtons=()=>{
-    document.querySelectorAll("#tv-crimson-variant button[data-variant]").forEach(b=>{
-      b.setAttribute("aria-pressed",String(b.dataset.variant===variant));
+  const state={unlocked:false,checked:false,wanted:"velvet"};
+  try{state.wanted=localStorage.getItem(KEY)==="obsidian"?"obsidian":"velvet"}catch{}
+  const profile=()=>window.TerravaleVerifiedAccount?.state;
+  const sb=()=>window.TerravaleVerifiedAccount?.supabase;
+  function applyVariant(){
+    const active=state.checked&&state.unlocked&&state.wanted==="obsidian";
+    document.body.dataset.tvCrimsonVariant=active?"obsidian":"standard";
+    document.querySelectorAll("#tv-crimson-moon").forEach(b=>{
+      b.setAttribute("aria-pressed",String(active));
+      b.setAttribute("aria-label",active?"Use original Velvet Crimson Court":"Switch to Black & Red Crimson Court");
+      b.title=active?"Use Velvet Crimson Court":"Black & Red Crimson Court · Seeing Red reward";
+      b.classList.toggle("active",active);
     });
-  };
-  function mountAppearance(){
-    const route=location.hash.toLowerCase();
-    if(!route.includes("appearance"))return;
-    const root=document.getElementById("pageRoot");if(!root)return;
-    const titles=[...root.querySelectorAll("h2,h3,h4")];
-    const crimsonTitle=titles.find(h=>h.textContent.trim()==="Crimson Court");
-    if(!crimsonTitle)return;
-    let card=crimsonTitle.closest(".v2-card,article,.appearance-card,.theme-card");
-    if(!card){
-      card=crimsonTitle.parentElement;
-      while(card && !card.textContent.includes("Preview this theme"))card=card.parentElement;
-    }
-    if(!card || card.querySelector("#tv-crimson-variant"))return;
-    const panel=document.createElement("div");
-    panel.id="tv-crimson-variant";panel.className="tv-crimson-variant";
-    const label=document.createElement("div");
-    label.className="tv-eyebrow";label.textContent="CRIMSON COURT · APPEARANCE";
-    const hint=document.createElement("p");
-    hint.textContent="Choose wine-red velvet or a deeper near-black-and-red version.";
-    const choices=document.createElement("div");choices.className="tv-crimson-choices";
-    for(const [v,name] of [["standard","Velvet"],["obsidian","Black & Red"]]){
-      const button=document.createElement("button");button.type="button";
-      button.dataset.variant=v;button.textContent=name;
-      button.setAttribute("aria-pressed",String(v===variant));
-      button.addEventListener("click",()=>{
-        setVariant(v);
-        if(!isCrimson() && typeof setTheme==="function")setTheme("crimson");
-      });
-      choices.append(button);
-    }
-    panel.append(label,hint,choices);card.append(panel);
   }
-  const NS="http://www.w3.org/2000/svg";
-  const svgNode=(tag,attrs={})=>{
-    const n=document.createElementNS(NS,tag);
-    for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));
-    return n;
-  };
-  function createBotanical(){
+  async function checkEntitlement(){
+    if(!profile()?.ready){state.checked=false;state.unlocked=false;applyVariant();return false}
+    const {data,error}=await sb().rpc("terravale_crimson_variant_entitlement");
+    if(error){console.warn("Crimson entitlement could not be verified:",error.message);return false}
+    state.unlocked=Boolean(data);state.checked=true;
+    applyVariant();schedule();
+    return state.unlocked;
+  }
+  function mountMoon(){
+    // In the actual theme-card footer, beside 'Preview/Current theme'.
+    const root=document.getElementById("pageRoot");
+    const route=location.hash.toLowerCase();
+    if(!root||!route.includes("appearance"))return;
+    root.querySelectorAll("#tv-crimson-variant").forEach(x=>x.remove());
+    const action=root.querySelector('button[data-action="theme"][data-id="crimson"]');
+    if(!action)return;
+    const card=action.closest(".theme-card");
+    if(!card)return;
+    let button=card.querySelector("#tv-crimson-moon");
+    if(!state.unlocked||!state.checked){
+      button?.remove();
+      return;
+    }
+    if(!button){
+      button=document.createElement("button");button.type="button";
+      button.id="tv-crimson-moon";button.className="tv-crimson-moon";
+      button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 13.1A9 9 0 0 1 10.9 3.1 9.1 9.1 0 1 0 20.9 13.1Z"/></svg>';
+      button.addEventListener("click",()=>{
+        if(!state.unlocked)return;
+        state.wanted=state.wanted==="obsidian"?"velvet":"obsidian";
+        try{localStorage.setItem(KEY,state.wanted)}catch{}
+        if(document.body.dataset.theme!=="crimson"&&typeof setTheme==="function")setTheme("crimson");
+        applyVariant();
+      });
+      action.after(button);
+    }
+    applyVariant();
+  }
+  const shape=()=>{const wrapper=document.createElement("span");wrapper.className="tv-season-leaf";
+    wrapper.innerHTML='<svg viewBox="0 0 42 64" aria-hidden="true" focusable="false"><path d="M20 58 C-5 36 2 13 24 3 C49 15 49 40 20 58 Z" class="tv-leaf-body"/><path d="M20 57 C21 41 25 27 26 8 M22 44 L10 31 M24 34 L35 21 M25 23 L14 16" class="tv-leaf-veins"/></svg>';
+    return wrapper};
+  function createSeasonalLeaves(){
     const root=document.getElementById("tv-growing-vines");
     if(!root)return;
-    if(root.querySelector(".tv-botanical-art"))return;
-    const svg=svgNode("svg",{
-      class:"tv-botanical-art",viewBox:"0 0 1200 760",
-      preserveAspectRatio:"xMidYMid slice","aria-hidden":"true"
-    });
-    const defs=svgNode("defs");
-    const grad=svgNode("linearGradient",{id:"tv-leaf-shading",x1:"0",y1:"0",x2:"1",y2:"1"});
-    for(const [off,color,opacity] of [["0%","#4b9360",".10"],["50%","#83c99b",".32"],["100%","#245637",".18"]]){
-      const stop=svgNode("stop",{offset:off,"stop-color":color,"stop-opacity":opacity});grad.append(stop);
+    if(root.dataset.version==="v248-leaves"&&root.children.length)return;
+    root.replaceChildren();root.dataset.version="v248-leaves";
+    // Deterministic natural-looking distribution, with most foliage at
+    // the edges and a few faint leaves crossing the centre.
+    let seed=173806;
+    const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+    for(let i=0;i<36;i++){
+      const leaf=shape();
+      const edge=i%4===0?8+random()*18:i%4===1?75+random()*18:i%4===2?1+random()*20:73+random()*25;
+      const x=i%9===0?25+random()*50:edge;
+      const y=4+random()*76;
+      const size=18+random()*30;
+      const duration=93+random()*76;
+      const delay=-(random()*duration);
+      const fallX=(random()-.5)*175;
+      const fallY=130+random()*270;
+      const rot=(random()-.5)*80;
+      leaf.style.cssText="--lx:"+x.toFixed(2)+"%;--ly:"+y.toFixed(2)+"%;"+
+        "--ls:"+size.toFixed(1)+"px;--leaf-dur:"+duration.toFixed(1)+"s;"+
+        "--leaf-delay:"+delay.toFixed(1)+"s;--fall-x:"+fallX.toFixed(1)+"px;"+
+        "--fall-y:"+fallY.toFixed(1)+"px;--leaf-rot:"+rot.toFixed(1)+"deg;";
+      root.append(leaf);
     }
-    defs.append(grad);svg.append(defs);
-    const stem=svgNode("g",{class:"tv-botanical-stems"});
-    const strokes=[
-      ["M -20 785 C 70 710,65 615,110 535 S 145 410,93 325 S 88 186,155 95",0],
-      ["M 1235 792 C 1125 700,1170 580,1086 488 S 985 341,1065 230 S 1158 130,1118 -25",7],
-      ["M 10 760 C 22 660,49 630,86 585 S 185 522,206 458",17],
-      ["M 1190 770 C 1180 600,1110 535,1020 512 S 946 438,915 392",28],
-      ["M 105 532 C 158 495,175 470,176 417",35],
-      ["M 102 389 C 49 344,34 310,41 266",42],
-      ["M 1070 482 C 1133 458,1145 410,1140 368",49],
-      ["M 1030 415 C 976 402,964 364,984 310",57]
-    ];
-    strokes.forEach(([d,delay],i)=>{
-      const path=svgNode("path",{d,class:"tv-botanical-stem",style:
-        "--grow-delay:"+delay+"s;--grow-length:"+(i<2?1000:430)+";"});
-      stem.append(path);
-    });svg.append(stem);
-    // Varied veined, pointed leaves along the branches rather than oversized ovals.
-    const placements=[
-      [80,625,-47,19,25],[115,549,42,15,39],[112,463,-34,19,47],
-      [99,386,52,14,58],[126,293,-42,17,66],[132,206,26,13,77],
-      [53,685,26,16,37],[157,501,32,16,57],[180,453,-37,13,70],
-      [40,289,-18,14,88],[1127,648,34,19,30],[1089,570,-46,17,42],
-      [1058,490,42,17,51],[1032,409,-37,19,63],[1063,312,52,14,75],
-      [1115,204,-24,16,87],[1159,550,-40,13,59],[1000,453,-19,14,72],
-      [955,394,33,12,86],[1147,369,40,14,93]
-    ];
-    const leaves=svgNode("g",{class:"tv-botanical-leaves"});
-    for(const [x,y,angle,size,delay] of placements){
-      const g=svgNode("g",{class:"tv-botanical-leaf",style:
-        "--leaf-delay:"+delay+"s;--leaf-angle:"+angle+"deg",
-        transform:"translate("+x+" "+y+") rotate("+angle+") scale("+(size/16)+")"});
-      const shape=svgNode("path",{d:"M0 0 C-10 -11,-13 -25,-6 -38 C-1 -45,9 -48,14 -52 C20 -31,18 -13,0 0 Z",
-        fill:"url(#tv-leaf-shading)",stroke:"#6ead83","stroke-width":".75","stroke-opacity":".30"});
-      const vein=svgNode("path",{d:"M0 -1 C4 -17,7 -32,13 -48 M4 -19 L-5 -30 M8 -32 L15 -39",
-        fill:"none",stroke:"#b1e0b4","stroke-width":".7","stroke-opacity":".17"});
-      g.append(shape,vein);leaves.append(g);
-    }
-    svg.append(leaves);root.append(svg);
   }
-  const refresh=()=>{
-    document.body.dataset.tvCrimsonVariant=variant;
-    mountAppearance();
-    if(document.body.dataset.theme==="verdant")createBotanical();
-  };
-  let pending=false;
-  const observer=new MutationObserver(()=>{
-    if(pending)return;
-    pending=true;
-    requestAnimationFrame(()=>{pending=false;refresh()});
+  let queued=false;
+  function schedule(){
+    if(queued)return;queued=true;
+    requestAnimationFrame(()=>{
+      queued=false;
+      if(document.body.dataset.theme==="verdant")createSeasonalLeaves();
+      mountMoon();
+    });
+  }
+  const observer=new MutationObserver(schedule);
+  observer.observe(document.getElementById("pageRoot")||document.body,{childList:true,subtree:true});
+  document.body.addEventListener("transitionend",e=>{if(e.target===document.body)schedule()});
+  window.addEventListener("hashchange",()=>setTimeout(schedule,45));
+  window.addEventListener("terravale-auth-ready",()=>{checkEntitlement();schedule()},{once:true});
+  window.addEventListener("terravale-achievement-unlocked",e=>{
+    if(e.detail?.key==="seeing_red")checkEntitlement();
   });
-  observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["data-theme"]});
-  window.addEventListener("hashchange",()=>setTimeout(refresh,80));
-  window.addEventListener("terravale-auth-ready",refresh,{once:true});
-  refresh();
+  window.addEventListener("terravale-achievement-synced",checkEntitlement);
+  if(profile()?.ready)checkEntitlement();
+  else applyVariant();
+  schedule();
 })();
