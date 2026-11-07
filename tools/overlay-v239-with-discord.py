@@ -24,6 +24,12 @@ source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
+# The approved offline V2 HTML carries an illustrative-only label.
+# Replace only that label in the hosted build; the actual lore/source stays intact.
+source = re.sub(r"Offline design sandbox\\s*[·•]\\s*All data illustrative",
+                "Online V2 · Discord-connected characters and settings", source)
+source = re.sub(r"No network connection\\s*[·•]\\s*Never touches the live Codex",
+                "Live site · Protected by your verified Discord account", source)
 # No public article text or ancestry placeholder may be altered by UI changes.
 lore_re = r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>'
 before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
