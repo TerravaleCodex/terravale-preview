@@ -153,8 +153,17 @@ function roomCard(c){
 function sessionRoom(){
  if(location.hash.replace(/^#/,'').split('?')[0]!=='/party')return;
  const top=document.querySelector('#pageRoot .sr-statusbar');if(!top)return;
- const actors=roomActors(),signature=JSON.stringify(actors.map(c=>[c.id,c.name,inv(c).map(i=>[i.id,i.name,i.slot,itemProps(c,i)])]));
+ const actors=roomActors().filter(c=>inv(c).some(i=>{
+   const p=itemProps(c,i);
+   return Object.keys(p).length&&
+     ((i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice)))||
+       (charged(p)&&p.resource_tracker!==false));
+ }));
  let panel=document.querySelector('#pageRoot #tv-v251-session-items');
+ // Avoid filling the top of an empty Session Room with a misleading blank
+ // item-action panel. It appears automatically when a valid item is available.
+ if(!actors.length){panel?.remove();return}
+ const signature=JSON.stringify(actors.map(c=>[c.id,c.name,inv(c).map(i=>[i.id,i.name,i.slot,itemProps(c,i)])]));
  if(panel?.dataset.fingerprint===signature)return;panel?.remove();
  panel=node('section','tv-v251-session-items');panel.id='tv-v251-session-items';panel.dataset.fingerprint=signature;
  const head=node('header','tv-v251-session-heading'),left=node('div');left.append(node('span','v2-overline','ITEMS AT THE TABLE'),node('h3','','Weapons and powers'));
