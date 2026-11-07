@@ -75,3 +75,14 @@
  .tv254-proficiency-fields{grid-template-columns:1fr}
  .tv254-proficiency-card,.tv254-creator-proficiency{padding:17px}
 }
+
+/* Small source-backed training reference on class and ancestry reading pages. */
+.tv254-reference-training{
+ margin:18px 0 24px;padding:clamp(18px,2.4vw,27px);
+ border:1px solid color-mix(in srgb,var(--accent) 32%,var(--edge));
+ background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+ border-radius:12px;max-width:100%;
+}
+.tv254-reference-training h2{font:500 25px/1.35 var(--serif,Georgia,serif);margin:10px 0 13px;color:var(--ink)}
+.tv254-reference-training p{margin:8px 0}
+.tv254-reference-training .tv254-proficiency-pills{margin:10px 0 15px}
