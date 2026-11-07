@@ -102,19 +102,18 @@
       }));
     }else toastText('Joined online, but could not load campaign details.');
   }
-  async function createCampaign(name,description,longDescription='',theme='',genre=''){
-    const story=String(longDescription||'').trim();
-    if(story.length>12000){toastText('Campaign description must be 12,000 characters or fewer.');return}
-    if(theme.length>240||genre.length>240){toastText('Theme and Genre must be under 240 characters.');return}
+  async function createCampaign(name){
     if(!identity()?.profile?.is_dm){toastText('Only the verified DM can create campaigns.');return}
+    // Only the name is requested when creating the campaign. All other fields
+    // retain their empty defaults and are edited later in Campaign Settings.
     const {data,error}=await client().from('campaigns')
-      .insert({name,description,long_description:story,theme:theme.trim(),genre:genre.trim(),owner_id:identity().user.id})
+      .insert({name,description:'',owner_id:identity().user.id})
       .select('id,name,description,owner_id').single();
     if(error){toastText('Campaign not created: '+error.message);return}
     await syncCampaigns();
     if(members.has(data.id)){
       db.campaign=data.id;db.mode='sample';persist();navigate('/campaigns/'+data.id);
-      toastText('Campaign saved online.');
+      toastText('Campaign created. Add its details any time from Campaign Settings.');
     }
   }
   async function leaveCampaign(id){
