@@ -69,3 +69,10 @@ jobs:
           print("PASS: real V2 skin and 319 placeholder-safe lore records untouched")
           print("PASS: 56 approved hosted ads, verified Discord module and no secret keys")
           PY
+      - name: Upload public-safe V2 visual regression bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: v245-verified-visual-review
+          path: published/veiled-codex
+          retention-days: 1
+          if-no-files-found: error
