@@ -262,6 +262,8 @@ textarea.tv255-input{resize:vertical}
  border-radius:6px;border:1px solid var(--edge);padding:5px 7px;
  background:var(--raised);color:var(--accent);white-space:nowrap;flex:none;
 }
+body[data-tv255-role="player"] #tv254-dm-vault,
+body[data-tv255-role="player"] #tv254-chronicle-tabs,
 body[data-tv255-role="player"] #tv-dm-item-workshop,
 body[data-tv255-role="player"] .tv-dm-item-workshop,
 .sheet21-backpack-buttons [data-action="sheetDMGear"]{display:none!important}
