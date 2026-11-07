@@ -47,7 +47,7 @@
      const characters=(data||[]).filter(c=>inCampaign.has(c.campaign_id)).map(formatRemote);
      const verified=await client().rpc('terravale_character_owner_labels');
      if(!verified.error){
-       const names=new Map((verified.data||[]).map(x=>[x.character_id,x]));
+       const names=new Map((Array.isArray(verified.data)?verified.data:[]).map(x=>[x.character_id,x]));
        for(const ch of characters){
          const owner=names.get(ch.id);
          if(owner){ch.ownerName=owner.discord_username;ch.ownerTvUID=owner.tvuid}
