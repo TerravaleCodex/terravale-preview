@@ -16,6 +16,8 @@ source_bytes = target.read_bytes()
 manifest = json.loads((ROOT / ".preview-v239-approved/manifest.json").read_text())
 assert hashlib.sha256(source_bytes).hexdigest() == manifest["uncompressed_sha256"], "Unexpected V2 source"
 source = source_bytes.decode("utf-8")
+from v243_native_patch import patch
+source = patch(source)
 assert source.count("</head>") == 1 and source.count("</body>") == 1
 assert source.count('id="previewTray"') == 1, "Expected exact V2.39 preview controls"
 assert '--bg:#07080c' in source and '--accent:#c3a5ff' in source, "Actual V2 theme tokens missing"
