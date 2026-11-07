@@ -45,6 +45,7 @@
 .tv-v251-ability summary{font-size:11px;color:var(--accent);cursor:pointer;font-weight:700}
 .tv-v251-ability p{font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--soft)}
 .tv-v251-session-items{
+ grid-column:1 / -1;
  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--edge));
  border-radius:15px;padding:clamp(17px,2.5vw,27px);margin:21px 0;
  background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 4%,var(--surface)),var(--surface));
