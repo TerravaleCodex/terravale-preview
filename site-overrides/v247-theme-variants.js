@@ -2,9 +2,19 @@
    Cosmetic controls never grant privileges or achievements. */
 (function(){
   "use strict";
-  const KEY="tv-crimson-court-appearance-variant";
   const state={unlocked:false,checked:false,wanted:"velvet"};
-  try{state.wanted=localStorage.getItem(KEY)==="obsidian"?"obsidian":"velvet"}catch{}
+  window.TerravaleCrimsonVariant={
+    get:()=>state.wanted,
+    isUnlocked:()=>state.checked&&state.unlocked,
+    applyFromCloud:value=>{
+      state.wanted=value==="obsidian"?"obsidian":"velvet";
+      applyVariant();schedule();
+    }
+  };
+  window.addEventListener("terravale-online-appearance",e=>{
+    state.wanted=e.detail?.crimson_variant==="obsidian"?"obsidian":"velvet";
+    applyVariant();schedule();
+  });
   const profile=()=>window.TerravaleVerifiedAccount?.state;
   const sb=()=>window.TerravaleVerifiedAccount?.supabase;
   function applyVariant(){
@@ -43,13 +53,18 @@
     if(!button){
       button=document.createElement("button");button.type="button";
       button.id="tv-crimson-moon";button.className="tv-crimson-moon";
-      button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 13.1A9 9 0 0 1 10.9 3.1 9.1 9.1 0 1 0 20.9 13.1Z"/></svg>';
-      button.addEventListener("click",()=>{
-        if(!state.unlocked)return;
-        state.wanted=state.wanted==="obsidian"?"velvet":"obsidian";
-        try{localStorage.setItem(KEY,state.wanted)}catch{}
+      button.textContent="☾";
+      button.addEventListener("click",async()=>{
+        if(!state.checked||!state.unlocked)return;
+        const before=state.wanted;
+        state.wanted=before==="obsidian"?"velvet":"obsidian";
         if(document.body.dataset.theme!=="crimson"&&typeof setTheme==="function")setTheme("crimson");
         applyVariant();
+        const result=await window.TerravaleLivePreferences?.setVariant(state.wanted);
+        if(result===false){
+          state.wanted=before;
+          applyVariant();
+        }
       });
       action.after(button);
     }
