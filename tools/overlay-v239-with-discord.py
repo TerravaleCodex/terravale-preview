@@ -19,9 +19,17 @@ source = source_bytes.decode("utf-8")
 from v243_native_patch import patch
 from v245_theme_patch import patch as patch_v245, theme_bridge_css
 from v246_native_patch import patch as patch_v246
+from v248_native_patch import patch as patch_v248
 source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
+source = patch_v248(source)
+# The approved offline V2 HTML carries an illustrative-only label.
+# Replace only that label in the hosted build; the actual lore/source stays intact.
+source = re.sub(r"Offline design sandbox\s*[·•]\s*All data illustrative",
+                "Online V2 · Discord-connected characters and settings", source)
+source = re.sub(r"No network connection\s*[·•]\s*Never touches the live Codex",
+                "Live site · Protected by your verified Discord account", source)
 # No public article text or ancestry placeholder may be altered by UI changes.
 lore_re = r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>'
 before_lore = re.search(lore_re, source_bytes.decode("utf-8"))
@@ -38,6 +46,7 @@ css += "\n" + (ROOT / "site-overrides/v245-theme-and-title.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v246-theme-creator-gallery.css").read_text()
 css += "\n" + theme_bridge_css(source)
 css += "\n" + (ROOT / "site-overrides/v247-admin-and-themes.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v248-themes-achievements.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -45,6 +54,9 @@ cloud = (ROOT / "site-overrides/v246-real-characters.js").read_text()
 controls = (ROOT / "site-overrides/v246-ui-controls.js").read_text()
 party = (ROOT / "site-overrides/v247-demo-party-admin.js").read_text()
 variants = (ROOT / "site-overrides/v247-theme-variants.js").read_text()
+achievements = (ROOT / "site-overrides/v248-achievement-notices.js").read_text()
+preferences = (ROOT / "site-overrides/v248-live-preferences-tutorial.js").read_text()
+demo_sheets = (ROOT / "site-overrides/v248-curated-demo-sheets.js").read_text()
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -98,6 +110,9 @@ inline_js = (
     '<script data-source="v246-ui-controls.js">\n' + controls + '\n</script>\n'
     '<script data-source="v247-demo-party-admin.js">\n' + party + '\n</script>\n'
     '<script data-source="v247-theme-variants.js">\n' + variants + '\n</script>\n'
+    '<script data-source="v248-achievement-notices.js">\n' + achievements + '\n</script>\n'
+    '<script data-source="v248-live-preferences-tutorial.js">\n' + preferences + '\n</script>\n'
+    '<script data-source="v248-curated-demo-sheets.js">\n' + demo_sheets + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -114,6 +129,13 @@ assert source.count('data-source="v246-real-characters.js"') == 1
 assert source.count('data-source="v246-ui-controls.js"') == 1
 assert source.count('data-source="v247-demo-party-admin.js"') == 1
 assert source.count('data-source="v247-theme-variants.js"') == 1
+assert source.count('data-source="v248-achievement-notices.js"') == 1
+assert source.count('data-source="v248-live-preferences-tutorial.js"') == 1
+assert source.count('data-source="v248-curated-demo-sheets.js"') == 1
+assert 'terravale_set_user_appearance' in source
+assert 'terravale_set_tutorial_progress' in source
+assert 'tv-achievement-notifications' in source
+assert 'nullmeridian' in source and 'gloamglass' in source
 assert "118000" in source and "RESET DEMO" in source
 assert "tv-crimson-variant" in source and "tv-growing-vines" in source
 assert "Actual Discord" not in cloud and "terravale_create_character" in cloud

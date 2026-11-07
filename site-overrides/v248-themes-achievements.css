@@ -1,0 +1,300 @@
+/* V2.48 — approved Null Meridian / Gloamglass palettes + earned-only
+   Crimson moon + naturally cycling Verdant leaves + unlock notices. */
+
+/* Fractured void: dark cyan geometry and a near-black canvas. */
+body[data-theme="nullmeridian"]{
+ --bg:#02070b;--surface:#08151a;--raised:#12242a;
+ --ink:#e5f5f7;--soft:#aec9cf;--dim:#79969b;
+ --accent:#7addf0;--gold:#c0e6dd;--edge:#31565b;
+ background:
+  repeating-linear-gradient(137deg,transparent 0 104px,#4b879315 105px 106px,transparent 107px 224px),
+  radial-gradient(ellipse 44% 34% at 75% 0%,#11758725,transparent 79%),
+  radial-gradient(ellipse 33% 44% at -8% 78%,#21a9ae13,transparent 89%),
+  linear-gradient(145deg,#010608,#07151b 52%,#020609);
+ background-attachment:fixed;
+}
+body[data-theme="nullmeridian"] .v2-card:not([data-rarity]),
+body[data-theme="nullmeridian"] .lore-card{
+ box-shadow:inset 0 1px 0 #baf4fa16,0 1px 0 #0007;
+ border-color:color-mix(in srgb,var(--edge) 87%,var(--accent));
+}
+body[data-theme="nullmeridian"] .v2-hero::after{color:#5edcea15}
+body[data-theme="nullmeridian"] .nav-item.active{
+ border-color:#408491!important;
+ background:linear-gradient(95deg,#11354170,#08161c)!important;
+}
+/* Dim stained glass: teal and near-black, with restrained refracted colour. */
+body[data-theme="gloamglass"]{
+ --bg:#031216;--surface:#0a2024;--raised:#143139;
+ --ink:#e2f4ef;--soft:#b4d1cc;--dim:#81a6a0;
+ --accent:#82e0cc;--gold:#d5c49d;--edge:#33615f;
+ background:
+  linear-gradient(125deg,transparent 18%,#2acfa009 19%,transparent 21% 56%,#ceb9840a 57%,transparent 59%),
+  radial-gradient(ellipse 57% 44% at 83% -6%,#0f81703b,transparent 86%),
+  radial-gradient(ellipse 30% 30% at 7% 83%,#4883a51c,transparent 86%),
+  linear-gradient(153deg,#031014,#092930 52%,#051114);
+ background-attachment:fixed;
+}
+body[data-theme="gloamglass"] .v2-card,
+body[data-theme="gloamglass"] .cab-card{
+ box-shadow:inset 0 1px #addfd519;
+ border-color:color-mix(in srgb,var(--edge) 83%,var(--accent));
+}
+body[data-theme="gloamglass"] .theme-card .theme-preview{
+ border-color:#6dbbac65!important;
+}
+body[data-theme="gloamglass"] .v2-overline,
+body[data-theme="gloamglass"] .cab-head .eyebrow{
+ color:#b3e7da;
+}
+
+/* Small moon sits beside the existing native theme preview/current button. */
+.theme-card #tv-crimson-moon{
+ display:inline-flex;
+ width:36px;height:36px;
+ vertical-align:middle;
+ align-items:center;justify-content:center;
+ margin:15px 0 0 9px;
+ padding:8px;
+ color:var(--soft);
+ background:color-mix(in srgb,var(--raised) 75%,transparent);
+ border:1px solid var(--edge);
+ border-radius:10px;
+ cursor:pointer;
+ transition:color .2s,border-color .2s,background .2s,box-shadow .2s;
+}
+.theme-card #tv-crimson-moon svg{width:20px;height:20px;pointer-events:none}
+.theme-card #tv-crimson-moon:hover,
+.theme-card #tv-crimson-moon:focus-visible{
+ color:#ffadb5;border-color:#d8657b;
+ background:#47121e55;
+ box-shadow:0 0 15px #9f274631;
+}
+.theme-card #tv-crimson-moon.active{
+ color:#fbb2ba;border-color:#b94a64;
+ background:#43111d;
+ box-shadow:inset 0 0 0 1px #dc60752a;
+}
+.theme-card #tv-crimson-moon:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.theme-card #tv-crimson-variant{display:none!important}
+
+/* The former stems and detached SVG leaves are entirely retired. */
+#tv-growing-vines::before,
+#tv-growing-vines::after,
+#tv-growing-vines .tv-botanical-art{
+ display:none!important;
+ content:none!important;
+}
+#tv-growing-vines{
+ position:fixed;inset:0;overflow:hidden;
+ z-index:1;pointer-events:none;
+ opacity:1;
+}
+#tv-growing-vines .tv-season-leaf{
+ position:absolute;
+ left:var(--lx);top:var(--ly);
+ width:var(--ls);height:auto;
+ transform-origin:center 90%;
+ opacity:0;
+ animation:tv-verdant-season var(--leaf-dur) cubic-bezier(.33,.1,.47,.94) var(--leaf-delay) infinite both;
+ will-change:transform,opacity;
+ filter:drop-shadow(0 1px 1px #020c085e);
+}
+#tv-growing-vines .tv-season-leaf svg{width:100%;height:auto;display:block;overflow:visible}
+#tv-growing-vines .tv-season-leaf .tv-leaf-body{
+ fill:#5ba87b;fill-opacity:.40;
+ stroke:#b4e8b0;stroke-opacity:.22;stroke-width:.9;
+}
+#tv-growing-vines .tv-season-leaf:nth-child(3n) .tv-leaf-body{fill:#7ec58a;fill-opacity:.3}
+#tv-growing-vines .tv-season-leaf:nth-child(5n) .tv-leaf-body{fill:#a3bc71;fill-opacity:.25}
+#tv-growing-vines .tv-leaf-veins{
+ stroke:#d4f0bc;stroke-opacity:.36;
+ stroke-width:.7;fill:none;stroke-linecap:round;
+}
+@keyframes tv-verdant-season{
+ 0%,3%{
+   opacity:0;transform:translate3d(0,8px,0) rotate(-24deg) scale(.08);
+ }
+ 20%{opacity:.25;transform:translate3d(0,0,0) rotate(-8deg) scale(.62)}
+ 34%,48%{opacity:.56;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+ 58%{opacity:.50;transform:translate3d(8px,22px,0) rotate(25deg) scale(1)}
+ 76%{
+  opacity:.37;transform:translate3d(var(--fall-x),var(--fall-y),0) rotate(calc(var(--leaf-rot) + 150deg)) scale(.94);
+ }
+ 94%,100%{
+  opacity:0;transform:translate3d(var(--fall-x),var(--fall-y),0) rotate(calc(var(--leaf-rot) + 220deg)) scale(.85)
+ }
+}
+/* Never prevent interacting with a theme by covering its content. */
+#pageRoot{position:relative;z-index:2}
+
+/* Discrete, screen-reader friendly, stacked achievement-completion notices. */
+#tv-achievement-notifications{
+ position:fixed;z-index:99997;
+ right:18px;bottom:18px;
+ width:min(350px,calc(100vw - 30px));
+ display:flex;flex-direction:column-reverse;gap:9px;
+ pointer-events:none;
+}
+.tv-achievement-notice{
+ --unlock-tone:var(--accent);
+ color:var(--ink);
+ border:1px solid color-mix(in srgb,var(--unlock-tone) 62%,var(--edge));
+ border-radius:13px;
+ background:
+   radial-gradient(ellipse 110% 55% at 98% 0%,color-mix(in srgb,var(--unlock-tone) 17%,transparent),transparent 75%),
+   var(--surface);
+ box-shadow:0 12px 46px #000b,inset 0 1px 0 color-mix(in srgb,var(--unlock-tone) 25%,transparent);
+ padding:15px 16px;
+ display:flex;gap:13px;position:relative;
+ pointer-events:auto;
+ animation:tv-unlock-appear .46s cubic-bezier(.2,.85,.22,1) both;
+}
+.tv-achievement-notice[data-rarity="common"]{--unlock-tone:#cac7d4}
+.tv-achievement-notice[data-rarity="uncommon"]{--unlock-tone:#8bceae}
+.tv-achievement-notice[data-rarity="rare"]{--unlock-tone:#8bb7ee}
+.tv-achievement-notice[data-rarity="epic"]{--unlock-tone:#c394f5}
+.tv-achievement-notice[data-rarity="legendary"]{--unlock-tone:#e7c16d}
+.tv-achievement-emblem{
+ display:flex;align-items:center;justify-content:center;
+ width:39px;height:39px;flex:0 0 39px;
+ border:1px solid color-mix(in srgb,var(--unlock-tone) 50%,var(--edge));
+ border-radius:10px;background:color-mix(in srgb,var(--unlock-tone) 11%,var(--raised));
+ color:var(--unlock-tone);font-size:22px;
+}
+.tv-achievement-content{min-width:0;flex:1}
+.tv-achievement-eyebrow{
+ color:var(--unlock-tone);font-weight:800;
+ font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+ margin:2px 0 5px;
+}
+.tv-achievement-title{font:500 20px/1.15 var(--serif,Georgia,serif);margin:0 12px 4px 0}
+.tv-achievement-desc{font-size:11px;line-height:1.48;color:var(--soft);margin:0}
+.tv-achievement-link{
+ background:transparent;border:0;color:var(--unlock-tone);
+ padding:8px 0 0;margin:0;font:700 10px var(--font,system-ui);cursor:pointer;
+}
+.tv-achievement-close{
+ position:absolute;right:8px;top:8px;
+ border:0;border-radius:7px;padding:4px 7px;
+ color:var(--soft);background:transparent;cursor:pointer;
+}
+.tv-achievement-close:hover{color:var(--ink);background:var(--raised)}
+.tv-achievement-notice.tv-exit{animation:tv-unlock-dismiss .25s ease-in forwards}
+@keyframes tv-unlock-appear{
+ from{opacity:0;transform:translate3d(22px,18px,0) scale(.95)}
+ to{opacity:1;transform:none}
+}
+@keyframes tv-unlock-dismiss{
+ to{opacity:0;transform:translate3d(18px,15px,0) scale(.98)}
+}
+@media(max-width:620px){
+ #tv-achievement-notifications{right:10px;bottom:10px;width:min(345px,calc(100vw - 20px))}
+ #tv-growing-vines .tv-season-leaf{filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #tv-growing-vines .tv-season-leaf{
+  animation:none!important;
+  opacity:.15;
+  transform:scale(.9);
+  will-change:auto;
+ }
+ .tv-achievement-notice,.tv-achievement-notice.tv-exit{animation:none!important}
+}
+
+/* Genuine Discord-linked player tutorial, replayable from Help. */
+.tv-tutorial-launch{
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ margin:15px 0 0;padding:12px 17px;
+ border:1px solid var(--accent);border-radius:10px;
+ background:var(--accent);color:var(--bg);
+ font:700 12px var(--font,system-ui);cursor:pointer;
+}
+.tv-tutorial-launch:hover{filter:brightness(1.08)}
+.tv-tutorial-overlay{
+ position:fixed;inset:0;z-index:99996;
+ padding:24px;display:grid;place-items:center;
+ background:rgba(0,0,0,.79);backdrop-filter:blur(7px);
+}
+.tv-tutorial-panel{
+ width:min(580px,100%);max-height:calc(100dvh - 32px);overflow:auto;
+ color:var(--ink);background:var(--surface);
+ border:1px solid color-mix(in srgb,var(--accent) 42%,var(--edge));
+ border-radius:20px;
+ box-shadow:0 28px 90px #000c,inset 0 1px #ffffff0a;
+ padding:clamp(24px,4vw,40px);
+ position:relative;
+}
+.tv-tutorial-exit{
+ position:absolute;right:16px;top:14px;
+ border:1px solid var(--edge);background:var(--raised);
+ color:var(--soft);width:34px;height:34px;
+ border-radius:9px;cursor:pointer;font-size:19px;
+}
+.tv-tutorial-eyebrow{
+ color:var(--accent);font:800 10px var(--font,system-ui);
+ letter-spacing:.13em;margin:4px 42px 14px 0;
+ text-transform:uppercase;
+}
+.tv-tutorial-title{
+ color:var(--ink);font:500 clamp(29px,4vw,42px)/1.15 var(--serif,Georgia,serif);
+ margin:0 20px 18px 0;
+}
+.tv-tutorial-description{
+ color:var(--soft);font-size:14px;line-height:1.75;min-height:5em;
+ margin:0 0 20px;
+}
+.tv-tutorial-meter{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:16px 0 24px}
+.tv-tutorial-meter button{
+ border:0;border-radius:99px;height:6px;min-width:0;
+ padding:0;background:var(--edge);cursor:pointer;
+}
+.tv-tutorial-meter button.completed{background:var(--accent)}
+.tv-tutorial-meter button[aria-current="step"]{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.tv-tutorial-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.tv-tutorial-actions button{
+ background:var(--raised);color:var(--ink);
+ border:1px solid var(--edge);border-radius:9px;padding:10px 14px;
+ font:700 11px var(--font,system-ui);cursor:pointer;
+}
+.tv-tutorial-actions [data-tour="next"]{
+ background:var(--accent);color:var(--bg);
+ border-color:var(--accent);
+}
+.tv-tutorial-actions button:disabled{cursor:not-allowed;opacity:.35}
+.tv-tutorial-actions button:focus-visible,.tv-tutorial-exit:focus-visible{
+ outline:2px solid var(--accent);outline-offset:2px;
+}
+@media(max-width:570px){
+ .tv-tutorial-overlay{padding:10px}
+ .tv-tutorial-panel{padding:24px 20px}
+ .tv-tutorial-actions{justify-content:stretch}
+ .tv-tutorial-actions button{flex:1}
+ .tv-tutorial-description{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .tv-tutorial-overlay{backdrop-filter:none}
+}
+
+/* The old sample/player/DM preview tray is not a permission selector for the
+ * authenticated V2. Remove it visually; real DM preview remains in the header. */
+#previewTray,.preview-tray{display:none!important}
+
+/* Natural sizing for actual level choices on demo character sheets. */
+.tv-demo-level-choices{margin:0 0 19px;padding:20px 22px}
+.tv-demo-level-choices>h3{font:500 24px/1.2 var(--serif,Georgia,serif);margin:9px 0 7px}
+.tv-demo-level-choices>.sheet20-note{font-size:12px;color:var(--soft);line-height:1.6}
+.tv-demo-level-list{display:grid;gap:8px;margin-top:14px}
+.tv-demo-level-row{
+ border:1px solid var(--edge);
+ border-radius:10px;
+ padding:10px 14px;
+ display:grid;grid-template-columns:68px 1fr;gap:16px;
+ background:color-mix(in srgb,var(--accent) 5%,var(--raised));
+ font-size:12px;line-height:1.6;
+}
+.tv-demo-level-row strong{color:var(--accent);font-size:11px;white-space:nowrap}
+.tv-demo-level-row span{color:var(--ink);overflow-wrap:anywhere}
+@media(max-width:550px){
+ .tv-demo-level-row{grid-template-columns:1fr;gap:3px}
+}

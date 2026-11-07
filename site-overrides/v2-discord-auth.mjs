@@ -66,6 +66,7 @@ document.body.append(gate);
 const gateMsg = gate.querySelector("#tv-auth-msg");
 const gateErr = gate.querySelector("#tv-auth-error");
 const gateRetry = gate.querySelector("#tv-auth-retry");
+let oauthRequestInFlight = false;
 gateRetry.addEventListener("click", () => startDiscord(true));
 const say = (message, error = "") => { gateMsg.textContent = message; gateErr.textContent = error; };
 function showGate(message, error = "", retry = false) {
@@ -79,20 +80,27 @@ async function startDiscord(isRetry = false) {
       "Open https://terravalecodex.github.io/terravale-preview/veiled-codex/.", false);
     return;
   }
+  if (oauthRequestInFlight) return;
   if (isRetry) sessionStorage.removeItem("tv-v2-oauth-started");
   if (sessionStorage.getItem("tv-v2-oauth-started") === "1") {
     showGate("Discord sign-in did not complete.", "Try again, or check the site's Discord OAuth redirect settings.", true);
     return;
   }
   showGate("Opening Discord to verify your account…");
+  oauthRequestInFlight = true;
+  gateRetry.disabled = true;
   sessionStorage.setItem("tv-v2-oauth-started", "1");
   try {
-    const redirectTo = location.origin + location.pathname;
+    const redirectTo = location.origin === "https://terravalecodex.github.io"
+      ? "https://terravalecodex.github.io/terravale-preview/veiled-codex/"
+      : location.origin + location.pathname;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "discord", options: { redirectTo }
     });
     if (error) throw error;
   } catch (error) {
+    oauthRequestInFlight = false;
+    gateRetry.disabled = false;
     sessionStorage.removeItem("tv-v2-oauth-started");
     showGate("Discord connection could not start.", error?.message || String(error), true);
   }
@@ -128,7 +136,14 @@ async function initAuth() {
     window.dispatchEvent(new CustomEvent("terravale-auth-ready", { detail: { isDm: Boolean(profile.is_dm) } }));
     startPageObserver();
   } catch (error) {
-    showGate("Unable to confirm your Discord account.", error?.message || String(error), true);
+    const message = error?.message || String(error);
+    if (/bad_code_verifier|code challenge does not match|code verifier/i.test(message)) {
+      sessionStorage.removeItem("tv-v2-oauth-started");
+      showGate("Discord login could not be verified.",
+        "That sign-in attempt expired or was replaced by another tab. Please use Continue with Discord once to start a fresh connection.", true);
+    } else {
+      showGate("Unable to confirm your Discord account.", message, true);
+    }
   }
 }
 
