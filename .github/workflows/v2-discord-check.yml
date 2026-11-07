@@ -465,7 +465,7 @@ jobs:
           assert 'terravale_wallet_self_adjust' in wallet
           assert 'terravale_wallet_adjust' in wallet
           assert 'tv255-wallet-system-list' in wallet
-          assert 'db.role===\\'dm\\'' in Path('site-overrides/v250-dm-backpack-editor.js').read_text()
+          assert "db.role==='dm'" in Path('site-overrides/v250-dm-backpack-editor.js').read_text()
           assert '.sheet21-backpack-buttons [data-action="sheetDMGear"]' in Path('site-overrides/v255-chronicle-wallet-creator.css').read_text()
           assert 'tv255-version-tag' in html
           assert 'tv254-chronicle-tabs' in html
