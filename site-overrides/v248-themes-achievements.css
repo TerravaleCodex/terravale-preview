@@ -275,3 +275,26 @@ body[data-theme="gloamglass"] .cab-head .eyebrow{
 @media(prefers-reduced-motion:reduce){
  .tv-tutorial-overlay{backdrop-filter:none}
 }
+
+/* The old sample/player/DM preview tray is not a permission selector for the
+ * authenticated V2. Remove it visually; real DM preview remains in the header. */
+#previewTray,.preview-tray{display:none!important}
+
+/* Natural sizing for actual level choices on demo character sheets. */
+.tv-demo-level-choices{margin:0 0 19px;padding:20px 22px}
+.tv-demo-level-choices>h3{font:500 24px/1.2 var(--serif,Georgia,serif);margin:9px 0 7px}
+.tv-demo-level-choices>.sheet20-note{font-size:12px;color:var(--soft);line-height:1.6}
+.tv-demo-level-list{display:grid;gap:8px;margin-top:14px}
+.tv-demo-level-row{
+ border:1px solid var(--edge);
+ border-radius:10px;
+ padding:10px 14px;
+ display:grid;grid-template-columns:68px 1fr;gap:16px;
+ background:color-mix(in srgb,var(--accent) 5%,var(--raised));
+ font-size:12px;line-height:1.6;
+}
+.tv-demo-level-row strong{color:var(--accent);font-size:11px;white-space:nowrap}
+.tv-demo-level-row span{color:var(--ink);overflow-wrap:anywhere}
+@media(max-width:550px){
+ .tv-demo-level-row{grid-template-columns:1fr;gap:3px}
+}
