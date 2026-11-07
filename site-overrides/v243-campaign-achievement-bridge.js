@@ -188,9 +188,13 @@
       panel=document.createElement('section');
       panel.id='tv-campaign-story';
       panel.className='tv-campaign-story';
+      // Place the longer description immediately after the campaign heading
+      // when the native page exposes one; otherwise before membership controls.
+      const heading=root.querySelector('.v2-hero,.v2-page-header,.page-header');
       const membership=root.querySelector('#tv-campaign-membership');
-      if(membership)membership.insertAdjacentElement('beforebegin',panel);
-      else root.append(panel);
+      if(heading)heading.insertAdjacentElement('afterend',panel);
+      else if(membership)membership.insertAdjacentElement('beforebegin',panel);
+      else root.prepend(panel);
     }
     if(panel.dataset.editing==='1'||renderedStory.get(panel)===campaign)return;
     renderedStory.set(panel,campaign);
