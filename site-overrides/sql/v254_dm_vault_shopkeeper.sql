@@ -69,7 +69,7 @@ begin
   'ac_bonus','attack_bonus','damage_dice','damage_type','charges','max_charges',
   'recharge','features','rarity','attunement','weapon_action','resource_tracker',
   'attack_ability','damage_ability','proficient','recovery','recharge_amount',
-  'recharge_dice','charge_cost'
+  'recharge_dice','charge_cost','attuned'
  )) from jsonb_object_keys(p) k) then
    raise exception 'Unsupported item mechanics field' using errcode='22023';end if;
  if coalesce((p->>'attunement')::boolean,false) then
@@ -204,7 +204,8 @@ begin
  insert into public.terravale_dm_vault_items(owner_user_id,campaign_id,item_data,mechanics)
  values(dm_user,src.campaign_id,
   item||jsonb_build_object('qty',send_quantity,'quantity',send_quantity,'slot','','location','backpack'),
-  coalesce(p,'{}'::jsonb)||jsonb_build_object('attuned',false))
+  case when p is null then '{}'::jsonb
+  else p||jsonb_build_object('attuned',false) end)
  returning id into vault_id;
  update public.character_state set inventory=new_inv,updated_at=now()
   where character_id=src.id;
