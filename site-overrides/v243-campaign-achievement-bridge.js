@@ -21,7 +21,8 @@
     const count=Math.max(0,Number(progress.closed_count)||0);
     db.dismissedAds=count;
     adProgress={count,unlocked:Boolean(progress.unlocked)};
-    if(progress.unlocked && !db.unlocked.includes('adblocknt'))db.unlocked.push('adblocknt');
+    db.unlocked=db.unlocked.filter(x=>x!=='adblocknt');
+    if(progress.unlocked)db.unlocked.push('adblocknt');
     // Permanent server unlocks are authoritative; never clear other unrelated achievements.
     persist();
     if(route()==='/cabinet-of-curiosities')renderPage(false);
