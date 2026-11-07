@@ -128,7 +128,7 @@
 }
 .page-cabinet .cabinet-grid>.cab-card:not(.cab-featured):nth-child(17n + 7){
  grid-column:span 1!important;grid-row:span 2!important;
- height:466px!important;max-height:466px!important;
+ height:394px!important;max-height:394px!important;
  background:radial-gradient(ellipse at 85% 0%,color-mix(in srgb,var(--rarity,var(--accent)) 12%,transparent),transparent 75%),var(--surface);
 }
 .page-cabinet .cabinet-grid>.cab-card:not(.cab-featured):nth-child(17n + 7) h3{
@@ -198,7 +198,7 @@ body.tv-player-preview:after{
    height:202px!important;max-height:202px!important;
  }
  .page-cabinet .cabinet-grid>.cab-card:not(.cab-featured):nth-child(17n + 7){
-   height:226px!important;max-height:226px!important;
+   height:190px!important;max-height:190px!important;
  }
  .page-library .tv-lore .lore-grid>.lore-card:not(.wide):nth-child(23n + 11) h2{
    font-size:17px!important;
