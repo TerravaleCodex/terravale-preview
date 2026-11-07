@@ -1,0 +1,102 @@
+/* V2.53 — real backpack item transfers and persistent delivery notices. */
+.tv-v253-gift-form{
+  border:1px solid color-mix(in srgb,var(--accent) 26%,var(--edge));
+  border-radius:12px;
+  margin:17px 0 0;
+  background:color-mix(in srgb,var(--accent) 3%,var(--surface));
+  color:var(--ink);
+}
+.tv-v253-gift-form>summary{
+  cursor:pointer;
+  padding:15px 17px;
+  font-weight:700;
+  font-size:12px;
+  line-height:1.55;
+}
+.tv-v253-gift-form[open]{padding:0 17px 20px}
+.tv-v253-gift-form[open]>summary{padding:15px 0 7px}
+.tv-v253-gift-help{
+  font-size:11px;line-height:1.7;color:var(--soft);
+  margin:5px 0 16px;
+}
+.tv-v253-gift-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;align-items:end;
+}
+.tv-v253-gift-fields label{
+  display:flex;flex-direction:column;gap:8px;
+  font-size:11px;font-weight:700;color:var(--ink);
+  min-width:0;
+}
+.tv-v253-gift-fields label:first-child{grid-column:1/-1}
+.tv-v253-gift-fields select,.tv-v253-gift-fields input{
+  width:100%;min-width:0;box-sizing:border-box;
+  font-size:12px;line-height:1.55;color:var(--ink);
+  padding:11px 12px;
+  background:var(--raised);
+  border:1px solid var(--edge);border-radius:8px;
+}
+.tv-v253-gift-fields select:focus,.tv-v253-gift-fields input:focus{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.tv-v253-gift-fields button{justify-self:start}
+.tv-v253-gift-status{
+  grid-column:1/-1;margin:0;min-height:1.4em;
+  font-size:11px;line-height:1.5;color:var(--soft);
+}
+.tv-v253-gift-notification{
+  position:fixed;
+  z-index:999999;
+  right:clamp(12px,2vw,28px);
+  bottom:clamp(12px,2vw,26px);
+  width:min(420px,calc(100vw - 24px));
+  box-sizing:border-box;
+  padding:clamp(20px,2vw,28px);
+  border-radius:15px;
+  border:1px solid color-mix(in srgb,var(--accent) 55%,var(--edge));
+  background:
+    radial-gradient(ellipse at 95% 3%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 65%),
+    var(--surface);
+  color:var(--ink);
+  box-shadow:0 20px 70px rgba(0,0,0,.45),0 0 0 2px color-mix(in srgb,var(--accent) 10%,transparent);
+}
+.tv-v253-gift-header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.tv-v253-gift-header>span{
+  font-size:10px;line-height:1.4;font-weight:800;
+  letter-spacing:.14em;color:var(--accent);
+}
+.tv-v253-gift-dismiss{
+  color:var(--ink);border:1px solid var(--edge);
+  background:var(--raised);border-radius:8px;
+  padding:4px 10px;font-size:18px;cursor:pointer;
+}
+.tv-v253-gift-dismiss:hover{border-color:var(--accent)}
+.tv-v253-gift-notification h3{
+  margin:12px 0 13px;
+  font:500 clamp(24px,2.5vw,31px)/1.3 var(--serif,Georgia,serif);
+}
+.tv-v253-gift-message{
+  font-size:14px;line-height:1.85;color:var(--soft);
+  overflow-wrap:anywhere;margin:0 0 12px;
+}
+.tv-v253-gift-message strong{
+  font-weight:740;color:var(--ink);
+}
+.tv-v253-gift-small{
+  color:var(--soft);
+  font-size:11px;line-height:1.65;margin:0 0 19px;
+}
+.tv-v253-gift-actions{
+  display:flex;align-items:center;gap:10px;
+}
+.tv-v253-gift-actions button{width:100%}
+@media(max-width:640px){
+  .tv-v253-gift-fields{grid-template-columns:1fr}
+  .tv-v253-gift-fields label:first-child{grid-column:auto}
+  .tv-v253-gift-notification{bottom:10px;right:10px;width:calc(100vw - 20px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .tv-v253-gift-notification{animation:none;transition:none}
+}
