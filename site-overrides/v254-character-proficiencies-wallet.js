@@ -130,6 +130,7 @@ function validSelections(className,ancestry,choices){
  return null;
 }
 function creatorPanel(){
+ if(window.TerravaleV255Creator)return;
  if(location.hash.replace(/^#/,'')!=='/characters/create')return;
  const studio=document.getElementById('creatorStudio');
  if(!studio||typeof db==='undefined'||!rules())return;
@@ -236,6 +237,7 @@ function bonusField(request){
  slot.append(submit,status);return slot;
 }
 function fillProficiencies(section,c){
+ if(window.TerravaleV255Training?.renderSheet){window.TerravaleV255Training.renderSheet(section,c);return}
  section.replaceChildren();
  section.append(node('div','tv254-eyebrow','LANGUAGES, TOOLS & SPECIAL TRAINING'),
   node('h3','','Your proficiencies'));
@@ -300,6 +302,7 @@ async function loadWallet(c){
  if(section?.dataset.character===c.id)fillWallet(section,c);
 }
 function fillWallet(section,c){
+ if(window.TerravaleV255Wallet?.render){window.TerravaleV255Wallet.render(section,c,cacheWallet.get(c.id),()=>loadWallet(c));return}
  section.replaceChildren();
  section.append(node('div','tv254-eyebrow','WALLET · NATIVE PHYSICAL CURRENCY'),
   node('h3','','Coin purse & treasury'));

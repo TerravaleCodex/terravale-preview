@@ -7,6 +7,7 @@ from pathlib import Path
 import hashlib
 import html
 import json
+import os
 import re
 import shutil
 
@@ -24,6 +25,18 @@ source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
+# V2.55: DM Chronicle paths all use the same native page; a focused
+# role-checked workspace then fills the selected routed subsection.
+dm_route="else if(p==='/dm')out=renderDM();"
+assert source.count(dm_route)==1, "DM Chronicle routing changed"
+source=source.replace(dm_route,"else if(p==='/dm'||p.startsWith('/dm/'))out=renderDM();",1)
+dm_guard="function renderDM(){"
+assert source.count(dm_guard)==1, "Native DM view entry changed"
+source=source.replace(dm_guard,
+    dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.55')
+source=source.replace('Choose your people','Choose people & languages')
+source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
 # Replace only that label in the hosted build; the actual lore/source stays intact.
 source = re.sub(r"Offline design sandbox\s*[·•]\s*All data illustrative",
@@ -53,6 +66,7 @@ css += "\n" + (ROOT / "site-overrides/v252-invite-and-permanent-demo.css").read_
 css += "\n" + (ROOT / "site-overrides/v253-item-gifts.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v254-dm-vault.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v254-proficiencies-wallet.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v255-chronicle-wallet-creator.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -69,6 +83,12 @@ gifts = (ROOT / "site-overrides/v253-backpack-gifts.js").read_text()
 rules_v254 = (ROOT / "site-overrides/v254-rules-registry.js").read_text()
 vault_v254 = (ROOT / "site-overrides/v254-dm-vault.js").read_text()
 prof_v254 = (ROOT / "site-overrides/v254-character-proficiencies-wallet.js").read_text()
+feat_v255 = (ROOT / "site-overrides/v255-custom-feat-forge.js").read_text()
+training_v255 = (ROOT / "site-overrides/v255-character-training.js").read_text()
+wallet_v255 = (ROOT / "site-overrides/v255-native-wallet.js").read_text()
+creator_v255 = (ROOT / "site-overrides/v255-creator-native-choices.js").read_text()
+shell_v255 = (ROOT / "site-overrides/v255-shell-role-version.js").read_text()
+build_meta = json.dumps({"version":"2.55","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -131,6 +151,12 @@ inline_js = (
     '<script data-source="v254-rules-registry.js">\n' + rules_v254 + '\n</script>\n'
     '<script data-source="v254-dm-vault.js">\n' + vault_v254 + '\n</script>\n'
     '<script data-source="v254-character-proficiencies-wallet.js">\n' + prof_v254 + '\n</script>\n'
+    '<script data-source="v255-build">window.TerravaleV255Build=' + build_meta + ';</script>\n'
+    '<script data-source="v255-creator-native-choices.js">\n' + creator_v255 + '\n</script>\n'
+    '<script data-source="v255-character-training.js">\n' + training_v255 + '\n</script>\n'
+    '<script data-source="v255-native-wallet.js">\n' + wallet_v255 + '\n</script>\n'
+    '<script data-source="v255-custom-feat-forge.js">\n' + feat_v255 + '\n</script>\n'
+    '<script data-source="v255-shell-role-version.js">\n' + shell_v255 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -156,6 +182,11 @@ assert source.count('data-source="v253-backpack-gifts.js"') == 1
 assert source.count('data-source="v254-rules-registry.js"') == 1
 assert source.count('data-source="v254-dm-vault.js"') == 1
 assert source.count('data-source="v254-character-proficiencies-wallet.js"') == 1
+for file in ('v255-creator-native-choices.js','v255-character-training.js',
+             'v255-native-wallet.js','v255-custom-feat-forge.js',
+             'v255-shell-role-version.js'):
+    assert source.count('data-source="'+file+'"') == 1, file
+assert source.count('data-source="v255-build"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source

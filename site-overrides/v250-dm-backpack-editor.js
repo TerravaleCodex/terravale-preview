@@ -12,7 +12,7 @@
    try{return decodeURIComponent(m[1])}catch{return ''}
  };
  const character=()=>typeof db!=='undefined'?db.characters.find(x=>x.id===idFromRoute()):null;
- const canManage=c=>Boolean(c&&auth()?.state?.ready&&auth()?.state?.profile?.is_dm
+ const canManage=c=>Boolean(c&&db.role==='dm'&&auth()?.state?.ready&&auth()?.state?.profile?.is_dm
    &&bridge()?.hasCampaign?.(c.campaign)
    &&db.campaigns.some(k=>k.id===c.campaign&&k.role==='dm'));
  const inventory=c=>Array.isArray(c.inventory)?c.inventory:[];
