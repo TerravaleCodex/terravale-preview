@@ -172,14 +172,28 @@
     panel.id='tv-campaign-invites';
     panel.className='tv-live-invites';
     panel.innerHTML='<div class="v2-overline">REAL CAMPAIGN INVITATIONS</div><h3>Invite players</h3>'+
-      '<p>Create a secure invitation, valid for seven days (up to 100 joins).</p>'+
-      '<button type="button" class="btn ghost small" id="tv-invite-create">Create join code</button>'+
-      '<code class="tv-code" id="tv-invite-result" aria-live="polite"></code>';
+      '<p>New invites use short <strong>TV-XXXXXX</strong> codes, valid for seven days (up to 100 joins).</p>'+
+      '<button type="button" class="btn ghost small" id="tv-invite-create">Create short join code</button>'+
+      '<code class="tv-code" id="tv-invite-result" aria-live="polite"></code>'+
+      '<button type="button" class="btn ghost small" id="tv-invite-copy" hidden>Copy invite code</button>';
     root.append(panel);
     panel.querySelector('#tv-invite-create').onclick=async ()=>{
       const {data,error}=await client().rpc('create_campaign_join_code',{
         target_campaign:current.id,days_valid:7,allowed_uses:100});
       panel.querySelector('#tv-invite-result').textContent=error?error.message:data;
+      const copy=panel.querySelector('#tv-invite-copy');
+      copy.hidden=Boolean(error||!data);
+      if(!error&&data){
+        copy.textContent='Copy invite code';
+        copy.onclick=async()=>{
+          try{
+            await navigator.clipboard.writeText(String(data));
+            copy.textContent='Copied!';
+          }catch{
+            copy.textContent='Select the code above to copy';
+          }
+        };
+      }
     };
   }
   let observer=null,queued=false;
