@@ -33,6 +33,9 @@ on:
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v250-dm-backpack-editor.js"
       - "site-overrides/v251-live-item-actions.js"
+      - "site-overrides/v253-backpack-gifts.js"
+      - "site-overrides/v253-item-gifts.css"
+      - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
       - "site-overrides/sql/v252_permanent_demo_items_tutorial.sql"
       - "site-overrides/sql/v252_tutorial_progress_range.sql"
@@ -73,6 +76,7 @@ jobs:
           node --check site-overrides/v248-curated-demo-sheets.js
           node --check site-overrides/v250-dm-backpack-editor.js
           node --check site-overrides/v251-live-item-actions.js
+          node --check site-overrides/v253-backpack-gifts.js
       - name: Verify V2.49 guided tour and botanical lifecycle
         run: |
           python3 - <<'PY'
@@ -83,8 +87,8 @@ jobs:
           css=Path("site-overrides/v248-themes-achievements.css").read_text()
           html=Path("published/veiled-codex/index.html").read_text()
           assert 'Welcome to the 2.0 Codex' in tour
-          assert len(re.findall(r'eyebrow:"\d\d ·',tour))==16
-          for fragment in ('#/campaigns','#/characters','#/lore','#/cabinet-of-curiosities','#/session-room','#/appearance','#/help'):
+          assert len(re.findall(r'eyebrow:"\d\d ·',tour))==15
+          for fragment in ('#/campaigns','#/characters','#/lore','#/cabinet-of-curiosities','#/party','#/appearance','#/help'):
               assert fragment in tour, fragment
           for fragment in ('offerWelcome();','tv-tutorial-spotlight','scrollIntoView','placeTour()','startTutorial(true)','Replay the guided 2.0 tutorial'):
               assert fragment in tour, fragment
@@ -96,7 +100,7 @@ jobs:
           assert "Welcome to the 2.0 Codex" in html
           assert "tv-v249-leaf-cycle" in html
           assert 'id="secret-placeholder"' not in html
-          print("PASS: sixteen-stage guided pop-up highlights real campaigns and can replay")
+          print("PASS: 15-step guided pop-up follows the actual Session Room route and can replay")
           print("PASS: Verdant grows/falls/regrows with reduced-motion fallback")
           PY
       - name: Validate human-length campaign invitations
@@ -278,9 +282,9 @@ jobs:
             'If you have already received an invite code, please enter it now.',
             'openInvitationEntry()','terravale-campaign-joined',
             'step=4','targetRoute(d)','tab:"party"',
-            'tab:"overview"','tab:"settings"',
+            'tab:"overview"',
             'tab:"journal"','Resume guided tutorial',
-            'Where character creation begins','16 · REPLAY ANY TIME'
+            'Where character creation begins','15 · REPLAY ANY TIME'
           ):
             assert token in tour, f"Missing new tutorial behaviour: {token}"
             assert token in html, f"Tutorial missing from published V2: {token}"
@@ -300,10 +304,48 @@ jobs:
           assert 'between 0 and 20' in limits
           assert "character_item_properties" in sql
           assert sql.count("::jsonb),")>=13
-          assert "grid-template-columns:repeat(16" in css
+          assert "grid-template-columns:repeat(15" in css
           assert 'data-source="v250-dm-backpack-editor.js"' in html
-          print("PASS: 16-stage invite-to-character tutorial, name-only form and replay")
+          print("PASS: 15-stage player onboarding without unnecessary DM Settings")
           print("PASS: Aster and all permanent demo records, live item properties and no destructive reset")
+          PY
+      - name: Verify rest charge event order, real session route and persistent item transfers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          tour=Path('site-overrides/v248-live-preferences-tutorial.js').read_text()
+          rest=Path('site-overrides/v251-live-item-actions.js').read_text()
+          gifts=Path('site-overrides/v253-backpack-gifts.js').read_text()
+          migration=Path('site-overrides/sql/v253_atomic_backpack_transfers.sql').read_text()
+          html=Path('published/veiled-codex/index.html').read_text()
+          css=Path('site-overrides/v253-item-gifts.css').read_text()
+          demo=Path('site-overrides/v247-demo-party-admin.js').read_text()
+          bridge=Path('site-overrides/v243-campaign-achievement-bridge.js').read_text()
+          assert 'where:"#/party",nav:"session"' in tour
+          assert '#/session-room' not in tour
+          assert 'title:"Campaign settings"' not in tour
+          assert 'tab:"party"' in tour and 'tab:"journal"' in tour
+          assert "window.addEventListener('click',e=>{" in rest
+          assert "stopImmediatePropagation()" in rest
+          assert "document.addEventListener('click',e=>{" in rest
+          assert "terravale_item_rest" in rest
+          assert "source_character:c.id" in gifts
+          assert "terravale_send_backpack_item" in gifts
+          assert "terravale_item_transfer_notifications" in gifts
+          assert "Got it · Dismiss" in gifts
+          assert ".is('dismissed_at',null)" in gifts
+          assert 'setInterval(' in gifts
+          assert 'data-source="v253-backpack-gifts.js"' in html
+          assert 'tv-v253-gift-notification' in html
+          assert 'position:fixed' in css
+          assert 'character_item_properties' in migration
+          assert "attuned','false'" in migration
+          assert 'recipient_user_id=(select auth.uid())' in migration
+          assert "if(!native.querySelector" in demo
+          assert "The Wayfarers’ Table is a shared live demonstration" in bridge
+          print("PASS: tutorial uses /party and highlights player-facing steps")
+          print("PASS: item rest listener precedes native stopImmediatePropagation")
+          print("PASS: atomic backpack gifts, persistent recipient-only notifications and no automatic dismissal")
           PY
       - name: Protect lore, theme, authentication and assets
         run: |
