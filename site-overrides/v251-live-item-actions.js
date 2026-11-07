@@ -184,13 +184,17 @@ document.addEventListener('click',e=>{
  else if(['use','attune','unattune','dawn'].includes(b.dataset.tvItemAction))useItem(c,i,b.dataset.tvItemAction);
 });
 const restLocks=new Set();
-document.addEventListener('click',e=>{
+// Native V2.38 handles rest confirmation on DOCUMENT capture and calls
+// stopImmediatePropagation(). Listen on WINDOW capture first or the item
+// recharge handler never fires. Native HP/class rest is still processed once.
+window.addEventListener('click',e=>{
  const b=e.target.closest('[data-v238-confirm-rest]');if(!b||!['short','long'].includes(b.dataset.v238ConfirmRest))return;
  const c=char(b.dataset.id),kind=b.dataset.v238ConfirmRest;
- if(!actor(c)||Number(c.hp)<=0||c.sheetV220?.death?.dead)return;
+ if(!actor(c)||!c||Number(c.hp)<=0||c.sheetV220?.death?.dead)return;
  if(!inv(c).some(i=>{const p=itemProps(c,i);return charged(p)&&(p.recovery==='short'||(kind==='long'&&p.recovery==='long'))}))return;
  const key=c.id+'|'+kind;if(restLocks.has(key))return;restLocks.add(key);
- // Defer until after native HP/class-rest processing, without firing a second rest.
+ // Wait until after the native document capture rest handler returns;
+ // this never fires another native rest. If the server fails, report it.
  Promise.resolve().then(async()=>{
   try{
    const {data,error}=await api().rpc('terravale_item_rest',{target_character:c.id,rest_kind:kind});
