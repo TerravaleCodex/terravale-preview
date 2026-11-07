@@ -43,6 +43,7 @@ on:
       - "site-overrides/sql/v254_proficiency_choices.sql"
       - "site-overrides/sql/v254_dm_vault_shopkeeper.sql"
       - "site-overrides/sql/v254_bonus_choice_id_hotfix.sql"
+      - "site-overrides/sql/v254_dm_owner_membership_hotfix.sql"
       - "site-overrides/v253-item-gifts.css"
       - "site-overrides/sql/v253_atomic_backpack_transfers.sql"
       - "site-overrides/v252-invite-and-permanent-demo.css"
@@ -389,6 +390,12 @@ jobs:
           assert 'terravale_claim_proficiency_choice' in prof
           assert 'terravale_dm_approve_language' in prof
           assert 'new_choice_id uuid' in grant
+          assert 'terravale_wallet_transfer' in Path('site-overrides/sql/v254_dm_owner_membership_hotfix.sql').read_text()
+          client=Path('site-overrides/v254-character-proficiencies-wallet.js').read_text()
+          page=Path('site-overrides/v254-dm-vault.js').read_text()
+          assert 'function mountReferenceTraining()' in client
+          assert "terravale_dm_approve_language" in page
+          assert "terravale_dm_grant_proficiency_choice" in page
           assert 'terravale_vault_save_item' in vault
           assert 'terravale_vault_issue_item' in vault
           assert 'terravale_send_item_to_dm_vault' in vault
