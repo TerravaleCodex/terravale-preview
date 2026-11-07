@@ -1,4 +1,4 @@
-name: Publish Terravale 2.0 holding page with veiled V2 preview
+name: Publish Terravale 2.0 Holding Page
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
     paths:
       - ".github/workflows/deploy.yml"
       - "site-overrides/awaiting-v2.html"
-      - ".preview-v239-bundle/**"
   workflow_dispatch:
 
 permissions:
@@ -23,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble unchanged visual holding page and hidden compiled V2
+      - name: Assemble one visual page with a custom 404 fallback
         shell: bash
         run: |
           set -euo pipefail
@@ -40,7 +39,6 @@ jobs:
           assert 'overscroll-behavior:none' in home
           assert 'function fitScene()' in home
           assert 'id="secret-placeholder"' in home
-          assert 'window.location.assign("/terravale-preview/veiled-codex/")' in home
           assert 'opacity:0;box-shadow:none;appearance:none' in home
           assert 'class="storm"' in home
           assert 'id="countdown-hours"' in home
@@ -53,51 +51,12 @@ jobs:
           fallback = home.replace('</head>', redirect + '</head>', 1)
           assert redirect in fallback
           Path('published/404.html').write_text(fallback)
-          # The private V2 branch exports PUBLIC-SAFE assets only.
-          # This bundle is compiled in demo mode, with NO Supabase credentials.
-          # A hidden URL is not access control, so never include restricted bodies.
-          import base64,hashlib,io,json,zipfile
-          from pathlib import PurePosixPath
-          source = Path('.preview-v239-bundle')
-          manifest = json.loads((source/'manifest.json').read_text())
-          assert manifest['status'] == 'passed'
-          assert manifest['auth_mode'] == 'demo-only'
-          assert manifest['base_path'] == '/terravale-preview/veiled-codex'
-          assert manifest['public_lore'] == 283
-          assert manifest['restricted_ids_only'] == 36
-          assert len(manifest['source_commit']) == 40
-          pieces = sorted(source.glob('part-*.b64'))
-          assert pieces and len(pieces) == manifest['parts']
-          packed = base64.b64decode(''.join(p.read_text() for p in pieces),validate=True)
-          assert hashlib.sha256(packed).hexdigest() == manifest['sha256']
-          target = Path('published/veiled-codex')
-          target.mkdir(parents=True,exist_ok=True)
-          with zipfile.ZipFile(io.BytesIO(packed)) as archive:
-              members = [info for info in archive.infolist() if not info.is_dir()]
-              assert len(members) == manifest['file_count']
-              assert len({i.filename for i in members}) == len(members)
-              for info in members:
-                  name = PurePosixPath(info.filename)
-                  assert not name.is_absolute() and '..' not in name.parts and len(name.parts)>0
-                  assert (info.external_attr >> 16) & 0o170000 != 0o120000, 'Symlink not allowed'
-                  dest = target.joinpath(*name.parts)
-                  dest.parent.mkdir(parents=True,exist_ok=True)
-                  data = archive.read(info.filename)
-                  if dest.suffix in {'.html','.js','.json','.css','.txt'}:
-                      assert b'emwlvbmnrrhxhrmlwkhs' not in data, 'Production DB reference in public preview'
-                      assert b'zlbubzdjecpxislpvyhx' not in data, 'Staging DB reference in public preview'
-                  dest.write_bytes(data)
-          assert (target/'index.html').is_file()
-          assert (target/'codex'/'index.html').is_file()
-          assert (target/'lore-v14-public.json').is_file()
-          assert len(json.loads((target/'lore-v14-public.json').read_text())) == 283
-          assert b'/terravale-preview/veiled-codex/_next/' in (target/'index.html').read_bytes()
-          files = sorted(p.name for p in Path('published').iterdir())
-          assert files == ['404.html','index.html','veiled-codex'], files
+          files = sorted(p.name for p in Path('published').iterdir() if p.is_file())
+          assert files == ['404.html', 'index.html'], files
           assert 'Awaiting <em>2.0</em> update' in fallback
-          print('Publishing unchanged 2.0 countdown plus isolated public-safe V2 demo under /veiled-codex/.')
+          print('Publishing one visual page: index.html + matching GitHub Pages fallback.')
           PY
-      - name: Upload countdown and hidden V2 demo
+      - name: Upload single-page site
         uses: actions/upload-pages-artifact@v3
         with:
           path: published
@@ -112,7 +71,7 @@ jobs:
       name: github-pages
       url: https://terravalecodex.github.io/terravale-preview/
     steps:
-      - name: Deploy countdown plus secret V2 preview
+      - name: Deploy the one-page artifact
         id: deployment
         uses: actions/deploy-pages@v4
       - name: Verify holding page and retired routes
@@ -138,48 +97,6 @@ jobs:
             fi
             sleep 5
           done
-          # The entrance itself must stay invisible, while the fully exported
-          # demo and 283 public Lore Codex articles load at their nested paths.
-          hidden_ready=false
-          for attempt in $(seq 1 12); do
-            hidden_status="$(curl --silent --show-error --location --max-time 20 \
-              --output /tmp/terravale-hidden-index.html --write-out '%{http_code}' \
-              --header 'Cache-Control: no-cache' \
-              "${base}/veiled-codex/?verify=${GITHUB_SHA}-${attempt}" || true)"
-            # The Next.js app initially renders its loading shell; dashboard
-            # copy appears after client hydration, so don't require hero text.
-            if [ "$hidden_status" = "200" ] &&
-               grep -q '<html lang="en">' /tmp/terravale-hidden-index.html &&
-               grep -q '/terravale-preview/veiled-codex/_next/' /tmp/terravale-hidden-index.html; then
-              hidden_ready=true
-              echo "PASS: public-safe hidden V2 homepage served correctly."
-              break
-            fi
-            echo "Hidden V2 route attempt ${attempt}: HTTP ${hidden_status}, size $(wc -c </tmp/terravale-hidden-index.html 2>/dev/null || echo 0)"
-            if [ "$attempt" -eq 12 ]; then
-              echo "::error::Hidden V2 route failed after cache-busting retries."
-              echo "First 350 bytes of received HTML (public):"
-              head -c 350 /tmp/terravale-hidden-index.html || true
-              echo
-              exit 1
-            fi
-            sleep 5
-          done
-          codex_status="$(curl --silent --show-error --location --max-time 20 \
-            --output /tmp/terravale-hidden-codex.html --write-out '%{http_code}' \
-            "${base}/veiled-codex/codex/?verify=${GITHUB_SHA}")"
-          if [ "$codex_status" != "200" ] ||
-             ! grep -q '/terravale-preview/veiled-codex/_next/' /tmp/terravale-hidden-codex.html; then
-            echo "::error::Hidden V2 Lore Codex route or assets are missing (HTTP ${codex_status})."
-            exit 1
-          fi
-          curl --fail --silent --show-error --location --max-time 20 "${base}/veiled-codex/lore-v14-public.json" > /tmp/terravale-v239-public-lore.json
-          python3 - <<'PY'
-          import json
-          a=json.load(open('/tmp/terravale-v239-public-lore.json'))
-          assert len(a)==283, 'Public Lore count changed'
-          print('PASS: Secret V2 route, Lore Codex and all 283 public articles available.')
-          PY
           for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
             response_file="/tmp/terravale-retired.html"
             status="$(curl --silent --show-error --location --max-time 15 \
