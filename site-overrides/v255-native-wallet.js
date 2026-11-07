@@ -187,6 +187,11 @@ async function fetchMoney(c,force=false){
 }
 function render(section,c,result,refresh){
  if(!ready())return;
+ if(!validRole(c)){
+  section.replaceChildren(el('p','tv254-muted',
+   'This character’s wallet is private. Only the owner and campaign DM can view or change its holdings.'));
+  return;
+ }
  // Our single view replaces the old selects but uses the old verified wallet read.
  const isDm=c.owner!=='You'&&db.role==='dm'&&
   window.TerravaleVerifiedAccount?.state?.profile?.is_dm;
