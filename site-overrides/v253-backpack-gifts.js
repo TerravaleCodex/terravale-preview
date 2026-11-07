@@ -148,7 +148,8 @@ function renderNotification(){
  const from=node('strong','',current.source_character_name);
  const item=node('strong','',current.item_quantity+' × '+current.item_name);
  const target=node('strong','',current.target_character_name);
- message.append(player,' playing ',from,' sent ',item,' to your character ',target,'.');
+ if(current.target_character_name==='DM Vault')message.append(player,' playing ',from,' delivered ',item,' into your DM Vault.');
+ else message.append(player,' playing ',from,' sent ',item,' to your character ',target,'.');
  card.append(message,node('p','tv-v253-gift-small',
    'The item is already in their backpack. Its remaining charges and powers travelled with it. This notice stays until you dismiss it.'));
  const actions=node('div','tv-v253-gift-actions');
