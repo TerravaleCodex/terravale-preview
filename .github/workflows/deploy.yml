@@ -162,7 +162,7 @@ jobs:
                grep -q 'id="repair"' /tmp/terravale-home.html &&
                grep -q 'id="fluff-lead"' /tmp/terravale-home.html &&
                grep -q 'id="incident-title"' /tmp/terravale-home.html &&
-               grep -q 'const incidents = [' /tmp/terravale-home.html &&
+               grep -Fq 'const incidents = [' /tmp/terravale-home.html &&
                ! grep -q 'id="secret-placeholder"' /tmp/terravale-home.html &&
                ! grep -q 'id="countdown-hours"' /tmp/terravale-home.html; then
               echo "PASS: rotating glitch explanations and diagnostics are live, without secret entrance."
