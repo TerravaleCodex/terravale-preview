@@ -22,11 +22,13 @@ def patch(source):
 {id:'night',name:'Night Sky',sub:'Midnight indigo, distant stars and moonlit blue',bg:'#03081a',a:'#a9cfff'},
 {id:'guildie',name:'Guildie',sub:'Royal purple, rich shadow and radiant gold',bg:'#12071a',a:'#c29af5'},
 {id:'verdant',name:'Verdant Archive',sub:'Forest canopy, emerald light and old brass',bg:'#06140e',a:'#8fd7a7'},
-{id:'crimson',name:'Crimson Court',sub:'Wine-dark velvet, ruby accents and antique gold',bg:'#19090e',a:'#e48b97'}
+{id:'crimson',name:'Crimson Court',sub:'Wine-dark velvet, ruby accents and antique gold',bg:'#19090e',a:'#e48b97'},
+{id:'nullmeridian',name:'Null Meridian',sub:'Fractured midnight, eerie cyan and broken geometric light',bg:'#04090e',a:'#6dd5e8'},
+{id:'gloamglass',name:'Gloamglass',sub:'Petrol-black, iridescent teal and fractured stained-glass light',bg:'#061c20',a:'#70cdbd'}
 ];"""
     source=source[:a]+new_themes+source[b:]
     exactly("shady:'Shady',zero:'Absolute Zero',night:'Night Sky',guildie:'Guildie'",
-            "shady:'Bone Zone',zero:'Absolute Zero',night:'Night Sky',guildie:'Guildie',verdant:'Verdant Archive',crimson:'Crimson Court'",
+            "shady:'Bone Zone',zero:'Absolute Zero',night:'Night Sky',guildie:'Guildie',verdant:'Verdant Archive',crimson:'Crimson Court',nullmeridian:'Null Meridian',gloamglass:'Gloamglass'",
             "Toast uses approved display names")
     exactly('These are V2 interface token previews, not a full recreation of every decorative theme effect. The current account’s actual settings remain untouched.',
             'Themes apply instantly across Terravale and are saved for this browser. The green and red palettes are available for review before we finalise their related achievements.',
@@ -53,7 +55,7 @@ def theme_bridge_css(source):
     tokens=re.findall(r'(--tv-hex-[a-f0-9]{6,8}):\s*(#[a-f0-9]{6,8})',m.group(1),re.I)
     if len(tokens)<80:raise AssertionError("Unexpectedly small V2 colour-token inventory")
     output=[]
-    for name,hcolor in [('verdant',.39),('crimson',.976)]:
+    for name,hcolor in [('verdant',.39),('crimson',.976),('nullmeridian',.53),('gloamglass',.475)]:
         values=[]
         for k,color in tokens:
             raw=color.lstrip('#')
