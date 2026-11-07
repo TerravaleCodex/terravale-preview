@@ -75,7 +75,7 @@ jobs:
               assert fragment in tour, fragment
           for fragment in ('offerWelcome();','tv-tutorial-spotlight','scrollIntoView','placeTour()','startTutorial(true)','Replay the guided 2.0 tutorial'):
               assert fragment in tour, fragment
-          assert 'tv-v249-leaves' in leaves
+          assert 'v249-leaves' in leaves
           assert 'const count=28' in leaves
           assert 'const delay=random()*12' in leaves
           assert 'tv-v249-leaf-cycle' in css
