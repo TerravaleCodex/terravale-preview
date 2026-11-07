@@ -134,12 +134,12 @@ function roomActors(){
 }
 function roomCard(c){
  const card=node('article','tv-v251-actor');card.append(node('h4','',c.name));
- const eligible=inv(c).filter(i=>{const p=itemProps(c,i);return Object.keys(p).length&&((i.slot&&(p.weapon_action===true||p.damage_dice))||(charged(p)&&p.resource_tracker!==false))});
+ const eligible=inv(c).filter(i=>{const p=itemProps(c,i);return Object.keys(p).length&&((i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice)))||(charged(p)&&p.resource_tracker!==false))});
  if(!eligible.length){card.append(node('p','tv-v251-muted','No DM-approved item actions assigned.'));return card}
  for(const i of eligible){
   const p=itemProps(c,i),row=node('div','tv-v251-weapon-row'),name=node('div','tv-v251-weapon-details'),actions=node('div','tv-v251-weapon-actions');
   name.append(node('strong','',i.name),node('small','',[(p.damage_dice||'')+' '+(p.damage_type||''),charged(p)?(p.charges||0)+'/'+p.max_charges+' charges':'',p.attunement&&!p.attuned?'Not attuned':''].filter(t=>t.trim()).join(' · ')));
-  if(i.slot&&(p.weapon_action===true||p.damage_dice)){
+  if(i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice))){
    const attack=button('Roll attack','attack',c,i);attack.disabled=!mayUse(c,p);actions.append(attack);
    if(p.damage_dice){const damage=button('Roll damage','damage',c,i);damage.disabled=!mayUse(c,p);actions.append(damage)}
   }
