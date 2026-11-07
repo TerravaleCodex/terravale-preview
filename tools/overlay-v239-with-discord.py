@@ -49,6 +49,7 @@ css += "\n" + (ROOT / "site-overrides/v247-admin-and-themes.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v248-themes-achievements.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v250-campaign-items.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v251-interactive-item-actions.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v252-invite-and-permanent-demo.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -144,7 +145,7 @@ assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
 assert 'nullmeridian' in source and 'gloamglass' in source
-assert "118000" in source and "RESET DEMO" in source
+assert "118000" in source and "tv-demo-permanent-party" in party and "resetDemo" not in party
 assert "tv-crimson-variant" in source and "tv-growing-vines" in source
 assert "Actual Discord" not in cloud and "terravale_create_character" in cloud
 assert "data-v246-" not in source[:source.find("<script data-source=\"v246-ui-controls.js\"")] or True

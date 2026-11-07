@@ -33,6 +33,9 @@ on:
       - "site-overrides/v243-campaign-achievement-bridge.js"
       - "site-overrides/v250-dm-backpack-editor.js"
       - "site-overrides/v251-live-item-actions.js"
+      - "site-overrides/v252-invite-and-permanent-demo.css"
+      - "site-overrides/sql/v252_permanent_demo_items_tutorial.sql"
+      - "site-overrides/sql/v252_tutorial_progress_range.sql"
       - "site-overrides/v251-interactive-item-actions.css"
       - "site-overrides/sql/v251_interactive_item_mechanics.sql"
       - "site-overrides/v250-campaign-items.css"
@@ -80,7 +83,7 @@ jobs:
           css=Path("site-overrides/v248-themes-achievements.css").read_text()
           html=Path("published/veiled-codex/index.html").read_text()
           assert 'Welcome to the 2.0 Codex' in tour
-          assert len(re.findall(r'eyebrow:"\d\d ·',tour))==9
+          assert len(re.findall(r'eyebrow:"\d\d ·',tour))==16
           for fragment in ('#/campaigns','#/characters','#/lore','#/cabinet-of-curiosities','#/session-room','#/appearance','#/help'):
               assert fragment in tour, fragment
           for fragment in ('offerWelcome();','tv-tutorial-spotlight','scrollIntoView','placeTour()','startTutorial(true)','Replay the guided 2.0 tutorial'):
@@ -93,7 +96,7 @@ jobs:
           assert "Welcome to the 2.0 Codex" in html
           assert "tv-v249-leaf-cycle" in html
           assert 'id="secret-placeholder"' not in html
-          print("PASS: nine-step pop-up tour highlights live routes and can replay")
+          print("PASS: sixteen-stage guided pop-up highlights real campaigns and can replay")
           print("PASS: Verdant grows/falls/regrows with reduced-motion fallback")
           PY
       - name: Validate human-length campaign invitations
@@ -126,7 +129,7 @@ jobs:
           for expected in (
             ".select('id,name,description,long_description,theme,genre,owner_id')",
             "longDescription:c.long_description||''",
-            ".insert({name,description,long_description:story,theme:theme.trim(),genre:genre.trim(),owner_id:identity().user.id})",
+            ".insert({name,description:'',owner_id:identity().user.id})",
             ".update(values)",
             "function decorateCampaignCreator()",
             "function decorateCampaignStory(root,campaign)",
@@ -136,14 +139,14 @@ jobs:
           ):
             assert expected in script, f"Missing campaign-story bridge behavior: {expected}"
             assert expected in html, f"Hosted V2 missing campaign-story behavior: {expected}"
-          assert "maxLength=12000" in script
+          assert "campaign.longDescription,12,12000" in script
           assert "intro.textContent=campaign.longDescription||''" in script
           for expected in ("add column if not exists long_description","grant update (description,long_description)","char_length(long_description) <= 12000"):
             assert expected in sql
           assert "tv-campaign-story-content" in css and "white-space:pre-wrap" in css
           assert "The final seal breaks in" not in html
           print("PASS: separate preserved short campaign quote and online long-form editor")
-          print("PASS: both campaign creation and existing campaign pages support long description")
+          print("PASS: campaign creation is name-only; all story metadata belongs in Settings")
           PY
       - name: Verify real campaign tabs and secure DM item property integration
         run: |
@@ -172,7 +175,10 @@ jobs:
           assert "grant execute on function public.terravale_dm_edit_inventory_item" in props
           assert "add column if not exists theme" in meta
           assert "add column if not exists genre" in meta
-          assert "This is the short quote" in bridge
+          assert "Campaign creation is intentionally NAME ONLY" in bridge
+          assert "    createCampaign(name);" in bridge
+          assert "theme:theme.trim()" not in bridge
+          assert 'data-source="v248-live-preferences-tutorial.js"' in html
           print("PASS: native Overview/Settings split, Theme/Genre, no duplicate local-only editor")
           print("PASS: backpack DM item changes and server-authoritative mechanics embedded safely")
           PY
@@ -256,6 +262,49 @@ jobs:
           print("PASS: native resources and Session Room expose item actions/rolls")
           print("PASS: RPCs enforce bounded activation, three-item attunement and explicit rest/dawn triggers")
           PY
+      - name: Verify invitation tutorial, permanent demo party, Aster and full item examples
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          tour=Path('site-overrides/v248-live-preferences-tutorial.js').read_text()
+          bridge=Path('site-overrides/v243-campaign-achievement-bridge.js').read_text()
+          party=Path('site-overrides/v247-demo-party-admin.js').read_text()
+          cloud=Path('site-overrides/v246-real-characters.js').read_text()
+          sql=Path('site-overrides/sql/v252_permanent_demo_items_tutorial.sql').read_text()
+          limits=Path('site-overrides/sql/v252_tutorial_progress_range.sql').read_text()
+          html=Path('published/veiled-codex/index.html').read_text()
+          css=Path('site-overrides/v252-invite-and-permanent-demo.css').read_text()
+          for token in (
+            'If you have already received an invite code, please enter it now.',
+            'openInvitationEntry()','terravale-campaign-joined',
+            'step=4','targetRoute(d)','tab:"party"',
+            'tab:"overview"','tab:"settings"',
+            'tab:"journal"','Resume guided tutorial',
+            'Where character creation begins','16 · REPLAY ANY TIME'
+          ):
+            assert token in tour, f"Missing new tutorial behaviour: {token}"
+            assert token in html, f"Tutorial missing from published V2: {token}"
+          assert "await window.TerravaleV2Bridge?.syncCharacters?.()" in bridge
+          assert ".insert({name,description:'',owner_id:identity().user.id})" in bridge
+          assert "form.dataset.tvMinimalCampaign='1'" in bridge
+          assert "const create=form.querySelector('button[type=\"submit\"]')" in bridge
+          assert "tv-demo-permanent-party" in party
+          assert ".campaign-detail-content .campaign-detail-section" in party
+          assert "Aster Vaelith" in party
+          assert 'resetDemo' not in party
+          assert 'Restore original demo party' not in party
+          assert "ch.demoTemplateSlot===7" in cloud
+          assert "terravale_reset_demo_internal()" in sql
+          assert "Destructive reseeding is disabled" in sql
+          assert 'public.terravale_delete_character' in sql
+          assert 'between 0 and 20' in limits
+          assert "character_item_properties" in sql
+          assert sql.count("::jsonb),")>=13
+          assert "grid-template-columns:repeat(16" in css
+          assert 'data-source="v250-dm-backpack-editor.js"' in html
+          print("PASS: 16-stage invite-to-character tutorial, name-only form and replay")
+          print("PASS: Aster and all permanent demo records, live item properties and no destructive reset")
+          PY
       - name: Protect lore, theme, authentication and assets
         run: |
           python3 - <<'PY'
@@ -281,7 +330,8 @@ jobs:
           assert 'tv-tutorial-overlay' in html
           assert 'terravale_set_user_appearance' in html
           assert 'tv-demo-party-grid' in html and 'tv-crimson-variant' in html
-          assert '118000' in html and 'RESET DEMO' in html
+          assert '118000' in html and 'tv-demo-permanent-party' in html
+          assert 'Restore original demo party' not in html
           assert 'Verdant Archive' in html and 'Crimson Court' in html and 'Bone Zone' in html
           assert 'cab-title-long' in html and 'tv-lore-title-long' in html
           assert 'body[data-theme="zero"] .tv-lore .lore-history' in html

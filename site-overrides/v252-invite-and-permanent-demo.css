@@ -1,0 +1,36 @@
+/* V2.52 — compact campaign creation, invite tutorial and permanent demo roster. */
+#campaignForm{display:flex;flex-direction:column;align-items:stretch;gap:13px}
+#campaignForm>.v2-field{width:100%;min-width:0}
+#campaignForm button[type="submit"]{align-self:flex-start;margin-top:4px}
+#campaignForm .tv-campaign-story-create-field,
+#campaignForm .tv-campaign-story-metadata-editor,
+#campaignForm .tv-campaign-tagline-hint{display:none!important}
+.campaign-entry-grid,.campaign-entry-panels{align-items:start!important}
+.campaign-entry-panel:has(#campaignForm),
+.campaign-entry-panel:has(#joinForm){min-height:0;height:auto;align-self:start}
+#joinForm .tv-tutorial-invite-resume{
+ display:inline-flex;align-items:center;margin-left:9px;
+ border:1px solid color-mix(in srgb,var(--accent) 37%,var(--edge));
+ color:var(--accent);background:transparent;
+}
+.tv-tutorial-panel .tv-tutorial-meter{grid-template-columns:repeat(16,minmax(0,1fr));gap:5px}
+.tv-tutorial-panel .tv-tutorial-meter button{min-width:0;height:7px;min-height:7px}
+.tv-tutorial-panel [data-tour="visit"]{white-space:normal}
+.tv-tutorial-panel [data-tour="next"]{white-space:normal}
+#tv-demo-party.tv-demo-permanent-party{
+ margin:0 0 21px;min-width:0;
+ background:color-mix(in srgb,var(--accent) 3%,var(--surface));
+}
+.tv-demo-permanent-party .tv-demo-party-heading p{
+ max-width:85ch;
+}
+.tv-demo-permanent-note{
+ color:var(--accent);
+ font-weight:700;
+ font-size:10px;line-height:1.4;
+}
+@media(max-width:720px){
+ #joinForm .tv-tutorial-invite-resume{margin:10px 0 0}
+ .tv-tutorial-panel .tv-tutorial-meter{gap:3px}
+ .tv-tutorial-panel [data-tour="next"]{font-size:10px}
+}

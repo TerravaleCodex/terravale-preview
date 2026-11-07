@@ -73,6 +73,12 @@
          }
        }
      }
+     // Keep Aster's actual curated character record at the top of native
+     // demo previews. The server roster already contains all seven; the old
+     // created-at ordering pushed Aster below the first four preview cards.
+     const asterIndex=characters.findIndex(ch=>ch.demoTemplateSlot===7&&
+       ch.demoCurator==='Aster'&&bridge.isDemo(ch.campaign));
+     if(asterIndex>0)characters.unshift(...characters.splice(asterIndex,1));
      const recoveryKey='tv-v246-local-drafts:'+current().user.id;
      let recovered=[];
      try{const saved=JSON.parse(localStorage.getItem(recoveryKey)||'[]');if(Array.isArray(saved))recovered=saved;}
