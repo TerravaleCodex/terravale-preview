@@ -140,12 +140,29 @@ jobs:
           done
           # The entrance itself must stay invisible, while the fully exported
           # demo and 283 public Lore Codex articles load at their nested paths.
-          hidden="$(curl --fail --silent --show-error --location --max-time 20 "${base}/veiled-codex/")"
-          if ! grep -q 'Every world begins' <<< "$hidden" ||
-             ! grep -q '/terravale-preview/veiled-codex/_next/' <<< "$hidden"; then
-            echo "::error::Hidden V2 index is missing or its basePath is broken."
-            exit 1
-          fi
+          hidden_ready=false
+          for attempt in $(seq 1 12); do
+            hidden_status="$(curl --silent --show-error --location --max-time 20 \
+              --output /tmp/terravale-hidden-index.html --write-out '%{http_code}' \
+              --header 'Cache-Control: no-cache' \
+              "${base}/veiled-codex/?verify=${GITHUB_SHA}-${attempt}" || true)"
+            if [ "$hidden_status" = "200" ] &&
+               grep -q 'Every world begins' /tmp/terravale-hidden-index.html &&
+               grep -q '/terravale-preview/veiled-codex/_next/' /tmp/terravale-hidden-index.html; then
+              hidden_ready=true
+              echo "PASS: public-safe hidden V2 homepage served correctly."
+              break
+            fi
+            echo "Hidden V2 route attempt ${attempt}: HTTP ${hidden_status}, size $(wc -c </tmp/terravale-hidden-index.html 2>/dev/null || echo 0)"
+            if [ "$attempt" -eq 12 ]; then
+              echo "::error::Hidden V2 route failed after cache-busting retries."
+              echo "First 350 bytes of received HTML (public):"
+              head -c 350 /tmp/terravale-hidden-index.html || true
+              echo
+              exit 1
+            fi
+            sleep 5
+          done
           codex="$(curl --fail --silent --show-error --location --max-time 20 "${base}/veiled-codex/codex/")"
           if ! grep -q 'Lore Codex' <<< "$codex"; then
             echo "::error::Hidden V2 Lore Codex page is missing."
