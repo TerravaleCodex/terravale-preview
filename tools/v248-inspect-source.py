@@ -42,3 +42,8 @@ for id,name,ancestry,prerequisites,bonuses in matches:
 print("\n=== RULE FIELDS / SHEET FEATURE PANEL ===")
 for term in ['function sheetV222Feats','function sheetV222AncestryPanel','function sheetV225','function sheetV228','function sheetV227','const TVR=']:
  p=s.find(term);print(term,p,s[max(0,p):p+2100])
+
+
+print("\n=== BEASTFOLK CLASSIFICATION AND FEAT CHECK ===")
+for term in ["function featCheck(", "const classifications=", "function creatorAncestryStage(", "Animal Classification", "function sheetV222Feat", "function sheetV224Feat"]:
+ p=s.find(term);print(term,p,s[p:p+2600] if p>=0 else "")
