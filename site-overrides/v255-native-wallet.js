@@ -188,7 +188,9 @@ async function fetchMoney(c,force=false){
 function render(section,c,result,refresh){
  if(!ready())return;
  // Our single view replaces the old selects but uses the old verified wallet read.
- viewWallet(section,c,result,refresh,false);
+ const isDm=c.owner!=='You'&&db.role==='dm'&&
+  window.TerravaleVerifiedAccount?.state?.profile?.is_dm;
+ viewWallet(section,c,result,refresh,!!isDm);
 }
 function renderTreasury(host,campaign,chars){
  host.replaceChildren();
