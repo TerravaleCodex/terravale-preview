@@ -231,6 +231,19 @@ begin
      select 1 from public.terravale_divine_patrons x where x.id=q and x.campaign_id=target_campaign)))
   or (k<>'concordant' and q is not null) then
   raise exception 'Invalid divine patron combination' using errcode='22023';end if;
+ if (k='minor' and not exists(select 1 from public.terravale_divine_patrons x where x.id=p and x.rank='minor'))
+  or (k='divine' and not exists(select 1 from public.terravale_divine_patrons x
+       where x.id=p and x.rank in('major','greater'))) then
+  raise exception 'Boon family does not match patron rank' using errcode='22023';end if;
+ if existing_boon is not null and exists(
+   select 1 from public.terravale_character_divine_boons g
+   where g.boon_id=existing_boon and g.status='active'
+ ) and exists(
+   select 1 from public.terravale_dm_divine_boons old
+   where old.id=existing_boon
+   and (old.kind<>k or old.patron_id<>p or old.second_patron_id is distinct from q)
+ ) then
+  raise exception 'Cannot change the patron or family of an actively bestowed boon' using errcode='22023';end if;
  if existing_boon is null then
   insert into public.terravale_dm_divine_boons(
    campaign_id,patron_id,second_patron_id,kind,name,summary,mechanics,required_favour,state)
