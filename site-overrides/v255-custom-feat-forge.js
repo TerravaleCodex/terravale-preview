@@ -365,7 +365,7 @@ async function loadSheetFeats(characterId,campaignId,force=false){
  }finally{
   sheetFeatLoading.delete(characterId);
   const c=currentSheetCharacter();
-  if(c?.id===characterId&&document.querySelector('#pageRoot .sheet227-reader')){
+  if(c?.id===characterId&&document.querySelector('.sheet227-reader')){
    requestAnimationFrame(()=>{
     if(currentSheetCharacter()?.id===characterId&&typeof renderPage==='function')
      renderPage(false);
