@@ -61,6 +61,8 @@ on:
       - "site-overrides/data/v262_demo_party_kit.json"
       - "site-overrides/sql/v262_curate_demo_party.sql"
       - "site-overrides/sql/v262_shared_character_read_only.sql"
+      - "site-overrides/sql/v262_null_owner_rpc_security.sql"
+      - "tests/v262-null-owner-security.cjs"
       - "site-overrides/v261-owner-byline.js"
       - "site-overrides/v261-owner-byline.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
@@ -103,6 +105,8 @@ jobs:
         run: node tests/v261-owner-and-currency.cjs
       - name: Verify demo-party gear, feats, Vault stock and view-only access
         run: node tests/v262-demo-party.cjs
+      - name: Verify server RPCs reject NULL-owner privilege bypasses
+        run: node tests/v262-null-owner-security.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
