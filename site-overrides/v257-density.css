@@ -1,0 +1,163 @@
+/* Terravale V2.57 — screenshot-reviewed density and aligned native panels.
+   All changes are presentational; account, vault and wallet RPCs stay authoritative. */
+#tv254-dm-vault .tv255-dm-page{width:100%;max-width:none;min-width:0;gap:12px}
+#tv254-dm-vault .tv255-dm-page>.tv254-panel,
+#tv254-dm-vault .tv255-dm-page>.tv255-focused-form,
+#tv254-dm-vault .tv255-focused-form,
+#tv254-dm-vault .tv255-finance-compact{
+ width:100%!important;max-width:none!important;min-width:0;box-sizing:border-box;align-self:stretch;
+}
+#tv254-dm-vault .tv254-panel{padding:17px 19px}
+#tv254-dm-vault .tv255-campaign-chips{margin:9px 0 12px}
+#tv254-dm-vault .tv255-vault-hero{padding:18px 22px}
+#tv254-dm-vault .tv255-vault-hero h1{font-size:clamp(26px,2.6vw,36px)}
+#tv254-dm-vault .tv254-vault-hero p{max-width:none}
+#tv254-dm-vault .tv255-section-heading{margin-bottom:7px}
+#tv254-dm-vault .tv255-section-heading h2{margin:3px 0}
+#tv254-dm-vault .tv255-training-details{width:100%;max-width:none;gap:11px}
+#tv254-dm-vault .tv255-training-group{padding:14px 16px}
+#tv254-dm-vault .tv255-training-group h3{margin:0 0 7px;font-size:19px}
+#tv254-dm-vault .tv255-training-row{padding:7px 0;gap:8px;min-height:0}
+#tv254-dm-vault .tv255-training-name{gap:0;flex:1 1 120px}
+#tv254-dm-vault .tv255-training-name strong{font-size:12px}
+#tv254-dm-vault .tv255-training-name small{margin-top:3px}
+.tv257-training-category{margin-top:12px}
+.tv257-training-category:first-of-type{margin-top:7px}
+.tv257-training-category h4{
+ margin:0 0 5px;padding:4px 0 7px;
+ border-bottom:1px solid var(--edge);color:var(--accent);
+ font-size:10px;font-weight:850;letter-spacing:.055em;text-transform:uppercase;
+}
+.tv257-training-category .tv255-training-row:first-of-type{border-top:0}
+.tv256-training-columns{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tv256-training-columns>.tv255-training-group{min-width:0}
+body[data-tv257-dm-view]:not([data-tv257-dm-view="overview"]) #tv-dm-verified-players{display:none!important}
+/* Editors: large inputs on the left, a genuinely narrower mechanics rail on the right. */
+#tv254-dm-vault .tv255-focused-form .tv254-item-editor,
+#tv254-dm-vault .tv255-focused-form .tv255-feat-form{width:100%;max-width:none}
+#tv254-dm-vault .tv256-item-deck,
+#tv254-dm-vault .tv256-feat-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,350px);
+ gap:16px;align-items:start;width:100%;
+}
+#tv254-dm-vault .tv256-item-deck>.tv256-item-properties,
+#tv254-dm-vault .tv256-feat-layout>.tv256-feat-specifics{grid-column:1;grid-row:1;min-width:0}
+#tv254-dm-vault .tv256-item-deck>.tv256-feature-switchboard,
+#tv254-dm-vault .tv256-feat-layout>.tv256-feature-switchboard{grid-column:2;grid-row:1;min-width:0}
+#tv254-dm-vault .tv256-feature-switchboard{padding:13px;gap:5px}
+#tv254-dm-vault .tv256-feature-switchboard>p{margin-bottom:2px}
+#tv254-dm-vault .tv256-feature-switchboard label{padding:7px 9px}
+#tv254-dm-vault .tv256-feature-switchboard label.tv256-mechanic-switch>small{font-size:10px}
+#tv254-dm-vault .tv256-rarity-choice{margin:4px 0}
+#tv254-dm-vault .tv256-rarity-choice .tv255-tile-options{margin:4px 0 0}
+#tv254-dm-vault .tv256-item-properties .tv254-label{min-width:0}
+#tv254-dm-vault .tv256-category-picker{margin:4px 0}
+#tv254-dm-vault .tv256-category-picker .tv255-tile-options{gap:5px}
+#tv254-dm-vault .tv255-option{padding:7px 10px}
+#tv254-dm-vault .tv255-feat-form{gap:8px!important}
+#tv254-dm-vault .tv255-feat-form textarea{min-height:48px}
+#tv254-dm-vault .tv255-feat-form .tv255-form-grid{gap:9px}
+/* Feat Forge: one useful list per row instead of giant empty cards. */
+#tv254-dm-vault .tv255-feat-grid{display:flex;flex-direction:column;gap:8px;width:100%}
+#tv254-dm-vault .tv257-feat-library-row{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-direction:row;gap:18px;min-width:0;width:100%;box-sizing:border-box;
+ padding:13px 16px;
+}
+.tv257-feat-library-copy{flex:1 1 0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tv257-feat-library-row .tv254-actions{margin:0;flex:none;align-self:center}
+.tv257-feat-library-row h3{font-size:19px!important;margin:0}
+.tv257-feat-library-row .tv254-eyebrow{font-size:9px}
+.tv257-feat-library-row p{flex:initial!important;max-width:80ch}
+.tv257-feat-library-row .tv255-feat-meta{font-size:10px}
+/* Character sheet: compact ability tiles and equipment, with normal responsive flow. */
+.page-sheet .sheet21-ability-grid{gap:7px!important}
+.page-sheet .sheet21-ability-grid>*,
+.page-sheet .sheet20-abilities>.sheet20-ability{padding:9px 11px!important;gap:4px!important;min-height:0!important}
+.page-sheet .sheet21-gear-slots{gap:6px!important}
+.page-sheet .sheet21-gear-slot{min-height:50px!important;padding:8px 10px!important;gap:3px!important}
+.page-sheet .sheet21-gear-slot-title{margin:0!important}
+.page-sheet .sheet21-gear-slot small{line-height:1.35}
+.page-sheet .sheet227-reader-body{min-height:0!important}
+.page-sheet .sheet227-reader-index,.page-sheet .sheet227-reader-detail{min-height:0!important}
+.page-sheet .sheet227-entry{padding:10px 12px!important}
+.page-sheet .sheet227-reader{padding-bottom:0!important}
+.page-sheet .tv257-custom-reader-entry small{color:var(--s20-accent,var(--accent))}
+.page-sheet .tv257-feat-full-rules{
+ border:1px solid var(--s20-edge,var(--edge));border-radius:9px;
+ background:var(--s20-inset,var(--raised));padding:15px;
+ white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:13px;
+}
+.page-sheet .tv257-feat-description{line-height:1.65;margin:9px 0 13px}
+.page-sheet .tv257-feat-metadata{font-size:11px;color:var(--s20-soft,var(--soft));margin-top:13px}
+/* Player coin purse — centered value carousel; expandable actual holdings only when wanted. */
+#tv254-sheet-wallet .tv255-wallet-header{align-items:center;text-align:center;gap:5px}
+#tv254-sheet-wallet .tv255-wallet-header h3{font-size:24px}
+#tv254-sheet-wallet .tv256-conversion-carousel{
+ margin:8px auto 5px;min-width:0;max-width:100%;width:min(100%,430px);
+ box-sizing:border-box;
+}
+.tv256-conversion-carousel{justify-content:center;min-width:0;min-height:60px}
+.tv256-conversion-readout{flex:1;min-width:0;padding:0 5px}
+.tv256-conversion-readout strong{font-size:14px;line-height:1.5}
+.tv257-wallet-breakdown{margin-top:12px;border:1px solid var(--edge);border-radius:10px;min-width:0}
+.tv257-wallet-breakdown>summary{
+ cursor:pointer;color:var(--accent);font-size:11px;font-weight:780;
+ padding:11px 14px;line-height:1.5;
+}
+.tv257-wallet-breakdown[open]{padding:0 13px 12px}
+.tv257-wallet-breakdown[open]>summary{padding:12px 0}
+.tv257-wallet-breakdown>.tv255-wallet-holdings-section{margin:6px 0 12px}
+.tv257-wallet-breakdown .tv255-section-heading h3{font-size:19px;margin:3px 0}
+.tv257-wallet-breakdown .tv255-section-heading p{font-size:11px;line-height:1.5}
+#tv254-sheet-wallet .tv255-wallet-manager{margin:8px 0}
+#tv254-sheet-wallet .tv255-wallet-history{margin:10px 0 0}
+#tv254-sheet-wallet .tv255-coin-held{padding:7px 9px}
+/* Solo-DM Treasury: the value and the one transaction form share the page. */
+#tv254-dm-vault .tv255-party-picker{padding:10px 13px}
+#tv254-dm-vault .tv255-finance-compact.tv257-dm-wallet{
+ display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
+ align-items:start;gap:17px;padding:17px 20px;
+}
+.tv257-dm-wallet>.tv255-wallet-header{grid-column:1;grid-row:1;align-items:center;text-align:center}
+.tv257-dm-wallet>.tv255-wallet-manager{
+ grid-column:2;grid-row:1;margin:0;border:1px solid var(--edge);
+ background:var(--raised);border-radius:10px;padding:12px 14px
+}
+.tv257-dm-wallet>.tv257-wallet-breakdown{grid-column:1/-1;grid-row:2;margin:0}
+.tv257-dm-wallet .tv255-wallet-header h3{font-size:22px}
+.tv257-dm-wallet .tv256-conversion-carousel{margin:12px auto 0;width:min(100%,380px)}
+.tv257-dm-wallet .tv255-wallet-manager h4{margin:8px 0 6px}
+.tv257-dm-wallet .tv257-treasury-label{
+ margin:0 0 10px!important;font:500 21px var(--serif,Georgia,serif);
+ letter-spacing:0;text-transform:none;color:var(--ink)
+}
+.tv257-dm-wallet .tv255-wallet-denominations{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px}
+.tv257-dm-wallet .tv255-denom-chip{padding:8px 9px;font-size:10px}
+.tv257-dm-wallet .tv255-amount-row{margin:8px 0}
+.tv257-dm-wallet .tv255-money-actions{gap:7px}
+.tv257-dm-wallet .tv255-money-actions .btn{padding:8px 12px}
+.tv257-dm-wallet .tv255-wallet-history{margin-top:11px}
+.tv257-dm-wallet .tv255-wallet-holdings-section{margin-top:6px}
+@media(max-width:940px){
+ #tv254-dm-vault .tv256-item-deck,#tv254-dm-vault .tv256-feat-layout{grid-template-columns:minmax(0,1fr) minmax(225px,300px)}
+ #tv254-dm-vault .tv255-finance-compact.tv257-dm-wallet{grid-template-columns:1fr}
+ .tv257-dm-wallet>.tv255-wallet-header,
+ .tv257-dm-wallet>.tv255-wallet-manager,
+ .tv257-dm-wallet>.tv257-wallet-breakdown{grid-column:1;grid-row:auto}
+}
+@media(max-width:760px){
+ #tv254-dm-vault .tv256-item-deck,#tv254-dm-vault .tv256-feat-layout{grid-template-columns:1fr;gap:11px}
+ #tv254-dm-vault .tv256-item-deck>.tv256-item-properties,
+ #tv254-dm-vault .tv256-feat-layout>.tv256-feat-specifics,
+ #tv254-dm-vault .tv256-item-deck>.tv256-feature-switchboard,
+ #tv254-dm-vault .tv256-feat-layout>.tv256-feature-switchboard{grid-column:1;grid-row:auto}
+ #tv254-dm-vault .tv256-item-deck>.tv256-feature-switchboard,
+ #tv254-dm-vault .tv256-feat-layout>.tv256-feature-switchboard{order:-1}
+ .tv256-training-columns{grid-template-columns:1fr}
+ .tv257-feat-library-row{align-items:flex-start!important;flex-direction:column!important;gap:8px!important}
+ .tv257-feat-library-row .tv254-actions{align-self:flex-start}
+ #tv254-dm-vault .tv254-panel{padding:13px}
+ #tv254-dm-vault .tv255-finance-compact.tv257-dm-wallet{padding:13px}
+ .page-sheet .sheet21-gear-slot{min-height:40px!important;padding:7px 8px!important}
+}
