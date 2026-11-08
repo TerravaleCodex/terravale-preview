@@ -70,6 +70,8 @@ on:
       - "site-overrides/v263-compact-equipment-preview.js"
       - "site-overrides/v263-compact-equipment-preview.css"
       - "tests/v263-compact-inventory.cjs"
+      - "tests/v264-room-actions.cjs"
+      - "site-overrides/v264-room-actions-parallax.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -151,6 +153,8 @@ jobs:
         run: node tests/v262-null-owner-security.cjs
       - name: Verify V2.63 collapsible backpack, click-to-inspect gear and shared wallet
         run: node tests/v263-compact-inventory.cjs
+      - name: Verify Session Room Dice, Checks and Character Actions with parallax
+        run: node tests/v264-room-actions.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
