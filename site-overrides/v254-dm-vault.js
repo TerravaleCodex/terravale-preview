@@ -141,7 +141,8 @@ function renderItemEditor(host,mode,existing){
  const bonus=field('Attack bonus',p.attack_bonus??'',{type:'number',min:-20,max:20});
  const damage=field('Weapon damage',p.damage_dice||'',{maxLength:80});
  const damageType=field('Damage type',p.damage_type||'',{maxLength:80});
- row(form,ac,bonus,damage,damageType);
+ row(form,ac);
+ row(form,bonus,damage,damageType);
  const attackAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.attack_ability||'none');
  const damageAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.damage_ability||'none');
  const addSelect=(text,el)=>{const label=node('div','tv254-label');label.append(node('span','',text),el);return label};
@@ -149,7 +150,8 @@ function renderItemEditor(host,mode,existing){
  const weapon=checkbox('Weapon action in Session Room',p.weapon_action);
  const proficient=checkbox('Proficient with attack',p.proficient);
  row(form,weapon,proficient);
- form.append(node('div','tv254-form-heading','Charges, rest recovery and attunement'));
+ const chargesHeading=node('div','tv254-form-heading','Charges, rest recovery and attunement');
+ form.append(chargesHeading);
  const charges=field('Current charges',p.charges??0,{type:'number',min:0,max:999});
  const maximum=field('Max charges',p.max_charges??0,{type:'number',min:0,max:999});
  const cost=field('Activation cost',p.charge_cost??1,{type:'number',min:1,max:999});
@@ -212,6 +214,8 @@ function renderItemEditor(host,mode,existing){
    switches[key].checked=enabled[key];
    switches[key].closest('label')?.classList.toggle('disabled',!cap[i]);
   }
+  combat.hidden=!enabled.ac&&!enabled.attack;
+  chargesHeading.hidden=!enabled.charges&&!enabled.attunement;
   acRow.hidden=!enabled.ac;
   attackRow.hidden=!enabled.attack;
   attackAbilityRow.hidden=!enabled.attack;
