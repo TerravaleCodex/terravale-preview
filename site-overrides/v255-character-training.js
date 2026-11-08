@@ -260,8 +260,12 @@ function displayDM(host,c,loaded,chars){
  hero.append(label);host.append(hero);
  const status=node('p','tv255-inline-message');status.setAttribute('role','status');
  host.append(status);
- host.append(entryPanel(c,'language',effective(c,loaded.record,loaded.overrides,'language'),host,refresh,true));
- host.append(entryPanel(c,'tool',effective(c,loaded.record,loaded.overrides,'tool'),host,refresh,true));
+ const proficiencyColumns=node('div','tv256-training-columns');
+ proficiencyColumns.append(
+  entryPanel(c,'language',effective(c,loaded.record,loaded.overrides,'language'),host,refresh,true),
+  entryPanel(c,'tool',effective(c,loaded.record,loaded.overrides,'tool'),host,refresh,true)
+ );
+ host.append(proficiencyColumns);
  const approve=pendingLanguages(host,c,loaded,refresh);
  if(approve)host.append(approve);
  host.append(trainerPickList(host,c,loaded,refresh));
@@ -348,10 +352,12 @@ function displaySheet(section,c,loaded){
  section.replaceChildren();
  section.append(node('div','tv254-eyebrow','LANGUAGES, TOOLS & PROFICIENCY CHOICES'),
   node('h3','','Training and languages'));
- section.append(entryPanel(c,'language',
-  effective(c,loaded.record,loaded.overrides,'language'),section,()=>{},false));
- section.append(entryPanel(c,'tool',
-  effective(c,loaded.record,loaded.overrides,'tool'),section,()=>{},false));
+ const proficiencyColumns=node('div','tv256-training-columns');
+ proficiencyColumns.append(
+  entryPanel(c,'language',effective(c,loaded.record,loaded.overrides,'language'),section,()=>{},false),
+  entryPanel(c,'tool',effective(c,loaded.record,loaded.overrides,'tool'),section,()=>{},false)
+ );
+ section.append(proficiencyColumns);
  if((loaded.record?.pending_languages||[]).length)
  section.append(node('p','tv255-warning','Awaiting DM language approval: '+
   loaded.record.pending_languages.map(x=>labelFor('language',x.id)).join(', ')));
