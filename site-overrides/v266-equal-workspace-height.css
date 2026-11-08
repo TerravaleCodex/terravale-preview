@@ -1,0 +1,54 @@
+/* V2.66 · Session Room: the two workspace columns ALWAYS align.
+   Functional geometry deliberately has no dependency on textures or motion. */
+.page-session .sr-lower{
+ align-items:start!important;
+ grid-auto-rows:min-content!important;
+}
+.page-session .sr-lower>.sr-chat-panel,
+.page-session .sr-lower>.sr-dice-panel{
+ box-sizing:border-box!important;
+ height:752px!important;min-height:752px!important;max-height:752px!important;
+ display:flex!important;flex-direction:column!important;
+ overflow:hidden!important;align-self:start!important;
+}
+.page-session .sr-chat-panel>.sr-panel-head,
+.page-session .sr-dice-panel>.sr-panel-head,
+.page-session .sr-dice-panel>.tv-v264-room-tabs{
+ flex:0 0 auto!important;
+}
+.page-session .sr-chat-panel>.sr-chat-feed{
+ flex:1 1 auto!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ overflow-y:auto!important;overscroll-behavior:contain;
+ scrollbar-gutter:stable;scrollbar-width:thin;
+}
+.page-session .sr-chat-panel>.sr-chat-form{
+ flex:0 0 auto!important;margin-top:auto!important;
+}
+.page-session .sr-dice-panel>.sr-dice-area,
+.page-session .sr-dice-panel>#tv-v251-session-items{
+ box-sizing:border-box!important;flex:1 1 auto!important;
+ min-height:0!important;max-height:none!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;
+ align-self:stretch!important;
+}
+.page-session .sr-dice-panel>.sr-dice-area[hidden],
+.page-session .sr-dice-panel>#tv-v251-session-items[hidden]{
+ display:none!important;
+}
+/* Narrow displays stack panels while retaining individual scroll areas.
+   Both have exactly equal, comfortable 560px footprints. */
+@media(max-width:760px){
+ .page-session .sr-lower{grid-template-columns:1fr!important}
+ .page-session .sr-lower>.sr-chat-panel,
+ .page-session .sr-lower>.sr-dice-panel{
+  height:560px!important;min-height:560px!important;max-height:560px!important;
+ }
+}
+@media(max-width:420px){
+ .page-session .sr-lower>.sr-chat-panel,
+ .page-session .sr-lower>.sr-dice-panel{
+  height:510px!important;min-height:510px!important;max-height:510px!important;
+ }
+}
