@@ -84,16 +84,32 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
-      - name: Inspect native feat reader integration points
+      - name: Verify V2.57 native feats and compact DM layouts
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          s=Path('published/veiled-codex/index.html').read_text()
-          for label,before,after in [('Empty slot · drop an eligible item here',450,700),('Empty slot',450,700),('sheet21-slot{',200,450),('sheet21-equipped',400,600),('sheet21-gear-slot',350,450)]:
-              m=re.search(re.escape(label),s,re.I)
-              print('READER SOURCE',label,'FOUND',bool(m))
-              if m: print('READER CONTEXT',s[max(0,m.start()-before):m.end()+after].replace(chr(10),' ')[:6500])
+          html=Path('published/veiled-codex/index.html').read_text()
+          feat=Path('site-overrides/v255-custom-feat-forge.js').read_text()
+          training=Path('site-overrides/v255-character-training.js').read_text()
+          wallet=Path('site-overrides/v255-native-wallet.js').read_text()
+          layout=Path('site-overrides/v257-density.css').read_text()
+          vault=Path('site-overrides/v254-dm-vault.js').read_text()
+          assert 'sheet227-reader-entries' in html and 'data-v227-reader-tab' in html
+          assert 'data-tv257-feat-id' in feat and 'displayCustomInReader' in feat
+          assert "const sheetFeatCache=new Map()" in feat
+          assert "sheetFeatCache.clear()" in feat
+          assert "index.append(option)" in feat
+          assert "categoryFor=id" in training and "Starting training" in training
+          assert "tv257-wallet-breakdown" in wallet and "host.append(breakdown)" in wallet
+          assert "isDm?'section':'details'" in wallet and "Give coins" in wallet
+          assert "tv257-dm-wallet" in layout and ".sheet21-gear-slot" in layout
+          assert "body[data-tv257-dm-view]" in layout and "#tv-dm-verified-players" in layout
+          assert "dataset.tv257DmView=view" in vault
+          assert 'data-source="v255-custom-feat-forge.js"' in html
+          assert 'data-source="v255-native-wallet.js"' in html
+          assert 'Terravale Codex V2.57' in html
+          print('PASS: unified native feat reading, tool grouping and player wallet collapse')
+          print('PASS: DM solo treasury, responsive layout, shorter equipped slots and V2.57 release')
           PY
       - name: Verify browser scripts parse
         run: |
