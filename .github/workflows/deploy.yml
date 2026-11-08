@@ -54,6 +54,7 @@ on:
       - "site-overrides/v255-chronicle-wallet-creator.css"
       - "site-overrides/v256-refinement.css"
       - "site-overrides/v257-density.css"
+      - "site-overrides/v258-flat-ux.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
