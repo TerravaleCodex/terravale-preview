@@ -28,7 +28,7 @@ assert.ok(chat.includes('overflow-y:auto!important'));
 assert.ok(chat.includes('.sr-dice-panel'));
 assert.ok(!chat.includes('data-tv265-textures'), 'Functional chat geometry never gated behind cosmetic settings');
 for(const token of ['tv265-dashboard','tv265-featured','tv265-character','tv265-initiative','tv265-lore','tv-achievement-notice','tv265-appearance-panel','tv265-setting-toggle','data-tv265-textures="on"','data-tv265-motion="off"','prefers-reduced-motion:reduce'])assert.ok(cosmetics.includes(token),'Missing cosmetic treatment '+token);
-for(const token of ['v265-fixed-session-chat.css','v265-atmosphere.css','v265-atmosphere.js','"version":"2.65"'])assert.ok(overlay.includes(token),'Missing generated integration: '+token);
+for(const token of ['v265-fixed-session-chat.css','v265-atmosphere.css','v265-atmosphere.js','"version":"2.66"'])assert.ok(overlay.includes(token),'Missing generated integration: '+token);
 assert.ok(built.includes('v265-atmosphere.js'),'Reversible JS is embedded');
 assert.ok(built.includes('height:580px!important;min-height:580px!important;max-height:580px!important'),'Fixed chat style is embedded');
 assert.ok(built.includes('tv265-appearance-panel'),'Appearance controls and styling are embedded');
