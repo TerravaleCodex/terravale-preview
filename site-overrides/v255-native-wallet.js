@@ -31,8 +31,8 @@ function sumGC(result){
  return allHoldings(result).reduce((sum,row)=>
   sum+Number(row.quantity||0)*(lookup.get(row.denomination_id)?.valueGC||0),0);
 }
-function displayed(system,amount){
- if(!system?.denominations?.length)return amount.toLocaleString()+' Guild Copper';
+function displayedParts(system,amount){
+ if(!system?.denominations?.length)return [amount.toLocaleString()+' Guild Copper'];
  const denominations=[...system.denominations].sort((a,b)=>b.valueGC-a.valueGC);
  const parts=[];let balance=amount;
  for(const d of denominations){
@@ -40,8 +40,9 @@ function displayed(system,amount){
   if(count>0){parts.push(count.toLocaleString()+' × '+d.name);balance-=count*d.valueGC}
  }
  if(balance)parts.push(balance.toLocaleString()+' GC remainder');
- return parts.length?parts.join(' · '):'0 in this currency';
+ return parts.length?parts:['0 '+denominations[denominations.length-1].name];
 }
+function displayed(system,amount){return displayedParts(system,amount).join(' · ')}
 function holdingsList(section,result){
  const data=allHoldings(result).filter(r=>Number(r.quantity)>0);
  if(!data.length){section.append(el('p','tv254-muted','Your coin purse is empty. Record money below when your character receives it.'));return}
@@ -65,7 +66,114 @@ function sectionHead(text,sub){
  const x=el('div');
  x.append(el('h3','',text),el('p','tv254-muted',sub));head.append(x);return head;
 }
+function viewTreasurySimple(host,c,result){
+ host.replaceChildren();host.classList.remove('tv257-dm-wallet');
+ host.classList.add('tv258-treasury-root');
+ if(!result){host.append(el('p','tv254-muted','Loading treasury…'));return}
+ const p=stateFor(c),systems=rules().currencies,total=sumGC(result);
+ if(!systems.length){host.append(el('p','tv254-muted','Currency rules unavailable.'));return}
+ const head=el('div','tv258-treasury-head');
+ head.append(el('span','tv254-eyebrow','CHARACTER BALANCE'),
+  el('strong','',total.toLocaleString()+' Guild Copper'),
+  el('small','','Physical holdings converted for reference only'));
+ host.append(head);
+ const controls=el('div','tv258-treasury-controls');
+ const header=el('h3','','Give or take coins');
+ controls.append(header);
+ const selectedLine=el('div','tv258-treasury-currency-line');
+ const denominations=el('div','tv258-treasury-denominations');
+ const number=el('label','tv258-treasury-amount');
+ number.append(el('span','','Quantity'));
+ const qty=el('input','tv255-input');
+ qty.type='number';qty.min='1';qty.max='1000000';qty.step='1';
+ qty.value=String(p.count);qty.addEventListener('input',()=>{p.count=Number(qty.value)||1});
+ number.append(qty);
+ const reason=el('input','tv255-input tv258-treasury-reason');
+ reason.maxLength=240;reason.placeholder='Reason (optional)';
+ reason.value=p.note||'';reason.setAttribute('aria-label','Transaction reason (optional)');
+ reason.addEventListener('input',()=>{p.note=reason.value});
+ const actions=el('div','tv255-money-actions tv258-treasury-actions');
+ const status=el('p','tv255-inline-message tv258-treasury-status',p.lastMessage||'');
+ status.setAttribute('role','status');p.lastMessage='';
+ function paint(){
+  let selected=systems.find(x=>x.id===p.system)||systems[0];
+  p.system=selected.id;
+  if(!selected.denominations.some(d=>d.id===p.denom))
+   p.denom=selected.denominations[0]?.id||null;
+  const i=systems.findIndex(x=>x.id===selected.id);
+  const step=delta=>{
+   const next=systems[(i+delta+systems.length)%systems.length];
+   if(!next)return;
+   p.system=next.id;p.denom=next.denominations[0]?.id||null;paint();
+  };
+  selectedLine.replaceChildren();
+  const prev=button('‹',()=>step(-1),'tv256-currency-arrow');
+  const next=button('›',()=>step(1),'tv256-currency-arrow');
+  prev.setAttribute('aria-label','Previous currency');
+  next.setAttribute('aria-label','Next currency');
+  selectedLine.append(prev,el('strong','',selected.name),next);
+  denominations.replaceChildren();
+  for(const d of selected.denominations){
+   const owned=Number(allHoldings(result).find(x=>x.denomination_id===d.id)?.quantity)||0;
+   const b=button(d.name+(owned?' ('+owned+' owned)':''),()=>{
+    p.denom=d.id;paint();
+   },'tv255-denom-chip'+(d.id===p.denom?' chosen':''));
+   b.setAttribute('aria-pressed',String(d.id===p.denom));
+   b.title=d.valueGC+' Guild Copper per '+d.name;
+   denominations.append(b);
+  }
+ }
+ async function change(sign){
+  if(!ready()||busy.has(c.id))return;
+  const n=Number(qty.value),id=p.denom;
+  if(!Number.isInteger(n)||n<1||n>1000000){
+   status.textContent='Enter a whole number from 1 to 1,000,000.';return;
+  }
+  if(!id){status.textContent='Choose a coin or note first.';return}
+  const held=Number(allHoldings(result).find(x=>x.denomination_id===id)?.quantity)||0;
+  if(sign<0&&held<n){
+   status.textContent='Only '+held+' of this denomination are available.';return;
+  }
+  busy.add(c.id);status.textContent='Saving…';
+  try{
+   const {error}=await api().rpc('terravale_wallet_adjust',{
+    target_character:c.id,target_denomination:id,delta_quantity:n*sign,
+    purpose:p.note.trim()||'DM treasury adjustment'
+   });
+   if(error)throw error;
+   p.lastMessage=(sign>0?'Given ':'Taken ')+n+' '+(denomLookup().get(id)?.name||'coins')+'.';
+   cashCache.delete(c.id);
+   const fresh=await fetchMoney(c,true);
+   if(host.isConnected)viewTreasurySimple(host,c,fresh);
+  }catch(error){status.textContent='Could not save: '+(error.message||String(error))}
+  finally{busy.delete(c.id)}
+ }
+ actions.append(button('+ Give',()=>change(1),'btn primary'),
+  button('− Take',()=>change(-1),'btn ghost tv255-remove'));
+ const fields=el('div','tv258-treasury-fields');
+ fields.append(number,reason,actions);
+ controls.append(el('span','tv258-small-label','Currency'),selectedLine,
+  el('span','tv258-small-label','Denomination'),denominations,
+  fields,status);
+ host.append(controls);
+ paint();
+ const details=el('details','tv258-treasury-history');
+ details.append(el('summary','','Holdings & transaction history'));
+ const held=el('div','tv258-treasury-physical');
+ holdingsList(held,result);details.append(held);
+ if(result.ledger?.length){
+  const log=el('div','tv258-treasury-ledger');
+  for(const txn of result.ledger.slice(0,10)){
+   const d=denomLookup().get(txn.denomination_id);
+   log.append(el('p','',new Date(txn.created_at).toLocaleDateString()+
+    ' · '+(txn.delta>0?'+':'')+txn.delta+' '+(d?.name||'coins')+
+    (txn.note?' · '+txn.note:'')));
+  }details.append(log);
+ }
+ host.append(details);
+}
 function viewWallet(host,c,result,refresh,isDm){
+ if(isDm){viewTreasurySimple(host,c,result);return}
  host.replaceChildren();
  if(!result){host.append(el('p','tv254-muted','Loading native holdings…'));return}
  const p=stateFor(c);
@@ -89,8 +197,12 @@ function viewWallet(host,c,result,refresh,isDm){
  const next=button('›',()=>renderConverted(1),'tv256-currency-arrow');
  next.setAttribute('aria-label','Next display currency');
  const conversion=el('div','tv256-conversion-readout');
- if(shown)conversion.append(el('small','','REFERENCE VALUE · '+shown.name),
-  el('strong','',displayed(shown,total)));
+ if(shown){
+  conversion.append(el('small','','REFERENCE VALUE · '+shown.name));
+  const values=el('div','tv258-conversion-values');
+  for(const part of displayedParts(shown,total))values.append(el('span','',part));
+  conversion.append(values);
+ }
  converter.append(prev,conversion,next);
  info.append(converter);
  host.append(info);

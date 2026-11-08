@@ -79,6 +79,11 @@ function alert(host,msg,error=false){
 }
 async function change(c,kind,id,operation,modes,host,done){
  if(state.busy)return;
+ // Anchor the edited row before an async refresh so the page does not jump.
+ const locate=()=>[...host.querySelectorAll('.tv255-training-row')].find(row=>
+  row.dataset.trainingKind===kind&&row.dataset.trainingId===id);
+ const before=locate()?.getBoundingClientRect().top;
+ const focusText=document.activeElement?.closest('.tv255-language-mode')?.textContent||'';
  state.busy=true;alert(host,'Saving '+labelFor(kind,id)+'…');
  const {data,error}=await api().rpc('terravale_dm_set_character_training',{
   target_character:c.id,training_kind:kind,proficiency_id:id,
@@ -87,7 +92,19 @@ async function change(c,kind,id,operation,modes,host,done){
  state.busy=false;
  if(error){alert(host,'Could not save: '+error.message,true);return}
  await load(c,true);alert(host,'Saved. The player sheet will respect this character-specific change.');
- done?.();
+ await done?.();
+ if(before!==undefined){
+  requestAnimationFrame(()=>{
+   const replacement=locate();
+   if(!replacement)return;
+   window.scrollBy(0,replacement.getBoundingClientRect().top-before);
+   if(focusText){
+    const label=[...replacement.querySelectorAll('.tv255-language-mode')]
+     .find(x=>x.textContent===focusText);
+    label?.querySelector('input')?.focus({preventScroll:true});
+   }
+  });
+ }
 }
 function modesControl(c,entry,host,refresh){
  const wrapper=node('div','tv255-language-modes');
@@ -117,7 +134,9 @@ function entryPanel(c,kind,entries,host,refresh,editable){
   return section;
  }
  const createRow=entry=>{
-  const r=node('div','tv255-training-row'+(entry.hidden?' suppressed':''));
+  const r=node('div','tv255-training-row'+(entry.hidden?' suppressed':'')+
+   (kind==='language'?' tv258-language-row':' tv258-tool-row'));
+  r.dataset.trainingKind=kind;r.dataset.trainingId=entry.id;
   const copy=node('div','tv255-training-name');
   const details=String(entry.source||'').trim();
   copy.append(node('strong','',labelFor(kind,entry.id)));
@@ -125,10 +144,12 @@ function entryPanel(c,kind,entries,host,refresh,editable){
   else if(details&&!/^(starting training|ancestry|class|starting|base)$/i.test(details))
    copy.append(node('small','',details));
   r.append(copy);
-  if(kind==='language'&&!entry.hidden){
-   if(editable)r.append(modesControl(c,entry,host,refresh));
-   else r.append(node('small','tv255-mode-badge',
-    (entry.modes||[]).map(m=>m[0].toUpperCase()+m.slice(1)).join(' · ')));
+  if(kind==='language'){
+   if(!entry.hidden){
+    if(editable)r.append(modesControl(c,entry,host,refresh));
+    else r.append(node('small','tv255-mode-badge',
+     (entry.modes||[]).map(m=>m[0].toUpperCase()+m.slice(1)).join(' · ')));
+   }else r.append(node('span','tv258-language-placeholder',''));
   }
   if(editable){
    const action=entry.hidden?'Restore':'Remove';
