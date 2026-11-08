@@ -10,6 +10,10 @@ on:
       - "site-overrides/launch-home.html"
       - "tests/v268-public-home.cjs"
       - "tests/v269-dashboard-default.cjs"
+      - "tests/v270-divine-system.cjs"
+      - "site-overrides/v270-divine-ui.js"
+      - "site-overrides/v270-divine-ui.css"
+      - "site-overrides/sql/v270_divine_favour_boons.sql"
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
       - "tools/v245_theme_patch.py"
@@ -113,6 +117,8 @@ jobs:
         run: node tests/v268-public-home.cjs
       - name: Verify native Dashboard default and preserve explicit routes
         run: node tests/v269-dashboard-default.cjs
+      - name: Verify Divine Favour ledger and player-only granted boons
+        run: node tests/v270-divine-system.cjs
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
@@ -163,7 +169,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.67' in html
+          assert 'Terravale Codex V2.70' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -528,7 +534,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.67" in html
+          assert "Terravale Codex V2.70" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
