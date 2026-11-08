@@ -126,7 +126,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.67')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.70')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -168,6 +168,7 @@ css += "\n" + (ROOT / "site-overrides/v263-compact-equipment-preview.css").read_
 css += "\n" + (ROOT / "site-overrides/v264-room-actions-parallax.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v265-fixed-session-chat.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v266-equal-workspace-height.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v270-divine-ui.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -183,6 +184,7 @@ live_items = (ROOT / "site-overrides/v251-live-item-actions.js").read_text()
 gifts = (ROOT / "site-overrides/v253-backpack-gifts.js").read_text()
 rules_v254 = (ROOT / "site-overrides/v254-rules-registry.js").read_text()
 vault_v254 = (ROOT / "site-overrides/v254-dm-vault.js").read_text()
+divine_v270 = (ROOT / "site-overrides/v270-divine-ui.js").read_text()
 prof_v254 = (ROOT / "site-overrides/v254-character-proficiencies-wallet.js").read_text()
 feat_v255 = (ROOT / "site-overrides/v255-custom-feat-forge.js").read_text()
 training_v255 = (ROOT / "site-overrides/v255-character-training.js").read_text()
@@ -191,7 +193,7 @@ creator_v255 = (ROOT / "site-overrides/v255-creator-native-choices.js").read_tex
 shell_v255 = (ROOT / "site-overrides/v255-shell-role-version.js").read_text()
 owner_v261 = (ROOT / "site-overrides/v261-owner-byline.js").read_text()
 compact_v263 = (ROOT / "site-overrides/v263-compact-equipment-preview.js").read_text()
-build_meta = json.dumps({"version":"2.67","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+build_meta = json.dumps({"version":"2.70","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -252,6 +254,7 @@ inline_js = (
     '<script data-source="v251-live-item-actions.js">\n' + live_items + '\n</script>\n'
     '<script data-source="v253-backpack-gifts.js">\n' + gifts + '\n</script>\n'
     '<script data-source="v254-rules-registry.js">\n' + rules_v254 + '\n</script>\n'
+    '<script data-source="v270-divine-ui.js">\n' + divine_v270 + '\n</script>\n'
     '<script data-source="v254-dm-vault.js">\n' + vault_v254 + '\n</script>\n'
     '<script data-source="v254-character-proficiencies-wallet.js">\n' + prof_v254 + '\n</script>\n'
     '<script data-source="v255-build">window.TerravaleV255Build=' + build_meta + ';</script>\n'
@@ -286,6 +289,7 @@ assert source.count('data-source="v251-live-item-actions.js"') == 1
 assert source.count('data-source="v253-backpack-gifts.js"') == 1
 assert source.count('data-source="v254-rules-registry.js"') == 1
 assert source.count('data-source="v254-dm-vault.js"') == 1
+assert source.count('data-source="v270-divine-ui.js"') == 1
 assert source.count('data-source="v254-character-proficiencies-wallet.js"') == 1
 for file in ('v255-creator-native-choices.js','v255-character-training.js',
              'v255-native-wallet.js','v255-custom-feat-forge.js',

@@ -573,7 +573,8 @@ const V255_CHRONICLE_SECTIONS=[
  ['party','Party Inventories','users'],
  ['treasury','Treasury','coins'],
  ['feats','Feat Forge','sparkles'],
- ['training','Training & Languages','book-open']
+ ['training','Training & Languages','book-open'],
+ ['divine','Divine Favour','sparkles']
 ];
 function v255SectionTitle(){
  return Object.fromEntries(V255_CHRONICLE_SECTIONS.map(([id,name])=>[id,name]));
@@ -600,7 +601,8 @@ function v255Overview(host){
   ['party','Party Inventories','Open any character’s real backpack without opening their character sheet.','Manage backpacks'],
   ['treasury','Treasury','Grant native currency and review what your party actually carries.','Move money'],
   ['feats','Feat Forge','Write reusable custom feats and give or revoke them on characters.','Create feats'],
-  ['training','Training & Languages','Grant extra picks, suppress proficiencies or set spoken/read/written language abilities.','Adjust training']
+  ['training','Training & Languages','Grant extra picks, suppress proficiencies or set spoken/read/written language abilities.','Adjust training'],
+  ['divine','Divine Favour','Track the gods’ favour, prepare private boons and award powers when earned.','Open divine ledger']
  ];
  for(const [id,title,description,cta] of menu){
   const a=node('a','tv255-hub-card');a.href='#/dm/'+id;
@@ -635,7 +637,8 @@ function renderVaultBody(){
   party:['DM CHRONICLE · EQUIPMENT','Party Inventories','Open the real contents of each adventurer’s backpack, no character sheet required.'],
   treasury:['DM CHRONICLE · FINANCES','The Treasury','Issue native currency to adventurers, keep accounts and inspect holdings.'],
   feats:['DM CHRONICLE · CUSTOM POWERS','The Feat Forge','Write, save and assign custom feats that become real additions to player records.'],
-  training:['DM CHRONICLE · LANGUAGE & TRAINING','The Training Ledger','Grant extra choices, review restricted language requests and adjust individual proficiencies.']
+  training:['DM CHRONICLE · LANGUAGE & TRAINING','The Training Ledger','Grant extra choices, review restricted language requests and adjust individual proficiencies.'],
+  divine:['DM CHRONICLE · DIVINE AUTHORITY','The Divine Ledger','Track divine favour and grant earned boons without revealing hidden rewards.']
  }[view];
  const header=node('header','tv254-vault-hero tv255-vault-hero');
  header.append(node('div','tv254-eyebrow',text[0]),node('h1','',text[1]),node('p','',text[2]));
@@ -683,6 +686,12 @@ function renderVaultBody(){
   if(window.TerravaleV255Training?.renderDM)
    window.TerravaleV255Training.renderDM(body,currentCampaign(),charsForCampaign());
   else bonusManager(body);
+  return;
+ }
+ if(view==='divine'){
+  if(window.TerravaleDivineV270?.renderDM)
+   window.TerravaleDivineV270.renderDM(body,currentCampaign(),charsForCampaign());
+  else body.append(node('p','tv254-muted','Loading the Divine Ledger…'));
   return;
  }
  if(view==='feats'){
