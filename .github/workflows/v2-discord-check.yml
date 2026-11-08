@@ -9,6 +9,7 @@ on:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
       - "tests/v268-public-home.cjs"
+      - "tests/v269-dashboard-default.cjs"
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
       - "tools/v245_theme_patch.py"
@@ -110,8 +111,8 @@ jobs:
           python3 tools/overlay-v239-with-discord.py
       - name: Verify public V2 dashboard launch and Discord callback preservation
         run: node tests/v268-public-home.cjs
-      - name: Inspect native landing route (temporary)
-        run: node tests/v269-diagnose-native-route-temporary.cjs
+      - name: Verify native Dashboard default and preserve explicit routes
+        run: node tests/v269-dashboard-default.cjs
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
