@@ -1,0 +1,17 @@
+/* Compact player credits, not a separate boxed panel. */
+.tv261-player-byline{
+ display:flex;align-items:center;flex-wrap:wrap;gap:4px;
+ margin:5px 0 8px;color:var(--s20-soft,var(--soft));
+ font-size:12px;line-height:1.4;
+}
+.tv261-player-byline span{opacity:.87}
+.tv261-player-byline strong{
+ color:var(--s20-ink,var(--ink));font-weight:730;
+ overflow-wrap:anywhere;
+}
+.sheet20-hero-copy>.tv261-player-byline{margin:1px 0 6px;font-size:13px}
+.ledger-feature .tv261-player-byline,
+.v229-featured-card .tv261-player-byline{
+ font-size:12px;margin:4px 0 9px;
+}
+.ledger-card .tv261-player-byline{margin:3px 0 7px;font-size:11px}

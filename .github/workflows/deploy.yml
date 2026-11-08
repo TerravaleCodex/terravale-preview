@@ -58,6 +58,9 @@ on:
       - "site-overrides/v259-inline-mechanics.css"
       - "tests/v258-native-feats.cjs"
       - "tests/v260-currency-copy.cjs"
+      - "tests/v261-owner-and-currency.cjs"
+      - "site-overrides/v261-owner-byline.js"
+      - "site-overrides/v261-owner-byline.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -131,6 +134,8 @@ jobs:
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
         run: node tests/v260-currency-copy.cjs
+      - name: Verify verified player bylines in character headers and ledger
+        run: node tests/v261-owner-and-currency.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
