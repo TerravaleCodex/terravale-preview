@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#07080c">
+  <title>Terravale — The Living Codex</title>
+  <meta name="description" content="Enter Terravale: your campaign dashboard, adventurers, Lore Codex and Session Room.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://terravalecodex.github.io/terravale-preview/veiled-codex/">
+  <!-- No duplicate app or second login: go straight into the verified V2 client. -->
+  <!-- The refresh is a no-JavaScript fallback; the script forwards OAuth queries and SPA hashes. -->
+  <meta http-equiv="refresh" content="0;url=/terravale-preview/veiled-codex/">
+  <style>
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    html,body{min-height:100%;margin:0}
+    body{display:grid;place-items:center;background:#07080c;color:#f4f1fc;font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:27rem;margin:24px;padding:34px 25px;text-align:center}
+    .mark{color:#bbabe3;font:36px/1 Georgia,serif;letter-spacing:.05em}
+    h1{font:500 26px/1.2 Georgia,serif;margin:14px 0}
+    p{color:#b6aebf;margin:0 0 22px}
+    a{color:#e8d8ff;border:1px solid #464052;border-radius:9px;padding:10px 16px;display:inline-block;text-decoration:none}
+    a:focus-visible{outline:2px solid #e8d8ff;outline-offset:4px}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+  <script>
+    // Keep the established Supabase/Discord callback location and local auth storage.
+    // OAuth ?code/?error and native #/route fragments must survive the entry redirect.
+    (function openTheCodex(){
+      var destination="/terravale-preview/veiled-codex/";
+      window.location.replace(destination+window.location.search+window.location.hash);
+    })();
+  </script>
+</head>
+<body>
+  <main>
+    <div class="mark" aria-hidden="true">✧</div>
+    <h1>Terravale — The Living Codex</h1>
+    <p>The gates are open. Entering your campaign dashboard…</p>
+    <a href="/terravale-preview/veiled-codex/">Enter Terravale</a>
+  </main>
+</body>
+</html>
