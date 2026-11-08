@@ -488,8 +488,8 @@ jobs:
           assert 'terravale_vault_issue_item' in vault
           assert 'terravale_send_item_to_dm_vault' in vault
           assert "source_item_id" in gifts and "dm-vault" in gifts
-          assert "const activity=workspace?.querySelector" in room
-          assert "grid-column:1 / -1" in Path('site-overrides/v251-interactive-item-actions.css').read_text()
+          assert "dicePanel=document.querySelector('#pageRoot .sr-dice-panel')" in room
+          assert ".tv-v264-room-tabs" in Path('site-overrides/v264-room-actions-parallax.css').read_text()
           for script in ('v254-rules-registry.js','v254-dm-vault.js','v254-character-proficiencies-wallet.js'):
             assert html.count(f'data-source="{script}"')==1,script
           assert "tv254-dm-vault" in html
@@ -500,7 +500,7 @@ jobs:
           assert 'SOME TECHNICAL DIFFICULTIES' not in html
           print("PASS: 64 tools (18 instruments, 9 game sets), 18 languages, 14 currencies, 33 class rules")
           print("PASS: DM Vault/Treasury, player shopkeeper gifts, role-secured choices and wallets")
-          print("PASS: live creator and equipment fields; Session Room actions follow chat and dice")
+          print("PASS: live creator and equipment fields; character item actions now live inside Dice & Checks")
           PY
       - name: Verify V2.55 focused Chronicle, custom feats and integrated training
         run: |
