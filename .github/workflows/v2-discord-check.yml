@@ -79,6 +79,10 @@ on:
       - "site-overrides/v265-texture-lore.css"
       - "site-overrides/v265-texture-achievements.css"
       - "tests/v265-atmosphere-and-chat.cjs"
+      - "site-overrides/v266-equal-workspace-height.css"
+      - "site-overrides/v266-richer-atmosphere.css"
+      - "site-overrides/v266-cabinet-texture.js"
+      - "tests/v266-room-height-and-textures.cjs"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -127,6 +131,8 @@ jobs:
         run: node tests/v264-room-actions.cjs
       - name: Validate V2.65 fixed Chat height and reversible five-surface textures
         run: node tests/v265-atmosphere-and-chat.cjs
+      - name: Verify V2.66 matched-height Session Room and richer textures
+        run: node tests/v266-room-height-and-textures.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
@@ -161,7 +167,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.65' in html
+          assert 'Terravale Codex V2.66' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -526,7 +532,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.65" in html
+          assert "Terravale Codex V2.66" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
