@@ -68,6 +68,45 @@ reader_ui = reader_ui.replace(
     native_reader_root,
     """<section class="sheet20-panel sheet227-reader" data-tv259-character="'+S(c.id)+'">""",1)
 source=source[:reader_start]+reader_ui+source[reader_end:]
+# V2.60: V2.28 replaces the V2.27 reader entirely. Patch the *actual*
+# readerPage() implementation that later revisions retain and wrap. Prior
+# patches to featEntries()/V2.27 alone never reached the visible Feats tab.
+v228_start=source.index("function readerPage(c){")
+v228_end=source.index("sheetV222FeaturesPage=readerPage;",v228_start)
+v228_reader=source[v228_start:v228_end]
+def v228_once(before,after):
+    global v228_reader
+    assert v228_reader.count(before)==1, "V2.28 feature reader changed: "+before[:110]
+    v228_reader=v228_reader.replace(before,after,1)
+v228_once("const data=makeEntries(c);",
+    """const data=makeEntries(c);
+    const assigned=window.TerravaleV258Feats?.getEntries?.(c.id,c.campaign)||[];
+    const known=new Set(data.feats.map(f=>String(f.key)));
+    for(const feat of assigned){
+      const key='dm-grant:'+feat.id;
+      if(known.has(key))continue;
+      known.add(key);
+      data.feats.push({key,name:feat.name,html:feat.html,
+        custom:true,level:0,complex:false,partCount:0});
+    }""")
+v228_once("['feats','Ancestry feats',data.feats.length]",
+          "['feats','Feats',data.feats.length]")
+v228_once("const headingLabel=view.mode==='feats'?'ANCESTRY FEAT · '+c.ancestry:",
+          "const headingLabel=view.mode==='feats'?'FEATS · '+c.ancestry:")
+v228_once("view.mode==='feats'?entry.level?'Level-up feat · Level '+entry.level:'Recorded ancestry feat':",
+          "view.mode==='feats'?entry.custom?'DM-granted feat':entry.level?'Level-up feat · Level '+entry.level:'Recorded ancestry feat':")
+v228_once("const readable=selected?stripTitle(selected.html,selected.name):'';",
+          "const readable=selected?stripTitle(selected.html,selected.name):'';")
+v228_once("Only unlocked class abilities and recorded ancestry feats appear here. Choose one entry to read its mechanics.",
+          "Class abilities, ancestry feats and DM-granted custom feats appear together here. Select one to read its rules.")
+v228_once("view.mode==='feats'?'AN ANCESTRY FEAT':'AN ABILITY'",
+          "view.mode==='feats'?'A FEAT':'AN ABILITY'")
+v228_once('<section class="sheet20-panel sheet227-reader sheet228-reader">',
+          '<section class="sheet20-panel sheet227-reader sheet228-reader" data-tv259-character="${esc(c.id)}">')
+# Change the detail heading only for custom feats without altering ancestry lore.
+v228_once("${esc(headingLabel)}${selected.level?' · LEVEL '+selected.level:''}",
+          "${esc(selected.custom?'DM-GRANTED FEAT':headingLabel)}${selected.level?' · LEVEL '+selected.level:''}")
+source=source[:v228_start]+v228_reader+source[v228_end:]
 # V2.55: DM Chronicle paths all use the same native page; a focused
 # role-checked workspace then fills the selected routed subsection.
 dm_route="else if(p==='/dm')out=renderDM();"
