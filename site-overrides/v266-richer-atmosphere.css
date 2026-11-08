@@ -1,0 +1,143 @@
+/* V2.66 · Richer, varied iridescence.
+   This entire file is cosmetic; disabling 'Iridescent textures' removes it.
+   Each area uses its OWN original artwork. No texture on dice controls. */
+
+/* 1. Dashboard -- bright prismatic currents, spread into the surrounding layout. */
+html[data-tv265-textures="on"] .tv265-dashboard>.tv265-material{
+ opacity:.46!important;
+ background-image:linear-gradient(110deg,#080918ac 0%,#0e113356 52%,#0209149c 100%),var(--tv265-art-dashboard)!important;
+ background-position:45% 48%!important;
+ background-size:cover!important;mix-blend-mode:screen!important;
+}
+html[data-tv265-textures="on"] .tv265-featured>.tv265-material{
+ opacity:.36!important;
+ background-image:linear-gradient(145deg,#0a0b20c5 0%,#11102466 63%,#050c1b70),var(--tv265-art-dashboard)!important;
+ background-position:24% 45%!important;
+}
+html[data-tv265-textures="on"] .page-dashboard .stats>.stat,
+html[data-tv265-textures="on"] .page-dashboard .quick-grid>*{
+ background-image:linear-gradient(120deg,#101120e9 5%,#101021b0 66%,#151e298c),var(--tv265-art-dashboard);
+ background-size:cover;background-position:42% 50%;
+ background-blend-mode:normal,screen;
+ box-shadow:inset 0 1px color-mix(in srgb,var(--accent,#b2a0e2) 16%,transparent);
+}
+html[data-tv265-textures="on"] .page-dashboard{
+ background-image:radial-gradient(ellipse 65% 38% at 92% 15%,#9d67ff18,transparent 80%),
+ radial-gradient(ellipse 45% 40% at 5% 83%,#4de4ef12,transparent 75%);
+}
+
+/* 2. Character sheets -- distinct mother-of-pearl curl; ancestry keeps its own hue. */
+html[data-tv265-textures="on"] .tv265-character>.tv265-material{
+ opacity:.48!important;
+ background-image:linear-gradient(100deg,#060a1aaa 2%,#0b11294d 61%,#100b1c8c),
+ var(--tv265-art-character)!important;
+ background-position:22% 52%!important;
+}
+html[data-tv265-textures="on"] .tv265-character{
+ box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tv265-race-glow,#a7a0ff) 19%,transparent);
+}
+html[data-tv265-textures="on"] .page-sheet .sheet20{
+ background-image:radial-gradient(ellipse 57% 21% at 90% 9%,color-mix(in srgb,var(--accent,#bea3e9) 11%,transparent),transparent 80%);
+}
+html[data-tv265-textures="on"] .page-sheet .sheet20-tabs{
+ background-image:linear-gradient(145deg,#0b111de8,#111628c4 56%,#0e1222e0),
+ var(--tv265-art-character);
+ background-position:top right;background-size:cover;
+}
+html[data-tv265-textures="on"] .page-sheet .sheet20 .ledger-portrait-large{
+ box-shadow:0 0 0 1px color-mix(in srgb,var(--tv265-race-glow,#9ca7f7) 45%,transparent),
+ 0 0 27px color-mix(in srgb,var(--tv265-race-glow,#9ca7f7) 19%,transparent);
+}
+
+/* 3. Session Room -- texture in the arena AND quiet atmospheric negative space.
+   The dice controls, roll readouts, inputs and chat feed remain plain and legible. */
+html[data-tv265-textures="on"] .tv265-initiative>.tv265-material{
+ opacity:.25!important;
+ background-image:linear-gradient(143deg,#080611bd,#04071976 55%,#03040db0),var(--tv265-art-initiative)!important;
+ background-position:50% 44%!important;
+ background-size:cover!important;
+}
+html[data-tv265-textures="on"] .page-session .sr-operations{
+ position:relative;isolation:isolate;
+}
+html[data-tv265-textures="on"] .page-session .sr-operations::before{
+ content:"";position:absolute;inset:-17px -12px -8px;pointer-events:none;z-index:0;
+ background-image:
+  linear-gradient(100deg,#020308ed 4%,#110e2852 52%,#020308d9),
+  var(--tv265-art-initiative);
+ background-size:cover;background-position:50% 38%;
+ opacity:.26;mix-blend-mode:screen;border-radius:19px;
+ -webkit-mask-image:linear-gradient(to bottom,transparent,black 15%,black 84%,transparent);
+ mask-image:linear-gradient(to bottom,transparent,black 15%,black 84%,transparent);
+}
+html[data-tv265-textures="on"] .page-session .sr-operations>*{
+ position:relative;z-index:1;
+}
+html[data-tv265-textures="on"] .page-session .sr-queue{
+ box-shadow:0 0 38px #7478c415,inset 0 1px #9aa9d514;
+}
+html[data-tv265-textures="on"] .page-session .sr-chat-panel,
+html[data-tv265-textures="on"] .page-session .sr-dice-panel{
+ box-shadow:0 0 22px #6b6ed010,inset 0 1px #b9b6ed14;
+}
+/* Light the outer panels/heads without placing moving art under controls. */
+html[data-tv265-textures="on"] .page-session .sr-chat-panel>.sr-panel-head,
+html[data-tv265-textures="on"] .page-session .sr-dice-panel>.sr-panel-head{
+ background-image:linear-gradient(91deg,#7896d40b,transparent 80%);
+}
+html[data-tv265-motion="on"][data-tv265-textures="on"] .page-session .sr-operations::before{
+ animation:tv266-arena-breathe 20s ease-in-out infinite alternate;
+}
+@keyframes tv266-arena-breathe{
+ from{background-position:50% 38%;opacity:.21}
+ to{background-position:53% 42%;opacity:.29}
+}
+
+/* 4. Lore Codex -- calmer silver/sea-glass, wider across reader and article cards. */
+html[data-tv265-textures="on"] .tv265-lore>.tv265-material{
+ opacity:.41!important;
+ background-image:linear-gradient(105deg,#080e1ce5 3%,#101c2b65 45%,#08101ddd),var(--tv265-art-lore)!important;
+ background-position:50% 45%!important;
+}
+html[data-tv265-textures="on"] .page-library .tv-lore{
+ background-image:radial-gradient(ellipse 65% 32% at 78% 6%,#75caca1c,transparent 78%);
+}
+html[data-tv265-textures="on"] .page-library .tv-lore .lore-card,
+html[data-tv265-textures="on"] .page-library .tv-lore .reader-aside{
+ background-image:linear-gradient(135deg,#0a1523e6 12%,#10182bd4 58%,#0a1225e6),
+ var(--tv265-art-lore);
+ background-size:cover;background-position:center;
+}
+html[data-tv265-textures="on"] #tv238-article-body img.tv265-article-image{
+ box-shadow:0 10px 35px #0005,0 0 0 1px #b7e5df28;
+}
+
+/* 5. Cabinet -- separate spectral jewel texture, stronger rare unlock reveal.
+   The injected iframe gallery stylesheet is handled separately in JS. */
+html[data-tv265-textures="on"] .tv-achievement-notice:is([data-rarity="rare"],[data-rarity="epic"],[data-rarity="legendary"],[data-rarity="mythic"])::after{
+ opacity:.43!important;
+ background-image:linear-gradient(130deg,transparent 26%,#dcf6ff35 48%,transparent 75%),
+ var(--tv265-art-achievements)!important;
+}
+html[data-tv265-textures="on"] .page-cabinet .v2-hero,
+html[data-tv265-textures="on"] .page-cabinet .hero{
+ background-image:linear-gradient(125deg,#0d101dcc,#0d132aa0),var(--tv265-art-achievements);
+ background-size:cover;background-position:center;
+}
+
+/* Keep the two independent Appearance switches meaningful, including old effects. */
+html[data-tv265-textures="off"] .page-dashboard,
+html[data-tv265-textures="off"] .page-sheet .sheet20,
+html[data-tv265-textures="off"] .page-library .tv-lore{
+ background-image:none!important;
+}
+html[data-tv265-motion="off"] .page-session .sr-operations::before{
+ animation:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .page-session .sr-operations::before{animation:none!important}
+}
+@media(max-width:760px){
+ html[data-tv265-textures="on"] .page-session .sr-operations::before{opacity:.17}
+ html[data-tv265-textures="on"] .tv265-dashboard>.tv265-material{opacity:.33!important}
+}
