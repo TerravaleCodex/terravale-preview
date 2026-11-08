@@ -313,7 +313,7 @@ document.addEventListener('click',e=>{
 });
 // Low-amplitude parallax in the encounter artwork only: controls never move.
 let tv264PointerEvent=null,tv264Frame=0;
-const tv264MotionAllowed=()=>document.documentElement.dataset.tv265Motion!=='off'&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const tv264MotionAllowed=()=>!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 document.addEventListener('pointermove',e=>{
  if(!tv264MotionAllowed()||e.pointerType==='touch')return;
  const target=e.target instanceof Element?e.target.closest('#pageRoot .sr-encounter'):null;
