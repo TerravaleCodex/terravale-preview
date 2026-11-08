@@ -18,6 +18,51 @@ assert.equal(parse.status,0,'Native source must parse: '+(parse.stderr||''));
 assert.match(nativeScripts[0],/native\.concat\(window\.TerravaleV258Feats\?\.getEntries/);
 assert.match(nativeScripts[0],/Feats <span>/);
 assert.match(nativeScripts[0],/data-tv259-character/,'Reader must carry actual character id');
+
+/* Regression against the LAST active feature reader (V2.28), not the
+   superseded V2.27 featEntries function checked by earlier releases. */
+const finalReaders=sources.map(x=>x[1]).filter(src=>src.includes('function readerPage(c){'));
+assert.equal(finalReaders.length,1,'Exactly one active V2.28 reader source');
+const finalSource=finalReaders[0];
+const start=finalSource.indexOf('function readerPage(c){');
+const end=finalSource.indexOf('sheetV222FeaturesPage=readerPage;',start);
+assert.ok(start>=0&&end>start,'Actual reader function boundaries');
+const actualReader=finalSource.slice(start,end);
+const htmlEscape=s=>String(s).replace(/[&<>"']/g,ch=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+})[ch]);
+const readerContext={
+ view:{character:'test-character',mode:'feats',key:'dm-grant:feat-1',query:''},
+ makeEntries:()=>({
+  normal:[],deep:[],subclass:[],feats:[{
+   key:'ancestry-1',name:'Wingbound Survivor',
+   html:'<p>Native ancestry feat</p>',level:0
+  }]
+ }),
+ window:{TerravaleV258Feats:{
+  getEntries:()=>[{id:'feat-1',name:'Lack of language',
+   html:'<p>DM-granted feat reading rules</p>',custom:true}]
+ }},
+ esc:htmlEscape,stripTitle:html=>html,
+ classSlug:x=>String(x).toLowerCase(),
+ lnk:()=>'<a href="#">Class rules</a>',
+ v226SpecName:()=>'',v226Class:()=>({sourceVersion:'1.8'})
+};
+vm.createContext(readerContext);
+vm.runInContext(actualReader,readerContext,{filename:'actual-v228-reader.js'});
+const rendered=readerContext.readerPage({
+ id:'test-character',campaign:'campaign-1',name:'Test',
+ ancestry:'Flügel',className:'Bard',level:1
+});
+assert.match(rendered,/data-v228-tab="feats">Feats <span>2<\/span>/,
+ 'The visible tab must be Feats and count ancestry + DM feats');
+assert.match(rendered,/Lack of language/,'Custom feat enters visible native reader list');
+assert.match(rendered,/DM-granted feat reading rules/,'Custom feat opens its complete reading pane');
+assert.match(rendered,/data-tv259-character="test-character"/,
+ 'Real character ID anchors asynchronous refresh');
+assert.doesNotMatch(rendered,/Ancestry feats <span>/,
+ 'Old V2.28 tab must not survive');
+
 const provider=fs.readFileSync('site-overrides/v255-custom-feat-forge.js','utf8');
 const calls=[];
 function query(table){
