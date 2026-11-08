@@ -31,7 +31,7 @@ for(const [query,hash] of [
  const locations=[];
  const loc={search:query,hash,replace(url){locations.push(url)}};
  vm.runInNewContext(script[1],{window:{location:loc}});
- assert.deepEqual(locations,[V2+query+hash],'OAuth and SPA data must be forwarded unchanged');
+ assert.deepEqual(locations,[V2+query+(hash||'#/')],'OAuth and explicit SPA routes must be preserved; fresh visits open Dashboard');
 }
 assert.ok(!workflow.includes('Verify live technical difficulties page'));
 assert.ok(!workflow.includes('retired root routes still return the holding page'));
