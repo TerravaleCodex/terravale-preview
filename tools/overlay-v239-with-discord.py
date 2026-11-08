@@ -45,8 +45,8 @@ reader_end = source.index("document.addEventListener('click',e=>", reader_start)
 reader_ui = source[reader_start:reader_end]
 reader_fixes = [
  ("Ancestry feats <span>", "Feats <span>"),
- ("'FIND AN '+(mode==='class'?'ABILITY':'ANCESTRY FEAT')",
-  "'FIND '+(mode==='class'?'AN ABILITY':'A FEAT')"),
+ ("FIND AN '+(mode==='class'?'ABILITY':'ANCESTRY FEAT')",
+  "FIND '+(mode==='class'?'AN ABILITY':'A FEAT')"),
  ("mode==='class'?'Class feature · Level '+f.level:'Recorded ancestry feat'",
   "mode==='class'?'Class feature · Level '+f.level:(f.custom?'DM-granted feat':'Ancestry feat')"),
  ("S(c.ancestry)+' · Recorded ancestry feat'",
