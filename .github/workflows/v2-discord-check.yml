@@ -105,6 +105,11 @@ jobs:
                     'CODE',s[m.start():m.start()+(9500 if i>=len(assignments)-2 else 1800)].replace(chr(10),' ')[:9500])
           for term in ['function sheetV222FeaturesPage(', 'sheetV222FeaturesPage(c)', 'data-v227-entry', 'data-v228', 'data-v229', 'data-v230']:
               print('FINAL SEARCH',term,'MATCHES',len(list(re.finditer(re.escape(term),s))))
+          for term in ['data-v228-tab','data-v228-entry','Ancestry feats <span>','recorded ancestry feats','v228-reader','previousReader=sheetV222FeaturesPage','sheetV222FeaturesPage=(c)=>']:
+              matches=list(re.finditer(re.escape(term),s,re.I))
+              print('V228 TERM',repr(term),'COUNT',len(matches))
+              for m in matches[-3:]:
+                  print('V228 CONTEXT',s[max(0,m.start()-1800):m.start()+3000].replace(chr(10),' ')[:4900])
           for m in list(re.finditer(r'Ancestry feats',s,re.I))[:8]:
               print('ANCESTRY LABEL CONTEXT',s[max(0,m.start()-150):m.start()+200].replace(chr(10),' '))
           PY
