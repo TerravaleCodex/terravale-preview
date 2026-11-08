@@ -142,9 +142,28 @@ function renderItemEditor(host,mode,existing){
  const ac=field('AC bonus',p.ac_bonus??'',{type:'number',min:-20,max:20});
  const bonus=field('Attack bonus',p.attack_bonus??'',{type:'number',min:-20,max:20});
  const damage=field('Weapon damage',p.damage_dice||'',{maxLength:80});
- const damageType=field('Damage type',p.damage_type||'',{maxLength:80});
+ const damageType=field('Damage type','',{maxLength:80});
+ // Standard damage types are quick to choose; a custom value remains possible.
+ const damageTypes=['acid','bludgeoning','cold','fire','force','lightning','necrotic',
+  'piercing','poison','psychic','radiant','slashing','thunder'];
+ const typeSelect=node('select','tv254-input tv258-damage-type');
+ const addDamageOption=(value,label)=>{
+  const o=node('option','',label);o.value=value;typeSelect.append(o);
+ };
+ addDamageOption('','Select damage type');
+ for(const value of damageTypes)addDamageOption(value,value[0].toUpperCase()+value.slice(1));
+ addDamageOption('custom','Custom…');
+ damageType.el.replaceWith(typeSelect);
+ damageType.el=typeSelect;
+ const otherDamage=field('Custom damage type',p.damage_type&&!damageTypes.includes(String(p.damage_type).toLowerCase())?p.damage_type:'',
+  {maxLength:80});
+ const savedDamage=String(p.damage_type||'').toLowerCase();
+ typeSelect.value=damageTypes.includes(savedDamage)?savedDamage:(savedDamage?'custom':'');
+ typeSelect.addEventListener('change',()=>{otherDamage.wrap.hidden=typeSelect.value!=='custom'});
+ otherDamage.wrap.hidden=typeSelect.value!=='custom';
  row(form,ac);
  row(form,bonus,damage,damageType);
+ form.append(otherDamage.wrap);
  const attackAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.attack_ability||'none');
  const damageAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.damage_ability||'none');
  const addSelect=(text,el)=>{const label=node('div','tv254-label');label.append(node('span','',text),el);return label};
@@ -171,7 +190,7 @@ function renderItemEditor(host,mode,existing){
  const notes=field('Item abilities, limitations and activation effects',p.features||'',{multiline:true,rows:5,maxLength:5000});
  form.append(rarityPanel,notes.wrap);
  // One reusable editor for Vault stock and the DM's existing-character item corrections.
- const panel=node('div','tv256-item-deck');
+ const panel=node('div','tv256-item-deck tv258-item-editor-layout');
  const toggles=node('aside','tv256-feature-switchboard');
  toggles.append(node('strong','','Item mechanics'),
   node('p','tv254-muted','Switch on only the powers this item actually has. Item type locks incompatible effects.'));
@@ -180,7 +199,12 @@ function renderItemEditor(host,mode,existing){
  const first=parts.indexOf(combat),last=parts.indexOf(notes.wrap);
  if(first<0||last<first)throw Error('Item form components have moved');
  for(const part of parts.slice(first,last+1))details.append(part);
- panel.append(toggles,details);form.append(panel);
+ // Start the mechanics rail alongside the item's name, not halfway down the form.
+ const primary=node('div','tv258-editor-primary');
+ primary.append(name.wrap.parentElement,typePanel,rarityPanel,desc.wrap,notes.wrap);
+ const mechanicsRail=node('aside','tv258-editor-rail');
+ mechanicsRail.append(toggles,details);
+ panel.append(primary,mechanicsRail);form.append(panel);
  const enabled={
   ac:p.ac_bonus!==undefined&&p.ac_bonus!==null&&p.ac_bonus!=='',
   attack:!!(p.weapon_action||p.damage_dice||p.attack_bonus!==undefined),
@@ -261,7 +285,9 @@ function renderItemEditor(host,mode,existing){
   if(enabled.attack){
    mechanics.attack_bonus=Number(bonus.el.value)||0;
    if(damage.el.value)mechanics.damage_dice=damage.el.value;
-   if(damageType.el.value)mechanics.damage_type=damageType.el.value;
+   const selectedDamage=damageType.el.value==='custom'?
+    otherDamage.el.value.trim():damageType.el.value;
+   if(selectedDamage)mechanics.damage_type=selectedDamage;
    mechanics.attack_ability=attackAbility.value;
    mechanics.damage_ability=damageAbility.value;
    mechanics.weapon_action=weapon.el.checked;
