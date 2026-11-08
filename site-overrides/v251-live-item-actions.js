@@ -311,6 +311,35 @@ document.addEventListener('click',e=>{
  if(['attack','damage'].includes(b.dataset.tvItemAction))rollItem(c,i,b.dataset.tvItemAction);
  else if(['use','attune','unattune','dawn'].includes(b.dataset.tvItemAction))useItem(c,i,b.dataset.tvItemAction);
 });
+// Low-amplitude parallax in the encounter artwork only: controls never move.
+let tv264PointerEvent=null,tv264Frame=0;
+const tv264MotionAllowed=()=>!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+document.addEventListener('pointermove',e=>{
+ if(!tv264MotionAllowed()||e.pointerType==='touch')return;
+ const target=e.target instanceof Element?e.target.closest('#pageRoot .sr-encounter'):null;
+ if(!target)return;
+ tv264PointerEvent={x:e.clientX,y:e.clientY,target};
+ if(tv264Frame)return;
+ tv264Frame=requestAnimationFrame(()=>{
+  tv264Frame=0;
+  const event=tv264PointerEvent;if(!event||!event.target.isConnected)return;
+  const rect=event.target.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const x=Math.max(-18,Math.min(18,(event.x-rect.left-rect.width/2)/rect.width*26));
+  const y=Math.max(-12,Math.min(12,(event.y-rect.top-rect.height/2)/rect.height*17));
+  event.target.style.setProperty('--tv264-mx',x.toFixed(1)+'px');
+  event.target.style.setProperty('--tv264-my',y.toFixed(1)+'px');
+  event.target.style.setProperty('--tv264-mx-soft',(x/4).toFixed(1)+'px');
+  event.target.style.setProperty('--tv264-my-soft',(y/4).toFixed(1)+'px');
+ });
+},{passive:true});
+document.addEventListener('pointerout',e=>{
+ const target=e.target instanceof Element?e.target.closest('#pageRoot .sr-encounter'):null;
+ if(target&&!(e.relatedTarget instanceof Element&&target.contains(e.relatedTarget))){
+  for(const property of ['--tv264-mx','--tv264-my','--tv264-mx-soft','--tv264-my-soft'])
+   target.style.removeProperty(property);
+ }
+},{passive:true});
 const restLocks=new Set();
 // Native V2.38 handles rest confirmation on DOCUMENT capture and calls
 // stopImmediatePropagation(). Listen on WINDOW capture first or the item
