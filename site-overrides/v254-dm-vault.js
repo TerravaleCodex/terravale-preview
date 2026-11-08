@@ -201,9 +201,9 @@ function renderItemEditor(host,mode,existing){
  for(const part of parts.slice(first,last+1))details.append(part);
  // Start the mechanics rail alongside the item's name, not halfway down the form.
  const primary=node('div','tv258-editor-primary');
- primary.append(name.wrap.parentElement,typePanel,rarityPanel,desc.wrap,notes.wrap);
+ primary.append(name.wrap.parentElement,desc.wrap,notes.wrap);
  const mechanicsRail=node('aside','tv258-editor-rail');
- mechanicsRail.append(toggles,details);
+ mechanicsRail.append(typePanel,toggles,details,rarityPanel);
  panel.append(primary,mechanicsRail);form.append(panel);
  const enabled={
   ac:p.ac_bonus!==undefined&&p.ac_bonus!==null&&p.ac_bonus!=='',
