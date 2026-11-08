@@ -62,7 +62,7 @@
 .page-session .tv-v264-item-name{
  display:inline-block;min-width:0;max-width:100%;
  padding:2px 0;border:0;background:none;cursor:pointer;
- color:var(--ink,#faf4ff);font:750 12px/1.35 inherit;
+ color:var(--ink,#faf4ff);font:inherit;line-height:1.35;
  font-size:12px;font-weight:700;text-align:left;overflow-wrap:anywhere;
 }
 .page-session .tv-v264-item-name:hover{text-decoration:underline;text-underline-offset:3px;color:var(--accent,#c5ace8)}
@@ -103,7 +103,7 @@
  position:relative;isolation:isolate;
 }
 .page-session .sr-encounter::before{
- content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
  background-image:
   radial-gradient(ellipse 60% 50% at calc(85% + var(--tv264-mx)) calc(8% + var(--tv264-my)),
     color-mix(in srgb,var(--accent,#c8abf5) 15%,transparent),transparent 70%),
@@ -118,10 +118,12 @@
  border:1px solid var(--accent,#bda5ed);
  box-shadow:0 0 0 18px color-mix(in srgb,var(--accent,#c2aae7) 4%,transparent),
             0 0 0 45px color-mix(in srgb,var(--accent,#c2aae7) 3%,transparent);
- transform:translate3d(calc(var(--tv264-mx)*.25),calc(var(--tv264-my)*.25),0);
+ transform:translate3d(var(--tv264-mx-soft,0px),var(--tv264-my-soft,0px),0);
 }
 @media(prefers-reduced-motion:reduce){
  .page-session .sr-encounter::after{transform:none!important}
  .page-session .sr-encounter::before{transition:none}
  .page-session .tv-v264-room-tab{transition:none}
 }
+
+.page-session .sr-encounter>*{position:relative;z-index:1}
