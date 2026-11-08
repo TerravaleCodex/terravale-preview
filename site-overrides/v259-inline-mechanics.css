@@ -1,0 +1,72 @@
+/* Terravale V2.59 — options choose, left form edits. No panel-in-panel. */
+
+/* Dynamic mechanics fields occupy the spacious left column. */
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties,
+#tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics{
+ width:100%;box-sizing:border-box;display:flex;flex-direction:column;
+ gap:10px;margin:12px 0 0;padding:18px 0 4px;
+ background:none;border:0;border-top:1px solid var(--edge);
+ border-radius:0;box-shadow:none;min-width:0;
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties[hidden],
+#tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics[hidden]{display:none!important}
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties .tv254-form-heading{
+ font:500 20px var(--serif,Georgia,serif);
+ text-transform:none;letter-spacing:0;line-height:1.4;
+ color:var(--ink);margin:0 0 3px;padding:0;border:0;background:none;
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties .tv254-form-row{
+ gap:12px;align-items:flex-end;margin:3px 0 10px;
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties .tv254-form-row>.tv254-label{
+ flex:1 1 145px;min-width:0;
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-item-properties>.tv254-label{width:100%}
+#tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics .tv255-form-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics .tv255-creator-choice-group{
+ padding:10px 0 0;margin:0;border-top:1px solid var(--edge);
+}
+#tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics .tv255-creator-choice-group>strong{
+ font-size:13px;
+}
+#tv254-dm-vault .tv258-editor-rail{
+ position:relative;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-rarity-choice,
+#tv254-dm-vault .tv258-editor-rail>.tv255-field{
+ border-top:1px solid var(--edge);
+ padding-top:14px;
+}
+/* Right-hand switches never spawn a second column of text inputs. */
+#tv254-dm-vault .tv258-item-editor-layout>.tv258-editor-rail>.tv256-item-properties,
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-rail>.tv256-feat-specifics{
+ display:none!important;
+}
+/* The inner currency switcher should use the same space as the coin selection. */
+.tv257-player-wallet .tv255-wallet-system-list,
+#tv254-sheet-wallet .tv255-wallet-system-list{
+ display:flex;width:100%!important;max-width:none!important;
+ min-width:0;box-sizing:border-box;align-items:center;
+ justify-content:space-between;gap:10px;
+ border:0!important;border-radius:0!important;
+ background:none!important;box-shadow:none!important;
+ padding:6px 0 9px;margin:0;
+}
+.tv257-player-wallet .tv255-wallet-system-list>.tv256-record-currency,
+#tv254-sheet-wallet .tv255-wallet-system-list>.tv256-record-currency{
+ text-align:center;flex:1;min-width:0;font-size:13px;
+ overflow-wrap:anywhere;
+}
+.tv257-player-wallet .tv255-wallet-system-list>.tv256-currency-arrow,
+#tv254-sheet-wallet .tv255-wallet-system-list>.tv256-currency-arrow{
+ flex:none;width:38px;height:38px;border-radius:9px;font-size:23px;
+}
+.tv257-player-wallet .tv255-wallet-denominations,
+#tv254-sheet-wallet .tv255-wallet-denominations{width:100%}
+@media(max-width:780px){
+ #tv254-dm-vault .tv258-editor-primary>.tv256-feat-specifics .tv255-form-grid{
+  grid-template-columns:1fr;
+ }
+}
