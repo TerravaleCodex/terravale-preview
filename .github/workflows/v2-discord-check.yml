@@ -110,6 +110,8 @@ jobs:
           python3 tools/overlay-v239-with-discord.py
       - name: Verify public V2 dashboard launch and Discord callback preservation
         run: node tests/v268-public-home.cjs
+      - name: Inspect native landing route (temporary)
+        run: node tests/v269-diagnose-native-route-temporary.cjs
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
