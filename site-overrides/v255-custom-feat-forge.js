@@ -185,6 +185,7 @@ function renderEditor(host,campaign,chars){
   type.hidden=!enabled.activation;
   uses.wrap.hidden=!enabled.uses;
   recovery.hidden=!enabled.uses||!enabled.recovery;
+  specifics.hidden=!enabled.prerequisites&&!enabled.level&&!enabled.activation&&!enabled.uses;
   const recharge=switches.querySelector('[data-tv256-switch="recovery"]');
   if(recharge){
    const check=recharge.querySelector('input');
