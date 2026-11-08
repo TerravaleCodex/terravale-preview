@@ -59,6 +59,10 @@ on:
       - "tests/v258-native-feats.cjs"
       - "tests/v260-currency-copy.cjs"
       - "tests/v261-owner-and-currency.cjs"
+      - "tests/v262-demo-party.cjs"
+      - "site-overrides/data/v262_demo_party_kit.json"
+      - "site-overrides/sql/v262_curate_demo_party.sql"
+      - "site-overrides/sql/v262_shared_character_read_only.sql"
       - "site-overrides/v261-owner-byline.js"
       - "site-overrides/v261-owner-byline.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
@@ -136,6 +140,8 @@ jobs:
         run: node tests/v260-currency-copy.cjs
       - name: Verify verified player bylines in character headers and ledger
         run: node tests/v261-owner-and-currency.cjs
+      - name: Verify final curated demo party and read-only server/UI guards
+        run: node tests/v262-demo-party.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
