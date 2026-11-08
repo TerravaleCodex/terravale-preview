@@ -1,0 +1,247 @@
+/* Terravale V2.58 — layout correction, not another layer of panels. */
+
+/* All editor controls begin at the same vertical position. */
+#tv254-dm-vault .tv258-item-editor-layout,
+#tv254-dm-vault .tv258-feat-editor-layout{
+ display:grid;grid-template-columns:minmax(0,1.6fr) minmax(275px,1fr);
+ gap:22px;align-items:start;width:100%;margin:14px 0 0;
+}
+#tv254-dm-vault .tv258-item-editor-layout>.tv258-editor-primary,
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-primary{
+ grid-column:1;grid-row:1;display:flex;flex-direction:column;
+ min-width:0;gap:12px;padding:0;align-self:start;
+}
+#tv254-dm-vault .tv258-item-editor-layout>.tv258-editor-rail,
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-rail{
+ grid-column:2;grid-row:1;display:flex;flex-direction:column;
+ min-width:0;gap:12px;align-self:start;padding:0 0 0 20px;
+ border-left:1px solid var(--edge);
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-feature-switchboard{
+ display:flex;flex-direction:column;gap:0;border:0;border-radius:0;
+ padding:0;background:transparent;box-shadow:none;min-width:0;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-feature-switchboard>strong{
+ font-size:22px;line-height:1.35;margin:0;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-feature-switchboard>p{margin:5px 0 10px}
+#tv254-dm-vault .tv258-editor-rail>.tv256-feature-switchboard label{
+ border:0!important;border-bottom:1px solid var(--edge)!important;
+ border-radius:0!important;background:none!important;box-shadow:none!important;
+ padding:10px 1px!important;margin:0!important;min-height:0;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-feature-switchboard label:last-child{
+ border-bottom:0!important;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-item-properties,
+#tv254-dm-vault .tv258-editor-rail>.tv256-feat-specifics{
+ width:100%;border:0;border-top:1px solid var(--edge);border-radius:0;
+ padding:12px 0 0;background:transparent;display:flex;flex-direction:column;gap:9px;
+}
+#tv254-dm-vault .tv258-editor-rail .tv254-form-row{
+ display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin:3px 0;
+}
+#tv254-dm-vault .tv258-editor-rail .tv254-form-row>.tv254-label{flex:1 1 120px;min-width:0}
+#tv254-dm-vault .tv258-editor-rail .tv254-form-heading{
+ font:500 17px var(--serif,Georgia,serif);
+ border:0;padding:0;margin:8px 0 0;
+}
+#tv254-dm-vault .tv258-editor-rail .tv255-creator-choice-group{margin:3px 0}
+#tv254-dm-vault .tv258-editor-rail .tv255-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#tv254-dm-vault .tv258-editor-rail .tv255-form-grid>.tv255-field{min-width:0}
+#tv254-dm-vault .tv258-editor-primary>.tv254-form-row{margin:0!important;gap:10px}
+#tv254-dm-vault .tv258-editor-primary>.tv254-form-row>.tv254-label:first-child{flex:3 1 0}
+#tv254-dm-vault .tv258-editor-primary>.tv254-form-row>.tv254-label:last-child{flex:0 1 120px}
+#tv254-dm-vault .tv258-editor-primary .tv254-label{min-width:0}
+#tv254-dm-vault .tv258-editor-primary>.tv256-category-picker{margin:0}
+#tv254-dm-vault .tv258-editor-primary>.tv256-rarity-choice{margin:0}
+#tv254-dm-vault .tv258-editor-primary>.tv256-rarity-choice>.tv255-tile-options,
+#tv254-dm-vault .tv258-editor-primary>.tv256-category-picker>.tv255-tile-options{margin:5px 0 0}
+#tv254-dm-vault .tv258-editor-primary textarea{width:100%;box-sizing:border-box}
+#tv254-dm-vault .tv258-editor-primary .tv255-field{flex:0 0 auto}
+#tv254-dm-vault .tv258-editor-primary .tv255-feat-form{gap:10px}
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-primary textarea{resize:vertical}
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-primary .tv255-input{width:100%}
+#tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-primary .tv255-creator-choice-group{margin:8px 0 0}
+#tv254-dm-vault .tv258-item-editor-layout .tv254-form-row[hidden],
+#tv254-dm-vault .tv258-item-editor-layout [hidden],
+#tv254-dm-vault .tv258-feat-editor-layout [hidden]{display:none!important}
+#tv254-dm-vault .tv258-damage-type{width:100%;padding:9px;border:1px solid var(--edge);border-radius:8px;background:var(--raised);color:var(--ink)}
+#tv254-dm-vault .tv258-editor-primary .tv254-actions{margin:0}
+#tv254-dm-vault .tv254-item-editor>.tv254-actions,
+#tv254-dm-vault .tv255-feat-form>.tv254-actions{
+ margin:14px 0 0;display:flex;justify-content:flex-start;align-items:center;
+}
+
+/* The coin carousel is the display. It is not another boxed card. */
+#tv254-sheet-wallet{min-width:0}
+#tv254-sheet-wallet .tv255-wallet-header{align-items:center;text-align:center;gap:4px}
+#tv254-sheet-wallet .tv255-wallet-header h3{margin:1px 0 2px}
+#tv254-sheet-wallet .tv256-conversion-carousel,
+.tv257-player-wallet .tv256-conversion-carousel{
+ display:flex;align-items:center;justify-content:space-between;
+ width:100%!important;max-width:none!important;min-width:0!important;
+ border:0!important;border-radius:0!important;background:none!important;
+ box-shadow:none!important;gap:12px;padding:8px 0 11px;margin:7px 0!important;
+ box-sizing:border-box;
+}
+#tv254-sheet-wallet .tv256-currency-arrow,
+.tv257-player-wallet .tv256-conversion-carousel .tv256-currency-arrow{
+ width:42px;height:42px;min-width:42px;min-height:42px;font-size:25px;
+ background:var(--raised);border:1px solid var(--edge);border-radius:10px;
+}
+#tv254-sheet-wallet .tv256-conversion-readout,
+.tv257-player-wallet .tv256-conversion-readout{
+ flex:1 1 0;text-align:center;max-width:none;min-width:0;gap:9px;
+}
+#tv254-sheet-wallet .tv256-conversion-readout small{font-size:10px}
+.tv258-conversion-values{
+ display:flex;justify-content:center;align-items:center;align-content:center;
+ flex-wrap:wrap;gap:3px 10px;line-height:1.65;
+}
+.tv258-conversion-values span{
+ font-size:clamp(13px,1.08vw,16px);font-weight:750;color:var(--ink);
+ overflow-wrap:anywhere;text-wrap:balance;
+}
+.tv258-conversion-values span:not(:last-child)::after{
+ content:"·";display:inline-block;margin-left:10px;color:var(--soft);
+}
+#tv254-sheet-wallet .tv257-wallet-breakdown,
+.tv257-player-wallet .tv257-wallet-breakdown{
+ border:0!important;border-radius:0!important;background:transparent;
+ margin:2px 0 0!important;padding:0!important;box-shadow:none!important;
+}
+#tv254-sheet-wallet .tv257-wallet-breakdown>summary,
+.tv257-player-wallet .tv257-wallet-breakdown>summary{
+ padding:11px 0!important;border-top:1px solid var(--edge);
+ color:var(--accent);font-size:12px;text-align:left;
+}
+#tv254-sheet-wallet .tv257-wallet-breakdown>.tv255-wallet-holdings-section{margin:10px 0!important}
+#tv254-sheet-wallet .tv255-wallet-manager,
+.tv257-player-wallet .tv255-wallet-manager{
+ padding:0!important;border:0!important;border-radius:0!important;
+ background:none!important;box-shadow:none!important;margin:9px 0 0!important;
+}
+#tv254-sheet-wallet .tv255-wallet-manager>summary,
+.tv257-player-wallet .tv255-wallet-manager>summary{
+ padding:11px 0!important;border-top:1px solid var(--edge);
+ font-size:12px;color:var(--accent);
+}
+#tv254-sheet-wallet .tv255-wallet-manager[open],
+#tv254-sheet-wallet .tv257-wallet-breakdown[open]{padding:0!important}
+#tv254-sheet-wallet .tv255-wallet-history,
+.tv257-player-wallet .tv255-wallet-history{
+ border:0!important;padding:0;margin:10px 0 0;
+}
+#tv254-sheet-wallet .tv255-wallet-history>summary{border-top:1px solid var(--edge);padding:11px 0}
+#tv254-sheet-wallet .tv255-wallet-history p{margin:0}
+#tv254-sheet-wallet .tv255-wallet-holdings-section h3{font-size:19px}
+
+/* The DM uses one transaction surface, not the full player wallet inside it. */
+#tv254-dm-vault .tv255-finance-compact.tv258-treasury-root{
+ width:100%!important;max-width:none!important;
+ display:grid!important;grid-template-columns:minmax(200px,.48fr) minmax(0,1.52fr)!important;
+ gap:16px 22px;align-items:start;min-width:0;padding:17px 20px;
+}
+.tv258-treasury-head{
+ grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:start;
+ gap:5px;min-width:0;padding-top:4px;
+}
+.tv258-treasury-head strong{
+ font:500 clamp(25px,2.2vw,35px)/1.2 var(--serif,Georgia,serif);
+ color:var(--ink);overflow-wrap:anywhere;
+}
+.tv258-treasury-head small{font-size:11px;color:var(--soft);line-height:1.6}
+.tv258-treasury-controls{
+ grid-column:2;grid-row:1;min-width:0;padding:0;border:0!important;
+ background:none!important;display:flex;flex-direction:column;gap:7px;
+}
+.tv258-treasury-controls h3{
+ font:500 22px var(--serif,Georgia,serif)!important;margin:0 0 5px!important;
+}
+.tv258-small-label{
+ color:var(--soft);font-size:10px;letter-spacing:.065em;
+ font-weight:780;text-transform:uppercase;
+}
+.tv258-treasury-currency-line{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:8px;width:min(100%,440px);max-width:100%;padding:0;
+}
+.tv258-treasury-currency-line strong{text-align:center;flex:1;font-size:13px;color:var(--ink)}
+.tv258-treasury-currency-line .tv256-currency-arrow{width:31px;height:31px;font-size:20px}
+.tv258-treasury-denominations{
+ display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 5px;
+}
+.tv258-treasury-denominations .tv255-denom-chip{padding:8px 11px;font-size:11px}
+.tv258-treasury-fields{display:flex;align-items:end;flex-wrap:wrap;gap:8px;min-width:0}
+.tv258-treasury-amount{display:flex;flex-direction:column;gap:6px;width:110px;flex:0 0 110px}
+.tv258-treasury-amount>span{font-size:11px;font-weight:780;color:var(--ink)}
+.tv258-treasury-reason{flex:1 1 165px;min-width:145px;max-width:320px}
+.tv258-treasury-actions{margin:0;display:flex;align-items:center;gap:7px}
+.tv258-treasury-actions .btn{padding:9px 13px}
+.tv258-treasury-status{margin:0;min-height:0;color:var(--accent)}
+.tv258-treasury-history{
+ grid-column:1/-1;grid-row:2;border-top:1px solid var(--edge);
+ padding:11px 0 0;margin-top:2px;min-width:0;
+}
+.tv258-treasury-history>summary{font-size:11px;font-weight:760;color:var(--accent);cursor:pointer}
+.tv258-treasury-physical{padding:4px 0}
+.tv258-treasury-ledger{margin-top:6px}
+.tv258-treasury-ledger p{margin:0;padding:6px 0;font-size:11px;color:var(--soft);border-bottom:1px solid var(--edge)}
+
+/* Changing language options should not resize rows, move buttons, or jump the viewport. */
+.tv256-training-columns .tv258-language-row{
+ display:grid!important;grid-template-columns:minmax(95px,1fr) minmax(165px,210px) 78px;
+ align-items:center;gap:9px!important;min-height:46px;box-sizing:border-box;
+ padding:7px 0!important;flex-wrap:nowrap!important;
+}
+.tv258-language-row .tv255-training-name{min-width:0;flex:none!important}
+.tv258-language-row .tv255-language-modes{
+ display:flex;justify-content:flex-end;gap:8px;flex-wrap:nowrap;min-width:0;
+}
+.tv258-language-row .tv255-language-mode{white-space:nowrap;gap:4px}
+.tv258-language-row .tv255-language-mode input{width:14px;height:14px;flex:none}
+.tv258-language-row>.btn{min-width:74px;justify-self:end;box-sizing:border-box}
+.tv258-language-placeholder{display:block;min-height:18px;min-width:0}
+.tv256-training-columns .tv258-tool-row{
+ display:flex;align-items:center;justify-content:space-between;
+ min-height:44px;box-sizing:border-box;flex-wrap:nowrap!important;
+}
+.tv256-training-columns .tv255-training-group{min-width:0}
+#tv254-dm-vault .tv255-training-details>.tv255-section-heading{margin-bottom:0}
+#tv254-dm-vault .tv255-training-details>.tv255-inline-message{
+ min-height:15px;line-height:15px;margin:0;padding:0;font-size:10px;
+}
+@media(max-width:1030px){
+ #tv254-dm-vault .tv258-item-editor-layout,
+ #tv254-dm-vault .tv258-feat-editor-layout{
+  grid-template-columns:minmax(0,1.1fr) minmax(250px,.9fr);gap:15px;
+ }
+ #tv254-dm-vault .tv255-finance-compact.tv258-treasury-root{grid-template-columns:1fr!important}
+ .tv258-treasury-head,.tv258-treasury-controls,.tv258-treasury-history{
+  grid-column:1;grid-row:auto;
+ }
+ .tv256-training-columns .tv258-language-row{grid-template-columns:minmax(75px,1fr) 165px 74px;gap:5px!important}
+ .tv258-language-row .tv255-language-modes{gap:5px}
+}
+@media(max-width:780px){
+ #tv254-dm-vault .tv258-item-editor-layout,
+ #tv254-dm-vault .tv258-feat-editor-layout{grid-template-columns:1fr;gap:18px}
+ #tv254-dm-vault .tv258-item-editor-layout>.tv258-editor-primary,
+ #tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-primary,
+ #tv254-dm-vault .tv258-item-editor-layout>.tv258-editor-rail,
+ #tv254-dm-vault .tv258-feat-editor-layout>.tv258-editor-rail{grid-column:1;grid-row:auto}
+ #tv254-dm-vault .tv258-editor-rail{border-left:0!important;padding:0!important;border-top:1px solid var(--edge);padding-top:12px!important}
+ .tv258-treasury-fields{align-items:stretch}
+ .tv258-treasury-reason{max-width:none}
+ .tv256-training-columns .tv258-language-row{grid-template-columns:minmax(75px,1fr) 165px 75px}
+ .tv258-conversion-values span{font-size:13px}
+}
+@media(max-width:490px){
+ .tv256-training-columns .tv258-language-row{grid-template-columns:minmax(75px,1fr) 76px;gap:5px}
+ .tv258-language-row .tv255-language-modes{grid-column:1/-1;grid-row:2;justify-content:flex-start}
+ .tv258-language-row>.btn{grid-column:2;grid-row:1}
+ .tv258-language-placeholder{grid-column:1/-1;grid-row:2}
+ #tv254-sheet-wallet .tv256-currency-arrow{width:35px;height:35px;min-width:35px}
+ .tv258-treasury-amount{flex:1 1 100px}
+}
