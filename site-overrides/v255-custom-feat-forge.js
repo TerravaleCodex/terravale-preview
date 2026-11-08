@@ -300,52 +300,115 @@ function renderForge(host,campaign,chars){
  draw(host,campaign,chars);
  if(!state.loaded&&!state.loading)refresh(host,campaign,chars);
 }
-async function mountCharacterFeats(){
- const m=location.hash.match(/^#\/characters\/([^/?#]+)/);
- const root=document.querySelector('#pageRoot .sheet20-content');
- const selected=document.querySelector('.sheet20-tabs [data-value="features"][aria-selected="true"]');
- if(!m||!root||!selected||root.querySelector('#tv255-player-feats'))return;
- const c=(typeof db!=='undefined'?db.characters:[]).find(c=>c.id===m[1]);
- if(!c||!auth()?.state?.ready)return;
- // The native ancestry selection remains on the same Features tab.
- // Rename the player-facing group without losing the ancestry-granted feats.
- for(const h of root.querySelectorAll('h2,h3,h4')){
-  const txt=(h.textContent||'').trim();
-  if(/^(ancestry|racial) feats?$/i.test(txt))h.textContent='Feats';
+// V2.57: DM-awarded feats become ordinary entries in the native feat reader.
+// No second panel, no second feat list, and no changes to the authoritative rules.
+const sheetFeatCache=new Map();
+const sheetFeatLoading=new Set();
+const selectedSheetFeat=new Map();
+const currentSheetCharacter=()=>{
+ const m=location.hash.match(/^#\\/characters\\/([^/?#]+)/);
+ if(!m)return null;
+ let id=m[1];try{id=decodeURIComponent(id)}catch{}
+ return (typeof db!=='undefined'?db.characters:[]).find(c=>c.id===id)||null;
+};
+async function fetchSheetFeats(c){
+ if(!auth()?.state?.ready||sheetFeatLoading.has(c.id))return;
+ sheetFeatLoading.add(c.id);
+ try{
+  const [grants,feats]=await Promise.all([
+   api().from('terravale_character_custom_feats').select('feat_id')
+    .eq('character_id',c.id).eq('status','active').limit(200),
+   api().from('terravale_dm_custom_feats')
+    .select('id,name,short_description,prerequisites,rules_text,action_type,uses_per_rest,recovery,rarity')
+    .eq('campaign_id',c.campaign).limit(500)
+  ]);
+  if(grants.error||feats.error)throw grants.error||feats.error;
+  const assigned=new Set((grants.data||[]).map(g=>g.feat_id));
+  sheetFeatCache.set(c.id,{updated:Date.now(),feats:(feats.data||[]).filter(x=>assigned.has(x.id))});
+ }catch(err){
+  console.warn('[Terravale feats] Could not load awarded feat records:',err);
+  sheetFeatCache.set(c.id,{updated:Date.now(),feats:[]});
+ }finally{sheetFeatLoading.delete(c.id);mountCharacterFeats()}
+}
+function displayCustomInReader(panel,c,feat){
+ const target=panel.querySelector('.sheet227-reader-detail');
+ if(!target)return;
+ const heading=node('div','sheet227-rule-heading');
+ heading.append(node('span','v2-overline','DM-GRANTED FEAT · '+(feat.rarity||'Custom')),
+  node('h3','',feat.name));
+ target.replaceChildren(heading);
+ if(feat.short_description)target.append(node('p','tv257-feat-description',feat.short_description));
+ if(feat.prerequisites)target.append(node('p','tv254-muted','Prerequisites: '+feat.prerequisites));
+ if(feat.rules_text)target.append(node('div','tv257-feat-full-rules',feat.rules_text));
+ const details=['Activation: '+(feat.action_type||'passive')];
+ if(Number(feat.uses_per_rest)>0){
+  details.push('Uses: '+feat.uses_per_rest);
+  if(feat.recovery&&feat.recovery!=='manual')details.push('Recovery: '+feat.recovery);
  }
- const sec=node('section','tv254-proficiency-card tv255-player-feats');
- sec.id='tv255-player-feats';
- sec.append(node('div','tv254-eyebrow','DM-AWARDED POWERS'),
-  node('h3','','Feats'),
-  node('p','tv254-muted','Custom feats approved and granted by your campaign DM. Written mechanics are shown here, not secretly added to your numerical sheet statistics.'));
- root.append(sec);
- const [grants,feats]=await Promise.all([
-  api().from('terravale_character_custom_feats').select('feat_id,grant_note')
-   .eq('character_id',c.id).eq('status','active').limit(200),
-  api().from('terravale_dm_custom_feats').select('id,name,short_description,prerequisites,rules_text,action_type,uses_per_rest,recovery,rarity')
-   .eq('campaign_id',c.campaign).limit(500)
- ]);
- if(!sec.isConnected)return;
- if(grants.error||feats.error){
-  sec.append(node('p','tv254-muted','Custom feats unavailable: '+(grants.error||feats.error).message));return}
- const assigned=new Set((grants.data||[]).map(x=>x.feat_id));
- const held=(feats.data||[]).filter(f=>assigned.has(f.id));
- if(!held.length){sec.append(node('p','tv254-muted','No custom feats have been granted to this character.'));return}
- for(const feat of held){
-  const card=node('details','tv255-player-feat');
-  card.append(node('summary','',feat.name));
-  const body=node('div','tv255-player-feat-body');
-  body.append(node('p','',feat.short_description||''));
-  const details=['Activation: '+feat.action_type];
-  if(feat.uses_per_rest>0){
-   details.push('Uses: '+feat.uses_per_rest);
-   if(feat.recovery!=='manual')details.push('Recovery: '+feat.recovery);
-  }
-  body.append(node('p','tv254-muted',details.join(' · ')));
-  if(feat.prerequisites)body.append(node('p','tv254-muted','Prerequisites: '+feat.prerequisites));
-  if(feat.rules_text)body.append(node('p','tv255-preserve',feat.rules_text));
-  card.append(body);sec.append(card);
+ target.append(node('p','tv257-feat-metadata',details.join(' · ')));
+ for(const btn of panel.querySelectorAll('.sheet227-entry')){
+  const active=btn.dataset.tv257FeatId===feat.id;
+  btn.classList.toggle('is-active',active);
+  btn.setAttribute('aria-pressed',String(active));
  }
+}
+function mountCharacterFeats(){
+ const c=currentSheetCharacter();
+ const panel=document.querySelector('#pageRoot .sheet227-reader');
+ if(!c||!panel||!auth()?.state?.ready)return;
+ document.querySelector('#tv255-player-feats')?.remove();
+ const tab=panel.querySelector('[data-v227-reader-tab="feats"]');
+ if(!tab)return;
+ const cache=sheetFeatCache.get(c.id);
+ if(!cache||Date.now()-cache.updated>90000){
+  if(!sheetFeatLoading.has(c.id))fetchSheetFeats(c);
+ }
+ const items=cache?.feats||[];
+ const tabCount=tab.querySelector('span');
+ const nativeCount=Number(tab.dataset.tv257NativeCount||tabCount?.textContent||0);
+ tab.dataset.tv257NativeCount=String(nativeCount);
+ if(tab.firstChild?.nodeType===3&&tab.firstChild.textContent!=='Feats ')
+  tab.firstChild.textContent='Feats ';
+ if(tabCount)tabCount.textContent=String(nativeCount+items.length);
+ const note=panel.querySelector('.sheet20-note');
+ if(note)note.textContent='Class abilities, ancestry feats and DM-granted custom feats appear together in the reader.';
+ const featsSelected=tab.getAttribute('aria-selected')==='true';
+ if(!featsSelected)return;
+ const index=panel.querySelector('.sheet227-reader-entries');
+ if(!index)return;
+ const search=panel.querySelector('#sheet227-search');
+ const q=(search?.value||'').trim().toLowerCase();
+ const fingerprint=[c.id,cache?.updated||'loading',q,items.map(f=>f.id).join(',')].join(':');
+ if(panel.dataset.tv257FeatFingerprint===fingerprint)return;
+ panel.dataset.tv257FeatFingerprint=fingerprint;
+ const searchLabel=panel.querySelector('.sheet227-reader-index .v2-overline');
+ if(searchLabel)searchLabel.textContent='FIND A FEAT';
+ if(search)search.placeholder='Search all your feats…';
+ index.querySelectorAll('[data-tv257-feat-id]').forEach(b=>b.remove());
+ const matching=items.filter(f=>!q||
+  [f.name,f.short_description,f.rules_text,f.prerequisites].some(v=>String(v||'').toLowerCase().includes(q)));
+ for(const feat of matching){
+  const option=node('button','sheet227-entry tv257-custom-reader-entry');
+  option.type='button';option.dataset.tv257FeatId=feat.id;
+  option.setAttribute('aria-pressed','false');
+  option.append(node('strong','',feat.name),node('small','','DM-granted custom feat'),
+   node('span','','›'));
+  option.addEventListener('click',event=>{
+   event.preventDefault();
+   selectedSheetFeat.set(c.id,feat.id);
+   displayCustomInReader(panel,c,feat);
+  });
+  index.append(option);
+ }
+ if(matching.length){
+  const empty=index.querySelector('.v2-dim');
+  if(empty?.textContent?.includes('No matches'))empty.remove();
+ }
+ const count=panel.querySelector('.sheet227-reader-count');
+ if(count)count.textContent=(index.querySelectorAll('.sheet227-entry').length)+
+  ' of '+(nativeCount+items.length)+' displayed';
+ const selected=items.find(x=>x.id===selectedSheetFeat.get(c.id));
+ if(selected&&matching.some(x=>x.id===selected.id))displayCustomInReader(panel,c,selected);
 }
 let queued=false;
 const observer=new MutationObserver(()=>{
@@ -354,7 +417,14 @@ const observer=new MutationObserver(()=>{
 });
 observer.observe(document.getElementById('pageRoot')||document.body,{childList:true,subtree:true});
 window.addEventListener('hashchange',()=>setTimeout(mountCharacterFeats,100));
-window.addEventListener('terravale-characters-synced',()=>setTimeout(mountCharacterFeats,100));
+window.addEventListener('terravale-characters-synced',()=>{
+ sheetFeatCache.clear();setTimeout(mountCharacterFeats,100);
+});
+document.addEventListener('click',event=>{
+ if(event.target.closest('[data-v227-reader-tab],[data-v227-entry]')){
+  const c=currentSheetCharacter();if(c)selectedSheetFeat.delete(c.id);
+ }
+},true);
 window.TerravaleV255Feats={renderForge};
 mountCharacterFeats();
 })();
