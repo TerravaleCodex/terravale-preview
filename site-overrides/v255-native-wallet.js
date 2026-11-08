@@ -73,8 +73,7 @@ function viewWallet(host,c,result,refresh,isDm){
  const total=sumGC(result);
  const info=el('div','tv255-wallet-header');
  info.append(el('div','tv254-eyebrow',isDm?'DM TREASURY · NATIVE CURRENCY':'CHARACTER WALLET · ACTUAL HOLDINGS'),
-  el('h3','','Coin Purse'),
-  el('p','tv255-wallet-total',total.toLocaleString()+' Guild Copper equivalent'));
+  el('h3','',isDm?'Treasury · '+title(c):'Coin Purse'));
  const displayIndex=Math.max(0,systems.findIndex(x=>x.id===p.display));
  const renderConverted=(delta)=>{
   const i=(displayIndex+delta+systems.length)%systems.length;
@@ -83,6 +82,7 @@ function viewWallet(host,c,result,refresh,isDm){
  };
  const shown=systems[displayIndex]||systems[0];
  const converter=el('div','tv256-conversion-carousel');
+ converter.title='Display only · actual holdings total '+total.toLocaleString()+' Guild Copper';
  converter.setAttribute('aria-label','Display currency conversion');
  const prev=button('‹',()=>renderConverted(-1),'tv256-currency-arrow');
  prev.setAttribute('aria-label','Previous display currency');
@@ -94,22 +94,29 @@ function viewWallet(host,c,result,refresh,isDm){
  converter.append(prev,conversion,next);
  info.append(converter);
  host.append(info);
+ const breakdown=el('details','tv257-wallet-breakdown');
+ breakdown.open=!!p.detailsOpen;
+ breakdown.addEventListener('toggle',()=>{p.detailsOpen=breakdown.open});
+ breakdown.append(el('summary','tv257-wallet-breakdown-toggle',
+  isDm?'View physical holdings & transactions':'Show actual coins and wallet controls'));
+ host.classList.add(isDm?'tv257-dm-wallet':'tv257-player-wallet');
  const actual=el('section','tv255-wallet-holdings-section');
  actual.append(sectionHead('What you actually own','These are physical denominations carried on your character, not automatically converted money.'));
- holdingsList(actual,result);host.append(actual);
- const manager=el('details','tv255-wallet-manager');
- manager.open=!isDm;
- manager.append(el('summary','tv256-wallet-manager-toggle','Add or remove physical money'),
-  el('p','tv254-muted',isDm?
-   'Make an audited DM adjustment for this character.':
-   'Track rewards and purchases; only your real physical coins change.'));
+ holdingsList(actual,result);breakdown.append(actual);
+ const manager=el(isDm?'section':'details','tv255-wallet-manager');
+ if(isDm){
+  manager.append(el('h4','tv257-treasury-label','Give or take money'));
+ }else{
+  manager.open=false;
+  manager.append(el('summary','tv256-wallet-manager-toggle','Add or remove coins'));
+ }
  const systemBar=el('div','tv255-wallet-system-list');
  systemBar.setAttribute('role','group');systemBar.setAttribute('aria-label','Currency system');
  const denominationBar=el('div','tv255-wallet-denominations');
  const selection=el('p','tv254-muted');
  const amountRow=el('div','tv255-amount-row');
  const quantityLabel=el('label','tv255-field');
- quantityLabel.append(el('span','','Number of physical coins or notes'));
+ quantityLabel.append(el('span','','Quantity'));
  const amount=el('input','tv255-input');amount.type='number';amount.min='1';amount.max='1000000';
  amount.step='1';amount.value=String(p.count);
  amount.addEventListener('input',()=>{p.count=Number(amount.value)||1});
@@ -153,7 +160,7 @@ function viewWallet(host,c,result,refresh,isDm){
    coin.setAttribute('aria-pressed',String(p.denom===denomination.id));
    denominationBar.append(coin);
   }
-  selection.textContent='Recording this denomination changes physical holdings. The carousel above only displays a converted total.';
+  selection.textContent='Changes real coins. The top carousel is for display only.';
  };
  const modify=async sign=>{
   if(!ready()||!validRole(c)||busy.has(c.id))return;
@@ -186,13 +193,15 @@ function viewWallet(host,c,result,refresh,isDm){
   }catch(e){status.textContent='Could not record: '+(e.message||String(e))}
   finally{busy.delete(c.id)}
  };
- const add=button('+ Add money',()=>modify(1),'btn primary');
- const remove=button('− Remove money',()=>modify(-1),'btn ghost tv255-remove');
+ const add=button(isDm?'+ Give coins':'+ Add coins',()=>modify(1),'btn primary');
+ const remove=button(isDm?'− Take coins':'− Remove coins',()=>modify(-1),'btn ghost tv255-remove');
  actionRow.append(add,remove);
- manager.append(el('h4','','Currency to add or remove'),systemBar,
-  el('h4','','Choose denomination'),denominationBar,selection,
+ manager.append(el('h4','','Currency'),systemBar,
+  el('h4','','Coin or note'),denominationBar,selection,
   amountRow,actionRow,status);
- host.append(manager);
+ if(isDm)host.append(manager);
+ else breakdown.append(manager);
+ host.append(breakdown);
  drawSystem();
  if(result.ledger?.length){
   const log=el('details','tv255-wallet-history');
@@ -202,7 +211,7 @@ function viewWallet(host,c,result,refresh,isDm){
    log.append(el('p','',new Date(record.created_at).toLocaleDateString()+
     ' · '+(record.delta>0?'+':'')+record.delta+' '+
     (d?.name||record.denomination_id)+' · '+(record.note||record.operation)));
-  }host.append(log);
+  }breakdown.append(log);
  }
 }
 async function fetchMoney(c,force=false){

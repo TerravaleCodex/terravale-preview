@@ -111,25 +111,55 @@ function modesControl(c,entry,host,refresh){
 }
 function entryPanel(c,kind,entries,host,refresh,editable){
  const section=node('section','tv255-training-group');
- section.append(node('h3','',kind==='tool'?'Tool and instrument proficiency':'Spoken, read and written languages'));
- if(!entries.length)section.append(node('p','tv254-muted','No recorded proficiency in this category.'));
- for(const entry of entries){
-  const row=node('div','tv255-training-row'+(entry.hidden?' suppressed':''));
+ section.append(node('h3','',kind==='tool'?'Tools & instruments':'Languages'));
+ if(!entries.length){
+  section.append(node('p','tv254-muted','Nothing recorded in this group.'));
+  return section;
+ }
+ const createRow=entry=>{
+  const r=node('div','tv255-training-row'+(entry.hidden?' suppressed':''));
   const copy=node('div','tv255-training-name');
-  copy.append(node('strong','',labelFor(kind,entry.id)),
-   node('small','',entry.source+(entry.hidden?' · suppressed for this character':'')));
-  row.append(copy);
+  const details=String(entry.source||'').trim();
+  copy.append(node('strong','',labelFor(kind,entry.id)));
+  if(entry.hidden)copy.append(node('small','','Suppressed for this character'));
+  else if(details&&!/^(starting training|ancestry|class|starting|base)$/i.test(details))
+   copy.append(node('small','',details));
+  r.append(copy);
   if(kind==='language'&&!entry.hidden){
-   if(editable)row.append(modesControl(c,entry,host,refresh));
-   else row.append(node('small','tv255-mode-badge',
+   if(editable)r.append(modesControl(c,entry,host,refresh));
+   else r.append(node('small','tv255-mode-badge',
     (entry.modes||[]).map(m=>m[0].toUpperCase()+m.slice(1)).join(' · ')));
   }
   if(editable){
    const action=entry.hidden?'Restore':'Remove';
-   row.append(button(action,()=>change(c,kind,entry.id,entry.hidden?'restore':'hide',[],host,refresh),
+   r.append(button(action,()=>change(c,kind,entry.id,entry.hidden?'restore':'hide',[],host,refresh),
     entry.hidden?'btn primary small':'btn ghost small tv255-remove'));
   }
-  section.append(row);
+  return r;
+ };
+ if(kind==='tool'){
+  const categoryFor=id=>{
+   const entry=(rules().tools||[]).find(t=>t.id===id);
+   return entry?.category||'Other tools';
+  };
+  const buckets=new Map();
+  for(const entry of entries){
+   const category=categoryFor(entry.id);
+   if(!buckets.has(category))buckets.set(category,[]);
+   buckets.get(category).push(entry);
+  }
+  const categories=[...buckets.keys()].sort((a,b)=>{
+   const score=v=>/musical instruments/i.test(v)?-3:/gaming sets/i.test(v)?-2:/artisan/i.test(v)?-1:0;
+   return score(a)-score(b)||a.localeCompare(b);
+  });
+  for(const category of categories){
+   const group=node('div','tv257-training-category');
+   group.append(node('h4','',category));
+   for(const entry of buckets.get(category))group.append(createRow(entry));
+   section.append(group);
+  }
+ }else{
+  for(const entry of entries)section.append(createRow(entry));
  }
  return section;
 }
