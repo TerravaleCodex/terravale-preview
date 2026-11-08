@@ -201,9 +201,11 @@ function renderItemEditor(host,mode,existing){
  for(const part of parts.slice(first,last+1))details.append(part);
  // Start the mechanics rail alongside the item's name, not halfway down the form.
  const primary=node('div','tv258-editor-primary');
- primary.append(name.wrap.parentElement,desc.wrap,notes.wrap);
+ // The right rail only selects which mechanics exist. Activated mechanics
+ // appear alongside name and description in the full-width primary editor.
+ primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details);
  const mechanicsRail=node('aside','tv258-editor-rail');
- mechanicsRail.append(typePanel,toggles,details,rarityPanel);
+ mechanicsRail.append(typePanel,toggles,rarityPanel);
  panel.append(primary,mechanicsRail);form.append(panel);
  const enabled={
   ac:p.ac_bonus!==undefined&&p.ac_bonus!==null&&p.ac_bonus!=='',
@@ -252,6 +254,7 @@ function renderItemEditor(host,mode,existing){
   attuneRow.hidden=!enabled.charges&&!enabled.attunement;
   attunement.wrap.hidden=!enabled.attunement;
   resource.wrap.hidden=!enabled.charges;
+  details.hidden=!enabled.ac&&!enabled.attack&&!enabled.charges&&!enabled.attunement;
   kind.wrap.hidden=category.value!=='custom';
  }
  category.querySelectorAll('button').forEach(b=>b.addEventListener('click',redraw));

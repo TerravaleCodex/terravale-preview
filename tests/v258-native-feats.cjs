@@ -1,4 +1,4 @@
-/* V2.58 regression: native feat reader parses, and a verified active grant
+/* V2.59 regression: native feat reader parses, and a verified active grant
    is returned as one native reader entry. No network, credentials or live writes. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -10,13 +10,14 @@ const html=fs.readFileSync('published/veiled-codex/index.html','utf8');
 const sources=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
 const nativeScripts=sources.map(x=>x[1]).filter(s=>s.includes('function featEntries(c){'));
 assert.equal(nativeScripts.length,1,'Exactly one native feat parser must be present');
-const tmp=path.join(os.tmpdir(),'terravale-v258-native-syntax.js');
+const tmp=path.join(os.tmpdir(),'terravale-v259-native-syntax.js');
 fs.writeFileSync(tmp,nativeScripts[0]);
 const parse=spawnSync(process.execPath,['--check',tmp],{encoding:'utf8'});
 fs.rmSync(tmp,{force:true});
 assert.equal(parse.status,0,'Native source must parse: '+(parse.stderr||''));
 assert.match(nativeScripts[0],/native\.concat\(window\.TerravaleV258Feats\?\.getEntries/);
 assert.match(nativeScripts[0],/Feats <span>/);
+assert.match(nativeScripts[0],/data-tv259-character/,'Reader must carry actual character id');
 const provider=fs.readFileSync('site-overrides/v255-custom-feat-forge.js','utf8');
 const calls=[];
 function query(table){
@@ -44,9 +45,10 @@ const context={
   TerravaleVerifiedAccount:{state:{ready:true},supabase:{from:query}},
   addEventListener:(name,fn)=>{listeners[name]=fn}
  },
- location:{hash:'#/characters/test-character'},
+ // A deliberately different route reproduces the previous V2.58 refresh bug.
+ location:{hash:'#/sheet/test-character'},
  db:{characters:[{id:'test-character',campaign:'test-campaign'}]},
- document:{querySelector:sel=>sel==='.sheet227-reader'?{}:null},
+ document:{querySelector:sel=>sel==='.sheet227-reader'?{dataset:{tv259Character:'test-character'}}:null},
  renderPage:()=>{reRenders++},
  requestAnimationFrame:fn=>fn(),
  console,Set,Map,Date,Promise
@@ -65,5 +67,8 @@ assert.deepEqual([...context.window.TerravaleV258Feats.getEntries('test-characte
  assert.ok(calls.includes('terravale_character_custom_feats'));
  assert.ok(calls.includes('terravale_dm_custom_feats'));
  assert.ok(reRenders>=1,'Loaded grant re-renders the native reader');
- console.log('PASS: native V2 reader syntax and active custom-feat round trip');
+ const previous=reRenders;
+ listeners['terravale-auth-ready']?.();
+ assert.ok(reRenders>previous,'Discord auth-ready also refreshes alternative sheet routes');
+ console.log('PASS: native reader keeps active custom feats across alternative sheet routes');
 })().catch(error=>{console.error(error);process.exitCode=1});

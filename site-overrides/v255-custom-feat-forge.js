@@ -185,6 +185,7 @@ function renderEditor(host,campaign,chars){
   type.hidden=!enabled.activation;
   uses.wrap.hidden=!enabled.uses;
   recovery.hidden=!enabled.uses||!enabled.recovery;
+  specifics.hidden=!enabled.prerequisites&&!enabled.level&&!enabled.activation&&!enabled.uses;
   const recharge=switches.querySelector('[data-tv256-switch="recovery"]');
   if(recharge){
    const check=recharge.querySelector('input');
@@ -194,9 +195,9 @@ function renderEditor(host,campaign,chars){
  }
  switches.lastChild.dataset.tv256Switch='recovery';
  const primary=node('div','tv258-editor-primary');
- primary.append(name.wrap,summary.wrap,rules.wrap,status);
+ primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status);
  const mechanicRail=node('aside','tv258-editor-rail');
- mechanicRail.append(switches,specifics,rarity.wrap);
+ mechanicRail.append(switches,rarity.wrap);
  layout.append(primary,mechanicRail);
  form.append(layout);
  updateVisible();
@@ -365,16 +366,23 @@ async function loadSheetFeats(characterId,campaignId,force=false){
  }finally{
   sheetFeatLoading.delete(characterId);
   const c=currentSheetCharacter();
-  if(c?.id===characterId&&document.querySelector('.sheet227-reader')){
+  // The live sheet uses more than one route shape. Track the actual rendered
+  // native reader character, rather than guessing from location.hash.
+  const reader=document.querySelector('.sheet227-reader');
+  if(reader&&reader.dataset.tv259Character===characterId){
    requestAnimationFrame(()=>{
-    if(currentSheetCharacter()?.id===characterId&&typeof renderPage==='function')
-     renderPage(false);
+    const still=document.querySelector('.sheet227-reader');
+    if(still?.dataset.tv259Character===characterId&&
+       typeof renderPage==='function')renderPage(false);
    });
   }
  }
 }
 function getEntries(characterId,campaignId){
  if(!auth()?.state?.ready||!characterId)return [];
+ // Native reader calls this synchronously while rendering. Mark the reader
+ // independently of URL conventions and refresh once server grants arrive.
+ window.TerravaleV259LastSheetCharacter=characterId;
  const cached=sheetFeatCache.get(characterId);
  if(!cached||Date.now()-cached.at>120000){
   if(!sheetFeatLoading.has(characterId))
@@ -387,13 +395,16 @@ function invalidate(characterId){
  else sheetFeatCache.clear();
 }
 window.TerravaleV258Feats={getEntries,invalidate,refresh:loadSheetFeats};
+window.TerravaleV259Feats={getEntries,invalidate,refresh:loadSheetFeats};
 window.TerravaleV255Feats={renderForge};
 window.addEventListener('terravale-characters-synced',()=>invalidate());
 window.addEventListener('hashchange',()=>{
  const c=currentSheetCharacter();if(c)invalidate(c.id);
 });
 window.addEventListener('terravale-auth-ready',()=>{
- const c=currentSheetCharacter();
- if(c&&typeof renderPage==='function')requestAnimationFrame(()=>renderPage(false));
+ // Discord login may finish after the native Features tab was rendered.
+ // Refresh that actual tab even when the sheet is at an alternative URL.
+ if(document.querySelector('.sheet227-reader')&&typeof renderPage==='function')
+  requestAnimationFrame(()=>renderPage(false));
 });
 })();
