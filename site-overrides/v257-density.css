@@ -90,6 +90,13 @@ body[data-tv257-dm-view]:not([data-tv257-dm-view="overview"]) #tv-dm-verified-pl
 }
 .page-sheet .tv257-feat-description{line-height:1.65;margin:9px 0 13px}
 .page-sheet .tv257-feat-metadata{font-size:11px;color:var(--s20-soft,var(--soft));margin-top:13px}
+/* Six compact ability cards at desktop widths; expanded details grow only their own card. */
+@media(min-width:1400px){
+ .page-sheet .sheet21-ability-page .sheet21-ability-grid{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;align-items:start
+ }
+ .page-sheet .sheet21-ability-page .sheet21-ability-grid>*{min-width:0}
+}
 /* Player coin purse — centered value carousel; expandable actual holdings only when wanted. */
 #tv254-sheet-wallet .tv255-wallet-header{align-items:center;text-align:center;gap:5px}
 #tv254-sheet-wallet .tv255-wallet-header h3{font-size:24px}
