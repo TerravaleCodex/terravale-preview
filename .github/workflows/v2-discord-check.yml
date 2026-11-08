@@ -83,16 +83,16 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
-      - name: Inspect native feats DOM template (design audit)
+      - name: Inspect native feat reader integration points
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           s=Path('published/veiled-codex/index.html').read_text()
-          for label in ('FIND AN ANCESTRY FEAT','Find an ancestry feat','Ancestry feats','Only unlocked class abilities','sheet20-feat','sheet20-ability','function renderSheet20','renderSheet20Features'):
+          for label,before,after in [('Only unlocked class abilities',2800,3200),('sheet227-reader-entry',800,700),('data-v227-reader-feat',500,500),('data-v227-reader-tab',500,600)]:
               m=re.search(re.escape(label),s,re.I)
-              print('NATIVE FEATURE SEARCH',label,'FOUND',bool(m))
-              if m: print('CONTEXT',s[max(0,m.start()-400):m.end()+1100][:1600].replace(chr(10),' '))
+              print('READER SOURCE',label,'FOUND',bool(m))
+              if m: print('READER CONTEXT',s[max(0,m.start()-before):m.end()+after].replace(chr(10),' ')[:6500])
           PY
       - name: Verify browser scripts parse
         run: |
