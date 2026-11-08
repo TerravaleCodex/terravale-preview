@@ -88,6 +88,19 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
+      - name: Inspect sheet and featured card owner byline targets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('published/veiled-codex/index.html').read_text()
+          terms=['YOUR ADVENTURER / FEATURED RECORD','MAIN FEATURED','Main featured','sheet226-hero-actions','sheet20-hero-copy','renderSheetV220=function','function renderCharacters','THE REST OF YOUR CHAPTER','v229Featured','Played by']
+          for q in terms:
+              hits=list(re.finditer(re.escape(q),s,re.I))
+              print('BYLINE MARKER',q,len(hits),[m.start() for m in hits[-10:]])
+              for m in hits[-2:]:
+                  print('BYLINE SOURCE',q,s[max(0,m.start()-1800):m.start()+2500].replace(chr(10),' ')[:4300])
+          PY
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
