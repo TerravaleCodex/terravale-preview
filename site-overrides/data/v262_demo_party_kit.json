@@ -262,7 +262,21 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "hematurgical-instruments",
+          "healer-s-kit"
+        ],
+        "languages": [
+          "common",
+          "hunter-field-cant"
+        ]
+      },
+      "vault_picks": [
+        "demo62-1-midnight-specimen-mantle",
+        "demo62-1-sealed-specimen-tubes"
+      ]
     },
     {
       "slot": 2,
@@ -497,7 +511,21 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "herbalism-kit",
+          "navigator-s-tools"
+        ],
+        "languages": [
+          "common",
+          "hunter-field-cant"
+        ]
+      },
+      "vault_picks": [
+        "demo62-2-whisperfern-ring",
+        "demo62-2-collapsible-cooking-cup"
+      ]
     },
     {
       "slot": 3,
@@ -749,7 +777,23 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "lute",
+          "resonance-tuning-instruments",
+          "terr-music-ashwood-zither"
+        ],
+        "languages": [
+          "common",
+          "elven",
+          "fey"
+        ]
+      },
+      "vault_picks": [
+        "demo62-3-refrain-ring",
+        "demo62-3-inkstone-and-quills"
+      ]
     },
     {
       "slot": 4,
@@ -804,7 +848,13 @@
           "slot": "cloak",
           "description": "Travel mantle with a threshold symbol.",
           "mechanics": {
-            "rarity": "Common"
+            "rarity": "Uncommon",
+            "charges": 2,
+            "max_charges": 2,
+            "recovery": "long",
+            "charge_cost": 1,
+            "resource_tracker": true,
+            "features": "Spend one charge to make the embroidered duty symbol briefly visible in ordinary low light. No magical command effect."
           }
         },
         {
@@ -1001,7 +1051,22 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "smith-s-tools",
+          "wardwright-s-instruments"
+        ],
+        "languages": [
+          "common",
+          "dvergr",
+          "dvergr-runic"
+        ]
+      },
+      "vault_picks": [
+        "demo62-4-oath-stitched-mantle",
+        "demo62-4-portable-gate-survey-level"
+      ]
     },
     {
       "slot": 5,
@@ -1241,7 +1306,21 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "navigator-s-tools",
+          "aetheric-calibration-instruments"
+        ],
+        "languages": [
+          "common",
+          "fl-gel"
+        ]
+      },
+      "vault_picks": [
+        "demo62-5-stormglass-pendant",
+        "demo62-5-pocket-kite-frame"
+      ]
     },
     {
       "slot": 6,
@@ -1257,7 +1336,13 @@
           "slot": "head",
           "description": "Dark reversible hood.",
           "mechanics": {
-            "rarity": "Common"
+            "rarity": "Uncommon",
+            "charges": 2,
+            "max_charges": 2,
+            "recovery": "dawn",
+            "charge_cost": 1,
+            "resource_tracker": true,
+            "features": "Spend one charge to dim the hood's insignia for a brief moment; no automatic invisibility."
           }
         },
         {
@@ -1497,6 +1582,21 @@
       },
       "removeInventoryIds": [
         "demo-copper-coins"
+      ],
+      "training": {
+        "tools": [
+          "thieves-tools",
+          "disguise-kit",
+          "terr-game-fifth-hand"
+        ],
+        "languages": [
+          "common",
+          "thieves-cant"
+        ]
+      },
+      "vault_picks": [
+        "demo62-6-night-market-hood",
+        "demo62-6-climbing-hook-and-fine-rope"
       ]
     },
     {
@@ -1779,7 +1879,23 @@
           "rarity": "Uncommon"
         }
       },
-      "removeInventoryIds": []
+      "removeInventoryIds": [],
+      "training": {
+        "tools": [
+          "archive-conservator-s-tools",
+          "calligrapher-s-supplies",
+          "aetheric-calibration-instruments"
+        ],
+        "languages": [
+          "common",
+          "fl-gel",
+          "elven"
+        ]
+      },
+      "vault_picks": [
+        "demo62-7-marginlight-ring",
+        "demo62-7-foldaway-book-stand"
+      ]
     }
   ]
 }
