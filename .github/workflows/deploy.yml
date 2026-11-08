@@ -7,6 +7,7 @@ on:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
       - "tests/v268-public-home.cjs"
+      - "tests/v269-dashboard-default.cjs"
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
@@ -176,7 +177,7 @@ jobs:
               "Terravale — The Living Codex",
               '<meta http-equiv="refresh"',
               'url=/terravale-preview/veiled-codex/',
-              'window.location.replace(destination+window.location.search+window.location.hash)',
+              'window.location.replace(destination+window.location.search+(window.location.hash||"#/"))',
               '<a href="/terravale-preview/veiled-codex/">Enter Terravale</a>',
           ):
               assert marker in entry, f"Missing dashboard entry marker: {marker}"
@@ -204,6 +205,8 @@ jobs:
           PY
       - name: Verify the launched public entrance and OAuth forwarding
         run: node tests/v268-public-home.cjs
+      - name: Verify actual native Dashboard default route
+        run: node tests/v269-dashboard-default.cjs
       - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -235,7 +238,7 @@ jobs:
               "$base/?launch=$GITHUB_SHA-$attempt" || true)"
             if [ "$status" = "200" ] &&
                grep -q 'Terravale — The Living Codex' /tmp/terravale-home.html &&
-               grep -Fq 'window.location.replace(destination+window.location.search+window.location.hash)' /tmp/terravale-home.html &&
+               grep -Fq 'window.location.replace(destination+window.location.search+(window.location.hash||"#/"))' /tmp/terravale-home.html &&
                grep -q '/terravale-preview/veiled-codex/' /tmp/terravale-home.html &&
                ! grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-home.html; then
               echo "PASS: the public URL opens the V2 dashboard instead of maintenance."
@@ -256,7 +259,8 @@ jobs:
                grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
-               grep -q 'Terravale Codex V2.67' /tmp/terravale-v2-live.html; then
+               grep -q 'Terravale Codex V2.67' /tmp/terravale-v2-live.html &&
+               ! grep -Fq "history.replaceState(null,'','#/characters')" /tmp/terravale-v2-live.html; then
               echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."
               break
             fi
@@ -302,7 +306,7 @@ jobs:
             if [ "$path" = "/404.html" ]; then expected_status=200; fi
             if [ "$status" != "$expected_status" ] ||
                ! grep -q 'Terravale — The Living Codex' /tmp/terravale-fallback.html ||
-               ! grep -Fq 'window.location.replace(destination+window.location.search+window.location.hash)' /tmp/terravale-fallback.html; then
+               ! grep -Fq 'window.location.replace(destination+window.location.search+(window.location.hash||"#/"))' /tmp/terravale-fallback.html; then
               echo "::error::Old root path $path did not offer the new V2 entrance (HTTP $status)."
               exit 1
             fi

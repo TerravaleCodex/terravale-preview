@@ -30,7 +30,7 @@
     // OAuth ?code/?error and native #/route fragments must survive the entry redirect.
     (function openTheCodex(){
       var destination="/terravale-preview/veiled-codex/";
-      window.location.replace(destination+window.location.search+window.location.hash);
+      window.location.replace(destination+window.location.search+(window.location.hash||"#/"));
     })();
   </script>
 </head>
