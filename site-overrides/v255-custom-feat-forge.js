@@ -402,7 +402,9 @@ window.addEventListener('hashchange',()=>{
  const c=currentSheetCharacter();if(c)invalidate(c.id);
 });
 window.addEventListener('terravale-auth-ready',()=>{
- const c=currentSheetCharacter();
- if(c&&typeof renderPage==='function')requestAnimationFrame(()=>renderPage(false));
+ // Discord login may finish after the native Features tab was rendered.
+ // Refresh that actual tab even when the sheet is at an alternative URL.
+ if(document.querySelector('.sheet227-reader')&&typeof renderPage==='function')
+  requestAnimationFrame(()=>renderPage(false));
 });
 })();
