@@ -245,3 +245,30 @@
  #tv254-sheet-wallet .tv256-currency-arrow{width:35px;height:35px;min-width:35px}
  .tv258-treasury-amount{flex:1 1 100px}
 }
+
+/* Screenshot arrow positions: category at the upper right, rarity beneath mechanics. */
+#tv254-dm-vault .tv258-editor-rail>.tv256-category-picker{
+ width:100%;margin:0 0 4px;gap:7px;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-category-picker>strong{
+ font:500 21px var(--serif,Georgia,serif);color:var(--ink);
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-category-picker>.tv255-tile-options{
+ gap:6px;margin:0;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-category-picker+.tv256-feature-switchboard{
+ border-top:1px solid var(--edge)!important;padding-top:13px!important;
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-rarity-choice,
+#tv254-dm-vault .tv258-editor-rail>.tv255-field{
+ width:100%;margin:0!important;padding:13px 0 0;
+ border-top:1px solid var(--edge);
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-rarity-choice>span,
+#tv254-dm-vault .tv258-editor-rail>.tv255-field>span{
+ font-size:11px;font-weight:780;color:var(--ink);
+}
+#tv254-dm-vault .tv258-editor-rail>.tv256-rarity-choice .tv255-tile-options{
+ margin:8px 0 0;gap:6px;
+}
+#tv254-dm-vault .tv258-editor-primary textarea{min-height:74px}
