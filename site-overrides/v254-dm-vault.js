@@ -244,6 +244,7 @@ function renderItemEditor(host,mode,existing){
   chargesHeading.hidden=!enabled.charges&&!enabled.attunement;
   acRow.hidden=!enabled.ac;
   attackRow.hidden=!enabled.attack;
+  otherDamage.wrap.hidden=!enabled.attack||damageType.el.value!=='custom';
   attackAbilityRow.hidden=!enabled.attack;
   actionRow.hidden=!enabled.attack;
   chargesRow.hidden=!enabled.charges;
