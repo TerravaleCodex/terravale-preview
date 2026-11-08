@@ -6,6 +6,9 @@ on:
       - "site-overrides/v2-**"
       - "site-overrides/approved-ads/**"
       - "site-overrides/approved-ads.json"
+      - ".github/workflows/deploy.yml"
+      - "site-overrides/launch-home.html"
+      - "tests/v268-public-home.cjs"
       - "tools/overlay-v239-with-discord.py"
       - "tools/v243_native_patch.py"
       - "tools/v245_theme_patch.py"
@@ -105,6 +108,8 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
+      - name: Verify public V2 dashboard launch and Discord callback preservation
+        run: node tests/v268-public-home.cjs
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
