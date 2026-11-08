@@ -240,13 +240,19 @@ function patronEditor(host,body,campaign,characters,patrons){
  const hint=field('Player-safe hint · major / greater only',p.public_hint||'',true);
  form.append(name.wrap,slug.wrap,el('span','tv270-minor-label','Divine status'));
  let rank=p.rank||dm.patronRank;
- form.append(group([['greater','Greater'],['major','Major'],['minor','Minor']],rank,v=>{
-  dm.patronRank=v;dm.editPatron={...p,rank:v};renderDM(body,campaign,characters);
- }));
+ const rankSelect=group([['greater','Greater'],['major','Major'],['minor','Minor']],rank,v=>{
+  rank=v;dm.patronRank=v;
+  rankSelect.querySelectorAll('[data-rank]').forEach(button=>{
+   const selected=button.dataset.rank===v;button.classList.toggle('is-selected',selected);
+   button.setAttribute('aria-pressed',String(selected));
+  });
+ });
+ rankSelect.querySelectorAll('button').forEach((button,i)=>button.dataset.rank=['greater','major','minor'][i]);
+ form.append(rankSelect);
  form.append(hint.wrap,action('Save deity',()=>mutate('terravale_divine_dm_save_patron',{
    target_campaign:campaign.id,existing_patron:p.id||null,
    patron_spec:{key:slug.input.value.trim().toLowerCase(),name:name.input.value.trim(),
-    rank:dm.editPatron?.rank||dm.patronRank,public_hint:hint.input.value}
+    rank,public_hint:hint.input.value}
   },body,campaign,characters,'God details saved.'),'btn primary small'));
  host.append(form);
 }
@@ -257,30 +263,35 @@ function boonEditor(host,body,campaign,characters,patrons,b){
  const eligible=patrons.filter(p=>kind==='minor'?p.rank==='minor':kind==='divine'?p.rank!=='minor':true);
  let first=eligible.some(p=>p.id===b.patron_id)?b.patron_id:eligible[0]?.id;
  let second=b.second_patron_id||dm.other;
+ let name,summary,mechanics,threshold;
+ const snapshot=()=>({...b,kind,patron_id:first,second_patron_id:second,
+  name:name?.input.value??b.name??'',summary:summary?.input.value??b.summary??'',
+  mechanics:mechanics?.input.value??b.mechanics??'',
+  required_favour:Number(threshold?.input.value??b.required_favour??3)});
  const chooser=(options,value,update)=>{
   const area=el('div','tv270-options');
   for(const [k,title] of options)area.append(action(title,()=>update(k),'tv270-pill'+(String(k)===String(value)?' is-selected':'')));
   return area;
  };
  form.append(el('span','tv270-minor-label','Boon family'));
- form.append(chooser(Object.entries(kinds),kind,v=>{dm.editing={...b,kind:v,patron_id:null,second_patron_id:null};renderDM(body,campaign,characters)}));
+ form.append(chooser(Object.entries(kinds),kind,v=>{dm.editing={...snapshot(),kind:v,patron_id:null,second_patron_id:null};renderDM(body,campaign,characters)}));
  form.append(el('span','tv270-minor-label','Patron'));
- form.append(chooser(eligible.map(p=>[p.id,p.name]),first,v=>{dm.editing={...b,patron_id:v};renderDM(body,campaign,characters)}));
+ form.append(chooser(eligible.map(p=>[p.id,p.name]),first,v=>{dm.editing={...snapshot(),patron_id:v};renderDM(body,campaign,characters)}));
  if(kind==='concordant'){
   form.append(el('span','tv270-minor-label','Second patron'));
   form.append(chooser(patrons.filter(p=>p.id!==first).map(p=>[p.id,p.name]),second,v=>{
-   dm.editing={...b,patron_id:first,second_patron_id:v};renderDM(body,campaign,characters);
+   dm.editing={...snapshot(),patron_id:first,second_patron_id:v};renderDM(body,campaign,characters);
   }));
  }
- const name=field('Boon title',b.name||''),summary=field('Description',b.summary||'',true);
- const mechanics=field('Full mechanics (DM only until awarded)',b.mechanics||'',true);
- const threshold=field('Favour needed for DM to grant',b.required_favour??3);
+ name=field('Boon title',b.name||'');summary=field('Description',b.summary||'',true);
+ mechanics=field('Full mechanics (DM only until awarded)',b.mechanics||'',true);
+ threshold=field('Favour needed for DM to grant',b.required_favour??3);
  threshold.input.type='number';threshold.input.min='1';threshold.input.max='10';
  form.append(name.wrap,summary.wrap,mechanics.wrap,threshold.wrap);
  let stage=b.state||'draft';
  form.append(el('span','tv270-minor-label','Availability'),
  chooser([['draft','Draft'],['ready','Ready to grant']],stage,v=>{
-  dm.editing={...b,state:v};renderDM(body,campaign,characters)
+  dm.editing={...snapshot(),state:v};renderDM(body,campaign,characters)
  }));
  form.append(action('Save boon',()=>mutate('terravale_divine_dm_save_boon',{
   target_campaign:campaign.id,existing_boon:b.id||null,
