@@ -279,7 +279,7 @@ jobs:
             assert marker in raw, f"V2 launch lacks required capability {marker}"
           assert b"sb_secret_" not in raw, "Private API key detected"
           html=raw.decode("utf-8")
-          match=re.search(r'<script\\s+type="application/json"\\s+id="tv238-v14-content">([\\s\\S]*?)</script>',html)
+          match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
           assert match, "Missing Lore Codex V14 payload"
           data=json.loads(match.group(1))
           assert len(data["articles"])==283, "Public lore count changed"
