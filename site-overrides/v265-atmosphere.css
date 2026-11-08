@@ -22,7 +22,7 @@ html[data-tv265-textures="on"] .tv265-featured>.tv265-material{
  background-position:28% 50%;
 }
 html[data-tv265-motion="on"] .tv265-featured>.tv265-material{
- transition-duration:1.15s;transform:translate3d(calc(var(--tv265-x,0px)*-.65),calc(var(--tv265-y,0px)*-.65),0) scale(1.05);
+ transition-duration:1.15s;transform:translate3d(var(--tv265-x,0px),var(--tv265-y,0px),0) scale(1.05);
 }
 /* Character sheet: nacre behind header and PORTRAIT, tinted per ancestry. */
 html[data-tv265-textures="on"] .tv265-character>.tv265-material{
@@ -51,7 +51,7 @@ html[data-tv265-textures="on"] .tv265-initiative>.tv265-material{
 }
 html[data-tv265-textures="off"] .tv265-initiative>.tv265-material{display:none}
 html[data-tv265-motion="on"] .tv265-initiative>.tv265-material{
- transform:translate3d(calc(var(--tv265-x,0px)*.35),calc(var(--tv265-y,0px)*.35),0) scale(1.035);
+ transform:translate3d(var(--tv265-x,0px),var(--tv265-y,0px),0) scale(1.035);
 }
 /* Lore: paper-silver current, vertically distinct from the other surfaces.
    Existing art/images gain only 7px of optical scroll depth, not layout shift. */
