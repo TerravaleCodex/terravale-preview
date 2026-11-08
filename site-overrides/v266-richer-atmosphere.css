@@ -126,11 +126,7 @@ html[data-tv265-textures="on"] .page-cabinet .hero{
 }
 
 /* Keep the two independent Appearance switches meaningful, including old effects. */
-html[data-tv265-textures="off"] .page-dashboard,
-html[data-tv265-textures="off"] .page-sheet .sheet20,
-html[data-tv265-textures="off"] .page-library .tv-lore{
- background-image:none!important;
-}
+/* When off, enhanced rules do not match; original page backgrounds remain intact. */
 html[data-tv265-motion="off"] .page-session .sr-operations::before{
  animation:none!important;
 }
