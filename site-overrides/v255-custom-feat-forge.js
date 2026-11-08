@@ -158,7 +158,7 @@ function renderEditor(host,campaign,chars){
    values.state=id;drawStatus();
   }));
  };drawStatus();
- const layout=node('div','tv256-feat-layout');
+ const layout=node('div','tv256-feat-layout tv258-feat-editor-layout');
  const switches=node('aside','tv256-feature-switchboard');
  switches.append(node('strong','','Feat elements'),
   node('p','tv254-muted','Only enable the parts this feat actually needs.'));
@@ -193,8 +193,12 @@ function renderEditor(host,campaign,chars){
   }
  }
  switches.lastChild.dataset.tv256Switch='recovery';
- layout.append(switches,specifics);
- form.append(layout,status);
+ const primary=node('div','tv258-editor-primary');
+ primary.append(name.wrap,summary.wrap,rules.wrap,rarity.wrap,status);
+ const mechanicRail=node('aside','tv258-editor-rail');
+ mechanicRail.append(switches,specifics);
+ layout.append(primary,mechanicRail);
+ form.append(layout);
  updateVisible();
  const buttons=node('div','tv254-actions');
  const save=node('button','btn primary small','Save custom feat');save.type='submit';
