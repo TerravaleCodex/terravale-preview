@@ -194,9 +194,9 @@ function renderEditor(host,campaign,chars){
  }
  switches.lastChild.dataset.tv256Switch='recovery';
  const primary=node('div','tv258-editor-primary');
- primary.append(name.wrap,summary.wrap,rules.wrap,rarity.wrap,status);
+ primary.append(name.wrap,summary.wrap,rules.wrap,status);
  const mechanicRail=node('aside','tv258-editor-rail');
- mechanicRail.append(switches,specifics);
+ mechanicRail.append(switches,specifics,rarity.wrap);
  layout.append(primary,mechanicRail);
  form.append(layout);
  updateVisible();
