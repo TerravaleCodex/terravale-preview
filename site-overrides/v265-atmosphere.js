@@ -75,7 +75,7 @@ function mountCabinet(){
   doc.documentElement.dataset.tv265Textures=state.textures?'on':'off';
   doc.documentElement.dataset.tv265Motion=canMove()?'on':'off';
   doc.documentElement.style.setProperty('--tv265-art-achievements',getComputedStyle(ROOT).getPropertyValue('--tv265-art-achievements'));
-  if(frame.dataset.tv265Load!=='1'){frame.dataset.tv265Load='1';frame.addEventListener('load',()=>{frame.dataset.tv265Load='0';schedule()})}
+  if(frame.dataset.tv265Load!=='1'){frame.dataset.tv265Load='1';frame.addEventListener('load',schedule)}
  }catch{}
 }
 function clearMotion(){
