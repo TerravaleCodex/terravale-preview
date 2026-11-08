@@ -99,6 +99,12 @@ jobs:
           for term in ['function featEntries(c){','sheetV222FeaturesPage=function(c){','<section class="sheet20-panel sheet227-reader"']:
               m=re.search(re.escape(term),s)
               if m: print('READER SNIPPET',repr(term),s[max(0,m.start()-350):m.start()+11000].replace(chr(10),' ')[:11000])
+          assignments=list(re.finditer(re.escape('sheetV222FeaturesPage=function(c){'),s))
+          for i,m in enumerate(assignments):
+              print('OVERRIDE INDEX',i,'LOCATION',m.start(),
+                    'CODE',s[m.start():m.start()+(9500 if i>=len(assignments)-2 else 1800)].replace(chr(10),' ')[:9500])
+          for term in ['function sheetV222FeaturesPage(', 'sheetV222FeaturesPage(c)', 'data-v227-entry', 'data-v228', 'data-v229', 'data-v230']:
+              print('FINAL SEARCH',term,'MATCHES',len(list(re.finditer(re.escape(term),s))))
           for m in list(re.finditer(r'Ancestry feats',s,re.I))[:8]:
               print('ANCESTRY LABEL CONTEXT',s[max(0,m.start()-150):m.start()+200].replace(chr(10),' '))
           PY
