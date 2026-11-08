@@ -67,5 +67,8 @@ assert.deepEqual([...context.window.TerravaleV258Feats.getEntries('test-characte
  assert.ok(calls.includes('terravale_character_custom_feats'));
  assert.ok(calls.includes('terravale_dm_custom_feats'));
  assert.ok(reRenders>=1,'Loaded grant re-renders the native reader');
+ const previous=reRenders;
+ listeners['terravale-auth-ready']?.();
+ assert.ok(reRenders>previous,'Discord auth-ready also refreshes alternative sheet routes');
  console.log('PASS: native reader keeps active custom feats across alternative sheet routes');
 })().catch(error=>{console.error(error);process.exitCode=1});
