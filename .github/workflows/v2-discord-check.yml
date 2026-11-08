@@ -89,7 +89,7 @@ jobs:
           from pathlib import Path
           import re
           s=Path('published/veiled-codex/index.html').read_text()
-          for label,before,after in [('Only unlocked class abilities',2800,3200),('sheet227-reader-entry',800,700),('data-v227-reader-feat',500,500),('data-v227-reader-tab',500,600)]:
+          for label,before,after in [('Empty slot · drop an eligible item here',450,700),('Empty slot',450,700),('sheet21-slot{',200,450),('sheet21-equipped',400,600),('sheet21-gear-slot',350,450)]:
               m=re.search(re.escape(label),s,re.I)
               print('READER SOURCE',label,'FOUND',bool(m))
               if m: print('READER CONTEXT',s[max(0,m.start()-before):m.end()+after].replace(chr(10),' ')[:6500])
