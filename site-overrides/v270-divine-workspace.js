@@ -335,6 +335,11 @@ function renderSheet(){
  }
  content.style.display='none';pane.hidden=false;tab.setAttribute('aria-selected','true');
  for(const native of tabs.querySelectorAll('[data-value]'))native.setAttribute('aria-selected','false');
+ // Native SPA mutation observers must not repaint this pane in a loop.
+ const cached=sheet.cache.get(c.id);
+ const paintKey=c.id+'|'+(cached?.at||'new')+'|'+(sheet.loading.has(c.id)?'loading':'settled');
+ if(pane.dataset.tv270PaintKey===paintKey)return;
+ pane.dataset.tv270PaintKey=paintKey;
  pane.replaceChildren();
  pane.append(node('div','tv254-eyebrow','CHARACTER SHEET · DIVINE'),
   node('h2','','Divine Favour & Boons'),
