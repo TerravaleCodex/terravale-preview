@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
+      - "tests/v268-public-home.cjs"
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
@@ -201,6 +202,8 @@ jobs:
           print("PASS: OAuth callback query and native SPA route are both preserved")
           print("PASS: signed-in site and 283+36 lore access structure remain unchanged")
           PY
+      - name: Verify the launched public entrance and OAuth forwarding
+        run: node tests/v268-public-home.cjs
       - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
         with:
