@@ -36,6 +36,13 @@
  gap:14px;align-items:start;margin:10px 0 5px;
 }
 .tv256-item-properties,.tv256-feat-specifics{min-width:0;display:flex;flex-direction:column;gap:9px}
+/* The property switchboard sits to the right of the editor on desktop. */
+.tv256-item-deck>.tv256-feature-switchboard,.tv256-feat-layout>.tv256-feature-switchboard{grid-column:2;grid-row:1}
+.tv256-item-deck>.tv256-item-properties,.tv256-feat-layout>.tv256-feat-specifics{grid-column:1;grid-row:1}
+.tv255-player-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px}
+.tv255-player-feats>.tv254-eyebrow,.tv255-player-feats>h3,.tv255-player-feats>.tv254-muted{grid-column:1/-1}
+.tv255-player-feat{margin:0}
+
 .tv256-item-properties .tv254-form-row[hidden],
 .tv256-feat-specifics [hidden],.tv256-item-properties [hidden],
 .tv256-category-picker [hidden]{display:none!important}
@@ -107,6 +114,8 @@
  opacity:1!important;visibility:visible!important;font-size:11px;flex-shrink:0}
 @media(max-width:850px){
  .tv256-item-deck,.tv256-feat-layout{grid-template-columns:1fr}
+ .tv256-item-deck>.tv256-feature-switchboard,.tv256-feat-layout>.tv256-feature-switchboard,
+ .tv256-item-deck>.tv256-item-properties,.tv256-feat-layout>.tv256-feat-specifics{grid-column:1;grid-row:auto}
  .tv256-feature-switchboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
  .tv256-feature-switchboard>strong,.tv256-feature-switchboard>p{grid-column:1/-1}
 }
