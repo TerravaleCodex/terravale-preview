@@ -38,7 +38,7 @@ function markers(c){
  const root=page();if(!root)return;
  const cards=root.querySelectorAll('.sheet21-gear-item,.sheet21-gear-slot.has-item,.sheet22-equipped');
  for(const card of cards){
-  if(card.dataset.tv263ItemId&&card.querySelector('.tv263-inspect-item'))continue;
+  if(card.dataset.tv263ItemId&&(card.querySelector('.tv263-inspect-item')||card.closest('.sheet22-slot')?.querySelector('.tv263-inspect-item')))continue;
   const item=matchItem(c,card);
   if(!item)continue;
   card.dataset.tv263ItemId=item.id;
@@ -47,6 +47,8 @@ function markers(c){
   if(target&&!target.closest('button')){
    target.setAttribute('title','Click to inspect '+item.name);
    target.classList.add('tv263-clickable-item-name');
+   target.tabIndex=0;target.setAttribute('role','button');
+   target.setAttribute('aria-label','Inspect '+item.name);
   }
   const inspect=node('button','tv263-inspect-item','Inspect');
   inspect.type='button';inspect.dataset.tv263ItemId=item.id;
@@ -85,7 +87,7 @@ function mountBackpack(c){
  if(!heading.querySelector('.tv263-backpack-toggle')){
   const toggle=node('button','tv263-backpack-toggle');
   toggle.type='button';
-  heading.prepend(toggle);
+  heading.querySelector('h3')?.insertAdjacentElement('afterend',toggle);
   toggle.addEventListener('click',()=>{
    const value=!(openFor.get(c.id)===true);
    setBackpack(c,value);
