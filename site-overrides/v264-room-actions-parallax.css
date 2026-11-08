@@ -1,0 +1,127 @@
+/* Terravale V2.64 · Single compact dice/checks/actions workspace.
+   Keep native rolls, quick checks and owner-authorised item RPCs intact. */
+.page-session .sr-dice-panel{min-width:0;overflow:hidden;}
+.page-session .tv-v264-room-tabs{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+ padding:8px 0 10px;margin:0;
+ border-bottom:1px solid var(--edge,#34303c);
+}
+.page-session .tv-v264-room-tab{
+ width:100%;min-width:0;min-height:32px;border:1px solid transparent;
+ padding:7px 5px;background:none;color:var(--soft,#b3a8bd);
+ border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;
+ transition:background .15s ease,border-color .15s ease,color .15s ease;
+}
+.page-session .tv-v264-room-tab:hover{background:color-mix(in srgb,var(--accent,#baa4dc) 7%,transparent)}
+.page-session .tv-v264-room-tab.is-current{
+ color:var(--ink,#eee9f4);border-color:color-mix(in srgb,var(--accent,#baa4dc) 43%,var(--edge,#34303c));
+ background:color-mix(in srgb,var(--accent,#baa4dc) 11%,var(--raised,#181622));
+}
+.page-session .tv-v264-room-tab:focus-visible,
+.page-session .tv-v264-character-button:focus-visible,
+.page-session .tv-v264-item-name:focus-visible{
+ outline:2px solid var(--accent,#b5a0dd);outline-offset:2px;
+}
+.page-session .sr-dice-area[hidden],
+.page-session #tv-v251-session-items[hidden]{display:none!important;}
+.page-session .sr-dice-area.tv-v264-quick-only > :not(.sr-quick-checks){display:none!important}
+.page-session .sr-dice-area.tv-v264-quick-only{padding-top:12px;}
+.page-session .sr-dice-area.tv-v264-quick-only .sr-quick-checks{border:0!important;padding:0!important;margin:0!important}
+.page-session .sr-dice-area.tv-v264-quick-only .sr-quick-inner{padding-top:9px}
+.page-session .tv-v251-session-items.tv-v264-session-items{
+ grid-column:auto!important;padding:7px 0 0!important;margin:0!important;
+ background:none!important;border:0!important;border-radius:0!important;
+ min-width:0;box-shadow:none!important;
+}
+.page-session .tv-v264-character-picker{
+ display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+ padding:5px 0 11px;margin:0 0 3px;border-bottom:1px solid var(--edge,#353039);
+}
+.page-session .tv-v264-character-button{
+ min-height:30px;max-width:100%;white-space:normal;text-align:center;
+ border-radius:7px;border:1px solid var(--edge,#353039);
+ background:none;padding:6px 9px;color:var(--soft,#c0b2cc);
+ font-size:10px;font-weight:700;line-height:1.25;cursor:pointer;
+}
+.page-session .tv-v264-character-button.is-current{
+ border-color:var(--accent,#a68bd5);background:color-mix(in srgb,var(--accent,#a68bd5) 12%,transparent);
+ color:var(--ink,#f4e9ff);
+}
+.page-session .tv-v264-single-name{
+ font:500 18px/1.4 var(--serif,Georgia,serif);color:var(--ink,#eee);
+ padding:5px 0 11px;border-bottom:1px solid var(--edge,#353039);
+}
+.page-session .tv-v264-character-actions{min-width:0;padding:1px 0 0}
+.page-session .tv-v264-session-items .tv-v251-weapon-row{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+ gap:5px 8px;min-width:0;padding:10px 0;border:0;border-bottom:1px solid var(--edge,#363039);
+ background:none;margin:0;
+}
+.page-session .tv-v264-session-items .tv-v251-weapon-details{min-width:0;gap:3px}
+.page-session .tv-v264-session-items .tv-v251-weapon-details small{color:var(--dim,#9687a0);font-size:10px;line-height:1.35}
+.page-session .tv-v264-item-name{
+ display:inline-block;min-width:0;max-width:100%;
+ padding:2px 0;border:0;background:none;cursor:pointer;
+ color:var(--ink,#faf4ff);font:750 12px/1.35 inherit;
+ font-size:12px;font-weight:700;text-align:left;overflow-wrap:anywhere;
+}
+.page-session .tv-v264-item-name:hover{text-decoration:underline;text-underline-offset:3px;color:var(--accent,#c5ace8)}
+.page-session .tv-v264-session-items .tv-v251-weapon-actions{
+ display:flex;align-items:center;justify-content:flex-end;gap:4px;flex-wrap:wrap;
+}
+.page-session .tv-v264-session-items .tv-v251-weapon-actions .btn{
+ min-height:27px;padding:5px 8px;border-radius:6px;font-size:10px;
+ white-space:nowrap;line-height:1.25;
+}
+.page-session .tv-v264-roll-history{
+ display:block;margin:12px 0 0!important;border:0!important;
+ padding:0!important;background:none!important;
+}
+.page-session .tv-v264-roll-history>summary{
+ list-style-position:inside;cursor:pointer;
+ font-weight:650;color:var(--accent,#c6a4ea);font-size:11px;
+ padding:8px 0;border-top:1px solid var(--edge,#353039);
+}
+.page-session .tv-v264-roll-history:not([open]) .tv-v251-roll-lines{display:none}
+.page-session .tv-v264-roll-history .tv-v251-roll-lines{
+ margin:6px 0;max-height:145px;overflow:auto;gap:3px;
+}
+.page-session .tv-v264-roll-history .tv-v251-roll-log{
+ margin:0;padding:5px 0;border:0;background:none;font-size:10px;
+ border-bottom:1px solid var(--edge,#353039);
+}
+.page-session .tv-v264-roll-history .tv-v251-muted{margin:5px 0;font-size:10px}
+@media(max-width:600px){
+ .page-session .tv-v264-room-tab{font-size:10px;padding-inline:3px}
+ .page-session .tv-v264-session-items .tv-v251-weapon-row{grid-template-columns:1fr}
+ .page-session .tv-v264-session-items .tv-v251-weapon-actions{justify-content:flex-start}
+}
+/* Aether glass: subtle parallax only in the tactical/initiative area.
+   No moving texture behind chat text, item controls or dice. */
+.page-session .sr-encounter{
+ --tv264-mx:0px;--tv264-my:0px;
+ position:relative;isolation:isolate;
+}
+.page-session .sr-encounter::before{
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background-image:
+  radial-gradient(ellipse 60% 50% at calc(85% + var(--tv264-mx)) calc(8% + var(--tv264-my)),
+    color-mix(in srgb,var(--accent,#c8abf5) 15%,transparent),transparent 70%),
+  repeating-radial-gradient(ellipse at 9% 18%,transparent 0 28px,
+    color-mix(in srgb,var(--accent,#b6a8d8) 3%,transparent) 30px,transparent 32px);
+ opacity:.65;transition:opacity .35s ease;
+ border-radius:inherit;
+}
+.page-session .sr-encounter::after{
+ content:"";position:absolute;right:5%;top:2%;height:110px;width:110px;
+ border-radius:50%;pointer-events:none;z-index:-1;opacity:.11;
+ border:1px solid var(--accent,#bda5ed);
+ box-shadow:0 0 0 18px color-mix(in srgb,var(--accent,#c2aae7) 4%,transparent),
+            0 0 0 45px color-mix(in srgb,var(--accent,#c2aae7) 3%,transparent);
+ transform:translate3d(calc(var(--tv264-mx)*.25),calc(var(--tv264-my)*.25),0);
+}
+@media(prefers-reduced-motion:reduce){
+ .page-session .sr-encounter::after{transform:none!important}
+ .page-session .sr-encounter::before{transition:none}
+ .page-session .tv-v264-room-tab{transition:none}
+}
