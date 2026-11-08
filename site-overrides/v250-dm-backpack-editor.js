@@ -46,7 +46,8 @@
    wrapper.append(node('div','v2-overline','DM-APPROVED ITEM PROPERTIES'));
    wrapper.append(node('h4','','Items with recorded mechanics'));
    for(const item of withRules){
-     const p=meta[item.id],card=node('div','tv-item-property-card');
+     const p=meta[item.id],card=node('div','tv-item-property-card tv256-rarity-item');
+     card.dataset.rarity=p.rarity||'Common';
      const head=node('div','tv-item-property-head');
      head.append(node('strong','',item.name||'Unnamed item'),
                  node('small','',item.slot?'Equipped':'Backpack'));
@@ -270,10 +271,10 @@
      workshop.append(summary);
      const intro=node('p','tv-item-editor-hint','Item properties follow each item by ID when moved between equipment slots and backpack. Only the verified campaign DM can change these mechanics.');
      workshop.append(intro);
-     const add=node('button','btn primary small','+ Add DM item');
-     add.type='button';
-     add.addEventListener('click',()=>{workshop.open=true;editor('')});
-     workshop.append(add);
+     const vaultLink=node('a','btn primary small','+ Add from Item Vault');
+     vaultLink.href='#/dm/vault';
+     vaultLink.title='Prepare an item once in the DM Vault, then issue it to this character';
+     workshop.append(vaultLink);
      const list=node('div','tv-dm-item-list');
      for(const item of inventory(ch)){
        const row=node('div','tv-dm-item-row');
