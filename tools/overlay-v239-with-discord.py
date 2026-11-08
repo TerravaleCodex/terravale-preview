@@ -25,6 +25,41 @@ source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
+# V2.58: Extend the native searchable feat reader itself. Do not bolt a
+# second panel onto the DOM; the original state machine handles both kinds.
+reader_start = source.index("function featEntries(c){")
+reader_end = source.index("sheetV222FeaturesPage=function(c){", reader_start)
+native_reader = source[reader_start:reader_end]
+raw_return = "return [...template.content.querySelectorAll('.sheet22-feat')].map"
+assert native_reader.count(raw_return) == 1, "Native feat parser changed"
+native_reader = native_reader.replace(raw_return,
+    "const native=[...template.content.querySelectorAll('.sheet22-feat')].map", 1)
+closing = native_reader.rfind("}")
+assert closing > 0, "Native feat function closing brace missing"
+native_reader = (native_reader[:closing]
+    + "return native.concat(window.TerravaleV258Feats?.getEntries?.(c.id,c.campaign)||[]);}\n"
+    + native_reader[closing+1:])
+source = source[:reader_start] + native_reader + source[reader_end:]
+reader_start = source.index("sheetV222FeaturesPage=function(c){", reader_start)
+reader_end = source.index("document.addEventListener('click',e=>", reader_start)
+reader_ui = source[reader_start:reader_end]
+reader_fixes = [
+ ("Ancestry feats <span>", "Feats <span>"),
+ ("'FIND AN '+(mode==='class'?'ABILITY':'ANCESTRY FEAT')",
+  "'FIND '+(mode==='class'?'AN ABILITY':'A FEAT')"),
+ ("mode==='class'?'Class feature · Level '+f.level:'Recorded ancestry feat'",
+  "mode==='class'?'Class feature · Level '+f.level:(f.custom?'DM-granted feat':'Ancestry feat')"),
+ ("S(c.ancestry)+' · Recorded ancestry feat'",
+  "(selected.custom?'DM-granted feat':S(c.ancestry)+' · Ancestry feat')"),
+ ("Only unlocked class abilities and recorded ancestry feats appear here. Choose an entry to read its full mechanics.",
+  "Class abilities, ancestry feats and DM-granted feats are available in the same reader."),
+ ("No ancestry feats have been recorded on this character.",
+  "No feats have been recorded on this character.")
+]
+for old,new in reader_fixes:
+    assert reader_ui.count(old)==1, "Native reader phrase missing: "+old
+    reader_ui=reader_ui.replace(old,new,1)
+source=source[:reader_start]+reader_ui+source[reader_end:]
 # V2.55: DM Chronicle paths all use the same native page; a focused
 # role-checked workspace then fills the selected routed subsection.
 dm_route="else if(p==='/dm')out=renderDM();"
@@ -34,7 +69,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.57')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.58')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -90,7 +125,7 @@ training_v255 = (ROOT / "site-overrides/v255-character-training.js").read_text()
 wallet_v255 = (ROOT / "site-overrides/v255-native-wallet.js").read_text()
 creator_v255 = (ROOT / "site-overrides/v255-creator-native-choices.js").read_text()
 shell_v255 = (ROOT / "site-overrides/v255-shell-role-version.js").read_text()
-build_meta = json.dumps({"version":"2.57","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+build_meta = json.dumps({"version":"2.58","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
