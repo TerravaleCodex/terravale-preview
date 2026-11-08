@@ -2,7 +2,7 @@
    Build marker is injected by the release workflow, never forged by a client. */
 (function(){
 'use strict';
-const label=()=>window.TerravaleV255Build||{version:'2.64',build:'preview'};
+const label=()=>window.TerravaleV255Build||{version:'2.65',build:'preview'};
 function helpBadge(){
  const nav=document.getElementById('nav')||
   document.querySelector('#sidebar,aside[aria-label="Navigation"]');
