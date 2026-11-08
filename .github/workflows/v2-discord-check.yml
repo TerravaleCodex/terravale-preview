@@ -87,6 +87,21 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
+      - name: Diagnose actual native feature tab rendering
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('published/veiled-codex/index.html').read_text()
+          for term in ['Ancestry feats','Feats <span>','function featEntries(c){','sheetV222FeaturesPage=function(c){','sheet227-reader','data-tv259-character','terravale_character_custom_feats','data-v227-reader-tab']:
+              spots=list(re.finditer(re.escape(term),s,re.I))
+              print('READER TERM',repr(term),'OCCURRENCES',len(spots),'POSITIONS',[m.start() for m in spots[:12]])
+          for term in ['function featEntries(c){','sheetV222FeaturesPage=function(c){','<section class="sheet20-panel sheet227-reader"']:
+              m=re.search(re.escape(term),s)
+              if m: print('READER SNIPPET',repr(term),s[max(0,m.start()-350):m.start()+11000].replace(chr(10),' ')[:11000])
+          for m in list(re.finditer(r'Ancestry feats',s,re.I))[:8]:
+              print('ANCESTRY LABEL CONTEXT',s[max(0,m.start()-150):m.start()+200].replace(chr(10),' '))
+          PY
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify V2.58 native feat grants, editor and treasury layout
