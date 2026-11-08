@@ -110,7 +110,7 @@ begin
       insert into public.terravale_dm_vault_items(
         id,owner_user_id,campaign_id,item_data,mechanics
       ) values (
-        md5('v262-demo-vault:'||equipment->>'id')::uuid,
+        md5('v262-demo-vault:' || (equipment->>'id'))::uuid,
         curator,demo_cid,
         equipment-'mechanics'-'location'-'slot'-'id',
         equipment->'mechanics'
