@@ -55,6 +55,21 @@ function displayedParts(system,amount){
   if(remainder)output.push(remainder.toLocaleString()+' Guild Copper left over');
   return output;
  }
+ // Half-Measure and Half-Note exist, but are still fractions of their
+ // own named currency; keep them as readable remainders, not as mixed coin bags.
+ const halves={
+  'dvergr-measures':{whole:10,half:5,one:'Measure',many:'Measures',halfName:'Half Measure'},
+  'crimsonborn-ledger-notes':{whole:10,half:5,one:'Ledger Note',many:'Ledger Notes',halfName:'Half Ledger Note'}
+ };
+ const split=halves[system.id];
+ if(split){
+  const whole=Math.floor(amount/split.whole),half=Math.floor(amount%split.whole/split.half);
+  const residue=amount%split.half,parts=[];
+  if(whole)parts.push(whole.toLocaleString()+' '+(whole===1?split.one:split.many));
+  if(half)parts.push(half+' '+split.halfName);
+  if(residue)parts.push(residue.toLocaleString()+' Guild Copper left over');
+  return parts.length?parts:['0 '+split.many];
+ }
  // Tri-Crown has a fractional third-unit. Show Crownrings and a remaining
  // Third Crownring instead of treating five-ring notes as separate units.
  if(system.id==='tri-crown-crownrings'){
