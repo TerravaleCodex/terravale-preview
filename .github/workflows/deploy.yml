@@ -55,6 +55,7 @@ on:
       - "site-overrides/v256-refinement.css"
       - "site-overrides/v257-density.css"
       - "site-overrides/v258-flat-ux.css"
+      - "tests/v258-native-feats.cjs"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -124,6 +125,8 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+      - name: Check native feats really receive an active grant
+        run: node tests/v258-native-feats.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
