@@ -307,8 +307,9 @@ function renderSheet(){
  if(!tab){
   const native=tabs.querySelector('[data-value]');
   tab=native?native.cloneNode(false):node('button','sheet20-tab');
-  tab.removeAttribute('data-value');tab.removeAttribute('id');tab.removeAttribute('aria-controls');
+  for(const attribute of ['data-value','data-action','id','aria-controls','title','onclick'])tab.removeAttribute(attribute);
   tab.dataset.tv270DivineTab='1';tab.type='button';tab.textContent='Divine';
+  tab.setAttribute('aria-label','Divine');tab.setAttribute('role','tab');
   tab.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();sheet.open=true;renderSheet();fetchSheet(c.id,true)});
   tabs.append(tab);
  }
