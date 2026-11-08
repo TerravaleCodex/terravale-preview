@@ -128,58 +128,145 @@ function showArmour(c){
  panel.append(node('strong','','Effective AC '+total),node('span','','Base '+base+' · '+active.map(i=>i.name+' '+signed(itemProps(c,i).ac_bonus)).join(' · ')),node('small','','Equipped/attuned bonuses only. DM-assigned base AC remains unchanged.'));
  hero.insertAdjacentElement('afterend',panel);
 }
+// V2.64: the native Dice & Checks panel owns item actions, instead of a
+// second full-width Weapons and Powers grid consuming the session workspace.
+const tableUI={mode:'dice',selected:null,manual:false,campaign:null};
 function roomActors(){
- if(typeof db==='undefined')return[];
- return chars().filter(c=>c.campaign===db.campaign&&c.status==='Approved'&&actor(c));
+ if(typeof db==='undefined')return [];
+ return chars().filter(c=>c.campaign===db.campaign&&c.status==='Approved'&&
+    (c.owner==='You'||(db.role==='dm'&&dm(c))));
+}
+function actionItems(c){
+ return inv(c).filter(i=>{
+  const p=itemProps(c,i);
+  return Object.keys(p).length&&
+   ((i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice)))||
+    (charged(p)&&p.resource_tracker!==false));
+ });
 }
 function roomCard(c){
- const card=node('article','tv-v251-actor');card.append(node('h4','',c.name));
- const eligible=inv(c).filter(i=>{const p=itemProps(c,i);return Object.keys(p).length&&((i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice)))||(charged(p)&&p.resource_tracker!==false))});
- if(!eligible.length){card.append(node('p','tv-v251-muted','No DM-approved item actions assigned.'));return card}
+ const card=node('section','tv-v264-character-actions');
+ const eligible=actionItems(c);
+ if(!eligible.length){
+  card.append(node('p','tv-v251-muted','No available weapon or item actions on this character.'));
+  return card;
+ }
  for(const i of eligible){
-  const p=itemProps(c,i),row=node('div','tv-v251-weapon-row'),name=node('div','tv-v251-weapon-details'),actions=node('div','tv-v251-weapon-actions');
-  name.append(node('strong','',i.name),node('small','',[(p.damage_dice||'')+' '+(p.damage_type||''),charged(p)?(p.charges||0)+'/'+p.max_charges+' charges':'',p.attunement&&!p.attuned?'Not attuned':''].filter(t=>t.trim()).join(' · ')));
+  const p=itemProps(c,i),row=node('div','tv-v251-weapon-row'),
+   name=node('div','tv-v251-weapon-details'),actions=node('div','tv-v251-weapon-actions');
+  const title=node('button','tv-v264-item-name',i.name);
+  title.type='button';title.dataset.v264Inspect=i.id;title.dataset.characterId=c.id;
+  title.title='Inspect '+i.name;
+  name.append(title,node('small','',
+   [(p.damage_dice||'')+' '+(p.damage_type||''),
+    charged(p)?(p.charges||0)+' / '+p.max_charges+' charges':'',
+    p.attunement&&!p.attuned?'Not attuned':''].filter(t=>t.trim()).join(' · ')));
   if(i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice))){
-   const attack=button('Roll attack','attack',c,i);attack.disabled=!mayUse(c,p);actions.append(attack);
-   if(p.damage_dice){const damage=button('Roll damage','damage',c,i);damage.disabled=!mayUse(c,p);actions.append(damage)}
+   const attack=button('Attack','attack',c,i);
+   attack.disabled=!mayUse(c,p);actions.append(attack);
+   if(p.damage_dice){
+    const damage=button('Damage','damage',c,i);
+    damage.disabled=!mayUse(c,p);actions.append(damage);
+   }
   }
   if(charged(p)&&p.resource_tracker!==false){
-   const use=button('Activate ('+cost(p)+')','use',c,i);use.disabled=!mayUse(c,p)||Number(p.charges)<cost(p);actions.append(use);
+   const use=button('Activate ('+cost(p)+')','use',c,i);
+   use.disabled=!mayUse(c,p)||Number(p.charges)<cost(p);
+   actions.append(use);
   }
   row.append(name,actions);card.append(row);
  }
  return card;
 }
+function paintRoomTabs(panel,diceArea,actionsPanel,actors){
+ const mode=tableUI.mode;
+ const tabs=panel.querySelectorAll('[data-v264-room-tab]');
+ for(const b of tabs){
+  const active=b.dataset.v264RoomTab===mode;
+  b.classList.toggle('is-current',active);
+  b.setAttribute('aria-selected',String(active));
+  b.tabIndex=active?0:-1;
+ }
+ diceArea.hidden=mode==='actions';
+ diceArea.classList.toggle('tv-v264-quick-only',mode==='checks');
+ actionsPanel.hidden=mode!=='actions';
+ if(mode==='checks'){
+  const nativeToggle=diceArea.querySelector('[data-action="toggleQuickChecks"]');
+  if(nativeToggle&&nativeToggle.getAttribute('aria-expanded')==='false'){
+   // Use the existing native handler, preserving its real ability-score
+   // bonuses and existing character selector rather than simulating new rolls.
+   nativeToggle.click();
+  }
+ }
+}
+function renderRoomActions(actors,signature,host){
+ let panel=host.querySelector('#tv-v251-session-items');
+ if(panel?.dataset.fingerprint===signature)return panel;
+ panel?.remove();
+ panel=node('section','tv-v251-session-items tv-v264-session-items');
+ panel.id='tv-v251-session-items';panel.dataset.fingerprint=signature;
+ const eligible=actors.filter(c=>actionItems(c).length);
+ if(!eligible.some(c=>c.id===tableUI.selected)){
+  // On first opening, prefer the active combatant when that actor belongs
+  // to the user; after manual selection, preserve the player's choice.
+  const liveName=document.querySelector('#pageRoot .sr-status-current strong')?.textContent?.trim();
+  const active=eligible.find(c=>c.name===liveName);
+  tableUI.selected=(active||eligible[0]||actors[0]||{}).id||null;
+  tableUI.manual=false;
+ }
+ if(actors.length>1){
+  const group=node('div','tv-v264-character-picker');
+  group.setAttribute('role','group');group.setAttribute('aria-label','Choose a character for item actions');
+  for(const c of actors){
+   const b=node('button','tv-v264-character-button'+(c.id===tableUI.selected?' is-current':''),c.name);
+   b.type='button';b.dataset.v264Actor=c.id;
+   b.setAttribute('aria-pressed',String(c.id===tableUI.selected));
+   group.append(b);
+  }
+  panel.append(group);
+ }else if(actors.length){
+  panel.append(node('div','tv-v264-single-name',actors[0].name));
+ }
+ const chosen=actors.find(c=>c.id===tableUI.selected);
+ if(chosen)panel.append(roomCard(chosen));
+ else panel.append(node('p','tv-v251-muted','No approved adventurer is assigned to you in this campaign.'));
+ const history=node('details','tv-v251-roll-history tv-v264-roll-history');
+ const summary=node('summary','','Recent item rolls');
+ history.append(summary);
+ const lines=node('div','tv-v251-roll-lines');lines.id='tv-v251-roll-lines';
+ history.append(lines);panel.append(history);
+ host.append(panel);renderLog();
+ return panel;
+}
 function sessionRoom(){
  if(location.hash.replace(/^#/,'').split('?')[0]!=='/party')return;
- const top=document.querySelector('#pageRoot .sr-statusbar');if(!top)return;
- const actors=roomActors().filter(c=>inv(c).some(i=>{
-   const p=itemProps(c,i);
-   return Object.keys(p).length&&
-     ((i.slot&&(p.weapon_action===true||(p.weapon_action===undefined&&p.damage_dice)))||
-       (charged(p)&&p.resource_tracker!==false));
- }));
- let panel=document.querySelector('#pageRoot #tv-v251-session-items');
- // Avoid filling the top of an empty Session Room with a misleading blank
- // item-action panel. It appears automatically when a valid item is available.
- if(!actors.length){panel?.remove();return}
- const signature=JSON.stringify(actors.map(c=>[c.id,c.name,inv(c).map(i=>[i.id,i.name,i.slot,itemProps(c,i)])]));
- if(panel?.dataset.fingerprint===signature)return;panel?.remove();
- panel=node('section','tv-v251-session-items');panel.id='tv-v251-session-items';panel.dataset.fingerprint=signature;
- const head=node('header','tv-v251-session-heading'),left=node('div');left.append(node('span','v2-overline','ITEMS AT THE TABLE'),node('h3','','Weapons and powers'));
- head.append(left,node('span','tv-v251-annotation','DM-approved item actions'));panel.append(head);
- if(!actors.length)panel.append(node('p','tv-v251-muted','Join a campaign or open an approved adventurer to see item actions.'));
- else{const grid=node('div','tv-v251-actors');for(const c of actors)grid.append(roomCard(c));panel.append(grid)}
- const history=node('div','tv-v251-roll-history');history.append(node('h4','','Recent item rolls'));
- const lines=node('div','tv-v251-roll-lines');lines.id='tv-v251-roll-lines';history.append(lines);panel.append(history);
- // Keep the original initiative first. Item actions belong BELOW both the
- // party chat and dice/checks grid, immediately before combat activity.
- const workspace=document.querySelector('#pageRoot .sr-workspace');
- const activity=workspace?.querySelector('.sr-pulse,.sr-pulse-log,.sr-activity-log');
- if(activity)activity.insertAdjacentElement('beforebegin',panel);
- else if(workspace)workspace.append(panel);
- else top.insertAdjacentElement('afterend',panel);
- renderLog();
+ const dicePanel=document.querySelector('#pageRoot .sr-dice-panel');
+ const diceArea=dicePanel?.querySelector('.sr-dice-area');
+ if(!dicePanel||!diceArea)return;
+ if(tableUI.campaign!==db.campaign){
+  tableUI.campaign=db.campaign;tableUI.mode='dice';
+  tableUI.selected=null;tableUI.manual=false;
+ }
+ const actors=roomActors();
+ const signature=JSON.stringify(actors.map(c=>[
+   c.id,c.name,actionItems(c).map(i=>[i.id,i.name,i.slot,itemProps(c,i)]),
+   c.owner,db.role
+ ]));
+ let tabs=dicePanel.querySelector('.tv-v264-room-tabs');
+ if(!tabs){
+  tabs=node('div','tv-v264-room-tabs');
+  tabs.setAttribute('role','tablist');
+  tabs.setAttribute('aria-label','Dice and character actions');
+  const choices=[['dice','Dice'],['checks','Quick Checks'],['actions','Character Actions']];
+  for(const [mode,label] of choices){
+   const button=node('button','tv-v264-room-tab',label);
+   button.type='button';button.dataset.v264RoomTab=mode;button.setAttribute('role','tab');
+   tabs.append(button);
+  }
+  dicePanel.querySelector('.sr-panel-head')?.insertAdjacentElement('afterend',tabs);
+ }
+ const actionsPanel=renderRoomActions(actors,signature,dicePanel);
+ paintRoomTabs(dicePanel,diceArea,actionsPanel,actors);
 }
 function mount(){
  if(typeof db==='undefined'||!ready())return;
@@ -191,6 +278,31 @@ let queued=false;
 const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;mount()})});
 observer.observe(document.getElementById('pageRoot')||document.body,{childList:true,subtree:true});
 for(const name of ['hashchange','terravale-characters-synced','terravale-auth-ready'])window.addEventListener(name,()=>setTimeout(mount,65));
+document.addEventListener('click',e=>{
+ const tab=e.target.closest('[data-v264-room-tab]');
+ if(tab){
+  e.preventDefault();tableUI.mode=tab.dataset.v264RoomTab;
+  sessionRoom();return;
+ }
+ const chosen=e.target.closest('[data-v264-actor]');
+ if(chosen){
+  e.preventDefault();tableUI.selected=chosen.dataset.v264Actor;tableUI.manual=true;
+  const panel=document.querySelector('#pageRoot .sr-dice-panel');
+  panel?.querySelector('#tv-v251-session-items')?.remove();
+  sessionRoom();return;
+ }
+ const inspect=e.target.closest('[data-v264-inspect]');
+ if(inspect){
+  e.preventDefault();
+  const c=char(inspect.dataset.characterId);
+  const i=inv(c).find(item=>item.id===inspect.dataset.v264Inspect);
+  if(!c||!i)return;
+  if(window.TerravaleV263Inspector?.open){
+   window.TerravaleV263Inspector.open(c.id,i.id);
+  }else notify(i.name+' · '+(i.description||'See the character sheet for details.'));
+  return;
+ }
+});
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-tv-item-action]');if(!b)return;
  e.preventDefault();e.stopPropagation();
