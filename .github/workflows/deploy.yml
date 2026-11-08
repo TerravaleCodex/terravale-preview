@@ -134,6 +134,8 @@ jobs:
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
         run: node tests/v260-currency-copy.cjs
+      - name: Verify verified player bylines in character headers and ledger
+        run: node tests/v261-owner-and-currency.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
