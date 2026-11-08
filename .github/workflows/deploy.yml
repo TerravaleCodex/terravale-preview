@@ -1,11 +1,11 @@
-name: Publish Terravale technical difficulties and Discord-enabled V2
+name: Publish Terravale Living Codex — V2 Dashboard
 
 on:
   push:
     branches: [main]
     paths:
       - ".github/workflows/deploy.yml"
-      - "site-overrides/awaiting-v2.html"
+      - "site-overrides/launch-home.html"
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
@@ -160,52 +160,46 @@ jobs:
         run: node tests/v264-room-actions.cjs
       - name: Verify V2.67 low-resolution texture rollback and preserved Session Room
         run: node tests/v267-visual-rollback.cjs
-      - name: Assemble humorous technical difficulties page and hidden public-safe V2
+      - name: Publish the dashboard entrance and retain verified V2 content
         shell: bash
         run: |
           set -euo pipefail
-          cp site-overrides/awaiting-v2.html published/index.html
+          cp site-overrides/launch-home.html published/index.html
+          cp site-overrides/launch-home.html published/404.html
           python3 - <<'PY'
           from pathlib import Path
-          home = Path("published/index.html").read_text()
-          checks = (
-              'WE ARE EXPERIENCING',
-              'SOME TECHNICAL DIFFICULTIES',
-              'ERROR: ARCANE_CORE_UNRESPONSIVE',
-              'id="repair"',
-              'id="fluff-lead"',
-              'id="fluff-punchline"',
-              'id="incident-title"',
-              'id="diag-value-3"',
-              'const incidents = [',
-              'showIncident(incidentIndex)',
-              'function restoreDiscordCallback()',
-              'overscroll-behavior:none',
-          )
-          for check in checks:
-              assert check in home, f"Technical difficulties page missing required content: {check}"
-          assert 'id="secret-placeholder"' not in home, "Secret button must be removed"
-          assert 'secretV239Entrance' not in home, "Secret click handler must be removed"
-          assert 'id="countdown-hours"' not in home, "Old countdown remains"
-          assert '2026-11-07T21:30:00Z' not in home, "Old countdown deadline remains"
-          assert "supabase.co" not in home.lower()
-          redirect = '<script>if(location.pathname!=="/terravale-preview/"){location.replace("/terravale-preview/");}</script>'
-          fallback = home.replace("</head>", redirect + "</head>", 1)
-          assert redirect in fallback
-          Path("published/404.html").write_text(fallback)
-          public = Path("published/veiled-codex/index.html")
+          entry=Path("published/index.html").read_text(encoding="utf-8")
+          fallback=Path("published/404.html").read_text(encoding="utf-8")
+          assert fallback==entry, "Retired routes should enter the same V2 dashboard"
+          for marker in (
+              "Terravale — The Living Codex",
+              '<meta http-equiv="refresh"',
+              'url=/terravale-preview/veiled-codex/',
+              'window.location.replace(destination+window.location.search+window.location.hash)',
+              '<a href="/terravale-preview/veiled-codex/">Enter Terravale</a>',
+          ):
+              assert marker in entry, f"Missing dashboard entry marker: {marker}"
+          assert "SOME TECHNICAL DIFFICULTIES" not in entry
+          assert "WE ARE EXPERIENCING" not in entry
+          assert "supabase.co" not in entry.lower(), "OAuth secrets must not reside in root entrance"
+          public=Path("published/veiled-codex/index.html")
           assert public.stat().st_size > 7000000
           assert sorted(x.name for x in Path("published").iterdir()) == [
-              "404.html", "index.html", "veiled-codex"
-          ], "Unapproved files in GitHub Pages output"
-          assert sorted(p.name for p in public.parent.iterdir()) == ["ads", "index.html"], "Unexpected published assets"
-          assert len(list((public.parent / "ads").glob("zip-*.webp"))) == 56, "Approved ads missing"
-          assert "data-source=\"v2-discord-auth.mjs\"" in public.read_text(), "Real hosted auth missing"
-          assert "v243-campaign-achievement-bridge.js" in public.read_text(), "Cloud campaign bridge missing"
-          for v248 in ("v248-achievement-notices.js","v248-live-preferences-tutorial.js","v248-curated-demo-sheets.js","v250-dm-backpack-editor.js","v251-live-item-actions.js","v253-backpack-gifts.js"):
-              assert v248 in public.read_text(), f"Missing live V2.48 module: {v248}"
-          print("PASS: randomized humorous fluff and incident logs, with no secret button; Discord callback preserved")
-          print("PASS: only two root holding files plus one public-safe V2 preview")
+              "404.html","index.html","veiled-codex"
+          ], "Unexpected root files in published site"
+          assert sorted(x.name for x in public.parent.iterdir()) == ["ads","index.html"]
+          assert len(list((public.parent/"ads").glob("zip-*.webp")))==56
+          html=public.read_text(encoding="utf-8")
+          assert 'data-source="v2-discord-auth.mjs"' in html, "Discord OAuth integration missing"
+          assert 'data-source="v246-real-characters.js"' in html, "Approved character bridge missing"
+          assert 'data-source="v251-live-item-actions.js"' in html, "Live Session Room actions missing"
+          assert 'data-source="v255-custom-feat-forge.js"' in html, "Custom feat forge missing"
+          assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
+          assert "Terravale Codex V2.67" in html, "Latest V2 implementation missing"
+          assert "sb_secret_" not in html
+          print("PASS: public root enters the complete V2 Dashboard without the holding page")
+          print("PASS: OAuth callback query and native SPA route are both preserved")
+          print("PASS: signed-in site and 283+36 lore access structure remain unchanged")
           PY
       - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
@@ -223,100 +217,91 @@ jobs:
       name: github-pages
       url: https://terravalecodex.github.io/terravale-preview/
     steps:
-      - name: Deploy technical difficulties page with approved V2 preview
+      - name: Deploy Terravale V2 dashboard to the public entrance
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify live technical difficulties page, V2 HTML and retired routes
+      - name: Verify the public dashboard entrance, Discord integration and legacy paths
         shell: bash
         run: |
           set -euo pipefail
           base="https://terravalecodex.github.io/terravale-preview"
           for attempt in $(seq 1 12); do
-            curl --fail --silent --show-error --location --max-time 15 \
+            status="$(curl --silent --show-error --location --max-time 25 \
               --header 'Cache-Control: no-cache' \
-              "$base/?verify=$GITHUB_SHA-$attempt" > /tmp/terravale-home.html || true
-            if grep -q 'WE ARE EXPERIENCING' /tmp/terravale-home.html &&
-               grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-home.html &&
-               grep -q 'id="repair"' /tmp/terravale-home.html &&
-               grep -q 'id="fluff-lead"' /tmp/terravale-home.html &&
-               grep -q 'id="incident-title"' /tmp/terravale-home.html &&
-               grep -Fq 'const incidents = [' /tmp/terravale-home.html &&
-               ! grep -q 'id="secret-placeholder"' /tmp/terravale-home.html &&
-               ! grep -q 'id="countdown-hours"' /tmp/terravale-home.html; then
-              echo "PASS: rotating glitch explanations and diagnostics are live, without secret entrance."
+              --output /tmp/terravale-home.html --write-out '%{http_code}' \
+              "$base/?launch=$GITHUB_SHA-$attempt" || true)"
+            if [ "$status" = "200" ] &&
+               grep -q 'Terravale — The Living Codex' /tmp/terravale-home.html &&
+               grep -Fq 'window.location.replace(destination+window.location.search+window.location.hash)' /tmp/terravale-home.html &&
+               grep -q '/terravale-preview/veiled-codex/' /tmp/terravale-home.html &&
+               ! grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-home.html; then
+              echo "PASS: the public URL opens the V2 dashboard instead of maintenance."
               break
             fi
             if [ "$attempt" -eq 12 ]; then
-              echo "::error::Rotating glitch maintenance page did not appear."
+              echo "::error::Public V2 dashboard entry has not appeared (HTTP $status)."
               exit 1
             fi
             sleep 5
           done
-
           for attempt in $(seq 1 12); do
             status="$(curl --silent --show-error --location --max-time 30 \
               --header 'Cache-Control: no-cache' \
-              --output /tmp/terravale-v239-live.html --write-out '%{http_code}' \
-              "$base/veiled-codex/?verify=$GITHUB_SHA-$attempt" || true)"
-            if [ "$status" = 200 ] &&
-               grep -q 'data-source="v2.css"' /tmp/terravale-v239-live.html &&
-               grep -q 'window.TERRAVALE_V238={version:' /tmp/terravale-v239-live.html; then
-              echo "PASS: actual V2.39 offline page is serving."
+              --output /tmp/terravale-v2-live.html --write-out '%{http_code}' \
+              "$base/veiled-codex/?launch=$GITHUB_SHA-$attempt" || true)"
+            if [ "$status" = "200" ] &&
+               grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
+               grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
+               grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
+               grep -q 'Terravale Codex V2.67' /tmp/terravale-v2-live.html; then
+              echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."
               break
             fi
             if [ "$attempt" -eq 12 ]; then
-              echo "::error::Genuine V2.39 hidden page missing (HTTP $status)."
+              echo "::error::The complete V2 client is not ready at the dashboard destination (HTTP $status)."
               exit 1
             fi
             sleep 5
           done
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib,json,re
-          raw=Path("/tmp/terravale-v239-live.html").read_bytes()
-          assert b'data-source="v2-discord-auth.mjs"' in raw, "Discord OAuth integration missing"
-          assert b'data-source="v2-ads-atelier.mjs"' in raw, "In-site Atelier integration missing"
-          assert b'data-source="v250-dm-backpack-editor.js"' in raw, "DM mechanics integration missing"
-          assert b'data-source="v251-live-item-actions.js"' in raw, "Interactive item actions missing"
-          assert b'data-source="v253-backpack-gifts.js"' in raw, "Backpack gifts missing"
-          assert b'data-source="v254-rules-registry.js"' in raw, "V4 rules registry missing"
-          assert b'data-source="v254-dm-vault.js"' in raw, "DM vault and treasury missing"
-          assert b'data-source="v254-character-proficiencies-wallet.js"' in raw, "Creator wallet and proficiencies missing"
-          assert b'data-source="v255-custom-feat-forge.js"' in raw, "V2.55 feat forge missing"
-          assert b'data-source="v255-character-training.js"' in raw, "V2.55 languages missing"
-          assert b'data-source="v255-native-wallet.js"' in raw, "V2.55 wallet missing"
-          assert b'data-source="v255-creator-native-choices.js"' in raw, "V2.55 creator missing"
-          assert b'window.addEventListener(\'click\',e=>{' in raw, "Pre-native item rest listener missing"
-          assert b'If you have already received an invite code' in raw, "Invitation tutorial missing"
-          assert b'tv-demo-permanent-party' in raw, "Permanent demo roster bridge missing"
-          assert b'Campaign creation is intentionally NAME ONLY' in raw, "Simple campaign creation missing"
-          assert b'--bg:#07080c' in raw, "Original V2 theme not present"
+          import json,re
+          raw=Path("/tmp/terravale-v2-live.html").read_bytes()
+          for marker in (
+            b'data-source="v2-ads-atelier.mjs"',
+            b'data-source="v250-dm-backpack-editor.js"',
+            b'data-source="v251-live-item-actions.js"',
+            b'data-source="v254-dm-vault.js"',
+            b'data-source="v255-custom-feat-forge.js"',
+            b'data-source="v255-native-wallet.js"',
+            b'tv-demo-permanent-party'
+          ):
+            assert marker in raw, f"V2 launch lacks required capability {marker}"
           assert b"sb_secret_" not in raw, "Private API key detected"
           html=raw.decode("utf-8")
-          match=re.search(r'<script\s+type="application/json"\s+id="tv238-v14-content">([\s\S]*?)</script>',html)
-          assert match, "Missing V14 content"
+          match=re.search(r'<script\\s+type="application/json"\\s+id="tv238-v14-content">([\\s\\S]*?)</script>',html)
+          assert match, "Missing Lore Codex V14 payload"
           data=json.loads(match.group(1))
-          assert len(data["articles"])==283
-          assert len(data["heritageArticles"])==36
-          assert len(data["events"])==31
+          assert len(data["articles"])==283, "Public lore count changed"
+          assert len(data["heritageArticles"])==36, "Private ancestry placeholders changed"
+          assert len(data["events"])==31, "Calendar changed"
           assert all(a["title"]=="Restricted ancestry article" and
                      "does not contain the article text" in a["html"]
-                     for a in data["heritageArticles"])
-          print("PASS: verified approved V2.39 lore and theme with hosted OAuth overlay.")
-          print("PASS: 283 public, 36 protected placeholders, 31 calendar events. All unchanged.")
+                     for a in data["heritageArticles"]), "Restricted lore leaked in public payload"
+          print("PASS: lore access restrictions, achievements, DM Chronicle and item systems preserved.")
           PY
           for path in "/404.html" "/party/" "/session-room/" "/session-room-v2/" "/characters/sheet-live/" "/bloodforger-tree-v2/" "/rules-recovery-mobile/" "/codex.json"; do
             status="$(curl --silent --show-error --location --max-time 15 \
-              --output /tmp/terravale-retired.html --write-out '%{http_code}' \
+              --output /tmp/terravale-fallback.html --write-out '%{http_code}' \
               --header 'Cache-Control: no-cache' \
-              "$base$path?retired=$GITHUB_SHA")"
+              "$base$path?launch=$GITHUB_SHA" || true)"
             expected_status=404
             if [ "$path" = "/404.html" ]; then expected_status=200; fi
             if [ "$status" != "$expected_status" ] ||
-               ! grep -q 'SOME TECHNICAL DIFFICULTIES' /tmp/terravale-retired.html ||
-               ! grep -q 'location.replace("/terravale-preview/")' /tmp/terravale-retired.html; then
-              echo "::error::Retired root path $path did not show the fallback (HTTP $status)."
+               ! grep -q 'Terravale — The Living Codex' /tmp/terravale-fallback.html ||
+               ! grep -Fq 'window.location.replace(destination+window.location.search+window.location.hash)' /tmp/terravale-fallback.html; then
+              echo "::error::Old root path $path did not offer the new V2 entrance (HTTP $status)."
               exit 1
             fi
           done
-          echo "PASS: retired root routes still return the holding page."
+          echo "PASS: retired links safely lead players back to the V2 dashboard."
