@@ -86,7 +86,8 @@ function renderList(host,campaign,chars){
   card.append(meta,node('h3','',f.name),
    node('p','',f.short_description||'No summary provided.'),
    node('div','tv255-feat-meta','Level '+f.minimum_level+'+ · '+
-    f.action_type+' · '+f.uses_per_rest+' use(s) · '+count+' active grants'));
+    f.action_type+(f.uses_per_rest?' · '+f.uses_per_rest+' use(s)':' · No use limit')+
+    ' · '+count+' active grants'));
   const actions=node('div','tv254-actions');
   actions.append(btn('Edit feat',()=>{
     state.mode='edit';state.selected=f.id;draw(host,campaign,chars);
@@ -106,6 +107,13 @@ function renderList(host,campaign,chars){
 function renderEditor(host,campaign,chars){
  const existing=state.feats.find(f=>f.id===state.selected);
  const values=specOf(existing);
+ const enabled={
+  prerequisites:!!values.prerequisites,
+  level:values.minimum_level>1,
+  activation:values.action_type!=='passive',
+  uses:values.uses_per_rest>0,
+  recovery:values.uses_per_rest>0&&values.recovery!=='manual'
+ };
  host.append(btn('← Back to feat library',()=>{
   state.mode='library';state.selected=null;draw(host,campaign,chars);
  },'tv255-back-link'));
@@ -118,7 +126,7 @@ function renderEditor(host,campaign,chars){
  const summary=field('Short description',values.short_description,{maxlength:600,multiline:true,rows:2});
  const req=field('Prerequisites',values.prerequisites,{maxlength:1200,multiline:true,rows:2});
  const rules=field('Full rules, effects and limitations',values.rules_text,{maxlength:7000,multiline:true,rows:8});
- form.append(name.wrap,summary.wrap,req.wrap,rules.wrap);
+ form.append(name.wrap,summary.wrap,rules.wrap);
  const type=node('div','tv255-creator-choice-group');
  type.append(node('strong','','Activation type'));
  const drawType=()=>{if(type.lastChild?.classList?.contains('tv255-tile-options'))type.lastChild.remove();
@@ -148,7 +156,44 @@ function renderEditor(host,campaign,chars){
    values.state=id;drawStatus();
   }));
  };drawStatus();
- form.append(type,row,recovery,status);
+ const layout=node('div','tv256-feat-layout');
+ const switches=node('aside','tv256-feature-switchboard');
+ switches.append(node('strong','','Feat elements'),
+  node('p','tv254-muted','Only enable the parts this feat actually needs.'));
+ const specifics=node('div','tv256-feat-specifics');
+ specifics.append(req.wrap,type,row,recovery);
+ const makeSwitch=(key,title,description)=>{
+  const label=node('label','tv256-mechanic-switch');
+  const input=node('input');input.type='checkbox';input.checked=enabled[key];
+  const copy=node('span','');copy.append(node('strong','',title),
+   node('small','',description));
+  label.append(input,copy);
+  input.addEventListener('change',()=>{enabled[key]=input.checked;updateVisible()});
+  switches.append(label);
+ };
+ makeSwitch('prerequisites','Prerequisites','Requirements or restrictions');
+ makeSwitch('level','Level requirement','Limit to level 2 or higher');
+ makeSwitch('activation','Activation','Action, bonus action, reaction or special');
+ makeSwitch('uses','Limited uses','Display a maximum-uses counter');
+ makeSwitch('recovery','Recovery','Configure when limited uses return');
+ function updateVisible(){
+  if(!enabled.uses)enabled.recovery=false;
+  req.wrap.hidden=!enabled.prerequisites;
+  level.wrap.hidden=!enabled.level;
+  type.hidden=!enabled.activation;
+  uses.wrap.hidden=!enabled.uses;
+  recovery.hidden=!enabled.uses||!enabled.recovery;
+  const recharge=switches.querySelector('[data-tv256-switch="recovery"]');
+  if(recharge){
+   const check=recharge.querySelector('input');
+   check.disabled=!enabled.uses;
+   check.checked=enabled.recovery;
+  }
+ }
+ switches.lastChild.dataset.tv256Switch='recovery';
+ layout.append(switches,specifics);
+ form.append(layout,status);
+ updateVisible();
  const buttons=node('div','tv254-actions');
  const save=node('button','btn primary small','Save custom feat');save.type='submit';
  buttons.append(save,btn('Cancel',()=>{state.mode='library';draw(host,campaign,chars)}));
@@ -158,12 +203,13 @@ function renderEditor(host,campaign,chars){
   const data={
    name:name.input.value.trim(),
    short_description:summary.input.value.trim(),
-   prerequisites:req.input.value.trim(),
+   prerequisites:enabled.prerequisites?req.input.value.trim():'',
    rules_text:rules.input.value.trim(),
-   action_type:values.action_type,
-   uses_per_rest:Number(uses.input.value),minimum_level:Number(level.input.value),
+   action_type:enabled.activation?values.action_type:'passive',
+   uses_per_rest:enabled.uses?Number(uses.input.value):0,
+   minimum_level:enabled.level?Number(level.input.value):1,
    rarity:rarity.input.value.trim()||'Custom',
-   recovery:values.recovery,state:values.state
+   recovery:enabled.uses&&enabled.recovery?values.recovery:'manual',state:values.state
   };
   if(!data.name)return message('Enter a feat name.');
   const result=await mutate(api().rpc('terravale_dm_save_custom_feat',{
@@ -261,10 +307,16 @@ async function mountCharacterFeats(){
  if(!m||!root||!selected||root.querySelector('#tv255-player-feats'))return;
  const c=(typeof db!=='undefined'?db.characters:[]).find(c=>c.id===m[1]);
  if(!c||!auth()?.state?.ready)return;
+ // The native ancestry selection remains on the same Features tab.
+ // Rename the player-facing group without losing the ancestry-granted feats.
+ for(const h of root.querySelectorAll('h2,h3,h4')){
+  const txt=(h.textContent||'').trim();
+  if(/^(ancestry|racial) feats?$/i.test(txt))h.textContent='Feats';
+ }
  const sec=node('section','tv254-proficiency-card tv255-player-feats');
  sec.id='tv255-player-feats';
  sec.append(node('div','tv254-eyebrow','DM-AWARDED POWERS'),
-  node('h3','','Custom Feats'),
+  node('h3','','Feats'),
   node('p','tv254-muted','Custom feats approved and granted by your campaign DM. Written mechanics are shown here, not secretly added to your numerical sheet statistics.'));
  root.append(sec);
  const [grants,feats]=await Promise.all([
@@ -283,9 +335,13 @@ async function mountCharacterFeats(){
   const card=node('details','tv255-player-feat');
   card.append(node('summary','',feat.name));
   const body=node('div','tv255-player-feat-body');
-  body.append(node('p','',feat.short_description||''),
-   node('p','tv254-muted','Activation: '+feat.action_type+
-    ' · Uses: '+feat.uses_per_rest+' · Recovery: '+feat.recovery));
+  body.append(node('p','',feat.short_description||''));
+  const details=['Activation: '+feat.action_type];
+  if(feat.uses_per_rest>0){
+   details.push('Uses: '+feat.uses_per_rest);
+   if(feat.recovery!=='manual')details.push('Recovery: '+feat.recovery);
+  }
+  body.append(node('p','tv254-muted',details.join(' · ')));
   if(feat.prerequisites)body.append(node('p','tv254-muted','Prerequisites: '+feat.prerequisites));
   if(feat.rules_text)body.append(node('p','tv255-preserve',feat.rules_text));
   card.append(body);sec.append(card);

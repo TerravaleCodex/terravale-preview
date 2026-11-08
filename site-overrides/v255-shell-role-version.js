@@ -2,27 +2,30 @@
    Build marker is injected by the release workflow, never forged by a client. */
 (function(){
 'use strict';
-const label=()=>window.TerravaleV255Build||{version:'2.55',build:'preview'};
+const label=()=>window.TerravaleV255Build||{version:'2.56',build:'preview'};
 function helpBadge(){
- const nav=document.getElementById('nav');
+ const nav=document.getElementById('nav')||
+  document.querySelector('#sidebar,aside[aria-label="Navigation"]');
  if(!nav)return;
- let link=nav.querySelector('[data-path="/help"]');
- if(!link)link=Array.from(nav.querySelectorAll('a,button')).find(
-   x=>(x.textContent||'').trim().includes('Help & Tutorial')
- );
- if(!link||link.closest('.tv255-help-footer'))return;
- const wrap=document.createElement('div');wrap.className='tv255-help-footer';
- const parent=link.parentElement;
- parent.insertBefore(wrap,link);wrap.append(link);
- link.classList.add('tv255-help-compact');
- const badge=document.createElement('span');
- badge.className='tv255-version-tag';
- badge.textContent='V'+label().version;
- badge.title='Currently loaded Terravale build '+label().build+
-  ' · refresh to load a newer deployed version';
+ let footer=nav.querySelector('.tv255-help-footer');
+ const link=nav.querySelector('[data-path="/help"]')||
+  Array.from(nav.querySelectorAll('a,button')).find(x=>
+   /help|tutorial/i.test((x.textContent||'').trim())&&
+   !x.closest('.tv255-help-footer'));
+ if(!footer){
+  footer=document.createElement('div');footer.className='tv255-help-footer';
+  if(link&&link.parentNode)link.parentNode.insertBefore(footer,link);
+  else nav.append(footer);
+ }
+ if(link&&!footer.contains(link)){footer.append(link);link.classList.add('tv255-help-compact')}
+ let badge=footer.querySelector('.tv255-version-tag');
+ if(!badge){badge=document.createElement('span');badge.className='tv255-version-tag';footer.append(badge)}
+ const v='V'+label().version;
+ if(badge.textContent!==v)badge.textContent=v;
+ badge.title='Loaded Terravale '+v+' · build '+label().build+
+  ' · reload to check for a newer deployment';
  badge.setAttribute('aria-label','Terravale version '+label().version+
   ', build '+label().build);
- wrap.append(badge);
 }
 function role(){
  if(typeof db==='undefined')return;

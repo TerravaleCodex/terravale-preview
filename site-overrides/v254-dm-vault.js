@@ -127,16 +127,22 @@ function renderItemEditor(host,mode,existing){
   'Edit a real character’s existing item and its approved powers without opening the character sheet.');
  form.append(title,sub);
  const name=field('Item name',item.name,{maxLength:120});
- const kind=field('Type',item.kind||'item',{maxLength:40});
+ const types=[['weapon','Weapon'],['armour','Armour'],['helmet','Helmet'],['shield','Shield'],['tool','Tool'],['consumable','Consumable'],['trinket','Trinket'],['item','Other']];
+ const selected=types.some(t=>t[0]===item.kind)?item.kind:'item';
+ const category=chipSelect(types,selected);
+ const kind=field('Custom item type',selected==='item'?item.kind||'item':'item',{maxLength:40});
+ const typePanel=node('div','tv256-category-picker');
+ typePanel.append(node('strong','','Item type'),category,kind.wrap);
  const count=field('Quantity',Number(item.qty??item.quantity)||1,{type:'number',min:1,max:999});
  const desc=field('Description',item.description||'',{multiline:true,rows:3,maxLength:2400});
- row(form,name,kind,count);form.append(desc.wrap);
+ row(form,name,count);form.append(typePanel,desc.wrap);
  const combat=node('div','tv254-form-heading','Combat and defence');form.append(combat);
  const ac=field('AC bonus',p.ac_bonus??'',{type:'number',min:-20,max:20});
  const bonus=field('Attack bonus',p.attack_bonus??'',{type:'number',min:-20,max:20});
  const damage=field('Weapon damage',p.damage_dice||'',{maxLength:80});
  const damageType=field('Damage type',p.damage_type||'',{maxLength:80});
- row(form,ac,bonus,damage,damageType);
+ row(form,ac);
+ row(form,bonus,damage,damageType);
  const attackAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.attack_ability||'none');
  const damageAbility=chipSelect(['none','str','dex','int','wis','cha'].map(x=>[x,x==='none'?'None':x.toUpperCase()]),p.damage_ability||'none');
  const addSelect=(text,el)=>{const label=node('div','tv254-label');label.append(node('span','',text),el);return label};
@@ -144,7 +150,8 @@ function renderItemEditor(host,mode,existing){
  const weapon=checkbox('Weapon action in Session Room',p.weapon_action);
  const proficient=checkbox('Proficient with attack',p.proficient);
  row(form,weapon,proficient);
- form.append(node('div','tv254-form-heading','Charges, rest recovery and attunement'));
+ const chargesHeading=node('div','tv254-form-heading','Charges, rest recovery and attunement');
+ form.append(chargesHeading);
  const charges=field('Current charges',p.charges??0,{type:'number',min:0,max:999});
  const maximum=field('Max charges',p.max_charges??0,{type:'number',min:0,max:999});
  const cost=field('Activation cost',p.charge_cost??1,{type:'number',min:1,max:999});
@@ -156,9 +163,72 @@ function renderItemEditor(host,mode,existing){
  const attunement=checkbox('Requires attunement',p.attunement);
  const resource=checkbox('Show charge tracker in Resources',p.resource_tracker!==false);
  row(form,attunement,resource);
- const rarity=field('Rarity',p.rarity||'',{maxLength:80});
+ const rarity=chipSelect([['Common','Common'],['Uncommon','Uncommon'],['Rare','Rare'],['Very Rare','Very Rare'],['Legendary','Legendary'],['Artifact','Artifact'],['Unique','Unique']],p.rarity||'Common');
+ const rarityPanel=node('div','tv254-label tv256-rarity-choice');
+ rarityPanel.append(node('span','','Rarity'),rarity);
  const notes=field('Item abilities, limitations and activation effects',p.features||'',{multiline:true,rows:5,maxLength:5000});
- form.append(rarity.wrap,notes.wrap);
+ form.append(rarityPanel,notes.wrap);
+ // One reusable editor for Vault stock and the DM's existing-character item corrections.
+ const panel=node('div','tv256-item-deck');
+ const toggles=node('aside','tv256-feature-switchboard');
+ toggles.append(node('strong','','Item mechanics'),
+  node('p','tv254-muted','Switch on only the powers this item actually has. Item type locks incompatible effects.'));
+ const details=node('div','tv256-item-properties');
+ const parts=Array.from(form.children);
+ const first=parts.indexOf(combat),last=parts.indexOf(notes.wrap);
+ if(first<0||last<first)throw Error('Item form components have moved');
+ for(const part of parts.slice(first,last+1))details.append(part);
+ panel.append(toggles,details);form.append(panel);
+ const enabled={
+  ac:p.ac_bonus!==undefined&&p.ac_bonus!==null&&p.ac_bonus!=='',
+  attack:!!(p.weapon_action||p.damage_dice||p.attack_bonus!==undefined),
+  charges:Number(p.max_charges)>0,
+  attunement:!!p.attunement
+ };
+ const permitted={weapon:[false,true],armour:[true,false],helmet:[true,false],
+  shield:[true,false],tool:[false,false],consumable:[false,false],
+  trinket:[true,true],item:[true,true]};
+ const switches={};
+ for(const [key,name,description] of [
+  ['ac','Armour class','Grants a defensive AC effect'],
+  ['attack','Attack & damage','Attack bonuses, damage and combat actions'],
+  ['charges','Charges & recovery','Limited activations and recharge rules'],
+  ['attunement','Attunement','Must be attuned before use']]){
+  const sw=checkbox(name,enabled[key]);
+  sw.wrap.classList.add('tv256-mechanic-switch');sw.wrap.append(node('small','',description));
+  sw.el.addEventListener('change',()=>{enabled[key]=sw.el.checked;redraw()});
+  toggles.append(sw.wrap);switches[key]=sw.el;
+ }
+ const acRow=ac.wrap.parentElement;
+ const attackRow=bonus.wrap.parentElement;
+ const attackAbilityRow=attackAbility.parentElement.parentElement;
+ const actionRow=weapon.wrap.parentElement;
+ const chargesRow=charges.wrap.parentElement;
+ const rechargeRow=rechargeDice.wrap.parentElement;
+ const attuneRow=attunement.wrap.parentElement;
+ function redraw(){
+  const cap=permitted[category.value]||permitted.item;
+  for(const [i,key] of ['ac','attack'].entries()){
+   switches[key].disabled=!cap[i];
+   if(!cap[i])enabled[key]=false;
+   switches[key].checked=enabled[key];
+   switches[key].closest('label')?.classList.toggle('disabled',!cap[i]);
+  }
+  combat.hidden=!enabled.ac&&!enabled.attack;
+  chargesHeading.hidden=!enabled.charges&&!enabled.attunement;
+  acRow.hidden=!enabled.ac;
+  attackRow.hidden=!enabled.attack;
+  attackAbilityRow.hidden=!enabled.attack;
+  actionRow.hidden=!enabled.attack;
+  chargesRow.hidden=!enabled.charges;
+  rechargeRow.hidden=!enabled.charges;
+  attuneRow.hidden=!enabled.charges&&!enabled.attunement;
+  attunement.wrap.hidden=!enabled.attunement;
+  resource.wrap.hidden=!enabled.charges;
+  kind.wrap.hidden=category.value!=='item';
+ }
+ category.querySelectorAll('button').forEach(b=>b.addEventListener('click',redraw));
+ redraw();
  const actions=node('div','tv254-actions');
  const cancel=button('Cancel',()=>{panelState.editing=null;renderVaultBody()});
  cancel.dataset.tv254Cancel='true';
@@ -179,24 +249,34 @@ function renderItemEditor(host,mode,existing){
  form.addEventListener('submit',async e=>{
   e.preventDefault();if(panelState.busy)return;
   if(!name.el.value.trim())return notify('Enter an item name.');
-  const payload={name:name.el.value.trim(),kind:kind.el.value.trim()||'item',
+  const payload={name:name.el.value.trim(),
+   kind:category.value==='item'?kind.el.value.trim()||'item':category.value,
    qty:Number(count.el.value),description:desc.el.value,slot:'',location:'backpack'};
   const mechanics={};
-  for(const [key,control] of [
-   ['ac_bonus',ac.el],['attack_bonus',bonus.el],['damage_dice',damage.el],
-   ['damage_type',damageType.el],['rarity',rarity.el],['features',notes.el],
-   ['recharge_dice',rechargeDice.el]]){
-    if(control.value!=='')mechanics[key]=control.value;
+  mechanics.rarity=rarity.value;
+  if(notes.el.value)mechanics.features=notes.el.value;
+  if(enabled.ac)mechanics.ac_bonus=Number(ac.el.value)||0;
+  if(enabled.attack){
+   mechanics.attack_bonus=Number(bonus.el.value)||0;
+   if(damage.el.value)mechanics.damage_dice=damage.el.value;
+   if(damageType.el.value)mechanics.damage_type=damageType.el.value;
+   mechanics.attack_ability=attackAbility.value;
+   mechanics.damage_ability=damageAbility.value;
+   mechanics.weapon_action=weapon.el.checked;
+   mechanics.proficient=proficient.el.checked;
   }
-  for(const [key,control] of [['charges',charges.el],['max_charges',maximum.el],
-   ['charge_cost',cost.el],['recharge_amount',amount.el]])mechanics[key]=Number(control.value)||0;
-  mechanics.recovery=recovery.value;
-  mechanics.attack_ability=attackAbility.value;mechanics.damage_ability=damageAbility.value;
-  mechanics.attunement=attunement.el.checked;
-  mechanics.resource_tracker=resource.el.checked;mechanics.weapon_action=weapon.el.checked;
-  mechanics.proficient=proficient.el.checked;
-  if(mechanics.charge_cost<1)mechanics.charge_cost=1;
-  if(mechanics.charges>mechanics.max_charges)return notify('Charges exceed the maximum.');
+  if(enabled.charges){
+   mechanics.charges=Number(charges.el.value)||0;
+   mechanics.max_charges=Number(maximum.el.value)||0;
+   mechanics.charge_cost=Math.max(1,Number(cost.el.value)||1);
+   mechanics.recharge_amount=Number(amount.el.value)||0;
+   mechanics.recovery=recovery.value;
+   if(rechargeDice.el.value)mechanics.recharge_dice=rechargeDice.el.value;
+   mechanics.resource_tracker=resource.el.checked;
+   if(mechanics.max_charges<1)return notify('Set a positive maximum for a charged item.');
+   if(mechanics.charges>mechanics.max_charges)return notify('Charges exceed the maximum.');
+  }
+  if(enabled.attunement)mechanics.attunement=true;
   const campaign=currentCampaign();
   const target=charsForCampaign().find(x=>x.id===panelState.character);
   const promise=isVault?
@@ -252,7 +332,8 @@ function listVault(host){
    (x.item_data?.name+' '+x.item_data?.kind+' '+(x.mechanics?.features||''))
    .toLowerCase().includes(panelState.search.toLowerCase()));
   for(const row of match.slice(0,240)){
-   const card=node('div','tv254-stock-row');
+   const card=node('div','tv254-stock-row tv256-rarity-item');
+   card.dataset.rarity=row.mechanics?.rarity||'Common';
    const copy=node('div','');
    copy.append(node('strong','',row.item_data.name||'Unnamed item'),
     node('small','',Number(row.item_data.qty)||1+' owned · '+(row.item_data.kind||'item')+
@@ -282,7 +363,7 @@ function dispatchEditor(host){
    node('h2','','Issue '+row.item_data.name));
  if(!recipients.length){section.append(node('p','','No campaign characters available yet.'));host.append(section);return}
  const form=node('form','tv254-form-row');
- const target=chipSelect(recipients.map(c=>[c.id,c.name+' · '+c.ancestry]),recipients[0].id);
+ const target=chipSelect(recipients.map(c=>[c.id,c.name+' · '+c.ancestry]),panelState.character||recipients[0].id);
  const qty=field('Quantity to issue',1,{type:'number',min:1,max:Number(row.item_data.qty)||1});
  form.append((()=>{const label=node('div','tv254-label');label.append(node('span','','Recipient character'),target);return label})(),
   qty.wrap);
@@ -315,13 +396,17 @@ function inventoryManager(host){
  }));
  sec.append(pick);
  const menu=node('div','tv254-actions');
- menu.append(button('+ Add item directly',()=>{panelState.editing={mode:'character',id:null};renderVaultBody()},'btn primary small'));
+ menu.append(button('+ Add from Item Vault',()=>{
+  panelState.editing=null;panelState.view='vault';
+  location.hash='#/dm/vault';renderVaultBody();
+ },'btn primary small'));
  sec.append(menu);
  const list=node('div','tv254-character-list');
  for(const item of active.inventory||[]){
-  const row=node('div','tv254-stock-row');
+  const row=node('div','tv254-stock-row tv256-rarity-item');
   const details=node('div','');
   const properties=active.dmItemProperties?.[item.id]||{};
+  row.dataset.rarity=properties.rarity||'Common';
   details.append(node('strong','',item.name||'Unnamed item'),
    node('small','',((item.slot&&item.slot!=='backpack')?'Equipped · ':'Backpack · ')+
     (Number(item.qty??item.quantity)||1)+' owned'+

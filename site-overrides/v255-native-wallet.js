@@ -22,7 +22,7 @@ const validRole=c=>c?.owner==='You'||(db.role==='dm'&&
 const title=c=>c?.name||'Adventurer';
 const stateFor=c=>{
  const k=c.id;
- if(!preferences.has(k))preferences.set(k,{system:'guild-seals',denom:null,count:1,note:'',view:'wallet'});
+ if(!preferences.has(k))preferences.set(k,{system:'guild-seals',display:'guild-seals',denom:null,count:1,note:'',view:'wallet'});
  return preferences.get(k);
 };
 function allHoldings(result){return result?.holdings||[]}
@@ -32,9 +32,15 @@ function sumGC(result){
   sum+Number(row.quantity||0)*(lookup.get(row.denomination_id)?.valueGC||0),0);
 }
 function displayed(system,amount){
- const smallest=system.denominations.reduce((a,b)=>a.valueGC<=b.valueGC?a:b);
- return Math.floor(amount/smallest.valueGC).toLocaleString()+' × '+smallest.name+
- (amount%smallest.valueGC?' + '+(amount%smallest.valueGC)+' GC remainder':'');
+ if(!system?.denominations?.length)return amount.toLocaleString()+' Guild Copper';
+ const denominations=[...system.denominations].sort((a,b)=>b.valueGC-a.valueGC);
+ const parts=[];let balance=amount;
+ for(const d of denominations){
+  const count=Math.floor(balance/d.valueGC);
+  if(count>0){parts.push(count.toLocaleString()+' × '+d.name);balance-=count*d.valueGC}
+ }
+ if(balance)parts.push(balance.toLocaleString()+' GC remainder');
+ return parts.length?parts.join(' · '):'0 in this currency';
 }
 function holdingsList(section,result){
  const data=allHoldings(result).filter(r=>Number(r.quantity)>0);
@@ -69,14 +75,34 @@ function viewWallet(host,c,result,refresh,isDm){
  info.append(el('div','tv254-eyebrow',isDm?'DM TREASURY · NATIVE CURRENCY':'CHARACTER WALLET · ACTUAL HOLDINGS'),
   el('h3','','Coin Purse'),
   el('p','tv255-wallet-total',total.toLocaleString()+' Guild Copper equivalent'));
+ const displayIndex=Math.max(0,systems.findIndex(x=>x.id===p.display));
+ const renderConverted=(delta)=>{
+  const i=(displayIndex+delta+systems.length)%systems.length;
+  p.display=systems[i]?.id||'guild-seals';
+  viewWallet(host,c,result,refresh,isDm);
+ };
+ const shown=systems[displayIndex]||systems[0];
+ const converter=el('div','tv256-conversion-carousel');
+ converter.setAttribute('aria-label','Display currency conversion');
+ const prev=button('‹',()=>renderConverted(-1),'tv256-currency-arrow');
+ prev.setAttribute('aria-label','Previous display currency');
+ const next=button('›',()=>renderConverted(1),'tv256-currency-arrow');
+ next.setAttribute('aria-label','Next display currency');
+ const conversion=el('div','tv256-conversion-readout');
+ if(shown)conversion.append(el('small','','REFERENCE VALUE · '+shown.name),
+  el('strong','',displayed(shown,total)));
+ converter.append(prev,conversion,next);
+ info.append(converter);
  host.append(info);
  const actual=el('section','tv255-wallet-holdings-section');
  actual.append(sectionHead('What you actually own','These are physical denominations carried on your character, not automatically converted money.'));
  holdingsList(actual,result);host.append(actual);
- const manager=el('section','tv255-wallet-manager');
- manager.append(sectionHead('Record a money change',
-  isDm?'Issue or remove money from the selected character, with a logged DM transaction.':
-  'You can add money earned and remove coins spent. Every change is saved to your actual wallet and transaction history.'));
+ const manager=el('details','tv255-wallet-manager');
+ manager.open=!isDm;
+ manager.append(el('summary','tv256-wallet-manager-toggle','Add or remove physical money'),
+  el('p','tv254-muted',isDm?
+   'Make an audited DM adjustment for this character.':
+   'Track rewards and purchases; only your real physical coins change.'));
  const systemBar=el('div','tv255-wallet-system-list');
  systemBar.setAttribute('role','group');systemBar.setAttribute('aria-label','Currency system');
  const denominationBar=el('div','tv255-wallet-denominations');
@@ -102,12 +128,19 @@ function viewWallet(host,c,result,refresh,isDm){
   const selected=systems.find(c=>c.id===p.system)||systems[0];
   p.system=selected?.id||'guild-seals';
   systemBar.replaceChildren();
-  for(const ccy of systems){
-   const b=button(ccy.name,()=>{
-    p.system=ccy.id;p.denom=ccy.denominations[0]?.id||null;drawSystem();
-   },'tv255-choice-chip'+(p.system===ccy.id?' chosen':''));
-   b.setAttribute('aria-pressed',String(p.system===ccy.id));systemBar.append(b);
-  }
+  const index=systems.findIndex(s=>s.id===p.system);
+  const selectNext=delta=>{
+   const target=systems[(index+delta+systems.length)%systems.length];
+   if(!target)return;
+   p.system=target.id;p.denom=target.denominations[0]?.id||null;
+   drawSystem();
+  };
+  const back=button('‹',()=>selectNext(-1),'tv256-currency-arrow');
+  back.setAttribute('aria-label','Previous currency to record');
+  const forward=button('›',()=>selectNext(1),'tv256-currency-arrow');
+  forward.setAttribute('aria-label','Next currency to record');
+  const current=el('strong','tv256-record-currency',selected?.name||'Currency');
+  systemBar.append(back,current,forward);
   denominationBar.replaceChildren();
   if(!selected)return;
   if(!selected.denominations.some(d=>d.id===p.denom))p.denom=selected.denominations[0]?.id;
@@ -120,8 +153,7 @@ function viewWallet(host,c,result,refresh,isDm){
    coin.setAttribute('aria-pressed',String(p.denom===denomination.id));
    denominationBar.append(coin);
   }
-  selection.textContent='Read-only equivalent in '+selected.name+': '+displayed(selected,total)+
-   '. Choosing a denomination does not exchange or create money.';
+  selection.textContent='Recording this denomination changes physical holdings. The carousel above only displays a converted total.';
  };
  const modify=async sign=>{
   if(!ready()||!validRole(c)||busy.has(c.id))return;
@@ -157,7 +189,7 @@ function viewWallet(host,c,result,refresh,isDm){
  const add=button('+ Add money',()=>modify(1),'btn primary');
  const remove=button('− Remove money',()=>modify(-1),'btn ghost tv255-remove');
  actionRow.append(add,remove);
- manager.append(el('h4','','Choose currency'),systemBar,
+ manager.append(el('h4','','Currency to add or remove'),systemBar,
   el('h4','','Choose denomination'),denominationBar,selection,
   amountRow,actionRow,status);
  host.append(manager);
