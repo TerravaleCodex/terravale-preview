@@ -127,10 +127,12 @@ function renderItemEditor(host,mode,existing){
   'Edit a real character’s existing item and its approved powers without opening the character sheet.');
  form.append(title,sub);
  const name=field('Item name',item.name,{maxLength:120});
- const types=[['weapon','Weapon'],['armour','Armour'],['helmet','Helmet'],['shield','Shield'],['tool','Tool'],['consumable','Consumable'],['trinket','Trinket'],['item','Other']];
- const selected=types.some(t=>t[0]===item.kind)?item.kind:'item';
+ const types=[['weapon','Weapon'],['armour','Armour'],['helmet','Helmet'],['shield','Shield'],
+  ['tool','Tool'],['consumable','Consumable'],['trinket','Trinket'],['item','Other'],['custom','Custom']];
+ const selected=types.some(t=>t[0]===item.kind)?item.kind:(item.kind?'custom':'item');
  const category=chipSelect(types,selected);
- const kind=field('Custom item type',selected==='item'?item.kind||'item':'item',{maxLength:40});
+ const kind=field('Custom item type',selected==='custom'?(item.kind||''):'',{maxLength:40});
+ kind.el.placeholder='e.g. Relic or ammunition';
  const typePanel=node('div','tv256-category-picker');
  typePanel.append(node('strong','','Item type'),category,kind.wrap);
  const count=field('Quantity',Number(item.qty??item.quantity)||1,{type:'number',min:1,max:999});
@@ -187,7 +189,7 @@ function renderItemEditor(host,mode,existing){
  };
  const permitted={weapon:[false,true],armour:[true,false],helmet:[true,false],
   shield:[true,false],tool:[false,false],consumable:[false,false],
-  trinket:[true,true],item:[true,true]};
+  trinket:[true,true],item:[true,true],custom:[true,true]};
  const switches={};
  for(const [key,name,description] of [
   ['ac','Armour class','Grants a defensive AC effect'],
@@ -225,7 +227,7 @@ function renderItemEditor(host,mode,existing){
   attuneRow.hidden=!enabled.charges&&!enabled.attunement;
   attunement.wrap.hidden=!enabled.attunement;
   resource.wrap.hidden=!enabled.charges;
-  kind.wrap.hidden=category.value!=='item';
+  kind.wrap.hidden=category.value!=='custom';
  }
  category.querySelectorAll('button').forEach(b=>b.addEventListener('click',redraw));
  redraw();
@@ -250,7 +252,7 @@ function renderItemEditor(host,mode,existing){
   e.preventDefault();if(panelState.busy)return;
   if(!name.el.value.trim())return notify('Enter an item name.');
   const payload={name:name.el.value.trim(),
-   kind:category.value==='item'?kind.el.value.trim()||'item':category.value,
+   kind:category.value==='custom'?(kind.el.value.trim()||'item'):category.value,
    qty:Number(count.el.value),description:desc.el.value,slot:'',location:'backpack'};
   const mechanics={};
   mechanics.rarity=rarity.value;
@@ -596,6 +598,7 @@ function renderVaultBody(){
  if(!root||panelState.mode!=='vault')return;
  root.replaceChildren();
  const view=V255_CHRONICLE_SECTIONS.some(x=>x[0]===panelState.view)?panelState.view:'overview';
+ document.body.dataset.tv257DmView=view;
  const text={
   overview:['DM CHRONICLE · OPERATIONS','The Dungeon Master’s Desk','Your campaign controls, organised into dedicated workspaces.'],
   vault:['DM CHRONICLE · PREPARED STOCK','The Item Vault','Design and store items with full powers and charges, ready to issue later.'],
@@ -680,7 +683,7 @@ function activate(){
 }
 function mount(){
  const routePath=location.hash.replace(/^#/,'').split('?')[0];
- if(!/^\/dm(\/|$)/.test(routePath)){panelState.mode='chronicle';return}
+ if(!/^\/dm(\/|$)/.test(routePath)){panelState.mode='chronicle';delete document.body.dataset.tv257DmView;return}
  if(!actorIsDm())return;
  const allowed=V255_CHRONICLE_SECTIONS.map(x=>x[0]);
  const sub=routePath.split('/')[2]||'overview';
