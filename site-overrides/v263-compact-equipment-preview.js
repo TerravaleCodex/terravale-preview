@@ -152,6 +152,26 @@ function inspect(c,item){
  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
  if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
+// Shared read-only inspector for Session Room item names. Do not expose
+// inventory edit APIs: all actions still go through the existing server RPCs.
+window.TerravaleV263Inspector={
+ open(characterId,itemId){
+  const c=(typeof db==='undefined'?[]:(db.characters||[]))
+   .find(x=>String(x.id)===String(characterId));
+  const i=c?.inventory?.find(x=>String(x.id)===String(itemId));
+  if(!c||!i)return false;
+  const sameCampaign=c.campaign===db.campaign;
+  const visible=String(c.status).toLowerCase()==='approved'&&
+   c.sheetVisibleToParty===true&&
+   window.TerravaleV2Bridge?.hasCampaign?.(c.campaign);
+  const owner=c.owner==='You';
+  const moderator=db.role==='dm'&&
+   window.TerravaleVerifiedAccount?.state?.profile?.is_dm&&
+   db.campaigns?.some(k=>k.id===c.campaign&&k.role==='dm');
+  if(!sameCampaign||!(owner||visible||moderator))return false;
+  inspect(c,i);return true;
+ }
+};
 function findItem(id){
  const c=current();return c&&inventory(c).find(i=>String(i.id)===String(id))||null;
 }
