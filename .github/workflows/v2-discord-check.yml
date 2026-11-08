@@ -51,6 +51,7 @@ on:
       - "site-overrides/v255-shell-role-version.js"
       - "site-overrides/v255-chronicle-wallet-creator.css"
       - "site-overrides/v256-refinement.css"
+      - "site-overrides/v257-density.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -454,7 +455,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.56" in html
+          assert "Terravale Codex V2.57" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
