@@ -80,6 +80,16 @@ html[data-tv265-textures="on"] .page-session .sr-chat-panel,
 html[data-tv265-textures="on"] .page-session .sr-dice-panel{
  box-shadow:0 0 22px #6b6ed010,inset 0 1px #b9b6ed14;
 }
+/* The tall chat canvas can carry a STATIC, muted atmosphere: messages stay opaque
+   and readable. Rolling controls retain their original, plain backgrounds. */
+html[data-tv265-textures="on"] .page-session .sr-chat-panel>.sr-chat-feed{
+ background-image:
+  linear-gradient(170deg,#07080cbb 5%,#060a16bd 50%,#07080cdb),
+  var(--tv265-art-initiative);
+ background-size:cover;background-position:center 43%;
+ background-repeat:no-repeat;
+ border-radius:9px;
+}
 /* Light the outer panels/heads without placing moving art under controls. */
 html[data-tv265-textures="on"] .page-session .sr-chat-panel>.sr-panel-head,
 html[data-tv265-textures="on"] .page-session .sr-dice-panel>.sr-panel-head{
