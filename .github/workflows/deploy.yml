@@ -8,6 +8,10 @@ on:
       - "site-overrides/launch-home.html"
       - "tests/v268-public-home.cjs"
       - "tests/v269-dashboard-default.cjs"
+      - "tests/v270-divine-system.cjs"
+      - "site-overrides/v270-divine-ui.js"
+      - "site-overrides/v270-divine-ui.css"
+      - "site-overrides/sql/v270_divine_favour_boons.sql"
       - ".preview-v239-approved/**"
       - "tools/assemble-approved-v239.py"
       - "tools/overlay-v239-with-discord.py"
@@ -197,7 +201,7 @@ jobs:
           assert 'data-source="v251-live-item-actions.js"' in html, "Live Session Room actions missing"
           assert 'data-source="v255-custom-feat-forge.js"' in html, "Custom feat forge missing"
           assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
-          assert "Terravale Codex V2.67" in html, "Latest V2 implementation missing"
+          assert "Terravale Codex V2.70" in html, "Latest V2 implementation missing"
           assert "sb_secret_" not in html
           print("PASS: public root enters the complete V2 Dashboard without the holding page")
           print("PASS: OAuth callback query and native SPA route are both preserved")
@@ -207,6 +211,8 @@ jobs:
         run: node tests/v268-public-home.cjs
       - name: Verify actual native Dashboard default route
         run: node tests/v269-dashboard-default.cjs
+      - name: Verify Divine Favour ledger and player-only granted boons
+        run: node tests/v270-divine-system.cjs
       - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -259,7 +265,7 @@ jobs:
                grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
-               grep -q 'Terravale Codex V2.67' /tmp/terravale-v2-live.html &&
+               grep -q 'Terravale Codex V2.70' /tmp/terravale-v2-live.html &&
                ! grep -Fq "history.replaceState(null,'','#/characters')" /tmp/terravale-v2-live.html; then
               echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."
               break
