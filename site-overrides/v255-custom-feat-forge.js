@@ -306,7 +306,7 @@ const sheetFeatCache=new Map();
 const sheetFeatLoading=new Set();
 const selectedSheetFeat=new Map();
 const currentSheetCharacter=()=>{
- const m=location.hash.match(/^#\\/characters\\/([^/?#]+)/);
+ const m=location.hash.match(/^#\/characters\/([^/?#]+)/);
  if(!m)return null;
  let id=m[1];try{id=decodeURIComponent(id)}catch{}
  return (typeof db!=='undefined'?db.characters:[]).find(c=>c.id===id)||null;
