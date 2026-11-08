@@ -159,8 +159,10 @@ function renderDM(host,campaign,characters){
 }
 async function refreshDM(host,campaign,characters){
  if(dm.loading)return;
- dm.loading=true;try{dm.data=await rpc('terravale_divine_dm_state',{target_character:dm.character})}
- catch(e){dm.data={error:e.message}}
+ const requested=dm.character;dm.loading=true;
+ try{const result=await rpc('terravale_divine_dm_state',{target_character:requested});
+  if(dm.character===requested)dm.data=result;}
+ catch(e){if(dm.character===requested)dm.data={error:e.message}}
  finally{dm.loading=false;if(host.isConnected)renderDM(host,campaign,characters)}
 }
 async function mutate(name,args,host,campaign,characters,message){
@@ -251,21 +253,23 @@ function patronEditor(host,body,campaign,characters,patrons){
 function boonEditor(host,body,campaign,characters,patrons,b){
  const form=el('section','tv270-editor');
  form.append(el('h4','',b.id?'Edit prepared boon':'Prepare a new boon'));
- let kind=b.kind||dm.kind,first=b.patron_id||dm.patron||patrons[0]?.id,
- second=b.second_patron_id||dm.other;
+ let kind=b.kind||dm.kind;
+ const eligible=patrons.filter(p=>kind==='minor'?p.rank==='minor':kind==='divine'?p.rank!=='minor':true);
+ let first=eligible.some(p=>p.id===b.patron_id)?b.patron_id:eligible[0]?.id;
+ let second=b.second_patron_id||dm.other;
  const chooser=(options,value,update)=>{
   const area=el('div','tv270-options');
   for(const [k,title] of options)area.append(action(title,()=>update(k),'tv270-pill'+(String(k)===String(value)?' is-selected':'')));
   return area;
  };
  form.append(el('span','tv270-minor-label','Boon family'));
- form.append(chooser(Object.entries(kinds),kind,v=>{dm.editing={...b,kind:v,second_patron_id:v==='concordant'?second:null};renderDM(body,campaign,characters)}));
+ form.append(chooser(Object.entries(kinds),kind,v=>{dm.editing={...b,kind:v,patron_id:null,second_patron_id:null};renderDM(body,campaign,characters)}));
  form.append(el('span','tv270-minor-label','Patron'));
- form.append(chooser(patrons.map(p=>[p.id,p.name]),first,v=>{dm.editing={...b,patron_id:v};renderDM(body,campaign,characters)}));
+ form.append(chooser(eligible.map(p=>[p.id,p.name]),first,v=>{dm.editing={...b,patron_id:v};renderDM(body,campaign,characters)}));
  if(kind==='concordant'){
   form.append(el('span','tv270-minor-label','Second patron'));
   form.append(chooser(patrons.filter(p=>p.id!==first).map(p=>[p.id,p.name]),second,v=>{
-   dm.editing={...b,second_patron_id:v};renderDM(body,campaign,characters);
+   dm.editing={...b,patron_id:first,second_patron_id:v};renderDM(body,campaign,characters);
   }));
  }
  const name=field('Boon title',b.name||''),summary=field('Description',b.summary||'',true);
