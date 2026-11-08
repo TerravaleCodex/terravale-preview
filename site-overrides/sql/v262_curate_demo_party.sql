@@ -151,7 +151,7 @@ begin
          character_id,actor_user_id,denomination_id,delta,balance_after,
          rate_gc_snapshot,operation,note
         ) values(
-         character_id,curator,coin->>'denomination',changes,new_quantity,
+         target_demo_id,curator,coin->>'denomination',changes,new_quantity,
          rate,case when changes>0 then 'dm_issue' else 'dm_remove' end,
          'V2.62 Aster-curated demo opening purse'
         );
