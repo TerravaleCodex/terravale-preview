@@ -27,7 +27,7 @@ for(const expected of [
  'coalesce(src.owner_id=sender,false)',
  'coalesce(src.owner_id=caller,false)',
  'coalesce(target.owner_id=(select auth.uid()),false)',
- 'coalesce(target.owner_id = (select auth.uid()), false)',
+ 'coalesce(target.owner_id = (select auth.uid()),false)',
  'coalesce(ch.owner_id=(select auth.uid()),false)'
 ])assert.ok(source.includes(expected),'Missing null-safe authorization '+expected);
 const wallet=fs.readFileSync('site-overrides/v255-native-wallet.js','utf8');
