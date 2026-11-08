@@ -87,35 +87,9 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
-      - name: Diagnose actual native feature tab rendering
-        run: |
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          s=Path('published/veiled-codex/index.html').read_text()
-          for term in ['Ancestry feats','Feats <span>','function featEntries(c){','sheetV222FeaturesPage=function(c){','sheet227-reader','data-tv259-character','terravale_character_custom_feats','data-v227-reader-tab']:
-              spots=list(re.finditer(re.escape(term),s,re.I))
-              print('READER TERM',repr(term),'OCCURRENCES',len(spots),'POSITIONS',[m.start() for m in spots[:12]])
-          for term in ['function featEntries(c){','sheetV222FeaturesPage=function(c){','<section class="sheet20-panel sheet227-reader"']:
-              m=re.search(re.escape(term),s)
-              if m: print('READER SNIPPET',repr(term),s[max(0,m.start()-350):m.start()+11000].replace(chr(10),' ')[:11000])
-          assignments=list(re.finditer(re.escape('sheetV222FeaturesPage=function(c){'),s))
-          for i,m in enumerate(assignments):
-              print('OVERRIDE INDEX',i,'LOCATION',m.start(),
-                    'CODE',s[m.start():m.start()+(9500 if i>=len(assignments)-2 else 1800)].replace(chr(10),' ')[:9500])
-          for term in ['function sheetV222FeaturesPage(', 'sheetV222FeaturesPage(c)', 'data-v227-entry', 'data-v228', 'data-v229', 'data-v230']:
-              print('FINAL SEARCH',term,'MATCHES',len(list(re.finditer(re.escape(term),s))))
-          for term in ['data-v228-tab','data-v228-entry','Ancestry feats <span>','recorded ancestry feats','v228-reader','previousReader=sheetV222FeaturesPage','sheetV222FeaturesPage=(c)=>']:
-              matches=list(re.finditer(re.escape(term),s,re.I))
-              print('V228 TERM',repr(term),'COUNT',len(matches))
-              for m in matches[-3:]:
-                  print('V228 CONTEXT',s[max(0,m.start()-1800):m.start()+3000].replace(chr(10),' ')[:4900])
-          for m in list(re.finditer(r'Ancestry feats',s,re.I))[:8]:
-              print('ANCESTRY LABEL CONTEXT',s[max(0,m.start()-150):m.start()+200].replace(chr(10),' '))
-          PY
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
-      - name: Verify V2.58 native feat grants, editor and treasury layout
+      - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -126,6 +100,9 @@ jobs:
           vault=Path('site-overrides/v254-dm-vault.js').read_text()
           css=Path('site-overrides/v258-flat-ux.css').read_text()
           assert "function featEntries(c){" in html
+          assert "function readerPage(c){" in html
+          assert "DM-granted feat" in html
+          assert "data-v228-tab" in html
           assert "native.concat(window.TerravaleV258Feats?.getEntries?.(c.id,c.campaign)||[])" in html
           assert "Feats <span>" in html
           assert "f.custom?'DM-granted feat':'Ancestry feat'" in html
@@ -146,7 +123,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.59' in html
+          assert 'Terravale Codex V2.60' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
           PY
@@ -510,7 +487,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.59" in html
+          assert "Terravale Codex V2.60" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
