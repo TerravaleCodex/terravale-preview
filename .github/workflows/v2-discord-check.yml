@@ -56,6 +56,9 @@ on:
       - "site-overrides/v259-inline-mechanics.css"
       - "tests/v258-native-feats.cjs"
       - "tests/v260-currency-copy.cjs"
+      - "tests/v261-owner-and-currency.cjs"
+      - "site-overrides/v261-owner-byline.js"
+      - "site-overrides/v261-owner-byline.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -88,19 +91,6 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
-      - name: Inspect sheet and featured card owner byline targets
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path('published/veiled-codex/index.html').read_text()
-          terms=['YOUR ADVENTURER / FEATURED RECORD','MAIN FEATURED','Main featured','sheet226-hero-actions','sheet20-hero-copy','renderSheetV220=function','function renderCharacters','THE REST OF YOUR CHAPTER','v229Featured','Played by']
-          for q in terms:
-              hits=list(re.finditer(re.escape(q),s,re.I))
-              print('BYLINE MARKER',q,len(hits),[m.start() for m in hits[-10:]])
-              for m in hits[-2:]:
-                  print('BYLINE SOURCE',q,s[max(0,m.start()-1800):m.start()+2500].replace(chr(10),' ')[:4300])
-          PY
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
@@ -139,7 +129,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.60' in html
+          assert 'Terravale Codex V2.61' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
           PY
@@ -503,7 +493,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.60" in html
+          assert "Terravale Codex V2.61" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
