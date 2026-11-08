@@ -36,7 +36,7 @@ assert.ok(prior.includes("document.documentElement.dataset.tv265Motion!=='off'")
 assert.ok(appearance.includes('#tv238-article-body'),'Reader article depth targets the actual reader');
 assert.ok(appearance.includes('.sheet20-hero'),'Character cover texture targets the live sheet');
 assert.ok(appearance.includes('tv-cabinet-v2-frame'),'Rare achievement texture reaches same-origin Cabinet iframe');
-assert.ok(appearance.includes("key==='textures'?TEXTURE_KEY:MOTION_KEY"),'Texture and motion settings persisted separately');
+assert.ok(appearance.includes("k==='textures'?TEXTURE_KEY:MOTION_KEY"),'Texture and motion settings persisted separately');
 assert.ok(!appearance.includes('terravale_wallet_'),'Cosmetic script never writes gameplay wallets');
 const storage=new Map();
 const doc={
