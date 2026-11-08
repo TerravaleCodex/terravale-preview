@@ -17,8 +17,13 @@ const cashCache=new Map();
 const denomLookup=()=>new Map(rules().currencies.flatMap(c=>c.denominations.map(d=>
  [d.id,{...d,system:c.name,system_id:c.id}])));
 const ready=()=>!!window.TerravaleVerifiedAccount?.state?.ready;
-const validRole=c=>c?.owner==='You'||(db.role==='dm'&&
- window.TerravaleVerifiedAccount?.state?.profile?.is_dm);
+const validRole=c=>c?.owner==='You'||!!(
+ window.TerravaleVerifiedAccount?.state?.profile?.is_dm&&
+ db.campaigns?.some(k=>k.id===c?.campaign&&k.role==='dm'));
+const canRead=c=>validRole(c)||!!(
+  ready()&&c?.status==='Approved'&&c?.sheetVisibleToParty===true&&
+  db.campaigns?.some(k=>k.id===c.campaign)
+);
 const title=c=>c?.name||'Adventurer';
 const stateFor=c=>{
  const k=c.id;
@@ -262,7 +267,8 @@ function viewWallet(host,c,result,refresh,isDm){
  breakdown.open=!!p.detailsOpen;
  breakdown.addEventListener('toggle',()=>{p.detailsOpen=breakdown.open});
  breakdown.append(el('summary','tv257-wallet-breakdown-toggle',
-  isDm?'View physical holdings & transactions':'Show actual coins and wallet controls'));
+  isDm?'View physical holdings & transactions':validRole(c)?
+   'Show actual coins and wallet controls':'View physical coins (read-only)'));
  host.classList.add(isDm?'tv257-dm-wallet':'tv257-player-wallet');
  const actual=el('section','tv255-wallet-holdings-section');
  actual.append(sectionHead('What you actually own','These are physical denominations carried on your character, not automatically converted money.'));
@@ -364,10 +370,10 @@ function viewWallet(host,c,result,refresh,isDm){
   el('h4','','Coin or note'),denominationBar,selection,
   amountRow,actionRow,status);
  if(isDm)host.append(manager);
- else breakdown.append(manager);
+ else if(validRole(c))breakdown.append(manager);
  host.append(breakdown);
  drawSystem();
- if(result.ledger?.length){
+ if(validRole(c)&&result.ledger?.length){
   const log=el('details','tv255-wallet-history');
   log.append(el('summary','','Recent wallet transactions'));
   for(const record of result.ledger.slice(0,12)){
@@ -392,9 +398,9 @@ async function fetchMoney(c,force=false){
 }
 function render(section,c,result,refresh){
  if(!ready())return;
- if(!validRole(c)){
+ if(!canRead(c)){
   section.replaceChildren(el('p','tv254-muted',
-   'This character’s wallet is private. Only the owner and campaign DM can view or change its holdings.'));
+   'This wallet is private unless the character owner or DM shares an approved sheet.'));
   return;
  }
  // Our single view replaces the old selects but uses the old verified wallet read.
