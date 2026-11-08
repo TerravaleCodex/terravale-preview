@@ -20,6 +20,8 @@ for(const term of ["kind in ('divine','minor','concordant')","score between -10 
  "if b.state<>'ready'","only one active Concordant Boon", "Only three active boons per patron",
  "if coalesce(favour1,0)<b.required_favour",
  "if coalesce(favour2,0)<b.required_favour",
+ "Boon family does not match patron rank",
+ "Cannot change the patron or family of an actively bestowed boon",
  "revoke all on public.terravale_dm_divine_boons from public,anon,authenticated",
  "revoke all on function public.terravale_divine_dm_state(uuid) from public,anon",
  "grant execute on function public.terravale_divine_player_state(uuid) to authenticated"])
