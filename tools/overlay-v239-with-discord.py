@@ -104,6 +104,7 @@ css += "\n" + (ROOT / "site-overrides/v254-proficiencies-wallet.css").read_text(
 css += "\n" + (ROOT / "site-overrides/v255-chronicle-wallet-creator.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v256-refinement.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v257-density.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v258-flat-ux.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
