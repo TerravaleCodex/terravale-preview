@@ -37,9 +37,9 @@ function displayedParts(system,amount){
  const parts=[];let balance=amount;
  for(const d of denominations){
   const count=Math.floor(balance/d.valueGC);
-  if(count>0){parts.push(count.toLocaleString()+' × '+d.name);balance-=count*d.valueGC}
+  if(count>0){parts.push(d.name+' × '+count.toLocaleString());balance-=count*d.valueGC}
  }
- if(balance)parts.push(balance.toLocaleString()+' GC remainder');
+ if(balance)parts.push(balance.toLocaleString()+' Guild Copper left over');
  return parts.length?parts:['0 '+denominations[denominations.length-1].name];
 }
 function displayed(system,amount){return displayedParts(system,amount).join(' · ')}
@@ -198,7 +198,7 @@ function viewWallet(host,c,result,refresh,isDm){
  next.setAttribute('aria-label','Next display currency');
  const conversion=el('div','tv256-conversion-readout');
  if(shown){
-  conversion.append(el('small','','REFERENCE VALUE · '+shown.name));
+  conversion.append(el('small','','EQUIVALENT IN '+shown.name+' · DENOMINATION × QUANTITY'));
   const values=el('div','tv258-conversion-values');
   for(const part of displayedParts(shown,total))values.append(el('span','',part));
   conversion.append(values);
