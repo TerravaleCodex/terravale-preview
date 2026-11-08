@@ -573,6 +573,7 @@ const V255_CHRONICLE_SECTIONS=[
  ['party','Party Inventories','users'],
  ['treasury','Treasury','coins'],
  ['feats','Feat Forge','sparkles'],
+ ['divine','Divine Favour','sun-moon'],
  ['training','Training & Languages','book-open']
 ];
 function v255SectionTitle(){
@@ -600,6 +601,7 @@ function v255Overview(host){
   ['party','Party Inventories','Open any character’s real backpack without opening their character sheet.','Manage backpacks'],
   ['treasury','Treasury','Grant native currency and review what your party actually carries.','Move money'],
   ['feats','Feat Forge','Write reusable custom feats and give or revoke them on characters.','Create feats'],
+  ['divine','Divine Favour','Adjust divine relationships, prepare secret boons and grant earned gifts.','Manage favour'],
   ['training','Training & Languages','Grant extra picks, suppress proficiencies or set spoken/read/written language abilities.','Adjust training']
  ];
  for(const [id,title,description,cta] of menu){
@@ -635,6 +637,7 @@ function renderVaultBody(){
   party:['DM CHRONICLE · EQUIPMENT','Party Inventories','Open the real contents of each adventurer’s backpack, no character sheet required.'],
   treasury:['DM CHRONICLE · FINANCES','The Treasury','Issue native currency to adventurers, keep accounts and inspect holdings.'],
   feats:['DM CHRONICLE · CUSTOM POWERS','The Feat Forge','Write, save and assign custom feats that become real additions to player records.'],
+  divine:['DM CHRONICLE · PATRONS & BOONS','Divine Favour','Track the gods’ notice and bestow boons when you decide the story has earned them.'],
   training:['DM CHRONICLE · LANGUAGE & TRAINING','The Training Ledger','Grant extra choices, review restricted language requests and adjust individual proficiencies.']
  }[view];
  const header=node('header','tv254-vault-hero tv255-vault-hero');
@@ -683,6 +686,12 @@ function renderVaultBody(){
   if(window.TerravaleV255Training?.renderDM)
    window.TerravaleV255Training.renderDM(body,currentCampaign(),charsForCampaign());
   else bonusManager(body);
+  return;
+ }
+ if(view==='divine'){
+  if(window.TerravaleV270Divine?.renderDM)
+   window.TerravaleV270Divine.renderDM(body,currentCampaign(),charsForCampaign());
+  else body.append(node('p','tv254-muted','Loading the divine chronicle…'));
   return;
  }
  if(view==='feats'){
