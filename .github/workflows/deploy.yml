@@ -52,6 +52,9 @@ on:
       - "site-overrides/v255-character-training.js"
       - "site-overrides/v255-native-wallet.js"
       - "site-overrides/v255-custom-feat-forge.js"
+      - "site-overrides/v270-divine-workspace.js"
+      - "site-overrides/v270-divine-workspace.css"
+      - "tests/v270-divine-integration.cjs"
       - "site-overrides/v255-shell-role-version.js"
       - "site-overrides/v255-chronicle-wallet-creator.css"
       - "site-overrides/v256-refinement.css"
@@ -142,6 +145,7 @@ jobs:
           node --check site-overrides/v255-character-training.js
           node --check site-overrides/v255-native-wallet.js
           node --check site-overrides/v255-custom-feat-forge.js
+          node --check site-overrides/v270-divine-workspace.js
           node --check site-overrides/v255-shell-role-version.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
@@ -162,6 +166,8 @@ jobs:
         run: node tests/v264-room-actions.cjs
       - name: Verify V2.67 low-resolution texture rollback and preserved Session Room
         run: node tests/v267-visual-rollback.cjs
+      - name: Verify V2.70 Divine Chronicle and hidden player boons
+        run: node tests/v270-divine-integration.cjs
       - name: Publish the dashboard entrance and retain verified V2 content
         shell: bash
         run: |
@@ -197,7 +203,8 @@ jobs:
           assert 'data-source="v251-live-item-actions.js"' in html, "Live Session Room actions missing"
           assert 'data-source="v255-custom-feat-forge.js"' in html, "Custom feat forge missing"
           assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
-          assert "Terravale Codex V2.67" in html, "Latest V2 implementation missing"
+          assert 'data-source="v270-divine-workspace.js"' in html, "Divine workspace missing"
+          assert "Terravale Codex V2.70" in html, "Latest V2 implementation missing"
           assert "sb_secret_" not in html
           print("PASS: public root enters the complete V2 Dashboard without the holding page")
           print("PASS: OAuth callback query and native SPA route are both preserved")
@@ -259,7 +266,8 @@ jobs:
                grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
-               grep -q 'Terravale Codex V2.67' /tmp/terravale-v2-live.html &&
+               grep -q 'Terravale Codex V2.70' /tmp/terravale-v2-live.html &&
+               grep -q 'data-source="v270-divine-workspace.js"' /tmp/terravale-v2-live.html &&
                ! grep -Fq "history.replaceState(null,'','#/characters')" /tmp/terravale-v2-live.html; then
               echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."
               break
