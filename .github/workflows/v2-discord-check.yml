@@ -70,6 +70,15 @@ on:
       - "tests/v263-compact-inventory.cjs"
       - "tests/v264-room-actions.cjs"
       - "site-overrides/v264-room-actions-parallax.css"
+      - "site-overrides/v265-fixed-session-chat.css"
+      - "site-overrides/v265-atmosphere.js"
+      - "site-overrides/v265-atmosphere.css"
+      - "site-overrides/v265-texture-dashboard.css"
+      - "site-overrides/v265-texture-character.css"
+      - "site-overrides/v265-texture-initiative.css"
+      - "site-overrides/v265-texture-lore.css"
+      - "site-overrides/v265-texture-achievements.css"
+      - "tests/v265-atmosphere-and-chat.cjs"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -102,8 +111,6 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
-      - name: Inspect site surfaces for V2.65 (temporary)
-        run: node tests/v265-surface-inspect-temp.cjs
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
@@ -118,6 +125,8 @@ jobs:
         run: node tests/v263-compact-inventory.cjs
       - name: Verify Session Room Dice, Checks and Character Actions with parallax
         run: node tests/v264-room-actions.cjs
+      - name: Validate V2.65 fixed Chat height and reversible five-surface textures
+        run: node tests/v265-atmosphere-and-chat.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
@@ -152,7 +161,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.64' in html
+          assert 'Terravale Codex V2.65' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -517,7 +526,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.64" in html
+          assert "Terravale Codex V2.65" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
