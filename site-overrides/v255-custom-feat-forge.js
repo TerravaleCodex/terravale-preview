@@ -418,7 +418,7 @@ const observer=new MutationObserver(()=>{
  requestAnimationFrame(()=>{queued=false;mountCharacterFeats()});
 });
 observer.observe(document.getElementById('pageRoot')||document.body,{childList:true,subtree:true});
-window.addEventListener('hashchange',()=>setTimeout(mountCharacterFeats,100));
+window.addEventListener('hashchange',()=>{sheetFeatCache.clear();setTimeout(mountCharacterFeats,100)});
 window.addEventListener('terravale-characters-synced',()=>{
  sheetFeatCache.clear();setTimeout(mountCharacterFeats,100);
 });
