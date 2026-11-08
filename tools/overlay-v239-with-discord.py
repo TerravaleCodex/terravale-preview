@@ -25,15 +25,18 @@ source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
-# V2.69: an old eight-character DEMO script (V2.36) forced the entire
-# live site to the Characters list on fresh visits, even after public launch.
-# The native Dashboard already uses '/' and must remain the first page.
-# Do not change explicit links such as '#/characters/<id>' or '#/party'.
-legacy_default = "if(!location.hash || location.hash==='#/' || location.hash==='#/dashboard'){ history.replaceState(null,'','#/characters'); }"
-assert source.count(legacy_default) == 1, "Legacy V2.36 forced Characters route changed"
-source = source.replace(legacy_default,
-    "/* V2.69: no forced character-list redirect; the native '/' route is Dashboard. */", 1)
-assert legacy_default not in source, "Forced Characters landing route remains"
+# V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
+# '#/characters' on every fresh visit. Remove only that historical redirect.
+# The rule is whitespace-tolerant because native build patches reformat HTML.
+legacy_default = re.compile(
+    r"if\s*\([^{}]{0,400}\)\s*\{\s*history\.replaceState\s*"
+    r"\(\s*null\s*,\s*['\"]{2}\s*,\s*['\"]#/characters['\"]\s*\)\s*;\s*\}"
+)
+source, legacy_count = legacy_default.subn(
+    "/* V2.69: dashboard is the default; explicit Characters links still work. */",
+    source)
+assert legacy_count == 1, f"Expected one legacy forced Characters default, found {legacy_count}"
+assert "history.replaceState(null,'','#/characters')" not in source, "Forced Characters route remains"
 # V2.58: Extend the native searchable feat reader itself. Do not bolt a
 # second panel onto the DOM; the original state machine handles both kinds.
 reader_start = source.index("function featEntries(c){")
