@@ -94,7 +94,7 @@ begin
  if c.id is null or not authz.is_member(c.campaign_id) then
   raise exception 'Character unavailable' using errcode='42501';end if;
  show_scores:=c.owner_id=actor or authz.is_dm(c.campaign_id);
- if not show_scores and not (c.status='approved' and c.sheet_visible_to_party) then
+ if not show_scores and not (c.status='approved' and coalesce((to_jsonb(c)->>'sheet_visible_to_party')::boolean,false)) then
   raise exception 'Character not shared' using errcode='42501';end if;
  select jsonb_build_object(
   'previews',coalesce((select jsonb_agg(jsonb_build_object(
