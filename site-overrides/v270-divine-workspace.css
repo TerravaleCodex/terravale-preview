@@ -1,0 +1,54 @@
+/* V2.70 — Divine Chronicle / character-sheet relationships.
+   Uses the native theme tokens and follows the existing responsive layouts. */
+.tv270-header{margin:0 0 18px}
+.tv270-header h2,.tv270-divine-sheet>h2{font:500 clamp(1.6rem,2vw,2.1rem)/1.15 Georgia,serif;letter-spacing:-.02em;margin:7px 0 10px}
+.tv270-panel{min-width:0;margin:16px 0;padding:clamp(16px,2.5vw,23px);border:1px solid var(--line,#403c51);border-radius:14px;background:var(--surface,#17151f)}
+.tv270-panel h3{margin:0 0 12px;font:500 clamp(1.25rem,1.65vw,1.55rem)/1.2 Georgia,serif}
+.tv270-panel>p{margin:4px 0 16px}
+.tv270-panel h4{font:500 1.1rem/1.35 Georgia,serif;margin:5px 0}
+.tv270-panel h5{margin:14px 0 8px;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase}
+.tv270-chips{display:flex;gap:9px;flex-wrap:wrap;margin:8px 0}
+.tv270-chip{background:var(--surface-2,var(--surface,#1a1822));color:var(--text,#ebe8f0);border:1px solid var(--line,#4b435a);border-radius:10px;padding:9px 13px;cursor:pointer;font:inherit;font-size:.88rem;transition:background .16s,border-color .16s}
+.tv270-chip.active,.tv270-chip[aria-pressed=true]{background:color-mix(in srgb,var(--accent,#c3a5ff) 17%,var(--surface,#17151f));border-color:var(--accent,#c3a5ff)}
+.tv270-chip:hover,.tv270-counter-button:hover{border-color:var(--accent,#c3a5ff)}
+.tv270-chip:focus-visible,.tv270-counter-button:focus-visible{outline:2px solid var(--accent,#c3a5ff);outline-offset:3px}
+.tv270-field{display:flex;flex-direction:column;gap:7px;min-width:0;margin:14px 0;color:var(--text,#f6f0ff);font-size:.89rem}
+.tv270-field>span{color:var(--muted,#ada4bf);font-size:.82rem;font-weight:600}
+.tv270-input{width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--line,#474055);border-radius:9px;background:var(--surface-2,#101015);color:var(--text,#f7f4ff);padding:11px 12px;font:inherit;min-height:40px}
+textarea.tv270-input{resize:vertical;line-height:1.6}
+.tv270-input:focus{outline:2px solid var(--accent,#c3a5ff);outline-offset:1px}
+.tv270-favour-row,.tv270-patron-row,.tv270-activity,.tv270-boon-row,.tv270-awarded-boon{border:1px solid var(--line,#34303e);border-radius:11px;background:color-mix(in srgb,var(--surface,#1b1822) 80%,transparent);padding:13px 15px;margin:10px 0;min-width:0}
+.tv270-favour-row,.tv270-boon-row{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.tv270-favour-label{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tv270-favour-label strong{font:500 1.15rem Georgia,serif}
+.tv270-favour-row small,.tv270-patron-row small,.tv270-activity small,.tv270-boon-row small,.tv270-awarded-boon small{display:block;font-size:.75rem;color:var(--muted,#a6a0b6);margin:3px 0}
+.tv270-favour-controls{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.tv270-counter-button{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--line,#4e475e);border-radius:9px;background:var(--surface-2,#11101a);color:var(--text,#f6f0ff);font-size:1.35rem;line-height:1;cursor:pointer}
+.tv270-counter-button:disabled,.tv270-actions button:disabled{opacity:.38;cursor:not-allowed}
+.tv270-score{display:inline-block;font-variant-numeric:tabular-nums;min-width:38px;font-size:1.14rem;text-align:center}
+.tv270-score.high{color:#a5e3cf}
+.tv270-score.positive{color:#b6dfaf}
+.tv270-score.strained{color:#ffb8af}
+.tv270-score.neutral{color:var(--text,#e9e6ee)}
+.tv270-activity strong{display:block;font-size:.88rem}
+.tv270-activity p,.tv270-patron-row p,.tv270-awarded-boon p,.tv270-boon-detail p{margin:8px 0 2px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}
+.tv270-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;flex-shrink:0}
+.tv270-boon-detail{min-width:0;overflow-wrap:anywhere}
+.tv270-boon-row .tv254-eyebrow,.tv270-awarded-boon .tv254-eyebrow{margin:0 0 5px}
+.tv270-form{min-width:0;display:flex;flex-direction:column;gap:4px}
+.tv270-form .tv270-field{margin:10px 0}
+.tv270-form>.btn,.tv270-form>.tv270-actions{align-self:flex-start}
+.tv270-status{min-height:1em;color:var(--muted,#bbb3c9);font-size:.82rem;margin:9px 0}
+.tv270-divine-sheet{width:100%;box-sizing:border-box;margin-top:0;min-width:0}
+.tv270-divine-sheet[hidden]{display:none!important}
+.tv270-divine-sheet .tv270-panel{margin:18px 0}
+.tv270-rules{white-space:pre-wrap;overflow-wrap:anywhere}
+.sheet20-tabs [data-tv270-divine-tab][aria-selected=true]{color:var(--accent,#c3a5ff);border-color:var(--accent,#c3a5ff)}
+@media(max-width:760px){
+ .tv270-panel{padding:15px}
+ .tv270-favour-row,.tv270-boon-row{align-items:flex-start;flex-direction:column;gap:9px}
+ .tv270-favour-controls{align-self:flex-end}
+ .tv270-actions{justify-content:flex-start}
+ .sheet20-tabs [data-tv270-divine-tab]{flex-shrink:0}
+}
+@media(prefers-reduced-motion:reduce){.tv270-chip{transition:none}}
