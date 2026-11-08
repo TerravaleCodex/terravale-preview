@@ -95,6 +95,8 @@ jobs:
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
         run: node tests/v260-currency-copy.cjs
+      - name: Verify verified player bylines in character headers and ledger
+        run: node tests/v261-owner-and-currency.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
@@ -130,6 +132,7 @@ jobs:
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
           assert 'Terravale Codex V2.61' in html
+          assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
           PY
