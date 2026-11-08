@@ -1,0 +1,85 @@
+/* Terravale V2.63 — the backpack can fold away independently of the wallet.
+   Keep all native drag/drop and item controls available when expanded. */
+#tv263-backpack-panel .sheet21-backpack-heading{
+ display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0;
+ padding:0 0 6px;
+}
+#tv263-backpack-panel .sheet21-backpack-heading h3{margin:0}
+#tv263-backpack-panel .tv263-backpack-toggle{
+ margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
+ gap:5px;min-height:36px;padding:7px 11px;border:1px solid var(--edge,var(--s20-edge));
+ border-radius:8px;background:var(--raised,var(--s20-inset));
+ color:var(--ink,var(--s20-ink));font-size:11px;font-weight:650;
+ cursor:pointer;transition:border-color .15s,background .15s;
+}
+#tv263-backpack-panel .tv263-backpack-toggle:hover,
+#tv263-backpack-panel .tv263-backpack-toggle:focus-visible{
+ border-color:var(--accent,var(--s20-accent));outline-offset:2px;
+}
+#tv263-backpack-panel .sheet21-backpack-buttons[hidden],
+#tv263-backpack-panel.tv263-backpack-collapsed .sheet21-backpack-zone,
+#tv263-backpack-panel.tv263-backpack-collapsed .sheet21-equipped-list,
+#tv263-backpack-panel.tv263-backpack-collapsed #tv-v253-gift-form,
+#tv263-backpack-panel.tv263-backpack-collapsed > .sheet20-source-note{display:none!important}
+#tv263-backpack-panel.tv263-backpack-collapsed .sheet21-backpack-heading{
+ margin-bottom:5px;padding-bottom:12px;border-bottom:1px solid var(--edge,var(--s20-edge));
+}
+#tv263-backpack-panel .sheet21-backpack-zone{min-height:110px}
+#tv263-backpack-panel .tv263-inspect-item,
+.sheet21-gear-slot .tv263-inspect-item,
+.sheet22-slot-actions .tv263-inspect-item{
+ border:1px solid var(--edge,var(--s20-edge));border-radius:7px;
+ background:var(--raised,var(--s20-inset));color:var(--accent,var(--s20-accent));
+ font-size:10px;font-weight:700;padding:6px 9px;line-height:1.35;cursor:pointer;
+}
+.tv263-item-inspectable .tv263-clickable-item-name{cursor:pointer}
+.tv263-item-inspectable .tv263-clickable-item-name:hover{text-decoration:underline;text-underline-offset:3px}
+.tv263-item-inspectable .tv263-clickable-item-name:focus-visible{
+ outline:2px solid var(--accent,var(--s20-accent));outline-offset:3px;border-radius:3px;
+}
+.tv263-item-inspector{
+ --tv263-color:var(--accent,var(--s20-accent));
+ position:fixed;inset:0;margin:auto;max-height:min(86vh,850px);
+ width:min(540px,calc(100vw - 26px));max-width:none;box-sizing:border-box;
+ padding:0;border:1px solid var(--edge,var(--s20-edge));border-top:3px solid var(--tv263-color);
+ border-radius:15px;background:var(--panel,var(--s20-panel,#10182e));color:var(--ink,var(--s20-ink,#f5f5fa));
+ box-shadow:0 20px 75px #0009;overflow-y:auto;z-index:2147483000;
+}
+.tv263-item-inspector[data-rarity="Uncommon"]{--tv263-color:#54bfa0}
+.tv263-item-inspector[data-rarity="Rare"]{--tv263-color:#7dafff}
+.tv263-item-inspector[data-rarity="Very Rare"]{--tv263-color:#bc91e9}
+.tv263-item-inspector[data-rarity="Legendary"]{--tv263-color:#e0ae58}
+.tv263-item-inspector[data-rarity="Artifact"]{--tv263-color:#e57c84}
+.tv263-item-inspector[data-rarity="Unique"]{--tv263-color:#d6baff}
+.tv263-item-inspector::backdrop{background:rgba(2,5,14,.75);backdrop-filter:blur(5px)}
+.tv263-inspector-shell{display:grid;gap:16px;padding:24px 26px 20px}
+.tv263-inspector-head{display:flex;justify-content:space-between;gap:16px;align-items:start}
+.tv263-inspector-head .v2-overline{font-size:10px;letter-spacing:.1em;color:var(--soft,var(--s20-soft))}
+.tv263-inspector-head h3{font:500 clamp(23px,3vw,30px)/1.2 var(--serif,Georgia,serif);margin:7px 0 0}
+.tv263-inspector-close{flex:none;width:34px;height:34px;border:1px solid var(--edge,var(--s20-edge));
+ border-radius:8px;color:var(--ink,var(--s20-ink));background:var(--raised,var(--s20-inset));
+ cursor:pointer;font-size:22px;line-height:1}
+.tv263-item-rarity{
+ display:inline-flex;justify-self:start;align-items:center;padding:5px 12px;
+ border:1px solid var(--tv263-color);border-radius:100px;color:var(--tv263-color);
+ font-size:11px;font-weight:700
+}
+.tv263-inspector-description,.tv263-inspector-rules p{
+ margin:0;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere
+}
+.tv263-item-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:0 17px;border-top:1px solid var(--edge,var(--s20-edge))}
+.tv263-item-stat{min-width:0;display:flex;justify-content:space-between;align-items:start;
+ gap:12px;padding:10px 0;border-bottom:1px solid var(--edge,var(--s20-edge));font-size:12px}
+.tv263-item-stat span{color:var(--soft,var(--s20-soft))}
+.tv263-item-stat strong{text-align:right;overflow-wrap:anywhere}
+.tv263-inspector-rules{display:grid;gap:10px;padding-top:12px;border-top:1px solid var(--edge,var(--s20-edge))}
+.tv263-inspector-rules .v2-overline{color:var(--tv263-color)}
+.tv263-inspector-note{margin:0;font-size:10px;line-height:1.55;color:var(--soft,var(--s20-soft))}
+@media(max-width:650px){
+ #tv263-backpack-panel .sheet21-backpack-heading{align-items:center}
+ #tv263-backpack-panel .tv263-backpack-toggle{font-size:10px}
+ .tv263-inspector-shell{padding:18px 17px}
+ .tv263-item-stats{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){#tv263-backpack-panel .tv263-backpack-toggle{transition:none}}

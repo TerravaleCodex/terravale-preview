@@ -17,12 +17,15 @@ const cashCache=new Map();
 const denomLookup=()=>new Map(rules().currencies.flatMap(c=>c.denominations.map(d=>
  [d.id,{...d,system:c.name,system_id:c.id}])));
 const ready=()=>!!window.TerravaleVerifiedAccount?.state?.ready;
+// Authorised editing and public-facing viewing are separate permissions.
+// In Player preview, even the site DM sees another character's purse read-only.
 const validRole=c=>c?.owner==='You'||!!(
- window.TerravaleVerifiedAccount?.state?.profile?.is_dm&&
+ db.role==='dm'&&window.TerravaleVerifiedAccount?.state?.profile?.is_dm&&
  db.campaigns?.some(k=>k.id===c?.campaign&&k.role==='dm'));
 const canRead=c=>validRole(c)||!!(
-  ready()&&c?.status==='Approved'&&c?.sheetVisibleToParty===true&&
-  db.campaigns?.some(k=>k.id===c.campaign)
+  ready()&&c&&String(c.status).toLowerCase()==='approved'&&
+  c.sheetVisibleToParty===true&&
+  window.TerravaleV2Bridge?.hasCampaign?.(c.campaign)
 );
 const title=c=>c?.name||'Adventurer';
 const stateFor=c=>{

@@ -66,7 +66,7 @@ const script=fs.readFileSync('site-overrides/v255-native-wallet.js','utf8');
 assert.ok(script.includes('else if(validRole(c))breakdown.append(manager)'),
  'Shared wallet cannot render change-money controls');
 assert.ok(script.includes('if(!canRead(c))'),'Approved shared wallets can be viewed');
-assert.ok(script.includes('c?.sheetVisibleToParty===true'));
+assert.ok(script.includes('c.sheetVisibleToParty===true'));
 const seed=fs.readFileSync('site-overrides/sql/v262_curate_demo_party.sql','utf8');
 assert.ok(seed.includes("c.owner_id is null and c.status='approved'"),'Only curated ownerless demos');
 assert.ok(seed.includes('d.template_slot'),'Slot-limited seed');

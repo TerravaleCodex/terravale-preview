@@ -38,36 +38,6 @@
    if(properties.rarity)entries.push(properties.rarity);
    return entries;
  }
- function propertyList(ch){
-   const list=inventory(ch),meta=attributes(ch);
-   const wrapper=node('section','tv-item-property-summary');
-   const withRules=list.filter(item=>meta[item.id]&&Object.keys(meta[item.id]).length);
-   if(!withRules.length)return null;
-   wrapper.append(node('div','v2-overline','DM-APPROVED ITEM PROPERTIES'));
-   wrapper.append(node('h4','','Items with recorded mechanics'));
-   for(const item of withRules){
-     const p=meta[item.id],card=node('div','tv-item-property-card tv256-rarity-item');
-     card.dataset.rarity=p.rarity||'Common';
-     const head=node('div','tv-item-property-head');
-     head.append(node('strong','',item.name||'Unnamed item'),
-                 node('small','',item.slot?'Equipped':'Backpack'));
-     card.append(head);
-     const chips=node('div','tv-item-property-chips');
-     for(const label of badges(p))chips.append(node('span','',label));
-     if(chips.children.length)card.append(chips);
-     if(p.features||p.recharge){
-       const details=node('details','tv-item-feature-reveal');
-       const summary=node('summary','','Special effects and recharge');
-       const description=node('div','tv-item-property-text');
-       description.textContent=[p.features||'',p.recharge?'Recharge: '+p.recharge:''].filter(Boolean).join('\n\n');
-       details.append(summary,description);card.append(details);
-     }
-     wrapper.append(card);
-   }
-   const small=node('p','tv-item-properties-note','These are DM-recorded properties. Effects are reference text until a specific character rule applies them; equipping an item does not silently change base AC.');
-   wrapper.append(small);
-   return wrapper;
- }
  function formField(label,name,value,options={}){
    const wrap=node('label','tv-item-form-field');
    wrap.append(node('span','',label));
@@ -262,8 +232,7 @@
    if(marker)marker.remove();
    marker=node('div','tv-dm-item-zone');marker.id='tv-dm-item-zone';
    marker.dataset.fingerprint=fingerprint;
-   const stats=propertyList(ch);
-   if(stats)marker.append(stats);
+   // Item mechanics now appear only in the item inspector on click.
    if(canManage(ch)){
      const workshop=node('details','tv-dm-item-workshop');
      workshop.id='tv-dm-item-workshop';

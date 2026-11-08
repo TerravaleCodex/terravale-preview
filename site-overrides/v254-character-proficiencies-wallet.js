@@ -25,7 +25,12 @@ const idOfRoute=()=>{
 const charOfRoute=()=>typeof db==='undefined'?null:db.characters.find(c=>c.id===idOfRoute());
 const isOwner=c=>!!(ready()&&c?.owner==='You');
 const isDm=c=>!!(ready()&&c&&auth()?.state?.profile?.is_dm&&db.campaigns.some(k=>k.id===c.campaign&&k.role==='dm'));
-const canRead=c=>isOwner(c)||isDm(c);
+// The viewer of an approved, party-visible record may read its purse, but
+// only its actual owner or the authorised DM may change physical coins.
+const canRead=c=>isOwner(c)||isDm(c)||!!(
+ ready()&&c&&String(c.status).toLowerCase()==='approved'&&
+ c.sheetVisibleToParty===true&&bridge()?.hasCampaign?.(c.campaign)
+);
 const toolById=id=>rules().tools.find(t=>t.id===id);
 const languageById=id=>rules().languages.find(t=>t.id===id);
 const currencyById=id=>rules().currencies.find(c=>c.denominations.some(x=>x.id===id));

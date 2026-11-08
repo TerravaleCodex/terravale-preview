@@ -32,5 +32,5 @@ for(const expected of [
 ])assert.ok(source.includes(expected),'Missing null-safe authorization '+expected);
 const wallet=fs.readFileSync('site-overrides/v255-native-wallet.js','utf8');
 assert.ok(wallet.includes('else if(validRole(c))breakdown.append(manager)'));
-assert.ok(wallet.includes("c?.sheetVisibleToParty===true"));
+assert.ok(wallet.includes("c.sheetVisibleToParty===true"));
 console.log('PASS: ten null-safe server ownership guards; approved shared wallets stay read-only');
