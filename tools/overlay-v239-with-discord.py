@@ -59,6 +59,14 @@ reader_fixes = [
 for old,new in reader_fixes:
     assert reader_ui.count(old)==1, "Native reader phrase missing: "+old
     reader_ui=reader_ui.replace(old,new,1)
+# The active native reader element carries the actual character id.
+# This avoids the previous bug where our async feat refresh assumed a URL
+# shape that isn't guaranteed for all character-sheet navigation paths.
+native_reader_root = '<section class="sheet20-panel sheet227-reader">'
+assert reader_ui.count(native_reader_root) == 1, "Native reader root changed"
+reader_ui = reader_ui.replace(
+    native_reader_root,
+    """<section class="sheet20-panel sheet227-reader" data-tv259-character="'+S(c.id)+'">""",1)
 source=source[:reader_start]+reader_ui+source[reader_end:]
 # V2.55: DM Chronicle paths all use the same native page; a focused
 # role-checked workspace then fills the selected routed subsection.
@@ -69,7 +77,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.58')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.59')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -126,7 +134,7 @@ training_v255 = (ROOT / "site-overrides/v255-character-training.js").read_text()
 wallet_v255 = (ROOT / "site-overrides/v255-native-wallet.js").read_text()
 creator_v255 = (ROOT / "site-overrides/v255-creator-native-choices.js").read_text()
 shell_v255 = (ROOT / "site-overrides/v255-shell-role-version.js").read_text()
-build_meta = json.dumps({"version":"2.58","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+build_meta = json.dumps({"version":"2.59","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
