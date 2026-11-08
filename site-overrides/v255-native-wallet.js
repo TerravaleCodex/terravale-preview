@@ -31,8 +31,45 @@ function sumGC(result){
  return allHoldings(result).reduce((sum,row)=>
   sum+Number(row.quantity||0)*(lookup.get(row.denomination_id)?.valueGC||0),0);
 }
+// Display equivalent amounts in one unit when a currency uses numbered
+// denominations of that same unit. Actual denomination holdings remain separate.
+const unitSummaries={
+ 'human-civics':{value:2,singular:'Civic',plural:'Civics'},
+ 'kharithen-witness-tallies':{value:4,singular:'Tally',plural:'Tallies'},
+ 'thalassari-tiderings':{value:2,singular:'Tidering',plural:'Tiderings'},
+ 'fl-gel-currents':{value:2,singular:'Current',plural:'Currents'},
+ 'null-city-meridian-notes':{value:2,singular:'Meridian Note',plural:'Meridian Notes'},
+ 'crimsonborn-ledger-notes':{value:10,singular:'Ledger Note',plural:'Ledger Notes'},
+ 'daemon-concord-marks':{value:5,singular:'Concord Mark',plural:'Concord Marks'},
+ 'oni-burden-marks':{value:5,singular:'Burden Mark',plural:'Burden Marks'}
+};
 function displayedParts(system,amount){
  if(!system?.denominations?.length)return [amount.toLocaleString()+' Guild Copper'];
+ const simple=unitSummaries[system.id];
+ // Verify all denominations are multiples of the published monetary unit;
+ // never infer conversion values from the labels themselves.
+ if(simple&&system.denominations.every(d=>Number.isInteger(d.valueGC/simple.value))){
+  const quantity=Math.floor(amount/simple.value),remainder=amount%simple.value;
+  const unit=quantity===1?simple.singular:simple.plural;
+  const output=[quantity.toLocaleString()+' '+unit];
+  if(remainder)output.push(remainder.toLocaleString()+' Guild Copper left over');
+  return output;
+ }
+ // Tri-Crown has a fractional third-unit. Show Crownrings and a remaining
+ // Third Crownring instead of treating five-ring notes as separate units.
+ if(system.id==='tri-crown-crownrings'){
+  const crown=system.denominations.find(d=>d.name==='Crownring');
+  const third=system.denominations.find(d=>d.name==='Third Crownring');
+  if(crown?.valueGC===12&&third?.valueGC===4){
+   const full=Math.floor(amount/12),thirds=Math.floor(amount%12/4);
+   const extra=amount%4,parts=[];
+   if(full)parts.push(full.toLocaleString()+' '+(full===1?'Crownring':'Crownrings'));
+   if(thirds)parts.push(thirds.toLocaleString()+' '+(thirds===1?'Third Crownring':'Third Crownrings'));
+   if(extra)parts.push(extra.toLocaleString()+' Guild Copper left over');
+   return parts.length?parts:['0 Crownrings'];
+  }
+ }
+ // Distinctly named coin families still use their explicit denomination mix.
  const denominations=[...system.denominations].sort((a,b)=>b.valueGC-a.valueGC);
  const parts=[];let balance=amount;
  for(const d of denominations){
@@ -198,7 +235,7 @@ function viewWallet(host,c,result,refresh,isDm){
  next.setAttribute('aria-label','Next display currency');
  const conversion=el('div','tv256-conversion-readout');
  if(shown){
-  conversion.append(el('small','','EQUIVALENT IN '+shown.name+' · DENOMINATION × QUANTITY'));
+  conversion.append(el('small','','EQUIVALENT IN '+shown.name));
   const values=el('div','tv258-conversion-values');
   for(const part of displayedParts(shown,total))values.append(el('span','',part));
   conversion.append(values);
