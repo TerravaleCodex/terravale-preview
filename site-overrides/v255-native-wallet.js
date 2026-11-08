@@ -21,8 +21,9 @@ const validRole=c=>c?.owner==='You'||!!(
  window.TerravaleVerifiedAccount?.state?.profile?.is_dm&&
  db.campaigns?.some(k=>k.id===c?.campaign&&k.role==='dm'));
 const canRead=c=>validRole(c)||!!(
-  ready()&&c?.status==='Approved'&&c?.sheetVisibleToParty===true&&
-  db.campaigns?.some(k=>k.id===c.campaign)
+  ready()&&c&&String(c.status).toLowerCase()==='approved'&&
+  c.sheetVisibleToParty===true&&
+  window.TerravaleV2Bridge?.hasCampaign?.(c.campaign)
 );
 const title=c=>c?.name||'Adventurer';
 const stateFor=c=>{
