@@ -68,6 +68,8 @@ on:
       - "site-overrides/v263-compact-equipment-preview.js"
       - "site-overrides/v263-compact-equipment-preview.css"
       - "tests/v263-compact-inventory.cjs"
+      - "tests/v264-room-actions.cjs"
+      - "site-overrides/v264-room-actions-parallax.css"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -112,6 +114,8 @@ jobs:
         run: node tests/v262-null-owner-security.cjs
       - name: Verify V2.63 collapsible backpack, click-to-inspect gear and shared wallet
         run: node tests/v263-compact-inventory.cjs
+      - name: Verify Session Room Dice, Checks and Character Actions with parallax
+        run: node tests/v264-room-actions.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
@@ -146,7 +150,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.63' in html
+          assert 'Terravale Codex V2.64' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -484,8 +488,8 @@ jobs:
           assert 'terravale_vault_issue_item' in vault
           assert 'terravale_send_item_to_dm_vault' in vault
           assert "source_item_id" in gifts and "dm-vault" in gifts
-          assert "const activity=workspace?.querySelector" in room
-          assert "grid-column:1 / -1" in Path('site-overrides/v251-interactive-item-actions.css').read_text()
+          assert "dicePanel=document.querySelector('#pageRoot .sr-dice-panel')" in room
+          assert ".tv-v264-room-tabs" in Path('site-overrides/v264-room-actions-parallax.css').read_text()
           for script in ('v254-rules-registry.js','v254-dm-vault.js','v254-character-proficiencies-wallet.js'):
             assert html.count(f'data-source="{script}"')==1,script
           assert "tv254-dm-vault" in html
@@ -496,7 +500,7 @@ jobs:
           assert 'SOME TECHNICAL DIFFICULTIES' not in html
           print("PASS: 64 tools (18 instruments, 9 game sets), 18 languages, 14 currencies, 33 class rules")
           print("PASS: DM Vault/Treasury, player shopkeeper gifts, role-secured choices and wallets")
-          print("PASS: live creator and equipment fields; Session Room actions follow chat and dice")
+          print("PASS: live creator and equipment fields; character item actions now live inside Dice & Checks")
           PY
       - name: Verify V2.55 focused Chronicle, custom feats and integrated training
         run: |
@@ -511,7 +515,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.63" in html
+          assert "Terravale Codex V2.64" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
