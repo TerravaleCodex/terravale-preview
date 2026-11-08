@@ -119,7 +119,7 @@ begin
         where id=target_feat_id;
       end if;
       if not exists(select 1 from public.terravale_character_custom_feats
-         where character_id=target_demo_id and feat_id=feat_id and status='active')
+         where character_id=target_demo_id and feat_id=target_feat_id and status='active')
       then
         insert into public.terravale_character_custom_feats(
           feat_id,character_id,campaign_id,granted_by,grant_note
