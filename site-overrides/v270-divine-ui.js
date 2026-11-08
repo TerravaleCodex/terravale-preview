@@ -123,9 +123,9 @@ function mountSheet(){
  if(!id||!c||!nav)return;
  if(sheetId!==id){sheetId=id;sheetOpen=false}
  let tab=nav.querySelector('[data-tv270-tab]');
- if(!tab){tab=action('Divine','', 'tv270-sheet-tab');
-  // Replace default event from factory; never trigger the native sheetTab handler.
-  tab.replaceWith?.(tab);tab.dataset.tv270Tab='1';tab.setAttribute('role','tab');
+ if(!tab){tab=action('Divine',()=>{},'tv270-sheet-tab');
+  // Isolated button; native sheetTab handler is left untouched.
+  tab.dataset.tv270Tab='1';tab.setAttribute('role','tab');
   tab.setAttribute('aria-selected','false');tab.onclick=e=>{e.preventDefault();e.stopPropagation();setSheetOpen(true)};
   nav.append(tab);
  }
