@@ -1,5 +1,12 @@
 # Terravale Living Codex — Public Preview
 
+## V2.68 — Public dashboard launch
+- The public GitHub Pages entrance `/terravale-preview/` now immediately opens the complete V2 dashboard at `/terravale-preview/veiled-codex/` instead of displaying the technical-difficulties page.
+- The redirect forwards OAuth query parameters, Discord callback errors and in-site hash routes unchanged. The original authenticated V2 client remains the single source of truth for profiles, campaigns and characters.
+- The old holding page is preserved as `site-overrides/awaiting-v2.html` in source control, but is **not** deployed as the homepage or the 404 fallback.
+- Invalid old root links now present the same V2 entrance rather than the maintenance screen. The private and ancestry-locked lore still uses existing server-side access checks; the public bundle contains only its authorized public text and restricted placeholders.
+- All V2.67 layout, feat, item, wallet, ownership and Session Room functionality remains unchanged. This change only opens the public entrance.
+
 ## v0.12.3 — Navigation, character privacy controls and Ael'Vaen compatibility
 - Sidebar labels restored to compact 12px separate from 15px icons, fixing accidental oversized navigation text.
 - Expanded sidebar uses 208px on desktop; collapsing reduces it to a 58px icon rail and actually expands sheet content instead of applying another maximum width cap.
