@@ -1,0 +1,122 @@
+/* Terravale V2.65 | FULLY REMOVABLE cosmetic layer; game mechanics live elsewhere. */
+.tv265-surface{position:relative;isolation:isolate;overflow:hidden}
+.tv265-surface>.tv265-material{
+ position:absolute;inset:-7%;z-index:0;pointer-events:none;display:none;
+ opacity:0;background-repeat:no-repeat;background-size:cover;background-position:center;
+ transform:translate3d(0,0,0) scale(1.035);
+ transition:transform .8s cubic-bezier(.2,.85,.28,1),opacity .35s ease;
+ will-change:transform;mix-blend-mode:screen;border-radius:inherit;
+}
+.tv265-surface>*:not(.tv265-material){position:relative;z-index:1}
+html[data-tv265-textures="on"] .tv265-surface>.tv265-material{display:block}
+html[data-tv265-textures="on"][data-tv265-motion="on"] .tv265-surface>.tv265-material{
+ transform:translate3d(var(--tv265-x,0px),var(--tv265-y,0px),0) scale(1.045);
+}
+/* Dashboard: alive, prismatic river. Independent welcome + featured depth. */
+html[data-tv265-textures="on"] .tv265-dashboard>.tv265-material{
+ opacity:.12;background-image:linear-gradient(114deg,#080b12cf 2%,transparent 60%,#090b1ba8),var(--tv265-art-dashboard);
+ background-position:50% 50%;background-size:cover;
+}
+html[data-tv265-textures="on"] .tv265-featured>.tv265-material{
+ opacity:.105;background-image:linear-gradient(165deg,#0a0919df,#0b14226f 55%,transparent),var(--tv265-art-character);
+ background-position:28% 50%;
+}
+html[data-tv265-motion="on"] .tv265-featured>.tv265-material{
+ transition-duration:1.15s;transform:translate3d(var(--tv265-x,0px),var(--tv265-y,0px),0) scale(1.05);
+}
+/* Character sheet: nacre behind header and PORTRAIT, tinted per ancestry. */
+html[data-tv265-textures="on"] .tv265-character>.tv265-material{
+ opacity:.115;background-image:linear-gradient(106deg,#070b18c8,transparent 60%,#12061bd2),var(--tv265-art-character);
+ background-position:22% 47%;
+}
+.tv265-character{--tv265-race-glow:#a7a0ff}
+.tv265-character[data-tv265-ancestry="fluegel"]{--tv265-race-glow:#87dff1}
+.tv265-character[data-tv265-ancestry="crimson"]{--tv265-race-glow:#f08c9b}
+.tv265-character[data-tv265-ancestry="beastfolk"]{--tv265-race-glow:#82c9a3}
+.tv265-character[data-tv265-ancestry="dvergr"]{--tv265-race-glow:#e0bd91}
+.tv265-character[data-tv265-ancestry="oni"]{--tv265-race-glow:#dca1e5}
+.tv265-character[data-tv265-ancestry="elf"]{--tv265-race-glow:#b5d6f2}
+html[data-tv265-textures="on"] .tv265-character .ledger-portrait-large{
+ box-shadow:0 0 0 1px color-mix(in srgb,var(--tv265-race-glow) 22%,transparent),
+ 0 0 34px color-mix(in srgb,var(--tv265-race-glow) 9%,transparent);
+}
+html[data-tv265-textures="on"] .tv265-character .sheet20-hero-copy>p:first-of-type{
+ color:color-mix(in srgb,var(--tv265-race-glow) 43%,var(--s20-soft,#c2bccf));
+}
+/* Encounter: darker, distinct marble; no texture behind Dice & Checks or Chat. */
+html[data-tv265-textures="on"] .tv265-initiative>.tv265-material{
+ opacity:.055;background-image:
+  linear-gradient(145deg,#020308a8 5%,#0d0928a0 90%),var(--tv265-art-initiative);
+ background-position:center 50%;mix-blend-mode:screen;
+}
+html[data-tv265-textures="off"] .tv265-initiative>.tv265-material{display:none}
+html[data-tv265-motion="on"] .tv265-initiative>.tv265-material{
+ transform:translate3d(var(--tv265-x,0px),var(--tv265-y,0px),0) scale(1.035);
+}
+/* Lore: paper-silver current, vertically distinct from the other surfaces.
+   Existing art/images gain only 7px of optical scroll depth, not layout shift. */
+html[data-tv265-textures="on"] .tv265-lore>.tv265-material{
+ opacity:.095;background-image:linear-gradient(90deg,#070912d4 0%,#0d102c7a 55%,#070912cf),var(--tv265-art-lore);
+ background-position:center 46%;mix-blend-mode:screen;
+}
+html[data-tv265-motion="on"] .tv265-lore>.tv265-material{
+ transform:translate3d(0,var(--tv265-scroll,0px),0) scale(1.045);
+}
+html[data-tv265-motion="on"] #tv238-article-body .tv265-article-image{
+ transform:translate3d(0,var(--tv265-scroll,0px),0) scale(1.012);
+ transform-origin:50% 50%;transition:transform .25s ease-out;
+}
+/* Rarity reveal: a fifth, genuinely different source, limited to rare+ unlocks. */
+html[data-tv265-textures="on"] .tv-achievement-notice:is([data-rarity="rare"],[data-rarity="epic"],[data-rarity="legendary"],[data-rarity="mythic"]){
+ position:relative;isolation:isolate;overflow:hidden;
+}
+html[data-tv265-textures="on"] .tv-achievement-notice:is([data-rarity="rare"],[data-rarity="epic"],[data-rarity="legendary"],[data-rarity="mythic"])::after{
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;
+ background-image:linear-gradient(130deg,transparent 26%,#daeeff18 48%,transparent 75%),var(--tv265-art-achievements);
+ background-size:215% 100%,cover;background-position:125% 0,center;
+ opacity:.20;mix-blend-mode:screen;
+}
+html[data-tv265-textures="on"] .tv-achievement-notice:is([data-rarity="rare"],[data-rarity="epic"],[data-rarity="legendary"],[data-rarity="mythic"])>*{
+ position:relative;z-index:1;
+}
+html[data-tv265-textures="on"][data-tv265-motion="on"] .tv-achievement-notice:is([data-rarity="rare"],[data-rarity="epic"],[data-rarity="legendary"],[data-rarity="mythic"])::after{
+ animation:tv265-notice-sheen 1.7s ease-out 1;
+}
+@keyframes tv265-notice-sheen{0%{background-position:125% 0,center;opacity:.05}45%{opacity:.28}100%{background-position:-115% 0,center;opacity:.17}}
+/* Appearance: plain switches, not yet another toolbar or nested modal. */
+.tv265-appearance-panel{margin:0 0 20px!important;padding:20px 22px!important}
+.tv265-appearance-panel h3{font:500 24px/1.2 Georgia,serif;margin:5px 0 10px}
+.tv265-appearance-panel>p{font-size:12px;line-height:1.6;color:var(--soft,#bab4c6);margin:0 0 15px}
+.tv265-appearance-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tv265-setting{display:flex;align-items:center;justify-content:space-between;gap:14px;
+ border:1px solid var(--edge,#40334b);border-radius:10px;padding:13px 15px;background:var(--raised,#191525)}
+.tv265-setting-copy{min-width:0;display:grid;gap:5px}
+.tv265-setting-copy strong{font-size:12px;color:var(--ink,#f0e7f4)}
+.tv265-setting-copy small{font-size:10.5px;line-height:1.5;color:var(--soft,#b6a8bd)}
+.tv265-setting-toggle{
+ flex:none;min-width:57px;min-height:33px;border-radius:8px;
+ border:1px solid var(--edge,#40334b);background:var(--surface,#110e19);
+ color:var(--soft,#c4b7d1);font-weight:700;font-size:12px;cursor:pointer;
+}
+.tv265-setting-toggle.is-on{
+ color:var(--ink,#f5eafa);border-color:var(--accent,#bb9be2);
+ background:color-mix(in srgb,var(--accent,#bb9be2) 18%,var(--surface,#110e19))
+}
+.tv265-setting-toggle:focus-visible{outline:2px solid var(--accent,#bb9be2);outline-offset:3px}
+.tv265-appearance-panel>.tv265-setting-note{margin:12px 0 0;color:var(--dim,#9b8dab);font-size:10px}
+html[data-tv265-motion="off"] .tv265-material,
+html[data-tv265-motion="off"] .tv265-article-image{
+ transform:none!important;transition:none!important;animation:none!important
+}
+html[data-tv265-motion="off"] .page-session .sr-encounter::after{transform:none!important}
+html[data-tv265-textures="off"] .tv265-material{display:none!important}
+@media(max-width:760px){
+ .tv265-appearance-controls{grid-template-columns:1fr}
+ .tv265-appearance-panel{padding:16px!important}
+ .tv265-material{will-change:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .tv265-material,.tv265-article-image,.tv-achievement-notice::after{
+  transition:none!important;transform:none!important;animation:none!important
+ }
+}

@@ -72,6 +72,15 @@ on:
       - "tests/v263-compact-inventory.cjs"
       - "tests/v264-room-actions.cjs"
       - "site-overrides/v264-room-actions-parallax.css"
+      - "site-overrides/v265-fixed-session-chat.css"
+      - "site-overrides/v265-atmosphere.js"
+      - "site-overrides/v265-atmosphere.css"
+      - "site-overrides/v265-texture-dashboard.css"
+      - "site-overrides/v265-texture-character.css"
+      - "site-overrides/v265-texture-initiative.css"
+      - "site-overrides/v265-texture-lore.css"
+      - "site-overrides/v265-texture-achievements.css"
+      - "tests/v265-atmosphere-and-chat.cjs"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -155,6 +164,8 @@ jobs:
         run: node tests/v263-compact-inventory.cjs
       - name: Verify Session Room Dice, Checks and Character Actions with parallax
         run: node tests/v264-room-actions.cjs
+      - name: Validate V2.65 fixed Chat height and reversible five-surface textures
+        run: node tests/v265-atmosphere-and-chat.cjs
       - name: Assemble humorous technical difficulties page and hidden public-safe V2
         shell: bash
         run: |
