@@ -80,14 +80,16 @@ function renderList(host,campaign,chars){
   'No custom feats prepared. Create one now; you can grant it to any eligible character later.'));
  for(const f of records){
   const count=state.grants.filter(g=>g.feat_id===f.id&&g.status==='active').length;
-  const card=node('article','tv255-feat-card');
+  const card=node('article','tv255-feat-card tv257-feat-library-row');
+  const info=node('div','tv257-feat-library-copy');
   const meta=node('div','tv254-eyebrow',
    f.state==='draft'?'PRIVATE DRAFT':'PUBLISHED CUSTOM FEAT');
-  card.append(meta,node('h3','',f.name),
+  info.append(meta,node('h3','',f.name),
    node('p','',f.short_description||'No summary provided.'),
    node('div','tv255-feat-meta','Level '+f.minimum_level+'+ · '+
     f.action_type+(f.uses_per_rest?' · '+f.uses_per_rest+' use(s)':' · No use limit')+
     ' · '+count+' active grants'));
+  card.append(info);
   const actions=node('div','tv254-actions');
   actions.append(btn('Edit feat',()=>{
     state.mode='edit';state.selected=f.id;draw(host,campaign,chars);
