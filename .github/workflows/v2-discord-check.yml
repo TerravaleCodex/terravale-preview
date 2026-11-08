@@ -55,6 +55,7 @@ on:
       - "site-overrides/v258-flat-ux.css"
       - "site-overrides/v259-inline-mechanics.css"
       - "tests/v258-native-feats.cjs"
+      - "tests/v260-currency-copy.cjs"
       - "site-overrides/sql/v255_custom_feat_forge.sql"
       - "site-overrides/sql/v255_character_training_overrides.sql"
       - "site-overrides/sql/v255_player_wallet.sql"
@@ -89,6 +90,8 @@ jobs:
           python3 tools/overlay-v239-with-discord.py
       - name: Test native feat reader and active-grant integration
         run: node tests/v258-native-feats.cjs
+      - name: Verify currency wording and unchanged exchange values
+        run: node tests/v260-currency-copy.cjs
       - name: Verify V2.60 final native feat reader, editor and treasury
         run: |
           python3 - <<'PY'
