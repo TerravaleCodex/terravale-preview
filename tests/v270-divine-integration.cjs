@@ -1,10 +1,11 @@
-/* Terravale V2.72 — fail-closed smoke checks for divine UI + deploy. */
+/* Terravale V2.73 — fail-closed smoke checks for divine UI + deploy. */
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const read=p=>fs.readFileSync(p,'utf8');
 const js=read('site-overrides/v270-divine-workspace.js');
 const css=read('site-overrides/v270-divine-workspace.css');
+const zipImporter=read('site-overrides/v273-boon-archive-import.js');
 const sql=read('site-overrides/sql/v271_divine_private_resources_and_pantheon.sql');
 const dispositionSQL=read('site-overrides/sql/v272_private_divine_dispositions.sql');
 const vault=read('site-overrides/v254-dm-vault.js');
@@ -28,6 +29,9 @@ assert.ok(!js.includes(".from('terravale_dm_divine_boons')"),'Private boon table
 assert.ok(!js.includes('localStorage.setItem'),'Secret boons must not be persisted in browser storage');
 assert.ok(js.includes('renderBoonResources'),'Granted charged boons must render in Resources');
 assert.ok(js.includes('importBoonArchive'),'DM-only catalogue import missing');
+assert.ok(zipImporter.includes('unzipMarkdown'),'ZIP importer missing');
+assert.ok(zipImporter.includes("state:'draft'"),'Archive must remain private drafts');
+assert.ok(js.includes('importPreparedBoons'),'Native verified importer not connected');
 assert.ok(js.includes('adjustFavour'),'Stable favour updates missing');
 assert.ok(js.includes('tv271-boon-filters'),'Filterable boon list missing');
 assert.ok(js.includes('data.dispositions||[]'),'Player sheet must show only vague divine moods');
@@ -48,12 +52,16 @@ assert.ok(vault.includes("view==='divine'"),'Native Chronicle route missing');
 assert.ok(vault.includes('TerravaleV270Divine.renderDM'),'Chronicle does not mount divine workspace');
 assert.ok(overlay.includes('v270-divine-workspace.css'));
 assert.ok(overlay.includes('v270-divine-workspace.js'));
-assert.ok(overlay.includes('"version":"2.72"'));
+assert.ok(overlay.includes('v273-boon-archive-import.js'));
+assert.ok(html.includes('data-source="v273-boon-archive-import.js"'));
+assert.ok(workflow.includes('tests/v273-boon-archive-import.cjs'));
+assert.ok(!zipImporter.includes('localStorage'),'Private source must not be persisted in browser storage');
+assert.ok(overlay.includes('"version":"2.73"'));
 assert.ok(workflow.includes('node tests/v270-divine-integration.cjs'));
 assert.ok(css.includes('.tv270-divine-sheet'));
 const embedded=html.match(/<script data-source="v270-divine-workspace\.js">([\s\S]*?)<\/script>/);
 assert.ok(embedded,'Public V2 build must embed divine client');
 assert.doesNotThrow(()=>new Function(embedded[1]));
-assert.ok(html.includes("Terravale Codex V2.72"),'Release label out of sync');
+assert.ok(html.includes("Terravale Codex V2.73"),'Release label out of sync');
 assert.ok(!html.includes('sb_secret_'),'Secret key in public site');
-console.log('PASS V2.72: verified DM Chronicle, player-only awarded boons, three boon families, no private catalogue on player path, client parses and correct build marker.');
+console.log('PASS V2.73: verified DM Chronicle, player-only awarded boons, three boon families, no private catalogue on player path, client parses and correct build marker.');
