@@ -52,3 +52,11 @@ end $function$;
 revoke all on function public.terravale_divine_player_state(uuid) from public,anon;
 grant execute on function public.terravale_divine_player_state(uuid) to authenticated;
 
+
+-- Replace only the original generic V2.70 placeholder hints, preserving any DM edits.
+update public.terravale_divine_patrons
+ set public_hint='Sun, light and justice; a demanding balance of truth and mercy.'
+ where key_name='pae' and public_hint='A Greater God. Their attention must be earned through choices and deeds.';
+update public.terravale_divine_patrons
+ set public_hint='Oceans, storms, navigation and the power of changing tides.'
+ where key_name='tyrius' and public_hint='A Greater God. Their favour remains a matter of divine judgement.';
