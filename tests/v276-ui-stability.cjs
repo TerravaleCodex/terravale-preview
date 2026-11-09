@@ -30,5 +30,5 @@ assert.ok(tutorial.includes('if(!tutorialOpen&&!awaitingInvite&&!location.hash.t
 assert.ok(divine.includes('if(!routeCharacter()||queued)return;'),'Divine sheet updates must be route-scoped');
 assert.ok(overlay.includes('v276-ui-stability.js'));
 assert.ok(built.includes('data-source="v276-ui-stability.js"'));
-assert.ok(built.includes('Terravale Codex V2.76'));
+assert.ok(built.includes('Terravale Codex V2.77'));
 console.log('PASS V2.76: route-scoped watchers, steady UI, local-only diagnostics and original sidebar morph preserved.');

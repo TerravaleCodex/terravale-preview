@@ -1,0 +1,22 @@
+/* V2.77 — only Class Codex readers and their expandable rules. */
+.page-reference .v232-level-content,
+.page-reference .v233-path-content,
+.page-reference .v232-class-layout{
+ overflow-anchor:none;
+ min-width:0;
+}
+.page-reference .v232-level-content aside,
+.page-reference .v232-class-menu{
+ overscroll-behavior:contain;
+ scrollbar-gutter:stable;
+}
+.page-reference .v232-level-grid button,
+.page-reference .v232-level-content aside button,
+.page-reference .v233-level-steps button{
+ transition:background-color .16s ease,border-color .16s ease,color .16s ease;
+}
+@media(prefers-reduced-motion:reduce){
+ .page-reference .v232-level-grid button,
+ .page-reference .v232-level-content aside button,
+ .page-reference .v233-level-steps button{transition:none!important}
+}
