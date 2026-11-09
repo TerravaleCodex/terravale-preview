@@ -117,8 +117,6 @@ function drawDM(){
   if(dm.mode==='favour')drawFavour(stage);
   else if(dm.mode==='boons')drawBoons(stage);
   else drawPatrons(stage);
- }else if(!dm.loading&&!dm.busy&&!dm.error){
-  loadDM();
  }
  shell.append(rail,stage);host.append(shell);
 }
