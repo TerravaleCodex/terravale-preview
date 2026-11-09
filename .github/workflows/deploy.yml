@@ -170,6 +170,8 @@ jobs:
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+      - name: Inspect native Class Codex handlers and scroll paths
+        run: node tests/v277-class-codex-audit.cjs
       - name: Check native feats really receive an active grant
         run: node tests/v258-native-feats.cjs
       - name: Verify currency wording and unchanged exchange values
