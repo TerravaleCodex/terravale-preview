@@ -22,11 +22,13 @@ from v245_theme_patch import patch as patch_v245, theme_bridge_css
 from v246_native_patch import patch as patch_v246
 from v248_native_patch import patch as patch_v248
 from v277_class_scroll_patch import patch as patch_v277
+from v278_character_approval_patch import patch as patch_v278
 source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
 source = patch_v277(source)
+source = patch_v278(source)
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
@@ -128,7 +130,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.77')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.78')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -174,6 +176,7 @@ css += "\n" + (ROOT / "site-overrides/v270-divine-workspace.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v275-source-vault.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v276-ui-stability.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v277-class-stability.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v278-character-approvals.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -202,7 +205,8 @@ divine_import_v273 = (ROOT / "site-overrides/v273-boon-archive-import.js").read_
 source_vault_v275 = (ROOT / "site-overrides/v275-source-vault.js").read_text()
 ui_stability_v276 = (ROOT / "site-overrides/v276-ui-stability.js").read_text()
 class_stability_v277 = (ROOT / "site-overrides/v277-class-stability.js").read_text()
-build_meta = json.dumps({"version":"2.77","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+approval_v278 = (ROOT / "site-overrides/v278-character-approvals.js").read_text()
+build_meta = json.dumps({"version":"2.78","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -278,6 +282,7 @@ inline_js = (
     '<script data-source="v275-source-vault.js">\n' + source_vault_v275 + '\n</script>\n'
     '<script data-source="v276-ui-stability.js">\n' + ui_stability_v276 + '\n</script>\n'
     '<script data-source="v277-class-stability.js">\n' + class_stability_v277 + '\n</script>\n'
+    '<script data-source="v278-character-approvals.js">\n' + approval_v278 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -315,6 +320,7 @@ assert source.count('data-source="v273-boon-archive-import.js"') == 1
 assert source.count('data-source="v275-source-vault.js"') == 1
 assert source.count('data-source="v276-ui-stability.js"') == 1
 assert source.count('data-source="v277-class-stability.js"') == 1
+assert source.count('data-source="v278-character-approvals.js"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
