@@ -3,9 +3,9 @@
    and source text is preserved as the full mechanics field without interpretation. */
 (function(){
 'use strict';
-const MAX_ARCHIVE=4*1024*1024, MAX_FILES=500, MAX_ITEM=14000, MAX_TOTAL=6*1024*1024;
+const MAX_ARCHIVE=4*1024*1024, MAX_FILES=500, MAX_ITEM=250000, MAX_TOTAL=8*1024*1024;
 const magic=(v,o)=>v.getUint32(o,true);
-const textFile=(name,body)=>({name,text:body.replace(/^\uFEFF/,'')});
+const textFile=(name,body)=>({name,text:body});
 function readU16(v,o){if(o<0||o+2>v.byteLength)throw Error('Damaged ZIP entry');return v.getUint16(o,true)}
 function readU32(v,o){if(o<0||o+4>v.byteLength)throw Error('Damaged ZIP entry');return v.getUint32(o,true)}
 async function unzipMarkdown(file){
@@ -76,7 +76,7 @@ async function openDocuments(files){
  return result;
 }
 function frontmatter(markdown){
- const m=markdown.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
+ const m=markdown.replace(/^\uFEFF/,'').match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
  const meta={};
  if(m){
   for(const line of m[1].split(/\r?\n/)){

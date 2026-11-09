@@ -345,6 +345,7 @@ function drawBoons(host){
  if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No boons yet. Prepare their actual effects before granting them.'));
  section.append(list);filter();
  window.TerravaleBoonArchiveV273?.mount(section,dm.data?.patrons||[]);
+ window.TerravaleV275SourceVault?.mount(section,dm.campaign);
  host.append(section);
 }
 async function importBoonArchive(file,status){

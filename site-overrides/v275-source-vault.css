@@ -1,0 +1,32 @@
+/* V2.75 — DM-only, source-of-record archive panel */
+.tv275-source-vault{
+ border:1px solid var(--line,#443b50);border-radius:11px;
+ background:var(--surface-2,var(--surface,#16151c));margin:14px 0;padding:0 14px
+}
+.tv275-source-vault>summary{
+ font-weight:650;font-size:.93rem;cursor:pointer;padding:15px 2px
+}
+.tv275-source-vault>.tv254-muted{font-size:.83rem;line-height:1.55;margin:0 0 12px}
+.tv275-source-vault>.btn{margin:0 8px 12px 0}
+.tv275-source-status{font-size:.8rem;color:var(--muted,#b0a7c0);margin:0 0 11px;overflow-wrap:anywhere}
+.tv275-source-stage{min-width:0;padding:0 0 14px}
+.tv275-source-stage>.tv254-muted{font-size:.8rem;margin:5px 0 10px;line-height:1.55}
+.tv275-import-index,.tv275-source-set,.tv275-source-file{
+ border:1px solid var(--line,#41374d);background:var(--surface,#121017);
+ border-radius:8px;margin:6px 0;min-width:0
+}
+.tv275-import-index>summary,.tv275-source-set>summary,.tv275-source-file>summary{
+ padding:10px 12px;cursor:pointer;overflow-wrap:anywhere;font-size:.82rem
+}
+.tv275-import-index>ul{max-height:260px;overflow:auto;margin:0;padding:0 16px 12px 32px}
+.tv275-import-index li{font-size:.8rem;padding:3px 0;overflow-wrap:anywhere}
+.tv275-source-list{padding:0 10px 10px;max-height:430px;overflow:auto}
+.tv275-source-file>summary{font-size:.77rem}
+.tv275-source-text{max-height:300px;overflow:auto;margin:0 10px 11px;padding:10px;
+ border:1px solid var(--line,#443b50);border-radius:7px;
+ background:var(--surface-2,#100d14);color:var(--text,#eee9f6);
+ white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.55 ui-monospace,monospace}
+@media(max-width:740px){
+ .tv275-source-vault{padding:0 10px}
+ .tv275-source-vault>.btn{margin:0 5px 9px 0}
+}
