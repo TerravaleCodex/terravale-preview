@@ -18,11 +18,11 @@ for(const [label,re,max] of [
 
 for(const [label,re,max] of [
  ['v232-level-grid',/v232-level-grid|v232-level-content|v232-class-detail|v232-progression-table/gi,25],
- ['v232-class-handlers',/function [a-z0-9_]*(?:class|level|codex)[a-z0-9_]*\\s*\\(|(?:class|level|codex)[a-zA-Z0-9_]*\\s*=\\s*function|data-v232-[\\w-]+/gi,30],
- ['page-class-route',/p===['"]\\/classes|p===['"]\\/lore\\/classes|p\.startsWith\\(['"]\\/classes|Class Codex/gi,20]
+ ['v232-class-handlers',/function [a-z0-9_]*(?:class|level|codex)[a-z0-9_]*\s*\(|(?:class|level|codex)[a-zA-Z0-9_]*\s*=\s*function|data-v232-[\w-]+/gi,30],
+ ['page-class-route',/p===['"]\/classes|p===['"]\/lore\/classes|p\.startsWith\(['"]\/classes|Class Codex/gi,20]
 ]){
  const hits=[...s.matchAll(re)];
  const filtered=hits.filter(h=>h.index>5700000);
- const sample=filtered.slice(0,max).map(h=>({at:h.index,excerpt:s.slice(Math.max(0,h.index-400),Math.min(s.length,h.index+950)).replace(/[\\r\\n]+/g,' ').slice(0,1300)}));
+ const sample=filtered.slice(0,max).map(h=>({at:h.index,excerpt:s.slice(Math.max(0,h.index-400),Math.min(s.length,h.index+950)).replace(/[\r\n]+/g,' ').slice(0,1300)}));
  console.log('=== '+label+' COUNT='+filtered.length+' SAMPLE='+JSON.stringify(sample));
 }
