@@ -34,6 +34,21 @@ assert.equal(result.max_charges,'2');
 assert.equal(result.recovery,'long');
 assert.equal(result.mechanics,markdown);
 assert.equal(result.state,'draft');
+const framework=importer.sourceInventory([
+ {name:'Boons/Divine Boons.md',text:'# Divine Boons\\n## Rules'},
+ {name:'Boons/Errigan Boons.md',text:'# Errigan Boons\\n## Drunk\\n## Blackout\\n## Rapture'},
+ {name:'Boons/Ixi Boons.md',text:'# Ixi Boons\\n## Burned\\n## Scorched'},
+ {name:'Boons/Pae Concordant Writs.md',text:'# Pae Concordant Writs'},
+ {name:'Boons/Pae/Lantern of Justice.md',text:markdown}
+]);
+assert.equal(framework.counts.system,1,'System framework is not a boon');
+assert.equal(framework.counts.collection,3,'Patron collections are not individual boons');
+assert.equal(framework.counts.single,1,'A standalone boon can still be reviewed');
+assert.equal(framework.requiresSystemReview,true,'Mixed archives must block per-file import');
+assert.equal(importer.classifySource({name:'Rules/Divine Burdens.md',text:'# Burdens'}),'system');
+assert.equal(importer.classifySource({name:'Unknown.md',text:'# No metadata yet'}),'unclassified');
+assert.equal(importer.sourceInventory([{name:'Boons/Pae/Lantern of Justice.md',text:markdown}]).requiresSystemReview,false);
+
 const unknown=importer.derive({name:'Boons/Unknown Gift.md',text:'# Unknown Gift\nThe gods have not yet spoken.'},patrons);
 assert.equal(unknown.required_favour,'','Never fabricate a favour threshold');
 assert.equal(unknown.kind,'','Never fabricate a boon family');
@@ -72,5 +87,5 @@ function storeZip(name,text,compress=false){
  const unpacked=await importer.unzipMarkdown(compressed);
  assert.equal(unpacked.length,1);
  assert.equal(unpacked[0].text,markdown,'Deflated ZIP must preserve original source bytes');
- console.log('PASS V2.73: ZIP extraction, canonical Markdown preservation, secure draft import, no guessed metadata.');
+ console.log('PASS Archive 2 preflight: framework and patron collections blocked from per-file import; standalone boon ZIP handling preserved.');
 })().catch(e=>{console.error(e);process.exitCode=1});
