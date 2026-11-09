@@ -374,6 +374,8 @@ function mountReplay(){
 }
 let scheduled=false;
 const observer=new MutationObserver(()=>{
+ // V2.76: tutorials only observe their own screens; never scan live chat frames.
+ if(!tutorialOpen&&!awaitingInvite&&!location.hash.toLowerCase().includes("/help"))return;
  if(scheduled)return;scheduled=true;
  requestAnimationFrame(()=>{scheduled=false;mountReplay();if(tutorialOpen)queueSpotlight()});
 });
