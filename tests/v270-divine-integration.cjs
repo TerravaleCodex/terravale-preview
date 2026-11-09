@@ -1,4 +1,4 @@
-/* Terravale V2.75 — fail-closed smoke checks for divine UI + deploy. */
+/* Terravale V2.76 — fail-closed smoke checks for divine UI + deploy. */
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -56,12 +56,12 @@ assert.ok(overlay.includes('v273-boon-archive-import.js'));
 assert.ok(html.includes('data-source="v273-boon-archive-import.js"'));
 assert.ok(workflow.includes('tests/v273-boon-archive-import.cjs'));
 assert.ok(!zipImporter.includes('localStorage'),'Private source must not be persisted in browser storage');
-assert.ok(overlay.includes('"version":"2.75"'));
+assert.ok(overlay.includes('"version":"2.76"'));
 assert.ok(workflow.includes('node tests/v270-divine-integration.cjs'));
 assert.ok(css.includes('.tv270-divine-sheet'));
 const embedded=html.match(/<script data-source="v270-divine-workspace\.js">([\s\S]*?)<\/script>/);
 assert.ok(embedded,'Public V2 build must embed divine client');
 assert.doesNotThrow(()=>new Function(embedded[1]));
-assert.ok(html.includes("Terravale Codex V2.75"),'Release label out of sync');
+assert.ok(html.includes("Terravale Codex V2.76"),'Release label out of sync');
 assert.ok(!html.includes('sb_secret_'),'Secret key in public site');
 console.log('PASS V2.75: verified DM Chronicle, player-only awarded boons, three boon families, no private catalogue on player path, client parses and correct build marker.');
