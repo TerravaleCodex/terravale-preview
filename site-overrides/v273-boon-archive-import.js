@@ -199,9 +199,53 @@ function check(rec,patrons){
  return {errs,primary,other};
 }
 let activePanel=null;
+// V2.74 safety rule: a Markdown *file* is not necessarily a single boon.
+// The Archive 2 framework, patron collections and condition references need
+// faithful system-level interpretation before any catalog records are created.
+function classifySource(doc){
+ const filename=String(doc?.name||'').split('/').pop().toLowerCase().replace(/[_-]/g,' ').trim();
+ const text=String(doc?.text||'');
+ if(/^(?:index|readme|boons? index|divine boons?|major divine boons?|minor divine boons?|minor god boons?|concordant boons?|boon system|boon rules|boon mechanics|favour rules|divine favour|divine burdens|conditions|condition rules)\.(?:md|markdown|txt)$/.test(filename)||
+    /\b(?:index|overview|rules|mechanics|framework|conditions|divine burdens)\b[^/]*\.(?:md|markdown|txt)$/.test(filename))
+  return 'system';
+ if(/(?:boons|concordant writs)\.(?:md|markdown|txt)$/.test(filename))
+  return 'collection';
+ const h2=[...text.matchAll(/^##\s+(.+)$/gm)].map(m=>m[1].trim());
+ if(h2.length>1 && h2.some(x=>/\b(?:boon|gift|writ|blessing|effect|tier|rank|form)\b/i.test(x)))
+  return 'collection';
+ const meta=frontmatter(text);
+ if(first(meta,['boon_name','required_favour','required_favor','boon_type','kind','family'])||
+    /^(?:#\s+[^\n]+\n[\s\S]*?)(?:^|\n)(?:required favour|patron)\s*:/im.test(text))
+  return 'single';
+ return 'unclassified';
+}
+function sourceInventory(documents){
+ const rows=documents.map(doc=>({name:doc.name,type:classifySource(doc)}));
+ const counts={system:0,collection:0,single:0,unclassified:0};
+ for(const row of rows)counts[row.type]++;
+ return {rows,counts,requiresSystemReview:rows.some(r=>r.type!=='single')};
+}
 function createReview(host,documents,patrons){
  activePanel?.remove();
  const panel=elem('section','tv273-import-review');activePanel=panel;
+ const inventory=sourceInventory(documents);
+ if(inventory.requiresSystemReview){
+  const message=elem('section','tv274-source-warning');
+  message.append(elem('h4','','Archive 2 requires a system-level rules audit'),
+   elem('p','', 'This archive includes frameworks, patron-wide collections, or ambiguous documents. Treating each file as a boon would lose shared conditions and progression rules. No boon data has been sent to the database.'),
+   elem('p','',inventory.counts.system+' system documents · '+inventory.counts.collection+' patron/multi-boon collections · '+inventory.counts.unclassified+' unclassified · '+inventory.counts.single+' standalone boon documents.'));
+  const details=elem('details','tv274-source-files');
+  details.append(elem('summary','','Review source document inventory'));
+  const list=elem('ul','');
+  for(const item of inventory.rows){
+   const li=elem('li','',item.name+' — '+item.type);
+   list.append(li);
+  }
+  details.append(list);message.append(details);
+  message.append(elem('p','tv254-muted','Archive 2 must first be transcribed into an authoritative rules layer, its patron collections split into individual abilities, and all mechanics checked before publication. Use the original Markdown, not inferred mechanics.'));
+  message.append(button('Close archive audit',()=>{panel.remove();activePanel=null}));
+  panel.append(message);host.append(panel);return;
+ }
  const header=elem('div','tv273-review-head'),title=elem('h4','','Review imported source files');
  const summary=elem('p','tv254-muted','The original Markdown is preserved in full. All entries import as private drafts. Unresolved entries are skipped, never guessed or published.');
  const count=elem('p','tv273-review-count');
@@ -274,5 +318,5 @@ function mount(section,patrons){
  else section.append(launch);
  section.append(picker,message);
 }
-window.TerravaleBoonArchiveV273={mount,unzipMarkdown,openDocuments,derive};
+window.TerravaleBoonArchiveV273={mount,unzipMarkdown,openDocuments,derive,classifySource,sourceInventory};
 })();
