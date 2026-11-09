@@ -123,7 +123,11 @@
       mountMoon();
     });
   }
-  const observer=new MutationObserver(schedule);
+  // V2.76: chat and initiative updates do not require a theme/gallery scan.
+  const observer=new MutationObserver(()=>{
+    const visible=location.hash.toLowerCase().includes("appearance");
+    if(document.body.dataset.theme==="verdant"||visible)schedule();
+  });
   observer.observe(document.getElementById("pageRoot")||document.body,{childList:true,subtree:true});
   document.body.addEventListener("transitionend",e=>{if(e.target===document.body)schedule()});
   window.addEventListener("hashchange",()=>setTimeout(schedule,45));
