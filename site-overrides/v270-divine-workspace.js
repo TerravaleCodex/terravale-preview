@@ -344,6 +344,7 @@ function drawBoons(host){
  }
  if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No boons yet. Prepare their actual effects before granting them.'));
  section.append(list);filter();
+ window.TerravaleBoonArchiveV273?.mount(section,dm.data?.patrons||[]);
  host.append(section);
 }
 async function importBoonArchive(file,status){
@@ -676,6 +677,10 @@ window.addEventListener('terravale-characters-synced',()=>{
  sheet.cache.clear();if(sheet.open&&sheet.character)fetchSheet(sheet.character,true);
  setTimeout(renderSheet,80);
 });
-window.TerravaleV270Divine={renderDM,refresh:()=>{dm.data=null;loadDM()},refreshSheet:(id)=>fetchSheet(id,true)};
+window.TerravaleV270Divine={renderDM,refresh:()=>{dm.data=null;loadDM()},
+ refreshSheet:(id)=>fetchSheet(id,true),
+ importPreparedBoons:(rows,status)=>importBoonArchive(
+  new File([JSON.stringify({boons:rows})],'reviewed-boons.json',{type:'application/json'}),status)
+};
 renderSheet();
 })();

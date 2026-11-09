@@ -196,3 +196,30 @@ textarea.tv270-input{resize:vertical;line-height:1.6}
  .tv272-bond-list{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.tv272-workspace-link,.tv272-bond{scroll-behavior:auto}}
+
+
+/* V2.73 · Reviewed archive import; DM-only and native-theme aligned. */
+.tv273-import-review{margin:14px 0 0;padding:16px;border:1px solid var(--line,#474151);
+ border-radius:12px;background:var(--surface-2,var(--surface,#15141d));min-width:0}
+.tv273-review-head h4{font:500 1.24rem Georgia,serif;margin:0 0 8px}
+.tv273-review-head p{margin:0 0 10px;font-size:.82rem;line-height:1.5}
+.tv273-review-count,.tv273-message{display:block;font-size:.8rem;color:var(--muted,#b8adc8);margin:8px 0}
+.tv273-review-items{display:grid;gap:7px;max-height:min(58vh,590px);overflow-y:auto;margin:12px 0;padding:2px 5px 2px 0}
+.tv273-entry{border:1px solid var(--line,#474151);border-radius:9px;background:var(--surface,#14131c);min-width:0;padding:10px 12px}
+.tv273-entry>summary{cursor:pointer;font-size:.84rem;font-weight:600;overflow-wrap:anywhere}
+.tv273-entry-state{display:block;font-size:.74rem;padding:6px 0 0}
+.tv273-entry-state.needs{color:#e0b17c}
+.tv273-entry-state.ready{color:#9dc8ba}
+.tv273-entry-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:11px;margin:12px 0}
+.tv273-field,.tv273-choice{display:flex;flex-direction:column;gap:5px;font-size:.82rem;min-width:0}
+.tv273-field>span,.tv273-choice>span{color:var(--muted,#b8adc8)}
+.tv273-field .tv270-input{min-height:36px;padding:8px 10px}
+.tv273-options{display:flex;gap:4px;flex-wrap:wrap}
+.tv273-options .btn{padding:6px 9px;font-size:.74rem}
+.tv273-options .btn.active{background:color-mix(in srgb,var(--accent,#c3a5ff) 18%,var(--surface,#14131c));border-color:var(--accent,#c3a5ff)}
+.tv273-original{margin:8px 0}
+.tv273-original>summary{cursor:pointer;font-size:.78rem;color:var(--muted,#b8adc8)}
+.tv273-original>pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.76rem;max-height:310px;overflow-y:auto;padding:10px;background:var(--surface-2,#0e0d14)}
+.tv273-import-actions{display:flex;flex-wrap:wrap;gap:8px}
+.tv273-import-status{min-height:1.3em;font-size:.8rem;color:var(--muted,#b8adc8)}
+@media(max-width:620px){.tv273-import-review{padding:10px}.tv273-review-items{max-height:60vh}}
