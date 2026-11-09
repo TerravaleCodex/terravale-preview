@@ -131,7 +131,7 @@ textarea.tv270-input{resize:vertical;line-height:1.6}
 .tv272-standings-panel>.tv270-field{max-width:540px;margin:10px 0 13px}
 .tv272-standings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .tv272-standings-grid .tv270-favour-row{margin:0;padding:9px 11px;border-radius:9px;gap:8px}
-.tv272-standings-grid .tv270-favour-label strong{font:600 .88rem/1.25 inherit}
+.tv272-standings-grid .tv270-favour-label strong{font-weight:600;font-size:.88rem;line-height:1.25}
 .tv272-standings-grid .tv270-favour-label small{font-size:.7rem}
 .tv272-standings-grid .tv270-counter-button{width:30px;height:30px;font-size:1.07rem}
 .tv272-standings-grid .tv270-score{font-size:.95rem;min-width:29px}
@@ -159,6 +159,8 @@ textarea.tv270-input{resize:vertical;line-height:1.6}
 .tv272-bond-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px;cursor:pointer;list-style:none}
 .tv272-bond-summary::-webkit-details-marker{display:none}
 .tv272-bond-summary strong{font-size:.9rem}
+.tv272-bond-summary::after{content:'⌄';font-size:.9rem;color:var(--muted,#aaa3b6);margin-left:2px}
+.tv272-bond[open]>.tv272-bond-summary::after{transform:rotate(180deg)}
 .tv272-bond-mood{font-size:.74rem;font-weight:650;border-radius:20px;padding:5px 9px;white-space:nowrap}
 .tv272-bond-mood.mood-ominous{color:#f3a6a4;background:rgba(190,85,82,.15)}
 .tv272-bond-mood.mood-cold{color:#a9c3db;background:rgba(100,140,182,.15)}
