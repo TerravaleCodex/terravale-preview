@@ -22,7 +22,7 @@ assert.ok(ui.includes('await refresh();'));
 assert.ok(ui.includes('pendingApprovals.has(id)'),'Double clicking approval must be idempotent');
 assert.ok(ui.includes("'terravale_request_character_level_up'"));
 assert.ok(ui.includes("'terravale_dm_decide_character_level_up'"));
-assert.ok(ui.includes("req.proposed_changes?.kind==='level_up'"));
+assert.ok(ui.includes("r.proposed_changes?.kind==='level_up'"));
 assert.ok(ui.includes("ch.status!=='Approved'||ch.owner!=='You'"));
 assert.ok(ui.includes("root.querySelector('.tv255-overview-stats')")||
   ui.includes("root?.querySelector('.tv255-overview-stats')"));
