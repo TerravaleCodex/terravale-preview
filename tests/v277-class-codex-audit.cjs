@@ -26,3 +26,12 @@ for(const [label,re,max] of [
  const sample=filtered.slice(0,max).map(h=>({at:h.index,excerpt:s.slice(Math.max(0,h.index-400),Math.min(s.length,h.index+950)).replace(/[\r\n]+/g,' ').slice(0,1300)}));
  console.log('=== '+label+' COUNT='+filtered.length+' SAMPLE='+JSON.stringify(sample));
 }
+
+for(const needle of ['[data-v232-level]','data-v232-level','dataset.v232Level','v232Level','data-v232-feature','data-v233-path-step','classLevel[id]','classFeature[id]']){
+ const matches=[];let at=5700000;
+ while((at=s.indexOf(needle,at))>=0){
+  matches.push(at);at+=needle.length;
+ }
+ const selected=matches.filter(at=>at>6750000).slice(-5);
+ console.log('=== NEEDLE '+needle+' COUNT='+matches.length+' CODE='+JSON.stringify(selected.map(at=>({at,excerpt:s.slice(at-650,at+1800).replace(/[\r\n]+/g,' ').slice(0,2450)}))));
+}
