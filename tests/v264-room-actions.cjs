@@ -39,7 +39,7 @@ for(const x of ['.tv-v264-room-tabs','.tv-v264-character-picker','.tv-v264-room-
  '.sr-encounter::before','.sr-encounter::after','prefers-reduced-motion:reduce'])
  assert.ok(css.includes(x),'Missing compact/motion styles '+x);
 assert.ok(overlay.includes('v264-room-actions-parallax.css'),'Styles included in generated build');
-assert.ok(html.includes('Terravale Codex V2.71'),'New version appears in the preview');
+assert.ok(html.includes('Terravale Codex V2.72'),'New version appears in the preview');
 for(const p of ['site-overrides/v251-live-item-actions.js','site-overrides/v263-compact-equipment-preview.js'])
  cp.execFileSync('node',['--check',p]);
 console.log('PASS: compact Dice/Checks/Character Actions; owner/DM RPCs reused; accessible item inspection; encounter-only reduced-motion parallax.');

@@ -52,7 +52,7 @@ async function mutate(rpc,args,success){
  try{
   const {error}=await api().rpc(rpc,args);
   if(error)throw error;
-  dm.data=null;dm.busy=false;dm.reason='';
+  dm.data=null;sheet.cache.delete(dm.character);dm.busy=false;dm.reason='';
   if(success)notice(success);
   await loadDM();
  }catch(e){dm.error=e.message||String(e);dm.busy=false;drawDM()}
@@ -65,29 +65,60 @@ function drawDM(){
  const host=dm.host;
  if(!host?.isConnected||!isDM()||!dm.campaign)return;
  host.replaceChildren();
- const intro=node('div','tv270-header');
- intro.append(node('div','tv254-eyebrow','DM CHRONICLE · DIVINE RELATIONSHIPS'),
+ const title=node('header','tv272-dm-heading');
+ title.append(node('div','tv254-eyebrow','DM CHRONICLE · DIVINE COURT'),
   node('h2','','Divine Favour & Boons'),
-  node('p','tv254-muted','Record divine attention, prepare private boons, and grant them only when the story calls for it. Reaching a threshold never grants anything automatically.'));
- host.append(intro);
- if(!dm.chars.length){host.append(node('p','tv254-muted','There are no characters in this campaign yet.'));return}
- const roster=node('section','tv270-panel');
- roster.append(node('h3','','Choose an adventurer'));
- chips(roster,dm.chars.map(c=>[c.id,c.name]),dm.character,id=>{
-  dm.character=id;dm.data=null;dm.edit=null;dm.error='';drawDM();loadDM();
- });
- host.append(roster);
- const switcher=node('section','tv270-panel');
- chips(switcher,[['favour','Favour ledger'],['boons','Private boon forge'],['patrons','Patron register']],dm.mode,id=>{
-  dm.mode=id;dm.edit=null;drawDM();
- });
- host.append(switcher);
- const status=node('p','tv270-status',dm.error||(dm.loading?'Reading the private divine ledger…':dm.busy?'Saving in the campaign…':''));
- status.setAttribute('role','status');host.append(status);
- if(!dm.data){if(!dm.loading&&!dm.busy&&!dm.error)loadDM();return}
- if(dm.mode==='favour')drawFavour(host);
- else if(dm.mode==='boons')drawBoons(host);
- else drawPatrons(host);
+  node('p','tv254-muted','Keep divine judgement private, manage blessings, and decide when the gods intervene. No threshold grants a boon automatically.'));
+ host.append(title);
+ if(!dm.chars.length){
+  host.append(node('p','tv254-muted','There are no adventurers in this campaign yet.'));return;
+ }
+ const shell=node('div','tv272-dm-workspace');
+ const rail=node('aside','tv272-dm-rail');
+ rail.setAttribute('aria-label','Divine management');
+ const roster=node('section','tv272-dm-roster');
+ roster.append(node('div','tv272-rail-label','CAMPAIGN ADVENTURERS'));
+ const people=node('div','tv272-roster-options');
+ for(const c of dm.chars){
+  const current=c.id===dm.character;
+  const btn=button(c.name,()=>{
+   if(c.id===dm.character)return;
+   dm.character=c.id;dm.data=null;dm.edit=null;dm.error='';
+   drawDM();loadDM();
+  },'tv272-roster-person'+(current?' active':''));
+  btn.setAttribute('aria-pressed',String(current));people.append(btn);
+ }
+ roster.append(people);rail.append(roster);
+ const nav=node('nav','tv272-dm-nav');
+ nav.append(node('div','tv272-rail-label','MANAGEMENT'));
+ const entries=[
+  ['favour','Divine standing','Judge a patron’s regard'],
+  ['boons','Boon library','Prepare and grant gifts'],
+  ['patrons','The pantheon','Manage divine patrons']
+ ];
+ for(const [id,name,desc] of entries){
+  const opt=button('',()=>{if(dm.mode===id)return;dm.mode=id;dm.edit=null;drawDM()},
+   'tv272-workspace-link'+(dm.mode===id?' current':''));
+  opt.replaceChildren();
+  const label=node('span','tv272-workspace-text');
+  label.append(node('strong','',name),node('small','',desc));
+  opt.append(label);
+  if(dm.mode===id)opt.setAttribute('aria-current','page');
+  nav.append(opt);
+ }
+ rail.append(nav);
+ const stage=node('div','tv272-dm-stage');
+ stage.setAttribute('aria-live','off');
+ const status=node('p','tv270-status',dm.error||
+  (dm.loading?'Reading divine records…':dm.busy?'Saving to the campaign…':''));
+ status.setAttribute('role','status');
+ stage.append(status);
+ if(dm.data){
+  if(dm.mode==='favour')drawFavour(stage);
+  else if(dm.mode==='boons')drawBoons(stage);
+  else drawPatrons(stage);
+ }
+ shell.append(rail,stage);host.append(shell);
 }
 async function adjustFavour(patron,delta,card){
  if(!isDM()||!dm.character||dm.busy||dm.favPending.has(patron))return;
@@ -121,6 +152,7 @@ async function adjustFavour(patron,delta,card){
    if(reason)record.append(node('p','',reason));
    list.prepend(record);
   }
+  sheet.cache.delete(target);
   notice('Favour adjusted.');
  }catch(e){notice('Favour update failed: '+(e.message||String(e)));}
  finally{
@@ -135,11 +167,13 @@ async function adjustFavour(patron,delta,card){
 function drawFavour(host){
  const d=dm.data,p=d.patrons||[],f=d.favour||[];
  const scores=new Map(f.map(x=>[x.patron_id,Number(x.score)]));
- const body=node('section','tv270-panel');
- body.append(node('h3','',activeCharacter()?.name+' · Divine Favour'),
+ const body=node('section','tv270-panel tv272-standings-panel');
+ body.append(node('div','tv254-eyebrow','PRIVATE · DM ONLY'),
+  node('h3','',activeCharacter()?.name+' · Divine standing'),
   node('p','tv254-muted','DM-owned counters range from −10 to +10. Each change is recorded; changes never issue or revoke boons automatically.'));
  const why=input('Reason for the next adjustment (DM-only)',dm.reason,{maxlength:500});
  why.el.addEventListener('input',()=>{dm.reason=why.el.value});body.append(why.wrap);
+ const standings=node('div','tv272-standings-grid');
  for(const patron of p){
   const value=scores.get(patron.id)??0;
   const card=node('div','tv270-favour-row');
@@ -153,12 +187,14 @@ function drawFavour(host){
   control.append(score);
   control.append(button('+',()=>adjustFavour(patron.id,1,card),'tv270-counter-button'));
   control.querySelectorAll('button').forEach(b=>{b.disabled=dm.busy||dm.loading||(b.textContent==='−'&&value<=-10)||(b.textContent==='+'&&value>=10)});
-  card.append(info,control);body.append(card);
+  card.append(info,control);standings.append(card);
  }
+ body.append(standings);
  if(!p.length)body.append(node('p','tv254-muted','No patrons registered. Add the relevant gods in the Patron register.'));
  host.append(body);
- const history=node('section','tv270-panel');
- history.append(node('h3','','Divine activity'),node('p','tv254-muted','Private campaign history of adjustments, grants and withdrawals.'));
+ const history=node('details','tv272-history');
+ history.append(node('summary','','Private activity history'),
+  node('p','tv254-muted','Favour changes, blessings granted, and withdrawals are recorded here.'));
  const names=new Map(p.map(x=>[x.id,x.name]));
  const catalog=new Map((d.catalog||[]).map(x=>[x.id,x.name]));
  const events=d.activity||[];
@@ -172,19 +208,20 @@ function drawFavour(host){
   if(e.reason)row.append(node('p','',e.reason));
   activityList.append(row);
  }
+ activityList.className='tv272-history-rows';
  history.append(activityList);
  if(!events.length)history.append(node('p','tv254-muted','No divine activity has been recorded for this character.'));
  host.append(history);
 }
 function drawPatrons(host){
  const d=dm.data;
- const section=node('section','tv270-panel');
- section.append(node('h3','','Patron register'),
+ const section=node('section','tv270-panel tv272-patrons');
+ section.append(node('div','tv254-eyebrow','PUBLIC THEMES / PRIVATE ADMINISTRATION'),node('h3','','The pantheon'),
   node('p','tv254-muted','Major and greater gods have public thematic previews. Minor gods remain private to the DM unless a boon is awarded.'));
  for(const p of d.patrons||[]){
-  const card=node('div','tv270-patron-row');
-  card.append(node('strong','',p.name),node('small','',p.rank),
-   node('p','',p.public_hint||'No player-safe hint recorded.'));
+  const card=node('details','tv272-patron-compact');
+  card.append(node('summary','',p.name+' · '+p.rank),
+   node('p','',p.public_hint||'No player-safe description recorded.'));
   section.append(card);
  }
  host.append(section);
@@ -221,8 +258,8 @@ function eligible(b){
   (b.kind!=='concordant'||(scores.get(b.second_patron_id)||0)>=b.required_favour);
 }
 function drawBoons(host){
- const section=node('section','tv270-panel');
- section.append(node('h3','','Private boon forge'),
+ const section=node('section','tv270-panel tv272-forge');
+ section.append(node('div','tv254-eyebrow','PRIVATE · DM ONLY'),node('h3','','Boon library'),
   node('p','tv254-muted','Divine / Minor God / Concordant are separate families. A character may hold three conventional boons and one Concordant boon. Drafts and unearned boons never appear on player sheets.'));
  if(dm.edit){drawBoonEditor(section);host.append(section);return}
  section.append(button('+ Prepare a boon',()=>{dm.edit=blankBoon();drawDM()},'btn primary small'));
@@ -552,7 +589,7 @@ function renderSheet(){
  pane.replaceChildren();
  pane.append(node('div','tv254-eyebrow','CHARACTER SHEET · DIVINE'),
   node('h2','','Divine relationships'),
-  node('p','tv254-muted','The gods notice deeds and promises. Only bestowed gifts are revealed here.'));
+  node('p','tv254-muted','Divine attention is never exact. Only bestowed gifts are revealed here.'));
  const result=sheet.cache.get(c.id);
  if(!result||sheet.loading.has(c.id)){
   pane.append(node('p','tv254-muted','Reading this character’s divine relationships…'));
@@ -563,19 +600,52 @@ function renderSheet(){
    button('Try again',()=>fetchSheet(c.id,true)));return;
  }
  const data=result.data||{},previews=data.previews||[];
- const hints=node('details','tv271-pantheon');
- hints.append(node('summary','','Explore major gods · '+previews.length+' known'));
- const guide=node('p','tv254-muted','Public themes only. Divine judgement, hidden blessings and requirements remain private.');
- hints.append(guide);
- const grid=node('div','tv271-god-grid');
- for(const god of previews){
-  const tile=node('details','tv271-god-tile');
-  tile.append(node('summary','',god.name),
-   node('p','',god.hint||'The mysteries of this patron remain a matter of faith.'));
-  grid.append(tile);
+ const moods={
+  ominous:['An ill omen','The signs suggest deep displeasure.'],
+  cold:['Distant regard','Something in the relationship feels strained.'],
+  veiled:['Unreadable','No clear judgement can yet be drawn.'],
+  watchful:['Their gaze lingers','Your deeds seem to have drawn attention.'],
+  favoured:['Warm regard','The signs hint at unusual goodwill.']
+ };
+ const observations=new Map((data.dispositions||[]).map(x=>[x.key,x.disposition]));
+ const meaningful=previews.filter(x=>observations.has(x.key));
+ const court=node('section','tv272-player-court');
+ court.append(node('h3','','Divine disposition'),
+  node('p','tv254-muted','These are impressions, not measurements. The gods seldom speak plainly.'));
+ if(meaningful.length){
+  const bonds=node('div','tv272-bond-list');
+  for(const god of meaningful){
+   const k=observations.get(god.key);
+   const tone=moods[k]||moods.veiled;
+   const item=node('details','tv272-bond');
+   const summary=node('summary','tv272-bond-summary');
+   summary.append(node('strong','',god.name),node('span','tv272-bond-mood mood-'+k,tone[0]));
+   item.append(summary,node('p','tv272-bond-reading',tone[1]+' '+(god.hint||'')));
+   bonds.append(item);
+  }
+  court.append(bonds);
+ }else court.append(node('p','tv272-no-sign','No divine intentions have become clear yet.'));
+ pane.append(court);
+ const library=node('details','tv272-player-pantheon');
+ library.append(node('summary','','Browse the major pantheon · '+previews.length+' known'));
+ const atlas=node('div','tv272-pantheon-atlas');
+ const dozen=new Set(['pae','amora','vaelniv','torridae','coeus','errigan','rao',
+  'kalma','tyrius','eshael','fjoras','kwaeth']);
+ for(const [group,title] of [['twelve','The Twelve'],['other','Beyond the Twelve']]){
+  const gods=previews.filter(p=>(dozen.has(p.key)?'twelve':'other')===group);
+  if(!gods.length)continue;
+  const part=node('section','tv272-pantheon-group');
+  part.append(node('h4','',title));
+  const names=node('div','tv272-pantheon-links');
+  for(const god of gods){
+   const entry=node('details','tv272-pantheon-deity');
+   entry.append(node('summary','',god.name),
+    node('p','',god.hint||'What is known publicly remains incomplete.'));
+   names.append(entry);
+  }
+  part.append(names);atlas.append(part);
  }
- if(!previews.length)grid.append(node('p','tv254-muted','No major gods have been registered yet.'));
- hints.append(grid);pane.append(hints);
+ library.append(atlas);pane.append(library);
  const section=node('section','tv270-panel tv271-revealed');
  section.append(node('h3','','Revealed boons'));
  const granted=data.granted||[];
