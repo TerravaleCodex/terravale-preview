@@ -21,10 +21,12 @@ from v243_native_patch import patch
 from v245_theme_patch import patch as patch_v245, theme_bridge_css
 from v246_native_patch import patch as patch_v246
 from v248_native_patch import patch as patch_v248
+from v277_class_scroll_patch import patch as patch_v277
 source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
 source = patch_v248(source)
+source = patch_v277(source)
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
