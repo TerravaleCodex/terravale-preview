@@ -63,6 +63,11 @@ on:
       - "site-overrides/v276-ui-stability.css"
       - "tests/v276-ui-stability.cjs"
       - "tests/v277-class-codex-audit.cjs"
+      - "site-overrides/v278-character-approvals.js"
+      - "site-overrides/v278-character-approvals.css"
+      - "site-overrides/sql/v278_character_approval_lifecycle.sql"
+      - "tools/v278_character_approval_patch.py"
+      - "tests/v278-character-approval-audit.cjs"
       - "site-overrides/v277-class-stability.js"
       - "site-overrides/v277-class-stability.css"
       - "tools/v277_class_scroll_patch.py"
@@ -171,10 +176,13 @@ jobs:
           node --check site-overrides/v275-source-vault.js
           node --check site-overrides/v276-ui-stability.js
           node --check site-overrides/v277-class-stability.js
+          node --check site-overrides/v278-character-approvals.js
           node --check site-overrides/v255-shell-role-version.js
           node --check site-overrides/v248-achievement-notices.js
           node --check site-overrides/v248-live-preferences-tutorial.js
           node --check site-overrides/v248-curated-demo-sheets.js
+      - name: Verify one-time initial approval and explicit level-up reviews
+        run: node tests/v278-character-approval-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
         run: node tests/v277-class-codex-audit.cjs
       - name: Check native feats really receive an active grant
@@ -238,7 +246,7 @@ jobs:
           assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
           assert 'data-source="v270-divine-workspace.js"' in html
           assert 'data-source="v273-boon-archive-import.js"' in html, "Divine workspace missing"
-          assert "Terravale Codex V2.77" in html, "Latest V2 implementation missing"
+          assert "Terravale Codex V2.78" in html, "Latest V2 implementation missing"
           assert "sb_secret_" not in html
           print("PASS: public root enters the complete V2 Dashboard without the holding page")
           print("PASS: OAuth callback query and native SPA route are both preserved")
@@ -301,7 +309,7 @@ jobs:
                grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
-               grep -q 'Terravale Codex V2.77' /tmp/terravale-v2-live.html &&
+               grep -q 'Terravale Codex V2.78' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v270-divine-workspace.js"' /tmp/terravale-v2-live.html &&
                ! grep -Fq "history.replaceState(null,'','#/characters')" /tmp/terravale-v2-live.html; then
               echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."

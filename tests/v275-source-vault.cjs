@@ -38,6 +38,6 @@ assert.ok(sql.includes('sha256(convert_to(source_markdown,\'UTF8\'))'));
 assert.ok(!sql.includes('terravale_dm_divine_boons'),'Source migration must not create granted boon data');
 assert.ok(overlay.includes('v275-source-vault.js'));
 assert.ok(published.includes('data-source="v275-source-vault.js"'));
-assert.ok(published.includes('Terravale Codex V2.77'));
+assert.ok(published.includes('Terravale Codex V2.78'));
 assert.ok(importer.includes('MAX_ITEM=250000'),'Source document size limit must allow original rules files');
 console.log('PASS V2.75: original Markdown source custody, DM-only RPC contract, no forged boons and published client.');
