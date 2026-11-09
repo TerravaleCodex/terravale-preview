@@ -47,7 +47,13 @@ async function unzipMarkdown(file){
   else if(method===8){
    if(typeof DecompressionStream!=='function')throw Error('Your browser cannot unpack ZIP files; select extracted Markdown files instead.');
    try{
-    const stream=new Blob([payload]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    let expanded=0;
+    const guard=new TransformStream({transform(chunk,controller){
+     expanded+=chunk.byteLength;
+     if(expanded>MAX_ITEM||expanded>size)throw Error('ZIP entry expands beyond its declared size.');
+     controller.enqueue(chunk);
+    }});
+    const stream=new Blob([payload]).stream().pipeThrough(new DecompressionStream('deflate-raw')).pipeThrough(guard);
     bytes=new Uint8Array(await new Response(stream).arrayBuffer());
    }catch(e){throw Error('ZIP decompression failed for '+name+': '+(e.message||String(e)))}
   }else throw Error('Unsupported ZIP compression for '+name);
