@@ -8,7 +8,7 @@ def patch(source: str) -> str:
     assert source.count(before)==1, "Original local-only character approval handler changed"
     source=source.replace(before,after,1)
     before_note='<h4>Still requires DM review</h4><div class="sheet20-review-list">'
-    after_note='<h4>\${c.status===\\'Pending\\'?\\'Awaiting initial DM approval\\':\\'Reference notes · not a new approval\\'}</h4><div class="sheet20-review-list">'
+    after_note='<h4>'+chr(36)+"{c.status==='Pending'?'Awaiting initial DM approval':'Reference notes · not a new approval'}"+'</h4><div class="sheet20-review-list">'
     assert source.count(before_note)==1, "Native character sheet review heading changed"
     source=source.replace(before_note,after_note,1)
     return source
