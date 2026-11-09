@@ -668,7 +668,8 @@ function renderSheet(){
 }
 let queued=false;
 const observer=new MutationObserver(()=>{
- if(queued)return;queued=true;
+ // V2.76: a chat message or dice roll must not trigger character-sheet work.
+ if(!routeCharacter()||queued)return;queued=true;
  requestAnimationFrame(()=>{queued=false;renderSheet()});
 });
 observer.observe(document.getElementById('pageRoot')||document.body,{childList:true,subtree:true});
