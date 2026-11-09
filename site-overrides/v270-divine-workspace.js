@@ -33,7 +33,7 @@ function chips(host,values,selected,onPick){
  host.append(group);
 }
 const dm={campaign:null,character:null,host:null,chars:[],data:null,mode:'favour',edit:null,
- reason:'',busy:false,loading:false,error:''};
+ reason:'',busy:false,loading:false,error:'',boonQuery:'',boonFamily:'all',boonStatus:'all',favPending:new Set()};
 function activeCharacter(){return dm.chars.find(c=>c.id===dm.character)||null}
 async function loadDM(){
  if(!isDM()||!dm.character||dm.loading)return;
@@ -89,6 +89,49 @@ function drawDM(){
  else if(dm.mode==='boons')drawBoons(host);
  else drawPatrons(host);
 }
+async function adjustFavour(patron,delta,card){
+ if(!isDM()||!dm.character||dm.busy||dm.favPending.has(patron))return;
+ const score=card.querySelector('.tv270-score');
+ const prior=Number(score?.dataset.value??0);
+ const next=clamp(prior+delta);
+ if(next===prior)return;
+ dm.favPending.add(patron);
+ const controls=card.querySelectorAll('button');
+ controls.forEach(b=>{b.disabled=true});
+ const target=dm.character,reason=dm.reason;
+ try{
+  const {data,error}=await api().rpc('terravale_divine_dm_set_favour',{
+   target_character:target,target_patron:patron,new_score:next,reason
+  });
+  if(error)throw error;
+  if(target!==dm.character)return;
+  const accepted=Number(data?.score??next);
+  score.dataset.value=String(accepted);
+  score.textContent=(accepted>0?'+':'')+accepted;
+  score.className='tv270-score '+colourFor(accepted);
+  const old=dm.data.favour.find(f=>f.patron_id===patron);
+  if(old)old.score=accepted;else dm.data.favour.push({patron_id:patron,score:accepted});
+  const list=dm.host?.querySelector('[data-tv270-favour-history]');
+  if(list){
+   const record=node('div','tv270-activity');
+   const name=dm.data.patrons.find(p=>p.id===patron)?.name||'Patron';
+   record.append(node('strong','','Favour: '+name),
+    node('small','',dateLabel(new Date().toISOString())),
+    node('span','',prior+' → '+accepted));
+   if(reason)record.append(node('p','',reason));
+   list.prepend(record);
+  }
+  notice('Favour adjusted.');
+ }catch(e){notice('Favour update failed: '+(e.message||String(e)));}
+ finally{
+  dm.favPending.delete(patron);
+  const now=Number(score?.dataset.value??prior);
+  if(card.isConnected&&target===dm.character){
+   controls[0].disabled=now<=-10;
+   controls[1].disabled=now>=10;
+  }
+ }
+}
 function drawFavour(host){
  const d=dm.data,p=d.patrons||[],f=d.favour||[];
  const scores=new Map(f.map(x=>[x.patron_id,Number(x.score)]));
@@ -104,13 +147,11 @@ function drawFavour(host){
   info.append(node('strong','',patron.name),
    node('small','',patron.rank==='minor'?'Minor god':'Major / greater god'));
   const control=node('div','tv270-favour-controls');
-  control.append(button('−',()=>mutate('terravale_divine_dm_set_favour',{
-   target_character:dm.character,target_patron:patron.id,new_score:clamp(value-1),reason:dm.reason
-  },'Favour adjusted.'),'tv270-counter-button'));
-  control.append(node('strong','tv270-score '+colourFor(value),(value>0?'+':'')+value));
-  control.append(button('+',()=>mutate('terravale_divine_dm_set_favour',{
-   target_character:dm.character,target_patron:patron.id,new_score:clamp(value+1),reason:dm.reason
-  },'Favour adjusted.'),'tv270-counter-button'));
+  control.append(button('−',()=>adjustFavour(patron.id,-1,card),'tv270-counter-button'));
+  const score=node('strong','tv270-score '+colourFor(value),(value>0?'+':'')+value);
+  score.dataset.value=String(value);
+  control.append(score);
+  control.append(button('+',()=>adjustFavour(patron.id,1,card),'tv270-counter-button'));
   control.querySelectorAll('button').forEach(b=>{b.disabled=dm.busy||dm.loading||(b.textContent==='−'&&value<=-10)||(b.textContent==='+'&&value>=10)});
   card.append(info,control);body.append(card);
  }
@@ -121,6 +162,7 @@ function drawFavour(host){
  const names=new Map(p.map(x=>[x.id,x.name]));
  const catalog=new Map((d.catalog||[]).map(x=>[x.id,x.name]));
  const events=d.activity||[];
+ const activityList=node('div','');activityList.dataset.tv270FavourHistory='1';
  for(const e of events.slice(0,30)){
   const row=node('div','tv270-activity');
   const title=e.action==='favour'?'Favour: '+(names.get(e.patron_id)||'Patron'):
@@ -128,8 +170,9 @@ function drawFavour(host){
   row.append(node('strong','',title),node('small','',dateLabel(e.created_at)));
   if(e.action==='favour')row.append(node('span','',String(e.old_score??0)+' → '+String(e.new_score)));
   if(e.reason)row.append(node('p','',e.reason));
-  history.append(row);
+  activityList.append(row);
  }
+ history.append(activityList);
  if(!events.length)history.append(node('p','tv254-muted','No divine activity has been recorded for this character.'));
  host.append(history);
 }
@@ -165,7 +208,7 @@ function drawPatrons(host){
 }
 function blankBoon(){
  return {id:null,kind:'divine',name:'',summary:'',mechanics:'',required_favour:1,
- patron_id:'',second_patron_id:'',state:'draft'};
+ patron_id:'',second_patron_id:'',state:'draft',max_charges:0,recovery:'long'};
 }
 function namesFor(b){
  const patrons=dm.data.patrons||[];
@@ -183,14 +226,60 @@ function drawBoons(host){
   node('p','tv254-muted','Divine / Minor God / Concordant are separate families. A character may hold three conventional boons and one Concordant boon. Drafts and unearned boons never appear on player sheets.'));
  if(dm.edit){drawBoonEditor(section);host.append(section);return}
  section.append(button('+ Prepare a boon',()=>{dm.edit=blankBoon();drawDM()},'btn primary small'));
+ const controlsBar=node('div','tv271-boon-filters');
+ const search=input('Find prepared boons',dm.boonQuery,{maxlength:120});
+ search.el.placeholder='Search titles, patrons or effects';
+ controlsBar.append(search.wrap);
+ const family=node('div','tv271-filter-chips');
+ const list=node('div','tv271-boon-list');
+ const filter=()=>{
+  let count=0;
+  for(const el of list.children){
+   const familyOk=dm.boonFamily==='all'||el.dataset.kind===dm.boonFamily;
+   const match=!dm.boonQuery||el.dataset.search.includes(dm.boonQuery.toLocaleLowerCase());
+   const statusOk=dm.boonStatus==='all'||el.dataset.status===dm.boonStatus;
+   el.hidden=!(familyOk&&match&&statusOk);if(!el.hidden)count++;
+  }
+  result.textContent=count+' of '+list.children.length+' prepared boons';
+ };
+ const result=node('small','tv271-filter-count');
+ const pickFamily=(value)=>{
+  dm.boonFamily=value;
+  family.querySelectorAll('button').forEach(b=>{
+   b.classList.toggle('active',b.dataset.kind===value);
+   b.setAttribute('aria-pressed',String(b.dataset.kind===value));
+  });
+  filter();
+ };
+ for(const [key,label] of [['all','All families'],...Object.entries(families)]){
+  const b=button(label,()=>pickFamily(key),'tv270-chip'+(dm.boonFamily===key?' active':''));
+  b.dataset.kind=key;b.setAttribute('aria-pressed',String(dm.boonFamily===key));family.append(b);
+ }
+ const stateBar=node('div','tv271-filter-chips');
+ for(const [key,label] of [['all','All states'],['ready','Ready'],['draft','Draft']]){
+  const b=button(label,()=>{
+   dm.boonStatus=key;
+   stateBar.querySelectorAll('button').forEach(el=>{
+    el.classList.toggle('active',el.dataset.status===key);
+    el.setAttribute('aria-pressed',String(el.dataset.status===key));
+   });
+   filter();
+  },'tv270-chip'+(dm.boonStatus===key?' active':''));
+  b.dataset.status=key;b.setAttribute('aria-pressed',String(dm.boonStatus===key));stateBar.append(b);
+ }
+ search.el.addEventListener('input',()=>{dm.boonQuery=search.el.value;filter()});
+ controlsBar.append(family,stateBar,result);
+ section.append(controlsBar);
  const grants=(dm.data.grants||[]).filter(g=>g.status==='active');
  for(const boon of dm.data.catalog||[]){
   const has=grants.some(g=>g.boon_id===boon.id);
   const can=eligible(boon);
   const card=node('article','tv270-boon-row');
+  card.dataset.kind=boon.kind;card.dataset.status=boon.state;
+  card.dataset.search=[boon.name,boon.summary,boon.mechanics,namesFor(boon)].join(' ').toLocaleLowerCase();
   const detail=node('div','tv270-boon-detail');
   detail.append(node('div','tv254-eyebrow',families[boon.kind]||boon.kind),
-   node('h4','',boon.name),node('small','',namesFor(boon)+' · Required favour: +'+boon.required_favour));
+   node('h4','',boon.name),node('small','',namesFor(boon)+' · Required favour: +'+boon.required_favour+(Number(boon.max_charges)>0?' · '+boon.max_charges+' charges':'')));
   if(boon.summary)detail.append(node('p','',boon.summary));
   detail.append(node('small','',has?'Granted to selected character':boon.state!=='ready'?'Private draft':
    can?'Threshold met · DM may grant':'Not yet eligible'));
@@ -207,9 +296,10 @@ function drawBoons(host){
    mutate('terravale_divine_dm_grant_boon',{target_character:dm.character,target_boon:boon.id,give_boon:true,reason},'Boon bestowed.');
   },'btn primary small'));
   controls.lastChild.disabled=dm.busy||dm.loading||(!has&&(boon.state!=='ready'||!can));
-  card.append(detail,controls);section.append(card);
+  card.append(detail,controls);list.append(card);
  }
  if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No boons yet. Prepare their actual effects before granting them.'));
+ section.append(list);filter();
  host.append(section);
 }
 function drawBoonEditor(host){
@@ -235,16 +325,21 @@ function drawBoonEditor(host){
  const summary=input('Player-visible description after award',b.summary,{long:true,rows:3,maxlength:1200});
  const rules=input('Exact rules and any Divine Burden (revealed only after award)',b.mechanics,{long:true,rows:7,maxlength:10000});
  const threshold=input('Required favour (1–10)',b.required_favour,{type:'number',min:1,max:10});
- for(const [field,key] of [[title,'name'],[summary,'summary'],[rules,'mechanics'],[threshold,'required_favour']]){
+ const charges=input('Maximum charges (0 = passive/unlimited)',b.max_charges??0,{type:'number',min:0,max:99});
+ for(const [field,key] of [[title,'name'],[summary,'summary'],[rules,'mechanics'],[threshold,'required_favour'],[charges,'max_charges']]){
   field.el.addEventListener('input',()=>{b[key]=field.el.value});form.append(field.wrap);
  }
+ const recharge=node('div','tv270-field');recharge.append(node('span','','Charge recovery'));
+ chips(recharge,[['short','Short rest'],['long','Long rest'],['dawn','Dawn'],['manual','DM only'],['none','Never']],b.recovery||'long',x=>{b.recovery=x;drawDM()});
+ form.append(recharge);
  const status=node('div','tv270-field');status.append(node('span','','Release state'));
  chips(status,[['draft','Private draft'],['ready','Ready to grant']],b.state,x=>{b.state=x;drawDM()});form.append(status);
  const actions=node('div','tv270-actions');
  actions.append(button('Save boon',async()=>{
   const spec={kind:b.kind,name:String(b.name).trim(),summary:String(b.summary).trim(),
    mechanics:String(b.mechanics).trim(),required_favour:Number(b.required_favour),
-   patron_id:b.patron_id,second_patron_id:b.kind==='concordant'?b.second_patron_id:null,state:b.state};
+   patron_id:b.patron_id,second_patron_id:b.kind==='concordant'?b.second_patron_id:null,state:b.state,
+   max_charges:Number(b.max_charges)||0,recovery:b.recovery||'long'};
   if(!spec.patron_id){dm.error='Choose a patron before saving.';drawDM();return}
   await mutate('terravale_divine_dm_save_boon',{
    target_campaign:dm.campaign,boon_spec:spec,existing_boon:b.id||null,archive_boon:false
@@ -270,7 +365,7 @@ function renderDM(host,campaign,chars){
  drawDM();
  if(!dm.data&&!dm.loading&&dm.character)loadDM();
 }
-const sheet={character:null,open:false,cache:new Map(),loading:new Set(),lastContent:null};
+const sheet={character:null,open:false,cache:new Map(),loading:new Set(),lastContent:null,pending:new Set()};
 const wiredTabs=new WeakSet();
 function routeCharacter(){
  const m=location.hash.match(/^#\/characters\/([^/?#]+)/);
@@ -295,6 +390,52 @@ function restoreSheet(){
   sheet.lastContent.style.display='';
  sheet.lastContent=null;
 }
+function renderBoonResources(c,data){
+ const holder=document.querySelector('#pageRoot .sheet20-resource-panel');
+ if(!holder)return;
+ const granted=(data?.granted||[]).filter(g=>Number(g.max_charges)>0);
+ let panel=holder.querySelector('[data-tv271-boon-resources]');
+ if(!granted.length){panel?.remove();return}
+ const fingerprint=JSON.stringify([c.id,granted.map(g=>[g.id,g.name,g.max_charges,g.charges_remaining,g.recovery])]);
+ if(panel?.dataset.fingerprint===fingerprint)return;
+ panel?.remove();panel=node('section','tv271-resource-panel');
+ panel.dataset.tv271BoonResources='1';panel.dataset.fingerprint=fingerprint;
+ panel.append(node('h3','','Divine boons'));
+ for(const b of granted){
+  const card=node('div','tv271-resource-row');
+  const max=Number(b.max_charges),remaining=Math.max(0,Math.min(max,Number(b.charges_remaining)));
+  const info=node('div','');info.append(node('strong','',b.name),
+   node('small','',remaining+' / '+max+' charges · '+(b.recovery||'long')+' recovery'));
+  const actions=node('div','tv271-resource-actions');
+  const use=button('Use · 1',async()=>{
+   if(sheet.pending.has(b.id))return;
+   sheet.pending.add(b.id);use.disabled=true;
+   try{
+    const {error}=await api().rpc('terravale_divine_use_boon',{target_grant:b.id});
+    if(error)throw error;
+    await fetchSheet(c.id,true);
+   }catch(e){notice('Could not use boon: '+(e.message||String(e)));}
+   finally{sheet.pending.delete(b.id);use.disabled=false}
+  },'btn ghost small');
+  use.disabled=remaining<1||sheet.pending.has(b.id);
+  actions.append(use);
+  if(isDM()){
+   const refill=button('DM restore',async()=>{
+    if(sheet.pending.has(b.id))return;
+    sheet.pending.add(b.id);refill.disabled=true;
+    try{
+     const {error}=await api().rpc('terravale_divine_refill_boon',{target_grant:b.id});
+     if(error)throw error;
+     await fetchSheet(c.id,true);
+    }catch(e){notice('Could not restore boon: '+(e.message||String(e)));}
+    finally{sheet.pending.delete(b.id);refill.disabled=false}
+   },'btn ghost small');
+   actions.append(refill);
+  }
+  card.append(info,actions);panel.append(card);
+ }
+ holder.append(panel);
+}
 function renderSheet(){
  const c=routeCharacter(),root=document.getElementById('pageRoot');
  if(!c||!root){restoreSheet();sheet.character=null;sheet.open=false;return}
@@ -303,12 +444,14 @@ function renderSheet(){
  const content=root.querySelector('.sheet20-content:not(.tv270-divine-sheet)');
  if(!tabs||!content)return;
  sheet.lastContent=content;
+ if(ready()&&!sheet.cache.has(c.id)&&!sheet.loading.has(c.id))fetchSheet(c.id);
+ renderBoonResources(c,sheet.cache.get(c.id)?.data);
  let tab=tabs.querySelector('[data-tv270-divine-tab]');
  if(!tab){
   const native=tabs.querySelector('[data-value]');
   tab=native?native.cloneNode(false):node('button','sheet20-tab');
   for(const attribute of ['data-value','data-action','id','aria-controls','title','onclick'])tab.removeAttribute(attribute);
-  tab.dataset.tv270DivineTab='1';tab.type='button';tab.textContent='Divine';
+  tab.className='sheet20-tab';tab.dataset.tv270DivineTab='1';tab.type='button';tab.textContent='Divine';
   tab.setAttribute('aria-label','Divine');tab.setAttribute('role','tab');
   tab.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();sheet.open=true;renderSheet();fetchSheet(c.id,true)});
   tabs.append(tab);
@@ -320,7 +463,7 @@ function renderSheet(){
     sheet.open=false;restoreSheet();
     const pane=root.querySelector('.tv270-divine-sheet');if(pane)pane.hidden=true;
     const custom=tabs.querySelector('[data-tv270-divine-tab]');
-    if(custom)custom.setAttribute('aria-selected','false');
+    if(custom){custom.classList.remove('active','selected');custom.setAttribute('aria-selected','false')}
    }
   },true);
  }
@@ -332,10 +475,10 @@ function renderSheet(){
  }
  if(!sheet.open){
   content.style.display='';pane.hidden=true;
-  tab.setAttribute('aria-selected','false');return;
+  tab.classList.remove('active','selected');tab.setAttribute('aria-selected','false');return;
  }
- content.style.display='none';pane.hidden=false;tab.setAttribute('aria-selected','true');
- for(const native of tabs.querySelectorAll('[data-value]'))native.setAttribute('aria-selected','false');
+ content.style.display='none';pane.hidden=false;tab.classList.add('active');tab.setAttribute('aria-selected','true');
+ for(const native of tabs.querySelectorAll('[data-value]')){native.classList.remove('active','selected');native.setAttribute('aria-selected','false')}
  // Native SPA mutation observers must not repaint this pane in a loop.
  const cached=sheet.cache.get(c.id);
  const paintKey=c.id+'|'+(cached?.at||'new')+'|'+(sheet.loading.has(c.id)?'loading':'settled');
@@ -343,8 +486,8 @@ function renderSheet(){
  pane.dataset.tv270PaintKey=paintKey;
  pane.replaceChildren();
  pane.append(node('div','tv254-eyebrow','CHARACTER SHEET · DIVINE'),
-  node('h2','','Divine Favour & Boons'),
-  node('p','tv254-muted','The gods may notice deeds, promises and sacrifices. Favour is judged by the Dungeon Master; boons are revealed only when bestowed.'));
+  node('h2','','Divine relationships'),
+  node('p','tv254-muted','The gods notice deeds and promises. Only bestowed gifts are revealed here.'));
  const result=sheet.cache.get(c.id);
  if(!result||sheet.loading.has(c.id)){
   pane.append(node('p','tv254-muted','Reading this character’s divine relationships…'));
@@ -355,21 +498,20 @@ function renderSheet(){
    button('Try again',()=>fetchSheet(c.id,true)));return;
  }
  const data=result.data||{},previews=data.previews||[];
- const hints=node('section','tv270-panel');
- hints.append(node('h3','','The major gods'),node('p','tv254-muted','General patron themes only. Specific blessings and their requirements remain undisclosed.'));
- const favour=new Map((data.favour||[]).map(f=>[f.key,f.score]));
+ const hints=node('details','tv271-pantheon');
+ hints.append(node('summary','','Explore major gods · '+previews.length+' known'));
+ const guide=node('p','tv254-muted','Public themes only. Divine judgement, hidden blessings and requirements remain private.');
+ hints.append(guide);
+ const grid=node('div','tv271-god-grid');
  for(const god of previews){
-  const row=node('div','tv270-patron-row');
-  row.append(node('strong','',god.name),node('p','',god.hint||'The nature of this patron’s favour is yet to be learned.'));
-  if(data.can_view_scores&&favour.has(god.key)){
-   const score=Number(favour.get(god.key));
-   row.append(node('small','tv270-score '+colourFor(score),'Current favour: '+(score>0?'+':'')+score+' / +10'));
-  }
-  hints.append(row);
+  const tile=node('details','tv271-god-tile');
+  tile.append(node('summary','',god.name),
+   node('p','',god.hint||'The mysteries of this patron remain a matter of faith.'));
+  grid.append(tile);
  }
- if(!previews.length)hints.append(node('p','tv254-muted','No major or greater gods have been introduced in this campaign yet.'));
- pane.append(hints);
- const section=node('section','tv270-panel');
+ if(!previews.length)grid.append(node('p','tv254-muted','No major gods have been registered yet.'));
+ hints.append(grid);pane.append(hints);
+ const section=node('section','tv270-panel tv271-revealed');
  section.append(node('h3','','Revealed boons'));
  const granted=data.granted||[];
  if(!granted.length)section.append(node('p','tv254-muted','No divine boon has been bestowed on this character.'));
@@ -378,6 +520,7 @@ function renderSheet(){
   article.append(node('div','tv254-eyebrow',families[g.kind]||'Divine boon'),
    node('h4','',g.name),node('small','',g.patron+(g.other_patron?' & '+g.other_patron:'')+' · Granted '+dateLabel(g.granted_at)));
   if(g.summary)article.append(node('p','',g.summary));
+  if(Number(g.max_charges)>0)article.append(node('small','',Number(g.charges_remaining)+' / '+g.max_charges+' charges · '+g.recovery+' recovery'));
   if(g.mechanics){
    article.append(node('h5','','Granted effects and burdens'));
    const rules=node('p','tv270-rules',g.mechanics);article.append(rules);
