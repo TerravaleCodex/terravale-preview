@@ -223,3 +223,14 @@ textarea.tv270-input{resize:vertical;line-height:1.6}
 .tv273-import-actions{display:flex;flex-wrap:wrap;gap:8px}
 .tv273-import-status{min-height:1.3em;font-size:.8rem;color:var(--muted,#b8adc8)}
 @media(max-width:620px){.tv273-import-review{padding:10px}.tv273-review-items{max-height:60vh}}
+
+
+/* Archive 2 preflight: never imply patron-wide Markdown files are single boons. */
+.tv274-source-warning{margin:12px 0;padding:16px;border:1px solid var(--line,#484153);
+ border-radius:11px;background:var(--surface-2,#17151e);line-height:1.5}
+.tv274-source-warning h4{margin:0 0 9px;font:500 1.2rem Georgia,serif}
+.tv274-source-warning p{font-size:.86rem;max-width:78ch}
+.tv274-source-files{margin:12px 0}
+.tv274-source-files summary{font-weight:600;font-size:.86rem;cursor:pointer}
+.tv274-source-files ul{max-height:280px;overflow:auto;padding-left:21px;font-size:.79rem}
+.tv274-source-files li{margin:4px 0;overflow-wrap:anywhere}
