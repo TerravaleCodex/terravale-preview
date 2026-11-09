@@ -1,37 +1,53 @@
-/* V2.77 exploratory diagnostic: inspect the actual approved embedded Class Codex.
-   Prints only short code excerpts; not the lore library or any private data. */
+/* V2.77: Class Codex level readers update in place; full-page rerenders forbidden. */
 'use strict';
-const fs=require('fs');
-const s=fs.readFileSync('published/veiled-codex/index.html','utf8');
-for(const [label,re,max] of [
- ['class-level-classes',/class[-_](?:levels?|progression|detail|codex)|(?:class|cls)Levels?|level[-_]picker|level[-_]grid|level[-_]button/gi,16],
- ['class-titles',/Class Codex|class progression|level progression|class feature|level breakdown|class levels/gi,16],
- ['level-events',/data-(?:level|class|class-level)[\w-]{0,30}=|classList\.toggle\(['"](?:active|selected)/gi,12],
- ['scroll-scripts',/scrollIntoView\s*\(|scrollTo\s*\(|scrollTop\s*=|scroll-behavior\s*:/gi,24],
- ['anchors',/scrollbar-gutter|overflow-anchor|requestAnimationFrame\s*\(|MutationObserver\s*\(/gi,8]
-]){
- const hits=[...s.matchAll(re)],found=hits.slice(0,max).map(x=>{
-  const at=x.index;return {at,excerpt:s.slice(Math.max(0,at-170),Math.min(s.length,at+240)).replace(/[\r\n]+/g,' ').slice(0,410)};
- });
- console.log('=== '+label+' COUNT='+hits.length+' SAMPLE='+JSON.stringify(found));
-}
-
-for(const [label,re,max] of [
- ['v232-level-grid',/v232-level-grid|v232-level-content|v232-class-detail|v232-progression-table/gi,25],
- ['v232-class-handlers',/function [a-z0-9_]*(?:class|level|codex)[a-z0-9_]*\s*\(|(?:class|level|codex)[a-zA-Z0-9_]*\s*=\s*function|data-v232-[\w-]+/gi,30],
- ['page-class-route',/p===['"]\/classes|p===['"]\/lore\/classes|p\.startsWith\(['"]\/classes|Class Codex/gi,20]
-]){
- const hits=[...s.matchAll(re)];
- const filtered=hits.filter(h=>h.index>5700000);
- const sample=filtered.slice(0,max).map(h=>({at:h.index,excerpt:s.slice(Math.max(0,h.index-400),Math.min(s.length,h.index+950)).replace(/[\r\n]+/g,' ').slice(0,1300)}));
- console.log('=== '+label+' COUNT='+filtered.length+' SAMPLE='+JSON.stringify(sample));
-}
-
-for(const needle of ['[data-v232-level]','data-v232-level','dataset.v232Level','v232Level','data-v232-feature','data-v233-path-step','classLevel[id]','classFeature[id]']){
- const matches=[];let at=5700000;
- while((at=s.indexOf(needle,at))>=0){
-  matches.push(at);at+=needle.length;
- }
- const selected=matches.filter(at=>at>6750000).slice(-5);
- console.log('=== NEEDLE '+needle+' COUNT='+matches.length+' CODE='+JSON.stringify(selected.map(at=>({at,excerpt:s.slice(at-650,at+1800).replace(/[\r\n]+/g,' ').slice(0,2450)}))));
-}
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const read=path=>fs.readFileSync(path,'utf8');
+const html=read('published/veiled-codex/index.html');
+const patch=read('tools/v277_class_scroll_patch.py');
+const stability=read('site-overrides/v277-class-stability.js');
+const css=read('site-overrides/v277-class-stability.css');
+const overlay=read('tools/overlay-v239-with-discord.py');
+assert.doesNotThrow(()=>new Function(stability));
+assert.ok(html.includes('function v277UpdateProgression(id,trigger,mode)'),
+ 'Native V2.32 level and feature handlers must update only their reader');
+assert.ok(html.includes('if(lv&&v277UpdateProgression(id,lv,'),
+ 'Level buttons must no longer immediately rebuild the entire page');
+assert.ok(html.includes('if(f&&v277UpdateProgression(id,f,'),
+ 'Feature selection must preserve list focus and page scroll');
+assert.ok(html.includes('if(o&&v277UpdateOptions(id,o))return;'),
+ 'Class option changes must also update within their own reference card');
+assert.ok(html.includes('if(window.TerravaleV277RefreshPath?.(b))return;'),
+ 'Path-level buttons must update their reading content in place');
+assert.ok(html.includes('current.replaceWith(replacement)'),
+ 'Level detail must update in place');
+assert.ok(html.includes('oldArticle.replaceWith(newArticle)'),
+ 'Switching individual features should preserve the feature list');
+assert.ok(html.includes('v277KeepHeight(replacement,current,reader)'),
+ 'Shrinking level details must not clamp the document scroll position');
+assert.ok(html.includes('const anchorTop=grid.getBoundingClientRect().top;'),
+ 'Level grid should be used as a stable visual scroll anchor');
+assert.ok(html.includes('window.scrollBy({top:delta,behavior:'),
+ 'Scroll adjustment must be instant and proportional, not a scroll-to-top');
+assert.ok(html.includes('const old=reader.querySelector('),
+ 'Path details should also update only their own content');
+assert.ok(html.includes('v232-progression-table'),
+ 'Original full progression table remains available');
+assert.ok(!html.includes("window.TV33_PATH_LEVELS[b.dataset.v233For]=b.dataset.v233PathStep;renderPage(false);"),
+ 'Old class path-level full-page redraw must be replaced');
+assert.ok(!html.includes("if(f)classFeature[id]=Number(f.dataset.v232Feature);renderPage(false);},true);"),
+ 'Old class feature full-page redraw must be replaced');
+assert.ok(stability.includes('class-level-card>summary')||stability.includes('class-level-card>summary'.replace('class-','class-')),
+ 'Class rule accordions should have stable summary anchors');
+assert.ok(stability.includes("root?.classList.contains('page-reference')"),
+ 'Accordion guard must not intercept session or character-sheet interactions');
+assert.ok(stability.includes('summary.getBoundingClientRect().top'));
+assert.ok(stability.includes("block.open&&remaining<collapseHeight+30"),
+ 'Near-bottom collapsing accordions must avoid unexpected scroll clamp');
+assert.ok(!/sendBeacon\s*\(|fetch\s*\(|\.rpc\s*\(/.test(stability),'No network telemetry');
+assert.ok(css.includes('overflow-anchor:none'));
+assert.ok(overlay.includes('from v277_class_scroll_patch import patch as patch_v277'));
+assert.ok(overlay.includes('source = patch_v277(source)'));
+assert.ok(html.includes('data-source="v277-class-stability.js"'));
+assert.ok(html.includes('Terravale Codex V2.77'));
+console.log('PASS V2.77 Class Codex: in-place levels/features/paths, preserved progression table, stable summary scroll and no page-wide redraw.');
