@@ -103,7 +103,7 @@ function detectThreshold(value){
 }
 function detectCharges(value,source){
  const s=String(value||'').trim();
- const m=s.match(/^(?:\d{1,2})$/)||
+ const m=s.match(/^(\d{1,2})$/)||
   source.match(/(?:max(?:imum)?\s+charges?|charges?\s*(?:max(?:imum)?)?|uses?\s*(?:per|each)\s*(?:short|long)\s*rest)\s*[:=]?\s*(\d{1,2})/i)||
   source.match(/\b(\d{1,2})\s+uses?\s+per\s+(?:short|long)\s+rest\b/i);
  if(m&&Number(m[1])>=1&&Number(m[1])<=99)return String(Number(m[1]));
@@ -147,7 +147,7 @@ function derive(doc,patrons){
   (body.replace(/^---[\s\S]*?\n---\s*/,'').split(/\n\s*\n/).find(p=>
     p.trim()&&!/^\s*#|^\s*\*\*|^\s*[-*]\s|\b(?:threshold|favour|charges)\s*:/i.test(p))||'').trim().slice(0,450);
  return {name:name.slice(0,130),kind,patron,second_patron:second,required_favour:threshold,
-  max_charges:charges,recovery:recovery||'long',summary:summary.slice(0,1200),
+  max_charges:charges,recovery:recovery||(charges==='0'?'none':''),summary:summary.slice(0,1200),
   mechanics:body.trim(),source:path,state:'draft'};
 }
 function elem(tag,cls,content){
