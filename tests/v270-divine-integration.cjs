@@ -1,4 +1,4 @@
-/* Terravale V2.70 — fail-closed smoke checks for divine UI + deploy. */
+/* Terravale V2.71 — fail-closed smoke checks for divine UI + deploy. */
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
