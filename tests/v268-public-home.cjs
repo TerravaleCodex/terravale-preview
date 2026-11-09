@@ -39,7 +39,7 @@ if(fs.existsSync('published/veiled-codex/index.html')){
  const s=fs.readFileSync('published/veiled-codex/index.html','utf8');
  assert.ok(s.includes('data-source="v2-discord-auth.mjs"'));
  assert.ok(s.includes('data-source="v246-real-characters.js"'));
- assert.ok(s.includes('Terravale Codex V2.76'));
+ assert.ok(s.includes('Terravale Codex V2.77'));
 }
 if(fs.existsSync('published/index.html')){
  const root=fs.readFileSync('published/index.html','utf8');
