@@ -52,7 +52,7 @@ async function mutate(rpc,args,success){
  try{
   const {error}=await api().rpc(rpc,args);
   if(error)throw error;
-  dm.data=null;dm.busy=false;dm.reason='';
+  dm.data=null;sheet.cache.delete(dm.character);dm.busy=false;dm.reason='';
   if(success)notice(success);
   await loadDM();
  }catch(e){dm.error=e.message||String(e);dm.busy=false;drawDM()}
@@ -152,6 +152,7 @@ async function adjustFavour(patron,delta,card){
    if(reason)record.append(node('p','',reason));
    list.prepend(record);
   }
+  sheet.cache.delete(target);
   notice('Favour adjusted.');
  }catch(e){notice('Favour update failed: '+(e.message||String(e)));}
  finally{
