@@ -1,0 +1,17 @@
+/* V2.78 — status-driven approvals; avoid page-wide rerenders while deciding. */
+.tv278-player-level{margin:14px 0;max-width:100%;min-width:0}
+.tv278-player-level h3{font:500 1.18rem/1.3 var(--serif,Georgia,serif);margin:5px 0}
+.tv278-status{font-size:.83rem;color:var(--soft,#ada3bd);line-height:1.55;margin:9px 0}
+.tv278-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.tv278-player-level .tv278-actions{margin-top:10px}
+.tv278-request-btn{min-height:35px}
+.tv278-dm-levels{margin:15px 0;padding:17px 19px}
+.tv278-dm-levels h2{font:500 clamp(1.3rem,2vw,1.5rem)/1.2 var(--serif,Georgia,serif)}
+.tv278-requests{display:grid;gap:8px;margin:10px 0}
+.tv278-request-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:10px 12px;border-radius:9px;border:1px solid var(--edge,#423a50);min-width:0}
+.tv278-request-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tv278-request-text strong{font-size:.9rem}
+.tv278-request-text small{font-size:.77rem;color:var(--soft,#aaa4b6)}
+.tv278-request-row button:disabled{opacity:.55;cursor:wait}
+@media(max-width:650px){.tv278-request-row{flex-direction:column;align-items:flex-start}}
