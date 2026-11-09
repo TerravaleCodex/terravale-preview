@@ -226,6 +226,13 @@ function drawBoons(host){
   node('p','tv254-muted','Divine / Minor God / Concordant are separate families. A character may hold three conventional boons and one Concordant boon. Drafts and unearned boons never appear on player sheets.'));
  if(dm.edit){drawBoonEditor(section);host.append(section);return}
  section.append(button('+ Prepare a boon',()=>{dm.edit=blankBoon();drawDM()},'btn primary small'));
+ const filePick=node('input');filePick.type='file';filePick.accept='.json,application/json';
+ filePick.hidden=true;const importStatus=node('small','tv271-import-status');
+ filePick.addEventListener('change',()=>{
+  if(filePick.files?.[0])importBoonArchive(filePick.files[0],importStatus);
+  filePick.value='';
+ });
+ section.append(button('Import boon list · JSON',()=>filePick.click()),filePick,importStatus);
  const controlsBar=node('div','tv271-boon-filters');
  const search=input('Find prepared boons',dm.boonQuery,{maxlength:120});
  search.el.placeholder='Search titles, patrons or effects';
@@ -301,6 +308,64 @@ function drawBoons(host){
  if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No boons yet. Prepare their actual effects before granting them.'));
  section.append(list);filter();
  host.append(section);
+}
+async function importBoonArchive(file,status){
+ if(!isDM()||!dm.campaign||!file)return;
+ if(file.size>3000000){status.textContent='Import file is too large.';return}
+ let rows;
+ try{
+  const parsed=JSON.parse(await file.text());
+  rows=Array.isArray(parsed)?parsed:parsed?.boons;
+  if(!Array.isArray(rows)||!rows.length||rows.length>500)throw Error('Use a JSON array of 1–500 boons (or an object containing a boons array).');
+ }catch(e){status.textContent='Could not read boon JSON: '+(e.message||String(e));return}
+ const patronByName=new Map();
+ for(const p of dm.data?.patrons||[]){
+  patronByName.set(p.key_name.toLowerCase(),p);
+  patronByName.set(p.name.toLowerCase(),p);
+ }
+ const current=new Set((dm.data?.catalog||[]).map(b=>[b.kind,b.name.toLowerCase(),b.patron_id].join('|')));
+ const specs=[];
+ try{
+  for(const [i,raw] of rows.entries()){
+   if(!raw||typeof raw!=='object')throw Error('Entry '+(i+1)+' is not an object');
+   const kind=String(raw.kind||'').toLowerCase().trim();
+   const name=String(raw.name||'').trim();
+   const primary=patronByName.get(String(raw.patron||raw.patron_key||'').toLowerCase().trim());
+   const other=patronByName.get(String(raw.second_patron||raw.second_patron_key||'').toLowerCase().trim());
+   const required_favour=Number(raw.required_favour);
+   const max_charges=Number(raw.max_charges||0);
+   const recovery=String(raw.recovery||'long').toLowerCase();
+   if(!Object.hasOwn(families,kind)||name.length<2||name.length>130||
+      !primary||!Number.isInteger(required_favour)||required_favour<1||required_favour>10||
+      !Number.isInteger(max_charges)||max_charges<0||max_charges>99||
+      !['short','long','dawn','manual','none'].includes(recovery)||
+      (kind==='concordant'&&(!other||other.id===primary.id))||
+      (kind==='minor'&&primary.rank!=='minor')||
+      (kind==='divine'&&primary.rank==='minor'))throw Error('Entry '+(i+1)+' ('+name+') has an invalid family, patron, threshold or resource configuration.');
+   const summary=String(raw.summary||''),mechanics=String(raw.mechanics||'');
+   if(summary.length>1200||mechanics.length>10000)throw Error('Entry '+(i+1)+' exceeds text limits.');
+   const key=[kind,name.toLowerCase(),primary.id].join('|');
+   if(current.has(key))continue;
+   current.add(key);
+   specs.push({kind,name,summary,mechanics,required_favour,
+    patron_id:primary.id,second_patron_id:kind==='concordant'?other.id:null,
+    state:raw.state==='ready'?'ready':'draft',max_charges,recovery});
+  }
+ }catch(e){status.textContent='Import checked; nothing changed. '+(e.message||String(e));return}
+ if(!specs.length){status.textContent='All imported boon names already exist in this campaign.';return}
+ if(!window.confirm('Import '+specs.length+' new private boons? Originals are not overwritten. Drafts stay hidden from players.'))return;
+ status.textContent='Importing 0 / '+specs.length+' private boons…';
+ let done=0;
+ for(const spec of specs){
+  const {error}=await api().rpc('terravale_divine_dm_save_boon',{
+   target_campaign:dm.campaign,boon_spec:spec,existing_boon:null,archive_boon:false
+  });
+  if(error){status.textContent=done+' imported, then stopped: '+(error.message||String(error));await loadDM();return}
+  done++;
+  status.textContent='Importing '+done+' / '+specs.length+' private boons…';
+ }
+ notice(done+' boons added to the private catalogue.');
+ await loadDM();
 }
 function drawBoonEditor(host){
  const b=dm.edit,editing=Boolean(b.id),patrons=dm.data.patrons||[];
