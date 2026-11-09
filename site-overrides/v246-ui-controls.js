@@ -149,8 +149,17 @@
    installSecrets();mountFeatMechanics();mountASI();mountTechniqueBack();
    mountActualHeritage();playerPreview();
  }
- const observer=new MutationObserver(()=>{
-   if(queued)return;queued=true;requestAnimationFrame(decorate);
+ // V2.76: reactive changes in chat/dice/dashboard must not run the
+ // full character-creator decorator on every DOM frame.
+ const monitored='.top-right,#creatorStudio,.sheet227-reader,#tv238-heritage';
+ const observer=new MutationObserver(records=>{
+   const related=records.some(record=>{
+     if(record.target?.nodeType===1&&record.target.closest?.(monitored))return true;
+     return Array.from(record.addedNodes).some(node=>node.nodeType===1&&
+       (node.matches?.(monitored)||node.querySelector?.(monitored)));
+   });
+   if(!related||queued)return;
+   queued=true;requestAnimationFrame(decorate);
  });
  observer.observe(document.body,{childList:true,subtree:true});
  window.addEventListener('terravale-characters-synced',()=>{
