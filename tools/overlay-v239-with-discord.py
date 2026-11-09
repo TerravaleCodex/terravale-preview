@@ -126,7 +126,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.72')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.73')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -193,7 +193,8 @@ shell_v255 = (ROOT / "site-overrides/v255-shell-role-version.js").read_text()
 owner_v261 = (ROOT / "site-overrides/v261-owner-byline.js").read_text()
 compact_v263 = (ROOT / "site-overrides/v263-compact-equipment-preview.js").read_text()
 divine_v270 = (ROOT / "site-overrides/v270-divine-workspace.js").read_text()
-build_meta = json.dumps({"version":"2.72","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+divine_import_v273 = (ROOT / "site-overrides/v273-boon-archive-import.js").read_text()
+build_meta = json.dumps({"version":"2.73","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -265,6 +266,7 @@ inline_js = (
     '<script data-source="v261-owner-byline.js">\n' + owner_v261 + '\n</script>\n'
     '<script data-source="v263-compact-equipment-preview.js">\n' + compact_v263 + '\n</script>\n'
     '<script data-source="v270-divine-workspace.js">\n' + divine_v270 + '\n</script>\n'
+    '<script data-source="v273-boon-archive-import.js">\n' + divine_import_v273 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -298,6 +300,7 @@ assert source.count('data-source="v255-build"') == 1
 assert source.count('data-source="v261-owner-byline.js"') == 1
 assert source.count('data-source="v263-compact-equipment-preview.js"') == 1
 assert source.count('data-source="v270-divine-workspace.js"') == 1
+assert source.count('data-source="v273-boon-archive-import.js"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
