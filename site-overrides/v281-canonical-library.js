@@ -43,6 +43,30 @@ function renderTermsForm(host,context,entry,done){
  if(host.querySelector('[data-tv281-offer-form]'))return;
  const form=node('section','tv281-offer-form');
  form.dataset.tv281OfferForm='1';
+ if(entry.kind==='tier_zero'){
+  form.append(node('h4','','Offer the original Tier 0 bargain'),
+   node('p','tv281-small',
+    'The original benefits and costs are presented to the player verbatim. No rewritten story justification is necessary.'));
+  const clarify=node('textarea','tv281-term-input');
+  clarify.rows=2;clarify.maxLength=1500;
+  clarify.placeholder='Optional clarification where the original source leaves a cost, person or limit unspecified';
+  clarify.setAttribute('aria-label','Optional clarification');
+  form.append(clarify);
+  const feedback=node('p','tv281-small'),controls=node('div','tv281-actions');
+  const send=button('Present original terms',async()=>{
+   if(context.character!==context.currentCharacter())return;
+   send.disabled=true;
+   try{
+    await rpc('terravale_divine_canon_dm_offer',{
+     target_character:context.character,target_entry:entry.id,
+     terms:{source_exact:true,clarifications:clarify.value.trim()}});
+    statusText(feedback,'The original Tier 0 terms have been offered for explicit player acceptance.');
+    send.remove();done?.();
+   }catch(e){statusText(feedback,e.message,true);send.disabled=false}
+  },'btn primary small');
+  controls.append(send,button('Cancel',()=>form.remove()));form.append(controls,feedback);
+  host.append(form);return;
+ }
  form.append(node('h4','','Formal terms · player accepts separately'),
   node('p','tv281-small',
   'Disclose an actual benefit, certain price, affected parties, duration, reversibility and bounded uncertainty before offering. Silence or rescue is not consent.'));
@@ -102,6 +126,7 @@ function mountDM(host,config){
   currentCharacter:()=>config.currentCharacter?.()||config.character
  };
  const section=node('section','tv281-canonical');
+ let dmOffers=[];
  section.dataset.tv281Canonical='1';
  section.append(node('div','tv254-eyebrow','ORIGINAL ARCHIVE 2 · DM ONLY'),
   node('h3','','Canonical boon catalogue'),
@@ -124,7 +149,11 @@ function mountDM(host,config){
  async function refreshAwards(){
   if(!same())return;
   try{
-   dmState=await rpc('terravale_divine_canon_dm_state',{target_character:context.character});
+   const [state,offers]=await Promise.all([
+    rpc('terravale_divine_canon_dm_state',{target_character:context.character}),
+    rpc('terravale_divine_canon_offers_player_state',{target_character:context.character})
+   ]);
+   dmState=state;dmOffers=offers?.offers||[];
    byCharacter.set(context.character,dmState);
    renderHeld();
   }catch(e){statusText(message,'Could not load canonical awards: '+e.message,true)}
@@ -360,16 +389,33 @@ function mountDM(host,config){
     });
     if(!same()||!card.isConnected)return;
     loaded=true;body.replaceChildren();
-    const raw=node('pre','tv281-mechanics',original.original_mechanics||'');
-    body.append(raw);
+    const renderer=window.TerravaleDivineReaderV282;
+    body.append(renderer?.feature(original.original_mechanics||'',original)||
+     node('p','tv281-small',original.original_mechanics||''));
     body.append(node('p','tv281-small',
       'Source: '+item.source_path+' · Exact text only. Mechanical rulings remain subject to the shared Divine Boons rules.'));
     const limited=['divine','concordant','minor_grace','minor_intercession',
       'nyrha_revision','nyrha_state'].includes(item.kind);
     if(!limited){
-     body.append(node('p','tv281-story-note',
-      'This is a formal story bargain, not an equippable boon. The character must be told the terms and explicitly accept.'));
-     body.append(button('Prepare player Offer',()=>renderTermsForm(body,context,item,refreshAwards)));
+     body.append(node('p','tv281-story-note',item.kind==='tier_zero'?
+      'Tier 0 draws its benefits and costs directly from the source. The player must accept before the DM bestows it.':
+      'Nyrha’s Impossible Offers retain their separate formal requirements.'));
+     if(item.kind==='tier_zero'&&!held&&dmOffers.some(o=>
+       o.entry_id===item.id&&o.status==='accepted')){
+      body.append(button('Bestow accepted Tier 0 bargain',async()=>{
+       try{
+        await rpc('terravale_divine_canon_grant',{
+         target_character:context.character,target_entry:item.id,target_slot:'bargain',
+         target_ability:null,reason:''});
+        statusText(message,'Accepted Tier 0 bargain bestowed.');
+        window.TerravaleV270Divine?.refreshSheet?.(context.character);
+        await refreshAwards();await showEntries();
+       }catch(e){statusText(message,e.message,true)}
+      },'btn primary small'));
+     }else if(held){
+      body.append(node('p','tv281-small','This bargain is already bestowed.'));
+     }else body.append(button(item.kind==='tier_zero'?'Offer original Tier 0 terms':'Prepare Formal Offer',
+      ()=>renderTermsForm(body,context,item,refreshAwards)));
      return;
     }
     if(held){
@@ -410,8 +456,7 @@ function mountDM(host,config){
      if(['minor_grace','minor_intercession'].includes(item.kind)&&!ability){
       statusText(message,'Choose INT, WIS or CHA as Minor Boon Ability.',true);return;
      }
-     const reason=promptReason('Story reason for granting '+item.name);
-     if(reason===null)return;
+     const reason=''; // No lore explanation is required for an unexplained divine gift.
      send.disabled=true;
      try{
       await rpc('terravale_divine_canon_grant',{
@@ -491,13 +536,20 @@ function renderPlayerOffers(host,data,character,refresh){
   const card=node('details','tv281-entry');
   card.append(node('summary','',item.title+' · '+item.status));
   const box=node('div','tv281-entry-body');
-  box.append(node('pre','tv281-mechanics',item.source_mechanics||''));
-  for(const [title,key] of [
-   ['Immediate benefit','benefit'],['Certain price','certain_price'],
-   ['Affected parties','affected_parties'],['Duration','duration'],
-   ['Reversibility','reversibility'],['Uncertainty boundary','uncertainty_boundary'],
-   ['Fracture Chain','fracture_chain']]){
-    if(item[key])box.append(node('p','tv281-term-summary',title+': '+item[key]));
+  const renderer=window.TerravaleDivineReaderV282;
+  box.append(renderer?.feature(item.source_mechanics||'',item)||
+   node('p','tv281-small',item.source_mechanics||''));
+  if(item.source_exact){
+   box.append(node('p','tv281-story-note','The original Archive 2 source above contains the terms for this bargain.'));
+   if(item.clarifications)box.append(node('p','tv281-term-summary','Additional clarification: '+item.clarifications));
+  }else{
+   for(const [title,key] of [
+    ['Immediate benefit','benefit'],['Certain price','certain_price'],
+    ['Affected parties','affected_parties'],['Duration','duration'],
+    ['Reversibility','reversibility'],['Uncertainty boundary','uncertainty_boundary'],
+    ['Fracture Chain','fracture_chain']]){
+     if(item[key])box.append(node('p','tv281-term-summary',title+': '+item[key]));
+   }
   }
   if(item.status==='offered'&&character?.owner==='You'){
    const actions=node('div','tv281-actions');
