@@ -134,7 +134,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.82')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.83')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -185,6 +185,7 @@ css += "\n" + (ROOT / "site-overrides/v279-archive2-library.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v280-divine-sheet.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v281-canonical-library.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v282-boon-reader.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v283-compact-filters.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -220,7 +221,7 @@ divine_voices_v281 = (ROOT / "site-overrides/v281-divine-voices.js").read_text()
 canonical_library_v281 = (ROOT / "site-overrides/v281-canonical-library.js").read_text()
 boon_reader_v282 = (ROOT / "site-overrides/v282-boon-reader.js").read_text()
 divine_links_v282 = (ROOT / "site-overrides/v282-divine-relationships.js").read_text()
-build_meta = json.dumps({"version":"2.82","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+build_meta = json.dumps({"version":"2.83","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1

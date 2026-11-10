@@ -144,8 +144,7 @@ function mountDM(host,config){
  section.append(owned,control,records,pager,message);
  const options={kind:'all',query:'',patron:'',tier:null,slot:'',availability:'any',
   uses:'any',sort:'patron',offset:0};
- let allPatrons=[],patronQuery='';
- let refreshPatrons=()=>{};
+ let allPatrons=[];
  const page={request:0};
  let dmState=null;
  const same=()=>isDM()&&host.isConnected&&context.currentCharacter()===context.character;
@@ -362,7 +361,7 @@ function mountDM(host,config){
    if(!same()||request!==page.request)return;
    records.replaceChildren();pager.replaceChildren();
    const count=Number(data.total)||0;
-   allPatrons=data.patrons||allPatrons;refreshPatrons();
+   allPatrons=data.patrons||allPatrons;
    counter.textContent=count?(options.offset+1)+'–'+
     Math.min(count,options.offset+24)+' of '+count+' matching boons':'No matching boons';
    const grantedIds=new Set((dmState?.awards||[]).map(x=>x.entry_id));
@@ -485,83 +484,198 @@ function mountDM(host,config){
   });
   return card;
  }
- control.append(search,pick);
- const advanced=node('details','tv282-advanced');
- advanced.open=true;
- advanced.append(node('summary','','More filters · God, tier, eligibility, slot, uses and sort'));
- const reset=button('Clear all filters',()=>{
-  Object.assign(options,{kind:'all',query:'',patron:'',tier:null,slot:'',
-   availability:'any',uses:'any',sort:'patron',offset:0});
-  search.value='';patronQuery='';renderFilters();showEntries();
- },'btn ghost small');
- advanced.append(reset);
- const facets=node('div','tv282-filter-row');
- advanced.append(facets);control.append(advanced);
- function facet(label,values,field){
-  const panel=node('div','tv282-filter');
-  panel.append(node('strong','',label));
-  const chips=node('div','tv281-chips');
-  for(const [value,name] of values){
-   chip(name,options[field]===value,()=>{
-    if(options[field]===value)return;
-    options[field]=value;options.offset=0;renderFilters();showEntries();
-   },chips);
-  }
-  panel.append(chips);return panel;
+ // A compact toolbar replaces the six-column chip wall. Panels float above
+ // the results: opening a filter never changes page geometry or scroll position.
+ control.classList.add('tv283-filter');
+ const toolbar=node('div','tv283-filter-toolbar');
+ const activeInfo=node('small','tv283-filter-summary');
+ const activeChoices=node('div','tv283-filter-active');
+ control.replaceChildren(search,toolbar,activeInfo,activeChoices);
+ let openFilter=null;
+ let patronLookup='';
+ const defaults={kind:'all',query:'',patron:'',tier:null,slot:'',
+  availability:'any',uses:'any',sort:'patron',offset:0};
+ const optionSets={
+  kind:[['all','All boon families'],...kinds.map(k=>[k,formatFamily(k)])],
+  tier:[[null,'Any tier'],[0,'Tier 0'],[1,'Tier I'],[2,'Tier II'],
+   [3,'Tier III'],[4,'Tier IV'],[5,'Tier V']],
+  availability:[['any','Any eligibility'],['threshold','Favour met'],
+   ['locked','Favour not met'],['held','Already held'],['formal','Formal Offer']],
+  slot:[['','Any slot'],['passive','Passive'],['reaction','Reaction'],
+   ['major','Major'],['grace','Grace'],['intercession','Intercession']],
+  uses:[['any','Any use limit'],['limited','Limited uses'],['unlimited','No listed limit']],
+  sort:[['patron','By god'],['name','Alphabetical'],['tier_up','Tier ascending'],
+   ['tier_down','Tier descending']]
+ };
+ const shortLabel={
+  kind:{all:'All families',divine:'Divine',concordant:'Concordant',
+   minor_grace:'Minor Grace',minor_intercession:'Minor Intercession',
+   nyrha_revision:'Nyrha Revision',nyrha_state:'Unwritten State',
+   tier_zero:'Tier 0',nyrha_offer:'Impossible Offers'},
+  availability:{any:'Any eligibility',threshold:'Favour met',
+   locked:'Not met',held:'Held',formal:'Formal Offer'},
+  uses:{any:'Any uses',limited:'Limited',unlimited:'Unlisted'},
+  sort:{patron:'By god',name:'A–Z',tier_up:'Tier ↑',tier_down:'Tier ↓'}
+ };
+ function filterLabel(key){
+  if(key==='patron')return options.patron||'All gods';
+  if(key==='kind')return shortLabel.kind[options.kind]||options.kind;
+  if(key==='availability')return shortLabel.availability[options.availability];
+  if(key==='uses')return shortLabel.uses[options.uses];
+  if(key==='sort')return shortLabel.sort[options.sort];
+  const item=optionSets[key]?.find(pair=>pair[0]===options[key]);
+  return item?.[1]||'Any';
  }
- function patronFacet(){
-  const panel=node('div','tv282-filter');
-  panel.append(node('strong','','God / divine patron'));
-  const query=node('input','tv281-search');
-  query.type='search';query.value=patronQuery;
-  query.placeholder='Find a god…';
-  query.setAttribute('aria-label','Search source patrons');
-  const choices=node('div','tv281-chips tv282-patron-chips');
-  const draw=()=>{
+ function setFilter(key,value){
+  if(options[key]===value){openFilter=null;renderFilters();return}
+  options[key]=value;
+  options.offset=0;openFilter=null;
+  renderFilters();showEntries();
+ }
+ function optionButton(label,selected,handler){
+  const btn=button(label,handler,'tv283-option'+(selected?' is-selected':''));
+  btn.setAttribute('aria-pressed',String(selected));
+  return btn;
+ }
+ function optionList(parent,key,values,columns){
+  const area=node('div','tv283-option-list'+(columns?' is-grid':''));
+  for(const [value,name] of values)
+   area.append(optionButton(name,options[key]===value,()=>setFilter(key,value)));
+  parent.append(area);
+ }
+ function patronOptions(parent){
+  const picker=node('div','tv283-patron-search');
+  const field=node('input','tv283-patron-input');
+  field.type='search';field.placeholder='Search a god or patron…';
+  field.setAttribute('aria-label','Find a god');field.value=patronLookup;
+  picker.append(field);
+  const choices=node('div','tv283-patron-options');
+  const total=node('small','tv283-picker-caption');
+  function redraw(){
    choices.replaceChildren();
-   chip('All gods',!options.patron,()=>{
-    options.patron='';options.offset=0;renderFilters();showEntries();
-   },choices);
-   for(const patron of allPatrons.filter(p=>
-    p.toLowerCase().includes(patronQuery.toLowerCase())).slice(0,50)){
-    chip(patron,options.patron===patron,()=>{
-     options.patron=patron;options.offset=0;renderFilters();showEntries();
-    },choices);
+   choices.append(optionButton('Every god',!options.patron,()=>setFilter('patron','')));
+   const results=allPatrons.filter(x=>x.toLowerCase().includes(patronLookup.toLowerCase()));
+   for(const name of results.slice(0,9))
+    choices.append(optionButton(name,options.patron===name,()=>setFilter('patron',name)));
+   total.textContent=results.length>9?
+    'Showing 9 of '+results.length+' · Type to narrow the list':
+    (results.length?results.length+' matching patrons':'No matching gods');
+  }
+  field.addEventListener('input',()=>{patronLookup=field.value;redraw()});
+  field.addEventListener('keydown',e=>{
+   if(e.key==='Enter'){
+    const match=allPatrons.filter(x=>x.toLowerCase().includes(patronLookup.toLowerCase()));
+    if(match.length===1){e.preventDefault();setFilter('patron',match[0])}
    }
-  };
-  query.addEventListener('input',()=>{patronQuery=query.value;draw()});
-  refreshPatrons=draw;
-  panel.append(query,choices);draw();return panel;
+  });
+  redraw();parent.append(picker,choices,total);
+ }
+ function moreOptions(parent){
+  for(const [label,key] of [['Favour slot','slot'],['Use limits','uses'],['Sort results','sort']]){
+   const section=node('div','tv283-more-group');
+   section.append(node('strong','tv283-filter-subtitle',label));
+   optionList(section,key,optionSets[key],false);
+   parent.append(section);
+  }
+ }
+ function selectCount(){
+  return Number(options.kind!=='all')+Number(!!options.patron)+
+   Number(options.tier!==null)+Number(options.availability!=='any')+
+   Number(!!options.slot)+Number(options.uses!=='any')+
+   Number(options.sort!=='patron')+Number(!!options.query);
  }
  function renderFilters(){
-  pick.replaceChildren();
-  chip('All families',options.kind==='all',()=>{
-   options.kind='all';options.offset=0;renderFilters();showEntries()},pick);
-  for(const key of kinds)chip(formatFamily(key),options.kind===key,()=>{
-   options.kind=key;options.offset=0;renderFilters();showEntries()},pick);
-  facets.replaceChildren(
-   patronFacet(),
-   facet('Tier',[[null,'Any'],[0,'0'],[1,'I'],[2,'II'],
-    [3,'III'],[4,'IV'],[5,'V']],'tier'),
-   facet('Eligibility',[
-    ['any','All'],['threshold','Favour met'],['locked','Not met'],
-    ['held','Held'],['formal','Formal Offer']],'availability'),
-   facet('Favour slot',[
-    ['','Any'],['passive','Passive'],['reaction','Reaction'],
-    ['major','Major'],['grace','Grace'],['intercession','Intercession']],'slot'),
-   facet('Uses',[
-    ['any','Any'],['limited','Limited'],['unlimited','Passive / unlisted']],'uses'),
-   facet('Sort',[
-    ['patron','By god'],['name','Alphabetical'],['tier_up','Tier ↑'],
-    ['tier_down','Tier ↓']],'sort')
-  );
+  toolbar.replaceChildren();
+  const moreCount=Number(!!options.slot)+Number(options.uses!=='any')+
+   Number(options.sort!=='patron');
+  const specs=[
+   ['kind','Family',filterLabel('kind')],
+   ['patron','God',filterLabel('patron')],
+   ['tier','Tier',filterLabel('tier')],
+   ['availability','Eligibility',filterLabel('availability')],
+   ['more','More filters',moreCount?'+'+moreCount+' active':'']
+  ];
+  for(const [key,title,value] of specs){
+   const unit=node('div','tv283-filter-unit');unit.dataset.filter=key;
+   const toggler=button('',()=>{
+    openFilter=openFilter===key?null:key;
+    renderFilters();
+   },'tv283-filter-trigger'+
+     (openFilter===key?' is-open':'')+
+     ((key==='more'?moreCount>0:options[key]!==defaults[key])?' is-active':''));
+   toggler.setAttribute('aria-expanded',String(openFilter===key));
+   toggler.setAttribute('aria-label',title+(value?' '+value:''));
+   toggler.append(node('span','tv283-trigger-label',title));
+   if(value)toggler.append(node('strong','tv283-trigger-value',value));
+   toggler.append(node('span','tv283-trigger-chevron',openFilter===key?'▴':'▾'));
+   unit.append(toggler);
+   if(openFilter===key){
+    const panel=node('div','tv283-filter-popover');
+    panel.setAttribute('role','group');
+    panel.setAttribute('aria-label',title+' choices');
+    panel.append(node('div','tv283-popover-title',key==='more'?'Additional filters':title));
+    if(key==='patron')patronOptions(panel);
+    else if(key==='more')moreOptions(panel);
+    else optionList(panel,key,optionSets[key],true);
+    unit.append(panel);
+   }
+   toolbar.append(unit);
+  }
+  const clear=button('Reset',()=>{
+   Object.assign(options,defaults);search.value='';patronLookup='';
+   openFilter=null;renderFilters();showEntries();
+  },'tv283-filter-reset');
+  clear.disabled=selectCount()===0;
+  toolbar.append(clear);
+  const count=selectCount();
+  activeInfo.textContent=count?count+' active filter'+(count===1?'':'s')+' · Results update below':'Browse all prepared original boons';
+  activeChoices.replaceChildren();
+  if(count){
+   const values=[
+    ['kind',options.kind!=='all','Family'],
+    ['patron',!!options.patron,'God'],
+    ['tier',options.tier!==null,'Tier'],
+    ['availability',options.availability!=='any','Eligibility'],
+    ['slot',!!options.slot,'Slot'],
+    ['uses',options.uses!=='any','Uses'],
+    ['sort',options.sort!=='patron','Sort']
+   ];
+   for(const [key,on,label] of values){
+    if(!on)continue;
+    const btn=button(label+': '+filterLabel(key)+' ×',
+     ()=>setFilter(key,defaults[key]),'tv283-active-token');
+    btn.setAttribute('aria-label','Remove '+label+' filter');
+    activeChoices.append(btn);
+   }
+  }
  }
  renderFilters();
  let timer=null;
  search.addEventListener('input',()=>{
   options.query=search.value.trim().slice(0,150);options.offset=0;
-  clearTimeout(timer);timer=setTimeout(showEntries,220);
+  clearTimeout(timer);timer=setTimeout(()=>{
+   renderFilters();showEntries();
+  },220);
  });
+ const dismissOutside=e=>{
+  if(!control.isConnected){
+   document.removeEventListener('pointerdown',dismissOutside);
+   return;
+  }
+  if(openFilter&&!control.contains(e.target)){
+   openFilter=null;renderFilters();
+  }
+ };
+ const dismissEscape=e=>{
+  if(!control.isConnected){
+   document.removeEventListener('keydown',dismissEscape);return;
+  }
+  if(e.key==='Escape'&&openFilter){
+   openFilter=null;renderFilters();
+  }
+ };
+ document.addEventListener('pointerdown',dismissOutside);
+ document.addEventListener('keydown',dismissEscape);
  const anchor=host.children[3]||null;host.insertBefore(section,anchor);
  refreshAwards().then(showEntries);
 }

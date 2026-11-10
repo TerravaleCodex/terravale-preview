@@ -92,6 +92,8 @@ on:
       - "site-overrides/sql/v282_award_reader_metadata.sql"
       - "site-overrides/sql/v282_tier0_history.sql"
       - "tests/v282-divine-reader-and-links.cjs"
+      - "site-overrides/v283-compact-filters.css"
+      - "tests/v283-compact-divine-filters.cjs"
       - "site-overrides/v277-class-stability.js"
       - "site-overrides/v277-class-stability.css"
       - "tools/v277_class_scroll_patch.py"
@@ -221,6 +223,8 @@ jobs:
         run: node tests/v281-canonical-boons.cjs
       - name: Validate source-backed Tier 0, divine relationships and advanced boon reader
         run: node tests/v282-divine-reader-and-links.cjs
+      - name: Verify compact Divine catalogue filters and no scrolling god wall
+        run: node tests/v283-compact-divine-filters.cjs
       - name: Inspect native character rest actions
         run: node tests/v281-rest-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
@@ -286,7 +290,7 @@ jobs:
           assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
           assert 'data-source="v270-divine-workspace.js"' in html
           assert 'data-source="v273-boon-archive-import.js"' in html, "Divine workspace missing"
-          assert "Terravale Codex V2.82" in html, "Latest V2 implementation missing"
+          assert "Terravale Codex V2.83" in html, "Latest V2 implementation missing"
           assert "sb_secret_" not in html
           print("PASS: public root enters the complete V2 Dashboard without the holding page")
           print("PASS: OAuth callback query and native SPA route are both preserved")
@@ -349,7 +353,7 @@ jobs:
                grep -q 'data-source="v2.css"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v2-discord-auth.mjs"' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v246-real-characters.js"' /tmp/terravale-v2-live.html &&
-               grep -q 'Terravale Codex V2.82' /tmp/terravale-v2-live.html &&
+               grep -q 'Terravale Codex V2.83' /tmp/terravale-v2-live.html &&
                grep -q 'data-source="v270-divine-workspace.js"' /tmp/terravale-v2-live.html &&
                ! grep -Fq "history.replaceState(null,'','#/characters')" /tmp/terravale-v2-live.html; then
               echo "PASS: complete V2 dashboard and Discord-authenticated site are serving."
