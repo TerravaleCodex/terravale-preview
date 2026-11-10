@@ -68,6 +68,11 @@ on:
       - "site-overrides/sql/v278_character_approval_lifecycle.sql"
       - "tools/v278_character_approval_patch.py"
       - "tests/v278-character-approval-audit.cjs"
+      - "site-overrides/v279-archive2-parser.js"
+      - "site-overrides/v279-archive2-library.js"
+      - "site-overrides/v279-archive2-library.css"
+      - "site-overrides/sql/v279_archive2_semantic_private_index.sql"
+      - "tests/v279-archive2-semantic-index.cjs"
       - "site-overrides/v277-class-stability.js"
       - "site-overrides/v277-class-stability.css"
       - "tools/v277_class_scroll_patch.py"
@@ -139,6 +144,8 @@ jobs:
         run: node tests/v277-class-codex-audit.cjs
       - name: Verify persistent character approvals and level-up requests
         run: node tests/v278-character-approval-audit.cjs
+      - name: Verify DM-only Archive 2 semantic index
+        run: node tests/v279-archive2-semantic-index.cjs
       - name: Verify native Dashboard default and preserve explicit routes
         run: node tests/v269-dashboard-default.cjs
       - name: Test native feat reader and active-grant integration
@@ -191,7 +198,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.78' in html
+          assert 'Terravale Codex V2.79' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -556,7 +563,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.78" in html
+          assert "Terravale Codex V2.79" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
