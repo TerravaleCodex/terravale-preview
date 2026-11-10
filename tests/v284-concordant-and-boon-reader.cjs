@@ -52,5 +52,5 @@ assert.ok(css.includes('min-height:158px'));
 assert.ok(css.includes('tv284-compact-award'));
 assert.ok(overlay.includes('v284-concordant-reader.css'));
 assert.ok(html.includes('tv284-boon-inspector'));
-assert.ok(html.includes('Terravale Codex V2.84'));
+assert.ok(html.includes('Terravale Codex V2.85'));
 console.log('PASS V2.84: shared Concordant dedicated seat, original source slot, 3×2 stable cards and single external reader.');
