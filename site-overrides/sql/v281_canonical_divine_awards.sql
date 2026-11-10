@@ -111,6 +111,12 @@ begin
  if not found or c.id is null or e.campaign_id<>c.campaign_id
    or not authz.is_dm(c.campaign_id) then
   raise exception 'Campaign DM only' using errcode='42501';end if;
+ if e.kind in('nyrha_revision','nyrha_state') and not exists (
+    select 1 from public.terravale_divine_canon_offers o
+    where o.character_id=c.id and o.entry_id=e.id and o.status in('accepted','fulfilled')
+ ) then
+  raise exception 'Nyrha Revisions require a fully disclosed Formal Offer and explicit player acceptance'
+   using errcode='22023';end if;
  if e.kind not in ('divine','concordant','minor_grace','minor_intercession',
      'nyrha_revision','nyrha_state') then
   raise exception 'Tier 0 and Impossible Offers require their own formal story procedure, not an ordinary boon grant'
