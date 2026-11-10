@@ -186,12 +186,14 @@ begin
    select f.score into prior_target from public.terravale_divine_favour f
     where f.character_id=c.id and f.patron_id=target_id for update;
    allowed_upper:=case when edge.target_key in('kalma','tyrius','pae') then 2 else 10 end;
+   -- +2 is a ceiling on indirect *gains* for the Greater Three,
+   -- not a floor for their judgement. Never forcibly collapse a +9 to +2.
+   if edge.change_per_trigger>0 and edge.target_key in('kalma','tyrius','pae')
+     and coalesce(prior_target,0)>=2 then continue;end if;
+   allowed_upper:=case when edge.change_per_trigger>0
+       and edge.target_key in('kalma','tyrius','pae') then 2 else 10 end;
    adjusted:=least(allowed_upper,greatest(-10,
     coalesce(prior_target,0)+hits*edge.change_per_trigger));
-   -- Indirect resonance cannot touch Greater Three scores already above +2,
-   -- and cannot lower a directly recognised Greater God by indirect hostility.
-   if edge.target_key in('kalma','tyrius','pae') and coalesce(prior_target,0)>2
-   then continue;end if;
    if adjusted=coalesce(prior_target,0) then continue;end if;
    insert into public.terravale_divine_favour(character_id,patron_id,score,edited_by)
    values(c.id,target_id,adjusted,actor)
