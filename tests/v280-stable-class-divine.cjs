@@ -44,5 +44,5 @@ assert.ok(bridge.includes("status:row.status==='approved'?'Approved':'Pending'")
 assert.ok(approval.includes("if(!data?.approved)throw Error"),
  'Approval must stay a server-confirmed event.');
 assert.ok(overlay.includes('source = patch_v280(source)'));
-assert.ok(html.includes('Terravale Codex V2.84'));
+assert.ok(html.includes('Terravale Codex V2.85'));
 console.log('PASS V2.80: Class Codex has no forced scrolling, Divine slot layout and server-authoritative approval preserved.');
