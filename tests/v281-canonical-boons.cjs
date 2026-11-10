@@ -69,5 +69,5 @@ assert.ok(overlay.includes('v281-divine-voices.js'));
 assert.ok(overlay.includes('v281-canonical-library.js'));
 assert.ok(html.includes('data-source="v281-divine-voices.js"'));
 assert.ok(html.includes('data-source="v281-canonical-library.js"'));
-assert.ok(html.includes('Terravale Codex V2.81'));
+assert.ok(html.includes('Terravale Codex V2.82'));
 console.log('PASS V2.81: 16 unique deity voices, 3×2 boon slots, real canonical grant/Offer flows and protected source data.');
