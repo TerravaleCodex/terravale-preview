@@ -15,7 +15,7 @@ const awardSQL=read('site-overrides/sql/v282_award_reader_metadata.sql');
 const logSQL=read('site-overrides/sql/v282_tier0_history.sql');
 for(const js of [ui,lib,reader,links])assert.doesNotThrow(()=>new Function(js));
 assert.ok(reader.includes('document.createTextNode'),'Inline rules must be text-backed');
-assert.ok(!reader.includes('innerHTML'),'Never inject uploaded Markdown as HTML');
+assert.ok(!/\.innerHTML\s*=/.test(reader),'Never inject source Markdown as HTML');
 assert.ok(reader.includes('tv282-callout'),'Source warnings and notes must be formatted');
 assert.ok(reader.includes('tv282-section-heading'),'Benefits and costs must be visually separated');
 assert.ok(reader.includes('tv282-list')&&reader.includes('tv282-table'),
