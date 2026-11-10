@@ -20,12 +20,12 @@ assert.ok(reader.includes('tv282-callout'),'Source warnings and notes must be fo
 assert.ok(reader.includes('tv282-section-heading'),'Benefits and costs must be visually separated');
 assert.ok(reader.includes('tv282-list')&&reader.includes('tv282-table'),
  'Bullets and mechanical tables must render natively');
-assert.ok(lib.includes('terravale_divine_dm_archive_search_v282'));
+assert.ok(lib.includes('terravale_divine_dm_archive_search_v285'));
 for(const field of ['filter_family','filter_patron','filter_tier','filter_slot',
  'filter_availability','filter_uses','sort_by','page_offset'])
  assert.ok(lib.includes(field),'Full catalogue filter missing: '+field);
 assert.ok(lib.includes('page_size:24'));
-assert.ok(lib.includes('All gods')&&lib.includes('Tier ↑'));
+assert.ok(lib.includes('Major gods')&&lib.includes('Minor gods')&&lib.includes('Tier ↑'));
 assert.ok(lib.includes('terms:{source_exact:true'),'Tier 0 should reuse full source');
 assert.ok(!lib.includes("promptReason('Story reason for granting"),
  'DM must be able to grant ordinary boons without explaining why');
@@ -65,5 +65,5 @@ assert.ok(overlay.includes('v282-boon-reader.js'));
 assert.ok(overlay.includes('v282-divine-relationships.js'));
 assert.ok(published.includes('data-source="v282-boon-reader.js"'));
 assert.ok(published.includes('data-source="v282-divine-relationships.js"'));
-assert.ok(published.includes('Terravale Codex V2.84'));
+assert.ok(published.includes('Terravale Codex V2.85'));
 console.log('PASS V2.82: source-exact Tier 0, optional lore reason, linked Favour, private full-archive filters and editorial boon reader.');
