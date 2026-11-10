@@ -53,7 +53,8 @@ assert.ok(searchSQL.includes('authz.is_dm(target_campaign)'));
 assert.ok(formalSQL.includes("source_exact boolean not null default false"));
 assert.ok(formalSQL.includes("chosen_slot:='bargain'"));
 assert.ok(formalSQL.includes("e.kind='tier_zero'"));
-assert.ok(formalSQL.includes('fully disclosed Formal Offer'));
+assert.ok(formalSQL.includes('explicit player acceptance'));
+assert.ok(formalSQL.includes('source_exact'));
 assert.ok(awardSQL.includes("'activation',e.activation"));
 assert.ok(logSQL.includes('terravale_divine_canon_dm_record_bargain'));
 for(const sql of [searchSQL,formalSQL,relationshipSQL,awardSQL,logSQL]){
