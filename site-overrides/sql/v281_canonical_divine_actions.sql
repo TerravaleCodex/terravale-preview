@@ -90,6 +90,11 @@ begin
   end loop;
  end if;
  if overflow_count>0 then
+  -- Canonical overflow resolves the triggering effect, then suppresses the
+  -- active gift. Burdens and unresolved pressure survive the suppression.
+  update public.terravale_divine_canon_awards
+  set status='dormant',update_at=now()
+  where id=a.id and status='active';
   update public.terravale_divine_canon_state
   set divine_pressure=least(100000,divine_pressure+least(overflow_count,2)),updated_at=now()
   where character_id=c.id;
