@@ -1,5 +1,12 @@
 -- V2.82 — conservative, editable favour resonance. A suggested interpretation,
 -- not a declaration that every deity with different domains is an enemy.
+-- Existing activity ledger explicitly enumerates action names.
+-- Add linked Favour while preserving historical favour/grant/revoke rows.
+alter table public.terravale_divine_activity
+ drop constraint if exists terravale_divine_activity_action_check;
+alter table public.terravale_divine_activity
+ add constraint terravale_divine_activity_action_check
+ check(action in('favour','favour_resonance','grant','revoke'));
 create table if not exists public.terravale_divine_relation_settings(
  campaign_id uuid primary key references public.campaigns(id) on delete cascade,
  enabled boolean not null default true,
