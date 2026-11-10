@@ -477,5 +477,24 @@ function renderPlayerOffers(host,data,character,refresh){
  }
  host.append(panel);
 }
-window.TerravaleV281Canon={mountDM,renderPlayerStatuses,renderPlayerOffers};
+// Called only by the verified native rest-completion handlers.
+const lastNativeRest=new Map();
+function onNativeRest(id,kind){
+ if(!UUID.test(String(id||''))||!['short','long'].includes(kind)||
+  !auth()?.ready||!api())return;
+ const key=id+':'+kind,now=Date.now();
+ if(now-(lastNativeRest.get(key)||0)<1800)return;
+ lastNativeRest.set(key,now);
+ rpc('terravale_divine_canon_rest',{target_character:id,rest_kind:kind})
+ .then(result=>{
+  window.TerravaleV270Divine?.refreshSheet?.(id);
+  if(Number(result?.refreshed_awards)>0||result?.intercession_reset){
+   if(typeof toast==='function')toast('Divine resources checked after '+kind+' rest.');
+  }
+ }).catch(err=>{
+  if(typeof toast==='function')toast('Divine rest recovery was not saved: '+err.message);
+  else console.warn('[Divine Rest]',err.message);
+ });
+}
+window.TerravaleV281Canon={mountDM,renderPlayerStatuses,renderPlayerOffers,onNativeRest};
 })();
