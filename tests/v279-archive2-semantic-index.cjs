@@ -95,7 +95,8 @@ assert.ok(browser.includes('terravale_divine_dm_index_source_entries'));
 assert.ok(browser.includes('terravale_divine_dm_archive_read'));
 assert.ok(browser.includes('verified 49-file Archive 2'));
 assert.ok(browser.includes('section is')===false||true);
-assert.ok(v270.includes('TerravaleV279Archive?.mount'));
+assert.ok(!v270.includes('TerravaleV279Archive?.mount'),'Redundant source-only archive panel must be removed');
+assert.ok(v270.includes('TerravaleV281Canon?.mountDM'),'Index survives behind DM-only canonical catalogue');
 assert.ok(v270.includes("['major','greater'].includes(x.rank)"),
  'Nyrha and minor gods must not show ordinary favour controls');
 assert.ok(sql.includes('enable row level security'));
