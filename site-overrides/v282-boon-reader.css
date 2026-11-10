@@ -69,3 +69,23 @@
 @media(max-width:440px){.tv282-filter-row{grid-template-columns:1fr}
  .tv282-reader{padding:11px}.tv282-metadata{gap:5px}
  .tv282-meta-pill{min-width:0;flex:1 1 40%}}
+
+/* Advanced 534-entry source filtering remains discoverable but compact. */
+.tv282-advanced{border:1px solid var(--line,#453d52);border-radius:10px;
+ padding:10px 12px;background:var(--surface,#15131a);margin-top:8px}
+.tv282-advanced>summary{font-size:.82rem;font-weight:650;cursor:pointer;
+ padding:4px 0 6px;color:var(--text,#e7dff0)}
+.tv282-advanced .tv282-filter-row{margin:12px 0;align-items:start}
+.tv282-advanced .tv282-filter>strong{font-size:.74rem;margin:3px 0}
+.tv282-advanced .tv281-chip{padding:6px 8px;font-size:.72rem}
+.tv282-patron-chips{overflow:auto;max-height:150px;overscroll-behavior:contain;
+ padding:2px;align-content:flex-start}
+.tv282-rel-details{border-top:1px solid var(--line,#463b52);margin-top:13px;padding-top:7px}
+.tv282-rel-details>summary{cursor:pointer;font-size:.79rem;font-weight:650;padding:6px 0}
+.tv282-rel-add-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;min-width:0;flex:1}
+.tv282-relationship-panel .tv281-search{margin:0}
+.tv282-relationship-panel>.tv282-impacts:empty{display:none}
+.tv282-impacts>strong{font-size:.79rem;color:var(--text,#eee4f5)}
+@media(max-width:570px){.tv282-rel-add-fields{grid-template-columns:1fr}
+ .tv282-advanced{padding:8px}}
