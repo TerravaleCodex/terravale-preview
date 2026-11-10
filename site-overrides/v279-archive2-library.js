@@ -70,6 +70,7 @@ async function uploadSourceAndIndex(campaign,status,run){
    if(bytes>TEXTLIMIT)throw Error('Uncompressed source exceeds 8 MB.');
   }
   const selected=sourceSet;
+  if(document.visibilityState==='hidden')status.textContent='Preserving original documents; keep the DM window open…';
   for(const [n,doc] of documents.entries()){
    if(indexCampaign!==campaign)throw Error('Campaign changed; import stopped.');
    status.textContent='Preserving original Markdown '+(n+1)+'/'+documents.length+': '+doc.name;
@@ -199,7 +200,7 @@ function mount(host,campaign){
  action.hidden=true;
  const review=node('div','tv279-review');
  const pickerButton=btn('Select the original Boons ZIP',()=>pick.click());
- const openIndex=btn('Browse private source index',()=>{browse(campaign,review)});
+ const openIndex=btn('Browse private source index',()=>{indexCampaign=campaign;browse(campaign,review)});
  const actions=node('div','tv279-actions');
  actions.append(pickerButton,action,openIndex);
  section.append(info,actions,pick,status,inventory,review);
