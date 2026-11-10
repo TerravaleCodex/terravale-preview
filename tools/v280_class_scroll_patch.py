@@ -31,6 +31,11 @@ function v277Reanchor(element,top){
  // Intentionally disabled: proportional scrollBy was itself moving the viewport.
  // Reader dimensions are preserved by v277KeepHeight instead.
 }"""
+    # Always render the complete 1–20 catalogue. Counting rendered buttons is
+    # not the same as the maximum level when a source lacks some level entries.
+    old_limit=" const levels=reader.querySelectorAll('[data-v232-level]').length||20;"
+    assert source.count(old_limit)==1, "V2.77 level range changed"
+    source=source.replace(old_limit," const levels=20;",1)
     assert source.count(before)==1, "V2.77 reanchor changed"
     source=source.replace(before,after,1)
     a=""" const anchorTop=grid.getBoundingClientRect().top;
