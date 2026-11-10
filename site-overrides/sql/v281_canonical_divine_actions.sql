@@ -290,3 +290,56 @@ end $tv281_resolve$;
 revoke all on function public.terravale_divine_canon_dm_resolve_fracture(uuid,text)
  from public,anon,authenticated;
 grant execute on function public.terravale_divine_canon_dm_resolve_fracture(uuid,text) to authenticated;
+
+-- DM-only management overview, including dormant awards and all tracked burdens.
+create or replace function public.terravale_divine_canon_dm_state(
+ target_character uuid
+) returns jsonb language plpgsql stable security definer set search_path=''
+as $tv281_dm_state$
+declare actor uuid:=(select auth.uid());c public.characters%rowtype;
+begin
+ select * into c from public.characters where id=target_character;
+ if actor is null or not exists(select 1 from auth.identities where user_id=actor and provider='discord')
+ or c.id is null or not authz.is_dm(c.campaign_id) then
+  raise exception 'Verified campaign DM required' using errcode='42501';end if;
+ return jsonb_build_object(
+  'awards',coalesce((
+   select jsonb_agg(jsonb_build_object(
+    'id',a.id,'entry_id',e.id,'name',e.name,'kind',e.kind,'patron',e.patron,
+    'other_patron',e.other_patron,'slot',a.slot,'tier',e.tier,
+    'status',a.status,'max_uses',a.max_uses,'uses_remaining',a.uses_remaining,
+    'recovery',a.recovery,'chosen_ability',a.chosen_ability,
+    'source_path',e.source_path,'required_favour',e.required_favour,
+    'required_favour_second',e.required_favour_second) order by a.granted_at)
+   from public.terravale_divine_canon_awards a
+   join public.terravale_divine_archive_entries e on e.id=a.entry_id
+   where a.character_id=c.id and a.status in('active','dormant')
+  ),'[]'::jsonb),
+  'state',coalesce((
+   select jsonb_build_object('entanglement',s.entanglement,
+    'divine_pressure',s.divine_pressure,
+    'minor_intercession_remaining',s.minor_intercession_remaining)
+   from public.terravale_divine_canon_state s where s.character_id=c.id
+  ),jsonb_build_object('entanglement',0,'divine_pressure',0,
+   'minor_intercession_remaining',1)),
+  'burdens',coalesce((
+   select jsonb_agg(jsonb_build_object('patron',b.patron_key,
+    'name',b.burden_name,'stacks',b.stacks,
+    'overflow_pending',b.overflow_pending) order by b.patron_key)
+   from public.terravale_divine_canon_burdens b where b.character_id=c.id
+  ),'[]'::jsonb),
+  'effects',coalesce((
+   select jsonb_agg(jsonb_build_object('key',x.effect_key,'stacks',x.stacks,'note',x.note))
+   from public.terravale_divine_canon_effects x where x.character_id=c.id
+  ),'[]'::jsonb),
+  'fractures',coalesce((
+   select jsonb_agg(jsonb_build_object('id',f.id,'chain',f.chain,
+    'consequence',f.consequence,'award_id',f.award_id))
+   from public.terravale_divine_canon_fractures f
+   where f.character_id=c.id and f.resolved_at is null
+  ),'[]'::jsonb)
+ );
+end $tv281_dm_state$;
+revoke all on function public.terravale_divine_canon_dm_state(uuid)
+ from public,anon,authenticated;
+grant execute on function public.terravale_divine_canon_dm_state(uuid) to authenticated;
