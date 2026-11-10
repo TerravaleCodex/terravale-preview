@@ -65,5 +65,5 @@ assert.ok(overlay.includes('v282-boon-reader.js'));
 assert.ok(overlay.includes('v282-divine-relationships.js'));
 assert.ok(published.includes('data-source="v282-boon-reader.js"'));
 assert.ok(published.includes('data-source="v282-divine-relationships.js"'));
-assert.ok(published.includes('Terravale Codex V2.82'));
+assert.ok(published.includes('Terravale Codex V2.83'));
 console.log('PASS V2.82: source-exact Tier 0, optional lore reason, linked Favour, private full-archive filters and editorial boon reader.');
