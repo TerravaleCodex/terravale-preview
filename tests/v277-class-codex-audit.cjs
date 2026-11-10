@@ -27,8 +27,8 @@ assert.ok(html.includes('v277KeepHeight(replacement,current,reader)'),
  'Shrinking level details must not clamp the document scroll position');
 assert.ok(html.includes('const anchorTop=grid.getBoundingClientRect().top;'),
  'Level grid should be used as a stable visual scroll anchor');
-assert.ok(html.includes('window.scrollBy({top:delta,behavior:'),
- 'Scroll adjustment must be instant and proportional, not a scroll-to-top');
+assert.ok(html.includes('function v280PreserveScroll()'),
+ 'Class interaction must preserve absolute viewport without forced scroll-by');
 assert.ok(html.includes('const old=reader.querySelector('),
  'Path details should also update only their own content');
 assert.ok(html.includes('v232-progression-table'),
@@ -49,5 +49,5 @@ assert.ok(css.includes('overflow-anchor:none'));
 assert.ok(overlay.includes('from v277_class_scroll_patch import patch as patch_v277'));
 assert.ok(overlay.includes('source = patch_v277(source)'));
 assert.ok(html.includes('data-source="v277-class-stability.js"'));
-assert.ok(html.includes('Terravale Codex V2.79'));
+assert.ok(html.includes('Terravale Codex V2.80'));
 console.log('PASS V2.77 Class Codex: in-place levels/features/paths, preserved progression table, stable summary scroll and no page-wide redraw.');

@@ -604,6 +604,7 @@ function renderSheet(){
    button('Try again',()=>fetchSheet(c.id,true)));return;
  }
  const data=result.data||{},previews=data.previews||[];
+ const bestowed=Array.isArray(data.granted)?data.granted:[];
  const moods={
   ominous:['An ill omen','The signs suggest deep displeasure.'],
   cold:['Distant regard','Something in the relationship feels strained.'],
@@ -612,61 +613,96 @@ function renderSheet(){
   favoured:['Warm regard','The signs hint at unusual goodwill.']
  };
  const observations=new Map((data.dispositions||[]).map(x=>[x.key,x.disposition]));
- const meaningful=previews.filter(x=>observations.has(x.key));
- const court=node('section','tv272-player-court');
- court.append(node('h3','','Divine disposition'),
-  node('p','tv254-muted','These are impressions, not measurements. The gods seldom speak plainly.'));
- if(meaningful.length){
-  const bonds=node('div','tv272-bond-list');
-  for(const god of meaningful){
-   const k=observations.get(god.key);
-   const tone=moods[k]||moods.veiled;
-   const item=node('details','tv272-bond');
-   const summary=node('summary','tv272-bond-summary');
-   summary.append(node('strong','',god.name),node('span','tv272-bond-mood mood-'+k,tone[0]));
-   item.append(summary,node('p','tv272-bond-reading',tone[1]+' '+(god.hint||'')));
-   bonds.append(item);
+ const layout=node('div','tv280-sheet-layout');
+ const left=node('section','tv280-gifts');
+ left.setAttribute('aria-label','Divine boon and blessing slots');
+ left.append(node('div','tv254-eyebrow','BESTOWED · CHARACTER RECORD'),
+  node('h3','','Boon slots'),
+  node('p','tv254-muted','Only blessings actually granted to this character appear here. Empty spaces are kept visible, as in your inventory.'));
+ const slots=node('div','tv280-boon-slots');
+ const assigned=new Set();
+ const familiesForSlots=[
+  {family:'divine',label:'Divine boon',count:3,filter:g=>g.kind==='divine'},
+  {family:'concordant',label:'Concordant',count:1,filter:g=>g.kind==='concordant'},
+  {family:'grace',label:'Minor Grace',count:1,filter:g=>g.kind==='minor_grace'},
+  {family:'intercession',label:'Minor Intercession',count:1,filter:g=>g.kind==='minor_intercession'}
+ ];
+ const renderGranted=(target,g)=>{
+  target.classList.add('tv280-slot-filled');
+  target.append(node('div','tv280-slot-icon','✦'),node('strong','',g.name));
+  target.append(node('small','tv280-slot-patron',g.patron+(g.other_patron?' & '+g.other_patron:'')));
+  const detail=node('details','tv280-granted-detail');
+  detail.append(node('summary','','Read bestowed gift'));
+  const content=node('div','tv280-granted-body');
+  if(g.summary)content.append(node('p','',g.summary));
+  if(Number(g.max_charges)>0){
+   const remaining=Number(g.charges_remaining);
+   content.append(node('small','',Math.max(0,remaining)+' / '+g.max_charges+' uses · '+(g.recovery||'DM review')+' recovery'));
   }
-  court.append(bonds);
- }else court.append(node('p','tv272-no-sign','No divine intentions have become clear yet.'));
- pane.append(court);
- const library=node('details','tv272-player-pantheon');
- library.append(node('summary','','Browse the major pantheon · '+previews.length+' known'));
- const atlas=node('div','tv272-pantheon-atlas');
- const dozen=new Set(['pae','amora','vaelniv','torridae','coeus','errigan','rao',
-  'kalma','tyrius','eshael','fjoras','kwaeth']);
- for(const [group,title] of [['twelve','The Twelve'],['other','Beyond the Twelve']]){
-  const gods=previews.filter(p=>(dozen.has(p.key)?'twelve':'other')===group);
+  if(g.mechanics)content.append(node('pre','tv280-granted-mechanics',g.mechanics));
+  detail.append(content);target.append(detail);
+ };
+ for(const group of familiesForSlots){
+  for(let i=0;i<group.count;i++){
+   const slot=node('div','tv280-boon-slot');
+   slot.dataset.kind=group.family;
+   const available=bestowed.find(g=>!assigned.has(g.id)&&group.filter(g));
+   slot.append(node('span','tv280-slot-label',group.label+(group.count>1?' · '+(i+1):'')));
+   if(available){assigned.add(available.id);renderGranted(slot,available)}
+   else{
+    slot.classList.add('tv280-slot-empty');
+    slot.append(node('div','tv280-slot-mark','✧'),node('strong','','Empty slot'),
+     node('small','','Awaiting a divine gift'));
+   }
+   slots.append(slot);
+  }
+ }
+ left.append(slots);
+ const extras=bestowed.filter(g=>!assigned.has(g.id));
+ if(extras.length){
+  const overflow=node('section','tv280-extra-awards');
+  overflow.append(node('h4','','Other bestowed gifts'));
+  for(const g of extras){
+   const slot=node('article','tv280-boon-slot tv280-other-award');
+   slot.append(node('span','tv280-slot-label',families[g.kind]||'Other divine gift'));
+   renderGranted(slot,g);overflow.append(slot);
+  }
+  left.append(overflow);
+ }
+ left.append(node('p','tv280-slot-note',
+  'Empty slots are visual placeholders. Minor-god shared uses, Nyrha Revisions, burdens and automatic conditions await the source-rule engine; they are not silently simulated.'));
+ const aside=node('aside','tv280-gods-rail');
+ aside.setAttribute('aria-label','Known gods and approximate divine disposition');
+ aside.append(node('div','tv254-eyebrow','THE DIVINE COURT'),
+  node('h3','','The gods'),
+  node('p','tv254-muted','Impressions only. Favour scores, unearned blessings and divine requirements stay hidden.'));
+ const groups=[
+  {title:'The Twelve',keys:new Set(['pae','amora','vaelniv','torridae','coeus','errigan','rao','kalma','tyrius','eshael','fjoras','kwaeth'])},
+  {title:'Beyond the Twelve',keys:null}
+ ];
+ for(const group of groups){
+  const gods=previews.filter(g=>group.keys?group.keys.has(g.key):
+   !groups[0].keys.has(g.key));
   if(!gods.length)continue;
-  const part=node('section','tv272-pantheon-group');
-  part.append(node('h4','',title));
-  const names=node('div','tv272-pantheon-links');
+  const groupEl=node('section','tv280-god-family');
+  groupEl.append(node('h4','',group.title));
+  const list=node('div','tv280-gods');
   for(const god of gods){
-   const entry=node('details','tv272-pantheon-deity');
-   entry.append(node('summary','',god.name),
-    node('p','',god.hint||'What is known publicly remains incomplete.'));
-   names.append(entry);
+   const disposition=observations.get(god.key);
+   const mood=moods[disposition]||moods.veiled;
+   const entry=node('details','tv280-god');
+   const summary=node('summary','');
+   const title=node('strong','',god.name);
+   const tag=node('small','tv280-god-signal '+(disposition?'mood-'+disposition:'mood-unknown'),
+     disposition?mood[0]:'No clear sign');
+   summary.append(title,tag);entry.append(summary);
+   const text=node('p','',disposition?mood[1]+' '+(god.hint||''):
+     god.hint||'Very little is widely known.');
+   entry.append(text);list.append(entry);
   }
-  part.append(names);atlas.append(part);
+  groupEl.append(list);aside.append(groupEl);
  }
- library.append(atlas);pane.append(library);
- const section=node('section','tv270-panel tv271-revealed');
- section.append(node('h3','','Revealed boons'));
- const granted=data.granted||[];
- if(!granted.length)section.append(node('p','tv254-muted','No divine boon has been bestowed on this character.'));
- for(const g of granted){
-  const article=node('article','tv270-awarded-boon');
-  article.append(node('div','tv254-eyebrow',families[g.kind]||'Divine boon'),
-   node('h4','',g.name),node('small','',g.patron+(g.other_patron?' & '+g.other_patron:'')+' · Granted '+dateLabel(g.granted_at)));
-  if(g.summary)article.append(node('p','',g.summary));
-  if(Number(g.max_charges)>0)article.append(node('small','',Number(g.charges_remaining)+' / '+g.max_charges+' charges · '+g.recovery+' recovery'));
-  if(g.mechanics){
-   article.append(node('h5','','Granted effects and burdens'));
-   const rules=node('p','tv270-rules',g.mechanics);article.append(rules);
-  }
-  section.append(article);
- }
- pane.append(section);
+ layout.append(left,aside);pane.append(layout);
 }
 let queued=false;
 const observer=new MutationObserver(()=>{
