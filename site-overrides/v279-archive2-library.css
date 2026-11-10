@@ -1,0 +1,37 @@
+/* V2.79 · source-only Archive 2 library; no body-wide layout changes. */
+.tv279-archive{border:1px solid var(--edge,#4e435c);border-radius:13px;
+ background:var(--surface,#141218);margin:17px 0;padding:0 14px;min-width:0}
+.tv279-archive>summary{font-weight:650;font-size:.95rem;padding:17px 2px;
+ cursor:pointer;color:var(--text,#ece6f3)}
+.tv279-archive>.tv254-muted{font-size:.83rem;line-height:1.55;margin:0 2px 12px}
+.tv279-actions,.tv279-page-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+ margin:10px 0}
+.tv279-status{font-size:.82rem;color:var(--soft,#b7afc2);
+ margin:9px 0 14px;line-height:1.6;overflow-wrap:anywhere}
+.tv279-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+ gap:8px;margin:12px 0}
+.tv279-stat{border:1px solid var(--edge,#494052);border-radius:9px;
+ padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.tv279-stat strong{font:600 1.35rem/1 var(--serif,Georgia,serif)}
+.tv279-stat span{font-size:.75rem;color:var(--soft,#b5aabe)}
+.tv279-success{color:#a9d9bf;font-size:.8rem}
+.tv279-library-tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.tv279-library-tools input{flex:2;min-width:175px}
+.tv279-library-tools select{flex:1;min-width:160px}
+.tv279-count,.tv279-path{font-size:.76rem;color:var(--soft,#b9b1c4)}
+.tv279-results{max-height:500px;overflow:auto;overscroll-behavior:contain;
+ scrollbar-gutter:stable;min-height:180px}
+.tv279-source-entry{border:1px solid var(--edge,#484055);border-radius:9px;margin:7px 0;
+ background:var(--raised,#1b1821);min-width:0}
+.tv279-source-entry>summary{font-weight:600;font-size:.84rem;padding:12px;
+ cursor:pointer;overflow-wrap:anywhere}
+.tv279-facts{display:flex;flex-wrap:wrap;gap:5px;padding:0 11px 8px}
+.tv279-pill{font-size:.7rem;color:var(--soft,#c8c0d2);
+ border:1px solid var(--edge,#494157);border-radius:99px;padding:4px 8px}
+.tv279-path{display:block;padding:0 12px 8px;overflow-wrap:anywhere}
+.tv279-original{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,monospace;
+ max-height:360px;overflow:auto;color:var(--text,#ece6f3);background:var(--surface,#0f0e13);
+ padding:13px;border:1px solid var(--edge,#464051);border-radius:8px;margin:0 12px 12px}
+@media(max-width:650px){.tv279-archive{padding:0 10px}
+.tv279-library-tools{flex-direction:column}.tv279-library-tools input,
+.tv279-library-tools select{width:100%}.tv279-source-entry>summary{padding:12px 8px}}

@@ -48,5 +48,5 @@ assert.ok(bridge.includes("!['status','ownerName','ownerUid','owner','remoteStat
 assert.ok(overlay.includes('from v278_character_approval_patch import patch as patch_v278'));
 assert.ok(overlay.includes('source = patch_v278(source)'));
 assert.ok(html.includes('data-source="v278-character-approvals.js"'));
-assert.ok(html.includes('Terravale Codex V2.78'));
+assert.ok(html.includes('Terravale Codex V2.79'));
 console.log('PASS V2.78: one-time server approval, confirmed level-up requests and no local-only approval reset.');
