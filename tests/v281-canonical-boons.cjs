@@ -38,7 +38,7 @@ assert.ok(ui.includes('TerravaleDivineVoicesV281?.status'));
 assert.ok(ui.includes("b.source_kind==='canonical'"));
 assert.ok(!lib.includes('localStorage'),'Private catalogue cannot be cached in localStorage');
 assert.ok(!lib.includes('innerHTML'),'Original source text must never render as raw HTML');
-for(const rpc of ['terravale_divine_dm_archive_list','terravale_divine_dm_archive_read',
+for(const rpc of ['terravale_divine_dm_archive_search_v282','terravale_divine_dm_archive_read',
  'terravale_divine_canon_dm_state','terravale_divine_canon_grant',
  'terravale_divine_canon_dm_set_relation','terravale_divine_canon_revoke',
  'terravale_divine_canon_dm_offer','terravale_divine_canon_dm_fracture',
