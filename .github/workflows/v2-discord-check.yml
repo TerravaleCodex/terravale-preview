@@ -92,6 +92,8 @@ on:
       - "site-overrides/sql/v282_award_reader_metadata.sql"
       - "site-overrides/sql/v282_tier0_history.sql"
       - "tests/v282-divine-reader-and-links.cjs"
+      - "site-overrides/v283-compact-filters.css"
+      - "tests/v283-compact-divine-filters.cjs"
       - "site-overrides/v277-class-stability.js"
       - "site-overrides/v277-class-stability.css"
       - "tools/v277_class_scroll_patch.py"
@@ -171,6 +173,8 @@ jobs:
         run: node tests/v281-canonical-boons.cjs
       - name: Validate source-backed Tier 0, divine relationships and advanced boon reader
         run: node tests/v282-divine-reader-and-links.cjs
+      - name: Verify compact Divine catalogue filters and no scrolling god wall
+        run: node tests/v283-compact-divine-filters.cjs
       - name: Verify native Dashboard default and preserve explicit routes
         run: node tests/v269-dashboard-default.cjs
       - name: Test native feat reader and active-grant integration
@@ -223,7 +227,7 @@ jobs:
           assert 'site-overrides/v259-inline-mechanics.css' in Path('tools/overlay-v239-with-discord.py').read_text()
           assert 'primary.append(name.wrap.parentElement,desc.wrap,notes.wrap,details)' in vault
           assert 'primary.append(name.wrap,summary.wrap,rules.wrap,specifics,status)' in feat
-          assert 'Terravale Codex V2.82' in html
+          assert 'Terravale Codex V2.83' in html
           assert 'data-source="v261-owner-byline.js"' in html
           print('PASS: custom feats use the actual native feature list and server-approved grants')
           print('PASS: damage dropdown, flat mechanics panels, treasury, currency and training')
@@ -588,7 +592,7 @@ jobs:
           assert "if(db.role!=='dm'||!window.TerravaleVerifiedAccount" in html
           assert "Choose people & languages" in html
           assert "Choose class & tools" in html
-          assert "Terravale Codex V2.82" in html
+          assert "Terravale Codex V2.83" in html
           creator=Path('site-overrides/v255-creator-native-choices.js').read_text()
           assert "current===1" in creator and "current===3" in creator
           assert 'tv255-creator-training' in creator
