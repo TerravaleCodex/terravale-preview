@@ -15,8 +15,10 @@ assert.ok(html.includes('function v280PreserveScroll()'),
   'In-place class reader replacement must protect viewport.');
 assert.ok(html.includes("html.style.overflowAnchor='none'"));
 assert.ok(html.includes('const restoreScroll=v280PreserveScroll();'));
-assert.ok(!html.includes("window.scrollBy({top:delta,behavior:'instant'})"),
-  'The old forced scroll-by adjustment caused jumping.');
+const reanchor=html.slice(html.indexOf('function v277Reanchor(element,top){'),
+ html.indexOf('function v277Reanchor(element,top){')+280);
+assert.ok(reanchor.includes('Intentionally disabled')&&!reanchor.includes('window.scrollBy('),
+ 'The Class Codex reanchor must never scroll the page.');
 assert.ok(html.includes('restoreScroll();'));
 assert.ok(html.includes('function v277UpdateProgression(id,trigger,mode)'));
 assert.ok(html.includes("if(lv&&v277UpdateProgression(id,lv,'level'))return;"));
