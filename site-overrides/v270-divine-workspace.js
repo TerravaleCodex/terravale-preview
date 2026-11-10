@@ -486,7 +486,24 @@ async function fetchSheet(id,force=false){
  try{
   const {data,error}=await api().rpc('terravale_divine_player_state',{target_character:id});
   if(error)throw error;
-  sheet.cache.set(id,{at:Date.now(),data});
+  const gathered={...data};
+  const canonical=await api().rpc('terravale_divine_canon_player_state',{target_character:id});
+  if(canonical.error){
+   gathered.canon_warning='Canonical boons unavailable: '+canonical.error.message;
+  }else{
+   const extra=canonical.data||{};
+   const gifts=(extra.granted||[]).map(g=>g.kind==='minor_intercession'?
+    {...g,max_charges:1,charges_remaining:extra.divine_state?.minor_intercession_remaining??1}:g);
+   gathered.granted=[...(data?.granted||[]),...gifts];
+   gathered.divine_state=extra.divine_state||{};
+   gathered.burdens=extra.burdens||[];
+   gathered.statuses=extra.statuses||[];
+   gathered.fractures=extra.fractures||[];
+  }
+  const offers=await api().rpc('terravale_divine_canon_offers_player_state',
+    {target_character:id});
+  if(!offers.error)gathered.offers=offers.data?.offers||[];
+  sheet.cache.set(id,{at:Date.now(),data:gathered});
  }catch(e){sheet.cache.set(id,{at:Date.now(),error:e.message||String(e)})}
  finally{sheet.loading.delete(id);renderSheet()}
 }
@@ -498,7 +515,7 @@ function restoreSheet(){
 function renderBoonResources(c,data){
  const holder=document.querySelector('#pageRoot .sheet20-resource-panel');
  if(!holder)return;
- const granted=(data?.granted||[]).filter(g=>Number(g.max_charges)>0);
+ const granted=(data?.granted||[]).filter(g=>Number(g.max_charges)>0&&g.kind!=='nyrha_revision');
  let panel=holder.querySelector('[data-tv271-boon-resources]');
  if(!granted.length){panel?.remove();return}
  const fingerprint=JSON.stringify([c.id,granted.map(g=>[g.id,g.name,g.max_charges,g.charges_remaining,g.recovery])]);
@@ -516,7 +533,10 @@ function renderBoonResources(c,data){
    if(sheet.pending.has(b.id))return;
    sheet.pending.add(b.id);use.disabled=true;
    try{
-    const {error}=await api().rpc('terravale_divine_use_boon',{target_grant:b.id});
+    const {error}=await api().rpc(b.source_kind==='canonical'?
+     'terravale_divine_canon_use':'terravale_divine_use_boon',
+     b.source_kind==='canonical'?
+      {target_award:b.id,material_invocation:true}:{target_grant:b.id});
     if(error)throw error;
     await fetchSheet(c.id,true);
    }catch(e){notice('Could not use boon: '+(e.message||String(e)));}
@@ -535,7 +555,7 @@ function renderBoonResources(c,data){
     }catch(e){notice('Could not restore boon: '+(e.message||String(e)));}
     finally{sheet.pending.delete(b.id);refill.disabled=false}
    },'btn ghost small');
-   actions.append(refill);
+   if(b.source_kind!=='canonical')actions.append(refill);
   }
   card.append(info,actions);panel.append(card);
  }
