@@ -1,0 +1,72 @@
+/* V2.85 — source-backed divine resources behave visually like native spell slots. */
+.tv285-resource-section{margin-top:15px;padding-top:15px;border-top:1px solid var(--line,#48404f);min-width:0}
+.tv285-resource-heading,.tv285-native-divider{
+ font-size:.68rem;font-weight:800;letter-spacing:.12em;
+ text-transform:uppercase;color:var(--soft,#c7bad1);margin-bottom:12px
+}
+.tv285-resource-grid{display:grid;grid-template-columns:1fr;gap:11px;min-width:0}
+.tv285-resource-card{
+ box-sizing:border-box;min-width:0;display:flex;flex-direction:column;
+ padding:13px 14px;border:1px solid var(--line,#47404e);
+ border-radius:10px;background:var(--surface,#15121a);
+ gap:7px
+}
+.tv285-resource-card-head{display:flex;align-items:baseline;justify-content:space-between;
+ min-width:0;gap:12px}
+.tv285-resource-title{font-size:.9rem;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.tv285-resource-count{flex-shrink:0;font-size:1.04rem;font-weight:700;color:var(--text,#f1e7f4);
+ font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2}
+.tv285-resource-count b{font-size:1.18rem}
+.tv285-resource-count span{font-size:.84rem;color:var(--soft,#c8becc)}
+.tv285-resource-context{font-size:.72rem;color:var(--soft,#aea4ba);line-height:1.4}
+.tv285-charge-pips{display:flex;align-items:center;gap:5px;min-height:9px;
+ overflow:hidden;flex-wrap:wrap;padding:3px 0 5px}
+.tv285-charge-pip{
+ width:28px;height:6px;box-sizing:border-box;border-radius:3px;
+ border:1px solid var(--edge,#81788b);
+ background:color-mix(in srgb,var(--surface,#121015) 75%,#4b4353);
+ opacity:.72
+}
+.tv285-charge-pip.is-filled{background:var(--text,#eae7ef);border-color:var(--text,#ebe8f0);opacity:1}
+.tv285-charge-overflow{font-size:.65rem;color:var(--soft,#b5aabb);white-space:nowrap}
+.tv285-resource-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.tv285-resource-actions button{
+ min-height:34px;border:1px solid var(--line,#47404f);
+ background:transparent;color:var(--text,#f2eafa);
+ border-radius:8px;cursor:pointer;font:inherit;
+ font-size:.8rem;font-weight:650
+}
+.tv285-resource-actions button:hover:not(:disabled){
+ border-color:var(--accent,#bca3d8);
+ background:color-mix(in srgb,var(--accent,#b99cdd) 11%,transparent)
+}
+.tv285-resource-actions button:disabled{
+ cursor:not-allowed;opacity:.38;color:var(--soft,#aba4b1)
+}
+.tv285-resource-recovery{font-size:.72rem;color:var(--soft,#b9adbf);line-height:1.55;
+ overflow-wrap:anywhere}
+.tv285-native-divine-conditions{margin-top:14px;border-top:1px solid var(--line,#423a48);
+ padding-top:13px;min-width:0}
+.tv285-native-caption{font-size:.73rem;color:var(--soft,#c2b5c8);margin:0 0 11px;
+ line-height:1.55}
+.tv285-native-condition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));
+ gap:8px}
+.tv285-native-effect{display:flex;flex-direction:column;gap:4px;padding:10px 12px;
+ border:1px solid var(--line,#494053);border-radius:9px;
+ background:var(--surface,#17121c);min-width:0}
+.tv285-native-effect strong{font-size:.8rem;color:var(--text,#efe5f2);overflow-wrap:anywhere}
+.tv285-native-effect span{font-size:.73rem;color:var(--soft,#c0b3c9);
+ overflow-wrap:anywhere;line-height:1.4}
+.tv283-filter-unit[data-filter="majorGod"],
+.tv283-filter-unit[data-filter="minorGod"]{width:149px}
+.tv283-filter-unit[data-filter="majorGod"]>.tv283-filter-popover,
+.tv283-filter-unit[data-filter="minorGod"]>.tv283-filter-popover{width:320px}
+@media(max-width:850px){
+ .tv283-filter-unit[data-filter="majorGod"],
+ .tv283-filter-unit[data-filter="minorGod"]{width:137px}
+}
+@media(max-width:600px){
+ .tv283-filter-unit[data-filter="majorGod"],
+ .tv283-filter-unit[data-filter="minorGod"]{width:auto}
+ .tv285-resource-card{padding:12px}
+}

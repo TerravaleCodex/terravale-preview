@@ -142,9 +142,9 @@ function mountDM(host,config){
  const counter=node('small','tv281-small');
  const pager=node('div','tv281-actions');
  section.append(owned,control,records,pager,message);
- const options={kind:'all',query:'',patron:'',tier:null,slot:'',availability:'any',
+ const options={kind:'all',query:'',patron:'',divinity:'all',tier:null,slot:'',availability:'any',
   uses:'any',sort:'patron',offset:0};
- let allPatrons=[];
+ let allPatrons=[],majorPatrons=[],minorPatrons=[];
  const page={request:0};
  let dmState=null;
  const same=()=>isDM()&&host.isConnected&&context.currentCharacter()===context.character;
@@ -349,10 +349,10 @@ function mountDM(host,config){
   const request=++page.request;
   statusText(message,'Searching original boon catalogue…');
   try{
-   const data=await rpc('terravale_divine_dm_archive_search_v282',{
+   const data=await rpc('terravale_divine_dm_archive_search_v285',{
     target_campaign:context.campaign,target_character:context.character,
     filter_family:options.kind==='all'?null:options.kind,
-    filter_patron:options.patron||null,
+    filter_patron:options.patron||null,filter_divinity:options.divinity,
     filter_tier:options.tier,filter_slot:options.slot||null,
     filter_availability:options.availability==='any'?null:options.availability,
     filter_uses:options.uses==='any'?null:options.uses,
@@ -362,6 +362,8 @@ function mountDM(host,config){
    records.replaceChildren();pager.replaceChildren();
    const count=Number(data.total)||0;
    allPatrons=data.patrons||allPatrons;
+   majorPatrons=data.major_patrons||majorPatrons;
+   minorPatrons=data.minor_patrons||minorPatrons;
    counter.textContent=count?(options.offset+1)+'–'+
     Math.min(count,options.offset+24)+' of '+count+' matching boons':'No matching boons';
    const grantedIds=new Set((dmState?.awards||[]).map(x=>x.entry_id));
@@ -500,7 +502,7 @@ function mountDM(host,config){
  control.replaceChildren(search,toolbar,activeInfo,activeChoices);
  let openFilter=null;
  let patronLookup='';
- const defaults={kind:'all',query:'',patron:'',tier:null,slot:'',
+ const defaults={kind:'all',query:'',patron:'',divinity:'all',tier:null,slot:'',
   availability:'any',uses:'any',sort:'patron',offset:0};
  const optionSets={
   kind:[['all','All boon families'],...kinds.map(k=>[k,formatFamily(k)])],
@@ -525,6 +527,8 @@ function mountDM(host,config){
   sort:{patron:'By god',name:'A–Z',tier_up:'Tier ↑',tier_down:'Tier ↓'}
  };
  function filterLabel(key){
+  if(key==='majorGod')return options.divinity==='major'?(options.patron||'All major'):'Choose';
+  if(key==='minorGod')return options.divinity==='minor'?(options.patron||'All minor'):'Choose';
   if(key==='patron')return options.patron||'All gods';
   if(key==='kind')return shortLabel.kind[options.kind]||options.kind;
   if(key==='availability')return shortLabel.availability[options.availability];
@@ -550,29 +554,36 @@ function mountDM(host,config){
    area.append(optionButton(name,options[key]===value,()=>setFilter(key,value)));
   parent.append(area);
  }
- function patronOptions(parent){
+ function setGodFilter(group,patron){
+  options.divinity=group;options.patron=patron;options.offset=0;
+  patronLookup='';openFilter=null;renderFilters();showEntries();
+ }
+ function patronOptions(parent,group){
+  const names=group==='major'?majorPatrons:minorPatrons;
+  const title=group==='major'?'Major gods':'Minor gods';
   const picker=node('div','tv283-patron-search');
   const field=node('input','tv283-patron-input');
-  field.type='search';field.placeholder='Search a god or patron…';
-  field.setAttribute('aria-label','Find a god');field.value=patronLookup;
+  field.type='search';field.placeholder='Find a '+(group==='major'?'major':'minor')+' god…';
+  field.setAttribute('aria-label','Find '+title.toLowerCase());field.value=patronLookup;
   picker.append(field);
   const choices=node('div','tv283-patron-options');
   const total=node('small','tv283-picker-caption');
-  function redraw(){
+  const redraw=()=>{
    choices.replaceChildren();
-   choices.append(optionButton('Every god',!options.patron,()=>setFilter('patron','')));
-   const results=allPatrons.filter(x=>x.toLowerCase().includes(patronLookup.toLowerCase()));
-   for(const name of results.slice(0,9))
-    choices.append(optionButton(name,options.patron===name,()=>setFilter('patron',name)));
-   total.textContent=results.length>9?
-    'Showing 9 of '+results.length+' · Type to narrow the list':
-    (results.length?results.length+' matching patrons':'No matching gods');
-  }
+   choices.append(optionButton('All '+title.toLowerCase(),options.divinity===group&&!options.patron,
+     ()=>setGodFilter(group,'')));
+   const matched=names.filter(name=>name.toLowerCase().includes(patronLookup.toLowerCase()));
+   for(const name of matched.slice(0,8))
+    choices.append(optionButton(name,options.divinity===group&&options.patron===name,
+      ()=>setGodFilter(group,name)));
+   total.textContent=matched.length>8?'Showing 8 of '+matched.length+' · Search for another':
+    matched.length+' '+title.toLowerCase()+' available';
+  };
   field.addEventListener('input',()=>{patronLookup=field.value;redraw()});
   field.addEventListener('keydown',e=>{
    if(e.key==='Enter'){
-    const match=allPatrons.filter(x=>x.toLowerCase().includes(patronLookup.toLowerCase()));
-    if(match.length===1){e.preventDefault();setFilter('patron',match[0])}
+    const matches=names.filter(x=>x.toLowerCase().includes(patronLookup.toLowerCase()));
+    if(matches.length===1){e.preventDefault();setGodFilter(group,matches[0])}
    }
   });
   redraw();parent.append(picker,choices,total);
@@ -586,7 +597,7 @@ function mountDM(host,config){
   }
  }
  function selectCount(){
-  return Number(options.kind!=='all')+Number(!!options.patron)+
+  return Number(options.kind!=='all')+Number(options.divinity!=='all')+
    Number(options.tier!==null)+Number(options.availability!=='any')+
    Number(!!options.slot)+Number(options.uses!=='any')+
    Number(options.sort!=='patron')+Number(!!options.query);
@@ -597,7 +608,8 @@ function mountDM(host,config){
    Number(options.sort!=='patron');
   const specs=[
    ['kind','Family',filterLabel('kind')],
-   ['patron','God',filterLabel('patron')],
+   ['majorGod','Major gods',filterLabel('majorGod')],
+   ['minorGod','Minor gods',filterLabel('minorGod')],
    ['tier','Tier',filterLabel('tier')],
    ['availability','Eligibility',filterLabel('availability')],
    ['more','More filters',moreCount?'+'+moreCount+' active':'']
@@ -609,7 +621,10 @@ function mountDM(host,config){
     renderFilters();
    },'tv283-filter-trigger'+
      (openFilter===key?' is-open':'')+
-     ((key==='more'?moreCount>0:options[key]!==defaults[key])?' is-active':''));
+     ((key==='more'?moreCount>0:
+       key==='majorGod'?options.divinity==='major':
+       key==='minorGod'?options.divinity==='minor':
+       options[key]!==defaults[key])?' is-active':''));
    toggler.setAttribute('aria-expanded',String(openFilter===key));
    toggler.setAttribute('aria-label',title+(value?' '+value:''));
    toggler.append(node('span','tv283-trigger-label',title));
@@ -621,7 +636,7 @@ function mountDM(host,config){
     panel.setAttribute('role','group');
     panel.setAttribute('aria-label',title+' choices');
     panel.append(node('div','tv283-popover-title',key==='more'?'Additional filters':title));
-    if(key==='patron')patronOptions(panel);
+    if(key==='majorGod'||key==='minorGod')patronOptions(panel,key==='majorGod'?'major':'minor');
     else if(key==='more')moreOptions(panel);
     else optionList(panel,key,optionSets[key],true);
     unit.append(panel);
@@ -640,7 +655,7 @@ function mountDM(host,config){
   if(count){
    const values=[
     ['kind',options.kind!=='all','Family'],
-    ['patron',!!options.patron,'God'],
+    ['divinity',options.divinity!=='all','God family'],
     ['tier',options.tier!==null,'Tier'],
     ['availability',options.availability!=='any','Eligibility'],
     ['slot',!!options.slot,'Slot'],
@@ -649,8 +664,12 @@ function mountDM(host,config){
    ];
    for(const [key,on,label] of values){
     if(!on)continue;
-    const btn=button(label+': '+filterLabel(key)+' ×',
-     ()=>setFilter(key,defaults[key]),'tv283-active-token');
+    const text=key==='divinity'?
+      (options.divinity==='major'?'Major gods':'Minor gods')+(options.patron?': '+options.patron:''):
+      filterLabel(key);
+    const btn=button(label+': '+text+' ×',
+     ()=>{if(key==='divinity')setGodFilter('all','');else setFilter(key,defaults[key])},
+     'tv283-active-token');
     btn.setAttribute('aria-label','Remove '+label+' filter');
     activeChoices.append(btn);
    }

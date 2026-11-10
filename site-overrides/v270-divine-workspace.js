@@ -531,54 +531,154 @@ function restoreSheet(){
   sheet.lastContent.style.display='';
  sheet.lastContent=null;
 }
+// Match the native spell-slot and class resource cards: count + charge pips +
+// Spend/Restore actions. No separate text-only list.
+function divineChargeState(g){
+ const maximum=Math.max(0,Number(g.max_charges)||0);
+ const readyAfter=Date.parse(g.available_at||'');
+ const elapsed=g.recovery==='seven_days'&&Number.isFinite(readyAfter)&&Date.now()>=readyAfter;
+ const remaining=Math.max(0,Math.min(maximum,elapsed?maximum:Number(g.charges_remaining)||0));
+ const isShared=g.kind==='minor_intercession';
+ const text=String(g.uses_text||'').toLowerCase();
+ let recovery='Restoration follows the original source rules';
+ if(isShared)recovery='Shared Minor Intercession · recovers on a long rest';
+ else if(text.includes('campaign arc'))recovery='Once per campaign arc · DM records the next arc';
+ else if(text.includes('per session'))recovery='Once per session · DM restores between sessions';
+ else if(text.includes('proficiency bonus'))recovery='Proficiency bonus uses · recovers on a long rest';
+ else if(g.recovery==='long')recovery='Recovery: long rest';
+ else if(g.recovery==='short')recovery='Recovery: short or long rest';
+ else if(g.recovery==='seven_days')recovery='Recovery: seven days after last use';
+ else if(g.recovery==='manual')recovery='Recovery: DM-confirmed milestone';
+ return {maximum,remaining,recovery,isShared};
+}
 function renderBoonResources(c,data){
  const holder=document.querySelector('#pageRoot .sheet20-resource-panel');
  if(!holder)return;
- const granted=(data?.granted||[]).filter(g=>Number(g.max_charges)>0&&g.kind!=='nyrha_revision');
- let panel=holder.querySelector('[data-tv271-boon-resources]');
- if(!granted.length){panel?.remove();return}
- const fingerprint=JSON.stringify([c.id,granted.map(g=>[g.id,g.name,g.max_charges,g.charges_remaining,g.recovery])]);
- if(panel?.dataset.fingerprint===fingerprint)return;
- panel?.remove();panel=node('section','tv271-resource-panel');
- panel.dataset.tv271BoonResources='1';panel.dataset.fingerprint=fingerprint;
- panel.append(node('h3','','Divine boons'));
- for(const b of granted){
-  const card=node('div','tv271-resource-row');
-  const max=Number(b.max_charges),remaining=Math.max(0,Math.min(max,Number(b.charges_remaining)));
-  const info=node('div','');info.append(node('strong','',b.name),
-   node('small','',remaining+' / '+max+' charges · '+(b.recovery||'long')+' recovery'));
-  const actions=node('div','tv271-resource-actions');
-  const use=button('Use · 1',async()=>{
-   if(sheet.pending.has(b.id))return;
-   sheet.pending.add(b.id);use.disabled=true;
-   try{
-    const {error}=await api().rpc(b.source_kind==='canonical'?
-     'terravale_divine_canon_use':'terravale_divine_use_boon',
-     b.source_kind==='canonical'?
-      {target_award:b.id,material_invocation:true}:{target_grant:b.id});
-    if(error)throw error;
-    await fetchSheet(c.id,true);
-   }catch(e){notice('Could not use boon: '+(e.message||String(e)));}
-   finally{sheet.pending.delete(b.id);use.disabled=false}
-  },'btn ghost small');
-  use.disabled=remaining<1||sheet.pending.has(b.id);
-  actions.append(use);
-  if(isDM()){
-   const refill=button('DM restore',async()=>{
-    if(sheet.pending.has(b.id))return;
-    sheet.pending.add(b.id);refill.disabled=true;
-    try{
-     const {error}=await api().rpc('terravale_divine_refill_boon',{target_grant:b.id});
-     if(error)throw error;
-     await fetchSheet(c.id,true);
-    }catch(e){notice('Could not restore boon: '+(e.message||String(e)));}
-    finally{sheet.pending.delete(b.id);refill.disabled=false}
-   },'btn ghost small');
-   if(b.source_kind!=='canonical')actions.append(refill);
+ const grants=(data?.granted||[]).filter(g=>
+  Number(g.max_charges)>0&&g.kind!=='nyrha_revision');
+ const fingerprint=JSON.stringify([c.id,grants.map(g=>
+  [g.id,g.name,g.kind,g.max_charges,g.charges_remaining,g.recovery,g.uses_text,g.available_at])]);
+ let previous=holder.querySelector('[data-tv271-boon-resources]');
+ if(!grants.length){previous?.remove();return}
+ if(previous?.dataset.fingerprint===fingerprint)return;
+ const panel=node('section','tv285-resource-section');
+ panel.dataset.tv271BoonResources='1';
+ panel.dataset.fingerprint=fingerprint;
+ panel.append(node('div','tv285-resource-heading','DIVINE BOON RESOURCES'));
+ const list=node('div','tv285-resource-grid');
+ for(const gift of grants){
+  const values=divineChargeState(gift);
+  const card=node('section','tv285-resource-card');
+  card.dataset.award=gift.id;
+  const head=node('div','tv285-resource-card-head');
+  head.append(node('strong','tv285-resource-title',gift.name));
+  const count=node('span','tv285-resource-count');
+  count.append(node('b','',String(values.remaining)),
+   node('span','', ' / '+values.maximum));
+  head.append(count);
+  card.append(head);
+  const legend=node('small','tv285-resource-context',
+   values.isShared?'One shared Minor Intercession pool':'Divine boon uses');
+  card.append(legend);
+  const pips=node('div','tv285-charge-pips');
+  pips.setAttribute('role','img');
+  pips.setAttribute('aria-label',gift.name+': '+values.remaining+' of '+values.maximum+' charges available');
+  const shown=Math.min(values.maximum,18);
+  for(let index=0;index<shown;index++){
+   const pip=node('span','tv285-charge-pip'+(index<values.remaining?' is-filled':''));
+   pip.setAttribute('aria-hidden','true');
+   pips.append(pip);
   }
-  card.append(info,actions);panel.append(card);
+  if(values.maximum>shown)pips.append(node('small','tv285-charge-overflow',
+    '+ '+(values.maximum-shown)+' additional uses'));
+  card.append(pips);
+  const actions=node('div','tv285-resource-actions');
+  const spend=button('− Spend',async()=>{
+   if(sheet.pending.has(gift.id))return;
+   sheet.pending.add(gift.id);spend.disabled=true;
+   try{
+    const {error}=await api().rpc(gift.source_kind==='canonical'?
+     'terravale_divine_canon_use':'terravale_divine_use_boon',
+     gift.source_kind==='canonical'?
+      {target_award:gift.id,material_invocation:true}:{target_grant:gift.id});
+    if(error)throw error;await fetchSheet(c.id,true);
+   }catch(e){notice('Could not spend boon use: '+(e.message||String(e)))}
+   finally{sheet.pending.delete(gift.id);spend.disabled=false}
+  },'tv285-resource-spend');
+  spend.disabled=values.remaining<1||sheet.pending.has(gift.id);
+  actions.append(spend);
+  const restore=button('+ Restore',async()=>{
+   if(sheet.pending.has(gift.id))return;
+   sheet.pending.add(gift.id);restore.disabled=true;
+   try{
+    const canonical=gift.source_kind==='canonical';
+    const {error}=await api().rpc(canonical?
+     'terravale_divine_canon_dm_refill':'terravale_divine_refill_boon',
+     canonical?{target_award:gift.id,reason:''}:{target_grant:gift.id});
+    if(error)throw error;await fetchSheet(c.id,true);
+   }catch(e){notice('Could not restore boon uses: '+(e.message||String(e)))}
+   finally{sheet.pending.delete(gift.id);restore.disabled=false}
+  },'tv285-resource-restore');
+  // The Intercession counter belongs to the character, not the award:
+  // it is only recharged by a genuine long rest, not a per-boon refill.
+  restore.disabled=!isDM()||values.remaining>=values.maximum||
+   values.isShared||sheet.pending.has(gift.id);
+  restore.title=values.isShared?
+   'The shared Minor Intercession returns on a long rest':
+   !isDM()?'DM-controlled refill; ordinary rests recover eligible uses':
+   'Restore the resource when its original recovery condition is satisfied';
+  actions.append(restore);
+  card.append(actions,node('small','tv285-resource-recovery',values.recovery));
+  list.append(card);
  }
+ panel.append(list);
+ previous?.remove();
  holder.append(panel);
+}
+function renderNativeDivineConsequences(c,data){
+ const root=document.getElementById('pageRoot');
+ if(!root)return;
+ const entry=[...(root.querySelectorAll('h2,h3,h4,h5,legend,strong,span'))].find(el=>
+  el.textContent?.trim().toLowerCase()==='conditions & tracking');
+ let container=entry?.closest('.sheet20-panel,.sheet20-conditions-panel,section');
+ if(!container&&entry){
+  container=entry.parentElement?.parentElement;
+ }
+ if(!container)return;
+ const burdens=(data?.burdens||[]).filter(b=>Number(b.stacks)>0||b.overflow_pending);
+ const statuses=(data?.statuses||[]).filter(e=>Number(e.stacks)>0);
+ const fractures=data?.fractures||[];
+ const signature=JSON.stringify([c.id,burdens,statuses,fractures]);
+ const previous=container.querySelector('[data-tv285-native-divine-conditions]');
+ if(!burdens.length&&!statuses.length&&!fractures.length){previous?.remove();return}
+ if(previous?.dataset.fingerprint===signature)return;
+ const panel=node('section','tv285-native-divine-conditions');
+ panel.dataset.tv285NativeDivineConditions='1';panel.dataset.fingerprint=signature;
+ panel.append(node('div','tv285-native-divider','DIVINE CONSEQUENCES'));
+ panel.append(node('p','tv285-native-caption',
+  'Tracked divine effects and burdens. These are read-only here; their rules and adjustments remain in the Divine tab and DM Chronicle.'));
+ const tiles=node('div','tv285-native-condition-grid');
+ for(const effect of statuses){
+  const tile=node('div','tv285-native-effect');
+  tile.append(node('strong','',effect.key),
+   node('span','',effect.stacks+' '+(effect.stacks===1?'stack':'stacks')));
+  if(effect.note)tile.title=effect.note;
+  tiles.append(tile);
+ }
+ for(const burden of burdens){
+  const tile=node('div','tv285-native-effect');
+  tile.append(node('strong','',burden.name),
+   node('span','',(burden.patron||'Divine patron')+' · '+burden.stacks+'/3'+
+   (burden.overflow_pending?' · Overflow pending':'')));
+  tiles.append(tile);
+ }
+ for(const fracture of fractures){
+  const tile=node('div','tv285-native-effect');
+  tile.append(node('strong','','Nyrha · '+fracture.chain),
+   node('span','','Unresolved Fracture'));tiles.append(tile);
+ }
+ panel.append(tiles);
+ previous?.remove();container.append(panel);
 }
 function renderSheet(){
  const c=routeCharacter(),root=document.getElementById('pageRoot');
@@ -590,6 +690,7 @@ function renderSheet(){
  sheet.lastContent=content;
  if(ready()&&!sheet.cache.has(c.id)&&!sheet.loading.has(c.id))fetchSheet(c.id);
  renderBoonResources(c,sheet.cache.get(c.id)?.data);
+ renderNativeDivineConsequences(c,sheet.cache.get(c.id)?.data);
  let tab=tabs.querySelector('[data-tv270-divine-tab]');
  if(!tab){
   const native=tabs.querySelector('[data-value]');

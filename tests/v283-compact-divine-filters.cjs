@@ -11,7 +11,7 @@ assert.doesNotThrow(()=>new Function(lib));
 assert.ok(lib.includes('tv283-filter-toolbar'),'Compact toolbar missing');
 assert.ok(lib.includes('tv283-filter-popover'),'On-demand anchored filter palette missing');
 assert.ok(lib.includes('tv283-patron-search'),'God-specific searchable picker missing');
-assert.ok(lib.includes('results.slice(0,9)'),'God picker must cap the number of visible results');
+assert.ok(lib.includes('matched.slice(0,8)'),'Each god-family picker must cap visible results');
 assert.ok(!lib.includes('tv282-patron-chips'),'Old scrolling patron chip wall must not mount');
 assert.ok(!lib.includes('tv282-filter-row'),'Old huge three-column grid must not mount');
 assert.ok(!lib.includes('advanced.open=true'),'Advanced filters should not auto-expand');
@@ -36,5 +36,5 @@ assert.ok(css.includes('@media(max-width:600px)'),'Mobile filter layout missing'
 assert.ok(css.includes('.tv283-filter-active:empty{display:none}'));
 assert.ok(overlay.includes('v283-compact-filters.css'));
 assert.ok(html.includes('tv283-filter-toolbar'));
-assert.ok(html.includes('Terravale Codex V2.84'));
+assert.ok(html.includes('Terravale Codex V2.85'));
 console.log('PASS V2.83: compact no-scrollbar filters, searchable god picker, complete facets and responsive toolbar.');
