@@ -35,7 +35,7 @@ assert.ok(ui.includes('TerravaleV281Canon?.mountDM'));
 assert.ok(ui.includes('terravale_divine_canon_player_state'));
 assert.ok(ui.includes('terravale_divine_canon_offers_player_state'));
 assert.ok(ui.includes('TerravaleDivineVoicesV281?.status'));
-assert.ok(ui.includes("b.source_kind==='canonical'"));
+assert.ok(ui.includes("gift.source_kind==='canonical'")&&ui.includes('terravale_divine_canon_use'));
 assert.ok(!lib.includes('localStorage'),'Private catalogue cannot be cached in localStorage');
 assert.ok(!lib.includes('innerHTML'),'Original source text must never render as raw HTML');
 for(const rpc of ['terravale_divine_dm_archive_search_v285','terravale_divine_dm_archive_read',
