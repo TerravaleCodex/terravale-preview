@@ -676,7 +676,22 @@ function renderSheet(){
    content.append(renderer?.feature(g.mechanics,g)||
     node('p','tv280-granted-mechanics',g.mechanics));
   }
-  if(g.source_kind==='canonical'&&g.slot!=='passive'&&
+  if(g.source_kind==='canonical'&&g.kind==='tier_zero'){
+   content.append(node('p','tv281-small',
+    'A formal bargain accepted by this character. The original benefit and cost remain in the text above.'));
+   if(isDM())content.append(button('Record Tier 0 invocation',async()=>{
+    if(sheet.pending.has(g.id))return;
+    sheet.pending.add(g.id);
+    try{
+     const {error}=await api().rpc('terravale_divine_canon_dm_record_bargain',
+      {target_award:g.id,consequence:''});
+     if(error)throw error;
+     notice('Tier 0 invocation recorded. Apply the original consequences as written.');
+    }catch(e){notice('Could not record bargain: '+(e.message||String(e)))}
+    finally{sheet.pending.delete(g.id)}
+   },'btn ghost small'));
+  }
+  if(g.source_kind==='canonical'&&g.kind!=='tier_zero'&&g.slot!=='passive'&&
    g.kind!=='nyrha_revision'&&g.kind!=='minor_grace'){
    const use=button(Number(g.max_charges)>0?'Use recorded charge':'Record invocation',async()=>{
     if(sheet.pending.has(g.id))return;
