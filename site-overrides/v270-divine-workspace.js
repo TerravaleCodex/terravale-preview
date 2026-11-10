@@ -165,12 +165,13 @@ async function adjustFavour(patron,delta,card){
  }
 }
 function drawFavour(host){
- const d=dm.data,p=d.patrons||[],f=d.favour||[];
+ const d=dm.data,p=(d.patrons||[]).filter(x=>['major','greater'].includes(x.rank)&&
+ String(x.key_name||x.name).toLowerCase()!=='nyrha'),f=d.favour||[];
  const scores=new Map(f.map(x=>[x.patron_id,Number(x.score)]));
  const body=node('section','tv270-panel tv272-standings-panel');
  body.append(node('div','tv254-eyebrow','PRIVATE · DM ONLY'),
   node('h3','',activeCharacter()?.name+' · Divine standing'),
-  node('p','tv254-muted','DM-owned counters range from −10 to +10. Each change is recorded; changes never issue or revoke boons automatically.'));
+  node('p','tv254-muted','Only conventional major and Greater Gods use −10 to +10 Favour. Minor gods use Notice and Offering; Nyrha uses Entanglement instead. No threshold automatically grants a boon.'));
  const why=input('Reason for the next adjustment (DM-only)',dm.reason,{maxlength:500});
  why.el.addEventListener('input',()=>{dm.reason=why.el.value});body.append(why.wrap);
  const standings=node('div','tv272-standings-grid');
@@ -260,7 +261,7 @@ function eligible(b){
 function drawBoons(host){
  const section=node('section','tv270-panel tv272-forge');
  section.append(node('div','tv254-eyebrow','PRIVATE · DM ONLY'),node('h3','','Boon library'),
-  node('p','tv254-muted','Divine / Minor God / Concordant are separate families. A character may hold three conventional boons and one Concordant boon. Drafts and unearned boons never appear on player sheets.'));
+  node('p','tv254-muted','Custom prepared boons are separate from the canonical source index below. The Archive 2 rules define three conventional slots per patron, one Minor Grace and one shared-use Minor Intercession, one Concordant, and Nyrha\'s separate Revisions. Never grant source-only entries without a rules review.'));
  if(dm.edit){drawBoonEditor(section);host.append(section);return}
  section.append(button('+ Prepare a boon',()=>{dm.edit=blankBoon();drawDM()},'btn primary small'));
  const filePick=node('input');filePick.type='file';filePick.accept='.json,application/json';
@@ -346,6 +347,7 @@ function drawBoons(host){
  section.append(list);filter();
  window.TerravaleBoonArchiveV273?.mount(section,dm.data?.patrons||[]);
  window.TerravaleV275SourceVault?.mount(section,dm.campaign);
+ window.TerravaleV279Archive?.mount(section,dm.campaign);
  host.append(section);
 }
 async function importBoonArchive(file,status){
