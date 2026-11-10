@@ -343,3 +343,35 @@ end $tv281_dm_state$;
 revoke all on function public.terravale_divine_canon_dm_state(uuid)
  from public,anon,authenticated;
 grant execute on function public.terravale_divine_canon_dm_state(uuid) to authenticated;
+
+-- Deliberate DM refill for session/arc/manual mechanics; never recharge by boon rotation.
+create or replace function public.terravale_divine_canon_dm_refill(
+ target_award uuid, reason text default ''
+) returns jsonb language plpgsql security definer set search_path=''
+as $tv281_refill$
+declare actor uuid:=(select auth.uid());a public.terravale_divine_canon_awards%rowtype;
+ c public.characters%rowtype;e public.terravale_divine_archive_entries%rowtype;
+begin
+ select * into a from public.terravale_divine_canon_awards where id=target_award for update;
+ select * into c from public.characters where id=a.character_id for update;
+ select * into e from public.terravale_divine_archive_entries where id=a.entry_id;
+ if actor is null or not exists(select 1 from auth.identities where user_id=actor and provider='discord')
+  or a.id is null or c.id is null or not authz.is_dm(c.campaign_id) then
+  raise exception 'Verified campaign DM only' using errcode='42501';end if;
+ if a.max_uses is null or a.status='revoked' then
+  raise exception 'No recoverable canonical charge pool' using errcode='22023';end if;
+ if e.kind in('divine','concordant') and exists(
+   select 1 from public.terravale_divine_canon_burdens b where b.character_id=c.id
+   and b.stacks=3 and b.patron_key in(lower(e.patron),lower(coalesce(e.other_patron,'')))
+ ) then raise exception 'Patron Burden at maximum prevents limited-use recovery'
+  using errcode='22023';end if;
+ update public.terravale_divine_canon_awards
+ set uses_remaining=max_uses,next_available_at=null,update_at=now() where id=a.id;
+ insert into public.terravale_divine_canon_history(character_id,award_id,actor_id,action,details)
+ values(c.id,a.id,actor,'dm_manual_refill',
+  jsonb_build_object('recovery',a.recovery,'reason',left(coalesce(reason,''),500)));
+ return jsonb_build_object('id',a.id,'remaining',a.max_uses,'maximum',a.max_uses);
+end $tv281_refill$;
+revoke all on function public.terravale_divine_canon_dm_refill(uuid,text)
+ from public,anon,authenticated;
+grant execute on function public.terravale_divine_canon_dm_refill(uuid,text) to authenticated;
