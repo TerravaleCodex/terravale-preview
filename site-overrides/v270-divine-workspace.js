@@ -261,7 +261,7 @@ function eligible(b){
 function drawBoons(host){
  const section=node('section','tv270-panel tv272-forge');
  section.append(node('div','tv254-eyebrow','PRIVATE · DM ONLY'),node('h3','','Boon library'),
-  node('p','tv254-muted','Custom prepared boons are separate from the canonical source index below. The Archive 2 rules define three conventional slots per patron, one Minor Grace and one shared-use Minor Intercession, one Concordant, and Nyrha\'s separate Revisions. Never grant source-only entries without a rules review.'));
+  node('p','tv254-muted','The original 49 documents are already in the database. Grant their exact source-backed boons directly below; custom designs remain separate. No repeated ZIP imports are needed.'));
  if(dm.edit){drawBoonEditor(section);host.append(section);return}
  section.append(button('+ Prepare a boon',()=>{dm.edit=blankBoon();drawDM()},'btn primary small'));
  const filePick=node('input');filePick.type='file';filePick.accept='.json,application/json';
@@ -343,11 +343,10 @@ function drawBoons(host){
   controls.lastChild.disabled=dm.busy||dm.loading||(!has&&(boon.state!=='ready'||!can));
   card.append(detail,controls);list.append(card);
  }
- if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No boons yet. Prepare their actual effects before granting them.'));
+ if(!(dm.data.catalog||[]).length)section.append(node('p','tv254-muted','No custom boons prepared yet. The canonical Archive 2 catalogue is available above.'));
  section.append(list);filter();
- window.TerravaleBoonArchiveV273?.mount(section,dm.data?.patrons||[]);
- window.TerravaleV275SourceVault?.mount(section,dm.campaign);
- window.TerravaleV279Archive?.mount(section,dm.campaign);
+ window.TerravaleV281Canon?.mountDM(section,{campaign:dm.campaign,character:dm.character,
+  currentCharacter:()=>dm.character});
  host.append(section);
 }
 async function importBoonArchive(file,status){
