@@ -36,5 +36,5 @@ assert.ok(css.includes('@media(max-width:600px)'),'Mobile filter layout missing'
 assert.ok(css.includes('.tv283-filter-active:empty{display:none}'));
 assert.ok(overlay.includes('v283-compact-filters.css'));
 assert.ok(html.includes('tv283-filter-toolbar'));
-assert.ok(html.includes('Terravale Codex V2.83'));
+assert.ok(html.includes('Terravale Codex V2.84'));
 console.log('PASS V2.83: compact no-scrollbar filters, searchable god picker, complete facets and responsive toolbar.');
