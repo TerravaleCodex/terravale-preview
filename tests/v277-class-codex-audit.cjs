@@ -49,5 +49,5 @@ assert.ok(css.includes('overflow-anchor:none'));
 assert.ok(overlay.includes('from v277_class_scroll_patch import patch as patch_v277'));
 assert.ok(overlay.includes('source = patch_v277(source)'));
 assert.ok(html.includes('data-source="v277-class-stability.js"'));
-assert.ok(html.includes('Terravale Codex V2.84'));
+assert.ok(html.includes('Terravale Codex V2.85'));
 console.log('PASS V2.77 Class Codex: in-place levels/features/paths, preserved progression table, stable summary scroll and no page-wide redraw.');
