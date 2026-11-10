@@ -438,8 +438,15 @@ function mountDM(host,config){
      body.append(button('Present Formal Offer',()=>renderTermsForm(body,context,item,refreshAwards)));
     }
     const box=node('div','tv281-grant-controls');
-    let picked=slotValue(item);
-    if(item.kind==='divine'||item.kind==='concordant'){
+    let picked=item.kind==='concordant'?'concordant':slotValue(item);
+    if(item.kind==='concordant'){
+     const heading=node('div','tv284-concordant-grant');
+     heading.append(node('strong','','Dedicated Concordant slot'),
+      node('p','tv281-small',
+       'This shared gift uses the one Concordant space. Its original '+(item.slot||'Major')+
+       ' Favour-Slot classification stays part of the ability rules; it does not replace your existing ordinary Major boon. Both patrons’ direct Favour thresholds and Divine Burdens still apply.'));
+     box.append(heading);
+    }else if(item.kind==='divine'){
      box.append(node('small','tv281-small',
       picked?'Original source prescribes '+picked+' slot.':
        'Source does not specify a slot. DM must classify this boon before awarding.'));
@@ -461,7 +468,7 @@ function mountDM(host,config){
     }
     const send=button('Bestow exact source boon',async()=>{
      if(!same())return;
-     if((item.kind==='divine'||item.kind==='concordant')&&!picked){
+     if(item.kind==='divine'&&!picked){
       statusText(message,'Select a legal Favour Slot for this boon.',true);return;
      }
      if(['minor_grace','minor_intercession'].includes(item.kind)&&!ability){

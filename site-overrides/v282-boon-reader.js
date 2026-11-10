@@ -107,7 +107,10 @@ function meta(entry={}){
  const fields=[
   ['Patron',entry.patron+(entry.other_patron?' & '+entry.other_patron:'')],
   ['Tier',entry.tier===0?'Tier 0':entry.tier?'Tier '+entry.tier:null],
-  ['Activation',entry.activation],['Favour slot',entry.slot],
+  ['Activation',entry.activation],
+  ['Favour slot',entry.source_slot||entry.slot],
+  ['Sheet space',entry.kind==='concordant'?'Concordant':
+    entry.kind==='tier_zero'?'Divine bargain':null],
   ['Uses',entry.uses_text],['Required Favour',entry.required_favour!==null&&entry.required_favour!==undefined?
     '+'+entry.required_favour+(entry.required_favour_second?' & +'+entry.required_favour_second:''):null]
  ];

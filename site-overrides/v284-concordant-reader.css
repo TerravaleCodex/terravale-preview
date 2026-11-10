@@ -1,0 +1,82 @@
+/* V2.84: keep the 3-by-2 Divine inventory even when a full-length gift is open.
+   A single separate reader below the inventory replaces expanding details
+   inside individual cards; never stretch a neighbouring empty slot. */
+.tv270-divine-sheet .tv280-boon-slots{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:11px;align-items:stretch
+}
+.tv270-divine-sheet .tv280-boon-slot{
+ min-width:0;min-height:158px;
+ height:100%;box-sizing:border-box
+}
+.tv270-divine-sheet .tv284-compact-award{
+ display:flex;flex-direction:column;gap:7px;
+ min-height:158px;padding:13px;
+ transition:border-color .15s ease,background-color .15s ease
+}
+.tv270-divine-sheet .tv284-compact-award.tv284-award-selected{
+ border-color:var(--accent,#c2a6de);
+ background:color-mix(in srgb,var(--accent,#ad91cd) 9%,var(--surface-2,#131119))
+}
+.tv284-slot-footer{
+ margin-top:auto;display:flex;gap:9px;align-items:center;
+ justify-content:space-between;flex-wrap:wrap
+}
+.tv284-charge-summary{
+ font-size:.71rem;color:var(--soft,#c8b9d0)
+}
+.tv284-read-gift{
+ border:0;background:none;cursor:pointer;font:inherit;
+ text-align:left;font-size:.77rem;line-height:1.3;
+ color:var(--accent,#ccb5ee);padding:7px 0 1px
+}
+.tv284-read-gift:before{content:"▸";display:inline-block;margin-right:7px;
+ transition:transform .14s ease}
+.tv284-compact-award.tv284-award-selected .tv284-read-gift:before{transform:rotate(90deg)}
+.tv284-read-gift:hover{text-decoration:underline}
+.tv284-read-gift:focus-visible,.tv284-close-detail:focus-visible{
+ outline:2px solid var(--accent,#cbb1e6);outline-offset:3px
+}
+.tv284-boon-inspector{
+ width:100%;min-width:0;margin-top:13px;padding:18px;
+ border:1px solid color-mix(in srgb,var(--accent,#c4a5df) 55%,var(--line,#433951));
+ border-radius:12px;
+ background:color-mix(in srgb,var(--surface,#16131c) 93%,var(--accent,#bea0d6));
+ box-sizing:border-box
+}
+.tv284-boon-inspector[hidden]{display:none!important}
+.tv284-inspector-head{
+ display:flex;align-items:flex-start;justify-content:space-between;
+ flex-wrap:wrap;gap:14px;padding-bottom:12px;
+ margin-bottom:13px;border-bottom:1px solid var(--line,#484050)
+}
+.tv284-inspector-head h3{font:500 clamp(1.18rem,1.7vw,1.55rem)/1.35 Georgia,serif;
+ margin:5px 0}
+.tv284-inspector-patron{
+ margin:4px 0 0;color:var(--soft,#b7adc4);font-size:.8rem
+}
+.tv284-inspector-body{min-width:0}
+.tv284-inspector-body>.tv282-feature{width:100%;min-width:0}
+.tv284-inspector-body>.tv282-feature>.tv282-reader{
+ border-color:var(--line,#423c4c);padding:17px
+}
+.tv284-summary{font-size:.85rem;color:var(--soft,#c4baca);
+ margin:0 0 12px}
+.tv284-resource-line{
+ display:inline-flex;margin:0 0 13px;
+ padding:7px 11px;background:var(--raised,#1b1721);
+ border:1px solid var(--line,#4c4354);border-radius:7px;
+ color:var(--text,#e6ddf1);font-size:.78rem
+}
+.tv284-concordant-grant{
+ display:grid;gap:6px;padding:12px;margin:8px 0 13px;
+ border:1px solid color-mix(in srgb,var(--accent,#b8a0d0) 42%,var(--line,#4a3f53));
+ border-radius:10px;background:color-mix(in srgb,var(--accent,#bba1d7) 9%,transparent)
+}
+.tv284-concordant-grant strong{font-size:.87rem;color:var(--text,#f0e8f4)}
+.tv284-concordant-grant .tv281-small{margin:0}
+@media(max-width:550px){
+ .tv270-divine-sheet .tv280-boon-slots{grid-template-columns:1fr}
+ .tv284-boon-inspector{padding:12px}
+ .tv284-inspector-body>.tv282-feature>.tv282-reader{padding:12px}
+}

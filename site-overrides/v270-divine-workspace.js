@@ -583,7 +583,7 @@ function renderBoonResources(c,data){
 function renderSheet(){
  const c=routeCharacter(),root=document.getElementById('pageRoot');
  if(!c||!root){restoreSheet();sheet.character=null;sheet.open=false;return}
- if(sheet.character!==c.id){restoreSheet();sheet.character=c.id;sheet.open=false}
+ if(sheet.character!==c.id){restoreSheet();sheet.character=c.id;sheet.open=false;sheet.inspectedAward=null}
  const tabs=root.querySelector('.sheet20-tabs');
  const content=root.querySelector('.sheet20-content:not(.tv270-divine-sheet)');
  if(!tabs||!content)return;
@@ -659,17 +659,46 @@ function renderSheet(){
   {family:'grace',label:'Minor Grace',count:1,filter:g=>g.kind==='minor_grace'},
   {family:'intercession',label:'Minor Intercession',count:1,filter:g=>g.kind==='minor_intercession'}
  ];
- const renderGranted=(target,g)=>{
-  target.classList.add('tv280-slot-filled');
-  target.append(node('div','tv280-slot-icon','✦'),node('strong','',g.name));
-  target.append(node('small','tv280-slot-patron',g.patron+(g.other_patron?' & '+g.other_patron:'')));
-  const detail=node('details','tv280-granted-detail');
-  detail.append(node('summary','','Read bestowed gift'));
-  const content=node('div','tv280-granted-body');
-  if(g.summary)content.append(node('p','',g.summary));
+ const detailPanel=node('section','tv284-boon-inspector');
+ detailPanel.hidden=true;
+ detailPanel.setAttribute('aria-label','Selected divine boon mechanics');
+ const awardedControls=new Map();
+ const setActiveSelection=()=>{
+  for(const [id,parts] of awardedControls){
+   const active=id===sheet.inspectedAward;
+   parts.card.classList.toggle('tv284-award-selected',active);
+   parts.button.setAttribute('aria-expanded',String(active));
+   parts.button.textContent=active?'Close details':'Read bestowed gift';
+  }
+ };
+ const closeDetails=()=>{
+  sheet.inspectedAward=null;
+  detailPanel.hidden=true;detailPanel.replaceChildren();
+  setActiveSelection();
+ };
+ const showDetails=(g)=>{
+  if(!g){closeDetails();return}
+  sheet.inspectedAward=g.id;
+  detailPanel.replaceChildren();
+  detailPanel.hidden=false;
+  const header=node('div','tv284-inspector-head');
+  const info=node('div','');
+  info.append(node('div','tv254-eyebrow',g.kind==='concordant'?
+   'SHARED DIVINE GIFT · CONCORDANT':g.kind==='tier_zero'?
+   'DIVINE BARGAIN':g.kind==='divine'?'BESTOWED DIVINE BOON':'BESTOWED GIFT'));
+  info.append(node('h3','',g.name));
+  info.append(node('p','tv284-inspector-patron',
+    'Bestowed by '+g.patron+(g.other_patron?' and '+g.other_patron:'')));
+  header.append(info,button('Close ×',closeDetails,'btn ghost small tv284-close-detail'));
+  detailPanel.append(header);
+  const content=node('div','tv284-inspector-body');
+  if(g.summary&&g.summary.trim()!==g.name.trim())
+   content.append(node('p','tv284-summary',g.summary));
   if(Number(g.max_charges)>0){
    const remaining=Number(g.charges_remaining);
-   content.append(node('small','',Math.max(0,remaining)+' / '+g.max_charges+' uses · '+(g.recovery||'DM review')+' recovery'));
+   content.append(node('p','tv284-resource-line',
+    Math.max(0,remaining)+' / '+g.max_charges+
+    ' uses · '+(g.recovery||'DM review')+' recovery'));
   }
   if(g.mechanics){
    const renderer=window.TerravaleDivineReaderV282;
@@ -678,7 +707,7 @@ function renderSheet(){
   }
   if(g.source_kind==='canonical'&&g.kind==='tier_zero'){
    content.append(node('p','tv281-small',
-    'A formal bargain accepted by this character. The original benefit and cost remain in the text above.'));
+    'The original benefit and cost are shown above; the DM records any story consequences.'));
    if(isDM())content.append(button('Record Tier 0 invocation',async()=>{
     if(sheet.pending.has(g.id))return;
     sheet.pending.add(g.id);
@@ -709,7 +738,26 @@ function renderSheet(){
   if(g.source_kind==='canonical'&&g.kind==='nyrha_revision')
    content.append(node('p','tv281-small',
     'Break the Pattern requires a DM-confirmed Fracture and explicit player consent.'));
-  detail.append(content);target.append(detail);
+  detailPanel.append(content);
+  setActiveSelection();
+ };
+ const renderGranted=(target,g)=>{
+  target.classList.add('tv280-slot-filled','tv284-compact-award');
+  target.append(node('div','tv280-slot-icon','✦'),node('strong','',g.name));
+  target.append(node('small','tv280-slot-patron',
+   g.patron+(g.other_patron?' & '+g.other_patron:'')));
+  const footer=node('div','tv284-slot-footer');
+  if(Number(g.max_charges)>0)
+   footer.append(node('small','tv284-charge-summary',
+    Math.max(0,Number(g.charges_remaining))+' / '+g.max_charges+' uses'));
+  const expand=button('Read bestowed gift',()=>{
+   if(sheet.inspectedAward===g.id)closeDetails();
+   else showDetails(g);
+  },'tv284-read-gift');
+  expand.setAttribute('aria-expanded','false');
+  expand.setAttribute('aria-controls','tv284-boon-inspector');
+  footer.append(expand);target.append(footer);
+  awardedControls.set(g.id,{card:target,button:expand});
  };
  for(const group of familiesForSlots){
   for(let i=0;i<group.count;i++){
@@ -738,6 +786,11 @@ function renderSheet(){
   }
   left.append(overflow);
  }
+ detailPanel.id='tv284-boon-inspector';
+ left.append(detailPanel);
+ const selectedAward=bestowed.find(g=>g.id===sheet.inspectedAward);
+ if(selectedAward)showDetails(selectedAward);
+ else sheet.inspectedAward=null;
  left.append(node('p','tv280-slot-note',
   'Original rules are preserved. Explicit resource use, patron burdens, and recorded Fractures are tracked; story judgement and unlisted dice effects remain with the DM.'));
  window.TerravaleV281Canon?.renderPlayerStatuses(left,data,c);
