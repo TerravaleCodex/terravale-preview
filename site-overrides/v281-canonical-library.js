@@ -135,14 +135,17 @@ function mountDM(host,config){
  const owned=node('div','tv281-held');
  const control=node('div','tv281-filter');
  const search=node('input','tv281-search');
- search.type='search';search.placeholder='Search boons or patrons…';
+ search.type='search';search.placeholder='Search names, gods, effects and costs…';
  search.setAttribute('aria-label','Search canonical boons');
  const pick=node('div','tv281-chips');
  const records=node('div','tv281-catalogue-results');
  const counter=node('small','tv281-small');
  const pager=node('div','tv281-actions');
  section.append(owned,control,records,pager,message);
- const options={kind:'all',query:'',offset:0};
+ const options={kind:'all',query:'',patron:'',tier:null,slot:'',availability:'any',
+  uses:'any',sort:'patron',offset:0};
+ let allPatrons=[],patronQuery='';
+ let refreshPatrons=()=>{};
  const page={request:0};
  let dmState=null;
  const same=()=>isDM()&&host.isConnected&&context.currentCharacter()===context.character;
@@ -347,23 +350,29 @@ function mountDM(host,config){
   const request=++page.request;
   statusText(message,'Searching original boon catalogue…');
   try{
-   const data=await rpc('terravale_divine_dm_archive_list',{
-    target_campaign:context.campaign,target_set:null,
-    family:options.kind==='all'?null:options.kind,
-    needle:options.query,page_size:20,page_offset:options.offset
+   const data=await rpc('terravale_divine_dm_archive_search_v282',{
+    target_campaign:context.campaign,target_character:context.character,
+    filter_family:options.kind==='all'?null:options.kind,
+    filter_patron:options.patron||null,
+    filter_tier:options.tier,filter_slot:options.slot||null,
+    filter_availability:options.availability==='any'?null:options.availability,
+    filter_uses:options.uses==='any'?null:options.uses,
+    needle:options.query,sort_by:options.sort,page_size:24,page_offset:options.offset
    });
    if(!same()||request!==page.request)return;
    records.replaceChildren();pager.replaceChildren();
    const count=Number(data.total)||0;
-   counter.textContent=count+' canonical source sections';
+   allPatrons=data.patrons||allPatrons;refreshPatrons();
+   counter.textContent=count?(options.offset+1)+'–'+
+    Math.min(count,options.offset+24)+' of '+count+' matching boons':'No matching boons';
    const grantedIds=new Set((dmState?.awards||[]).map(x=>x.entry_id));
    for(const item of data.entries||[])records.append(renderEntry(item,grantedIds.has(item.id)));
    if(!data.entries?.length)
     records.append(node('p','tv281-small','No source entries match this filter.'));
-   const prev=button('Previous',()=>{options.offset=Math.max(0,options.offset-20);showEntries()});
+   const prev=button('Previous',()=>{options.offset=Math.max(0,options.offset-24);showEntries()});
    prev.disabled=options.offset===0;
-   const next=button('Next',()=>{options.offset+=20;showEntries()});
-   next.disabled=options.offset+20>=count;
+   const next=button('Next',()=>{options.offset+=24;showEntries()});
+   next.disabled=options.offset+24>=count;
    pager.append(prev,counter,next);
    statusText(message,'Canonical source is already imported. No ZIP upload is needed.');
   }catch(e){statusText(message,'Cannot access private catalogue: '+e.message,true)}
@@ -375,7 +384,10 @@ function mountDM(host,config){
   title.append(node('strong','',item.name),
    node('small','',[item.patron,item.other_patron,formatFamily(item.kind),
     item.tier===null?'':'Tier '+item.tier].filter(Boolean).join(' · ')));
-  head.append(title,node('small','',held?'Held':'Read source'));
+  const state=item.availability||'locked';
+  const labels={held:'Held',threshold:'Favour met',locked:'Not yet eligible',formal:'Formal Offer'};
+  head.append(title,node('span','tv282-badge is-'+(held?'held':state),
+   held?'Held':labels[state]||'Read gift'));
   card.append(head);
   const body=node('div','tv281-entry-body');
   card.append(body);
@@ -474,18 +486,81 @@ function mountDM(host,config){
   return card;
  }
  control.append(search,pick);
+ const advanced=node('details','tv282-advanced');
+ advanced.open=true;
+ advanced.append(node('summary','','More filters · God, tier, eligibility, slot, uses and sort'));
+ const reset=button('Clear all filters',()=>{
+  Object.assign(options,{kind:'all',query:'',patron:'',tier:null,slot:'',
+   availability:'any',uses:'any',sort:'patron',offset:0});
+  search.value='';patronQuery='';renderFilters();showEntries();
+ },'btn ghost small');
+ advanced.append(reset);
+ const facets=node('div','tv282-filter-row');
+ advanced.append(facets);control.append(advanced);
+ function facet(label,values,field){
+  const panel=node('div','tv282-filter');
+  panel.append(node('strong','',label));
+  const chips=node('div','tv281-chips');
+  for(const [value,name] of values){
+   chip(name,options[field]===value,()=>{
+    if(options[field]===value)return;
+    options[field]=value;options.offset=0;renderFilters();showEntries();
+   },chips);
+  }
+  panel.append(chips);return panel;
+ }
+ function patronFacet(){
+  const panel=node('div','tv282-filter');
+  panel.append(node('strong','','God / divine patron'));
+  const query=node('input','tv281-search');
+  query.type='search';query.value=patronQuery;
+  query.placeholder='Find a god…';
+  query.setAttribute('aria-label','Search source patrons');
+  const choices=node('div','tv281-chips tv282-patron-chips');
+  const draw=()=>{
+   choices.replaceChildren();
+   chip('All gods',!options.patron,()=>{
+    options.patron='';options.offset=0;renderFilters();showEntries();
+   },choices);
+   for(const patron of allPatrons.filter(p=>
+    p.toLowerCase().includes(patronQuery.toLowerCase())).slice(0,50)){
+    chip(patron,options.patron===patron,()=>{
+     options.patron=patron;options.offset=0;renderFilters();showEntries();
+    },choices);
+   }
+  };
+  query.addEventListener('input',()=>{patronQuery=query.value;draw()});
+  refreshPatrons=draw;
+  panel.append(query,choices);draw();return panel;
+ }
  function renderFilters(){
   pick.replaceChildren();
-  chip('All',options.kind==='all',()=>{
+  chip('All families',options.kind==='all',()=>{
    options.kind='all';options.offset=0;renderFilters();showEntries()},pick);
   for(const key of kinds)chip(formatFamily(key),options.kind===key,()=>{
    options.kind=key;options.offset=0;renderFilters();showEntries()},pick);
+  facets.replaceChildren(
+   patronFacet(),
+   facet('Tier',[[null,'Any'],[0,'0'],[1,'I'],[2,'II'],
+    [3,'III'],[4,'IV'],[5,'V']],'tier'),
+   facet('Eligibility',[
+    ['any','All'],['threshold','Favour met'],['locked','Not met'],
+    ['held','Held'],['formal','Formal Offer']],'availability'),
+   facet('Favour slot',[
+    ['','Any'],['passive','Passive'],['reaction','Reaction'],
+    ['major','Major'],['grace','Grace'],['intercession','Intercession']],'slot'),
+   facet('Uses',[
+    ['any','Any'],['limited','Limited'],['unlimited','Passive / unlisted']],'uses'),
+   facet('Sort',[
+    ['patron','By god'],['name','Alphabetical'],['tier_up','Tier ↑'],
+    ['tier_down','Tier ↓']],'sort')
+  );
  }
  renderFilters();
  let timer=null;
  search.addEventListener('input',()=>{
-  options.query=search.value.trim().slice(0,100);options.offset=0;
-  clearTimeout(timer);timer=setTimeout(showEntries,180);
+  options.query=search.value.trim().slice(0,150);options.offset=0;
+  clearTimeout(timer);timer=setTimeout(showEntries,220);
  });
  const anchor=host.children[3]||null;host.insertBefore(section,anchor);
  refreshAwards().then(showEntries);
