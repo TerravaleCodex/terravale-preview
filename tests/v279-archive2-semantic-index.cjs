@@ -110,5 +110,5 @@ assert.ok(!sql.includes('terravale_dm_divine_boons'),
  'Unverified source text cannot enter the prepared boon table');
 assert.ok(html.includes('data-source="v279-archive2-parser.js"'));
 assert.ok(html.includes('data-source="v279-archive2-library.js"'));
-assert.ok(html.includes('Terravale Codex V2.80'));
+assert.ok(html.includes('Terravale Codex V2.81'));
 console.log('PASS V2.79: major and Greater threshold parsing, independent Concordant favour, minor shared slot, Nyrha separation, and DM-only source index.');
