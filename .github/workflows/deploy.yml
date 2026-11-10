@@ -192,6 +192,8 @@ jobs:
         run: node tests/v278-character-approval-audit.cjs
       - name: Verify Archive 2 source semantics, families and DM privacy
         run: node tests/v279-archive2-semantic-index.cjs
+      - name: Diagnose native Class Codex event/DOM behaviour
+        run: node tests/v280-class-dom-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
         run: node tests/v277-class-codex-audit.cjs
       - name: Check native feats really receive an active grant
