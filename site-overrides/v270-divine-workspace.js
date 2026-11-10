@@ -624,13 +624,7 @@ function renderSheet(){
  }
  const data=result.data||{},previews=data.previews||[];
  const bestowed=Array.isArray(data.granted)?data.granted:[];
- const moods={
-  ominous:['An ill omen','The signs suggest deep displeasure.'],
-  cold:['Distant regard','Something in the relationship feels strained.'],
-  veiled:['Unreadable','No clear judgement can yet be drawn.'],
-  watchful:['Their gaze lingers','Your deeds seem to have drawn attention.'],
-  favoured:['Warm regard','The signs hint at unusual goodwill.']
- };
+
  const observations=new Map((data.dispositions||[]).map(x=>[x.key,x.disposition]));
  const layout=node('div','tv280-sheet-layout');
  const left=node('section','tv280-gifts');
@@ -659,6 +653,24 @@ function renderSheet(){
    content.append(node('small','',Math.max(0,remaining)+' / '+g.max_charges+' uses · '+(g.recovery||'DM review')+' recovery'));
   }
   if(g.mechanics)content.append(node('pre','tv280-granted-mechanics',g.mechanics));
+  if(g.source_kind==='canonical'&&g.slot!=='passive'&&
+   g.kind!=='nyrha_revision'&&g.kind!=='minor_grace'){
+   const use=button(Number(g.max_charges)>0?'Use recorded charge':'Record invocation',async()=>{
+    if(sheet.pending.has(g.id))return;
+    sheet.pending.add(g.id);use.disabled=true;
+    try{
+     const {error}=await api().rpc('terravale_divine_canon_use',{
+      target_award:g.id,material_invocation:true});
+     if(error)throw error;await fetchSheet(c.id,true);
+    }catch(e){notice('Could not invoke boon: '+(e.message||String(e)));}
+    finally{sheet.pending.delete(g.id);use.disabled=false}
+   },'btn ghost small');
+   if(Number(g.max_charges)>0&&Number(g.charges_remaining)<1)use.disabled=true;
+   content.append(use);
+  }
+  if(g.source_kind==='canonical'&&g.kind==='nyrha_revision')
+   content.append(node('p','tv281-small',
+    'Break the Pattern requires a DM-confirmed Fracture and explicit player consent.'));
   detail.append(content);target.append(detail);
  };
  for(const group of familiesForSlots){
@@ -689,7 +701,10 @@ function renderSheet(){
   left.append(overflow);
  }
  left.append(node('p','tv280-slot-note',
-  'Empty slots are visual placeholders. Minor-god shared uses, Nyrha Revisions, burdens and automatic conditions await the source-rule engine; they are not silently simulated.'));
+  'Original rules are preserved. Explicit resource use, patron burdens, and recorded Fractures are tracked; story judgement and unlisted dice effects remain with the DM.'));
+ window.TerravaleV281Canon?.renderPlayerStatuses(left,data,c);
+ window.TerravaleV281Canon?.renderPlayerOffers(left,data,c,()=>fetchSheet(c.id,true));
+ if(data.canon_warning)left.append(node('p','tv270-status',data.canon_warning));
  const aside=node('aside','tv280-gods-rail');
  aside.setAttribute('aria-label','Known gods and approximate divine disposition');
  aside.append(node('div','tv254-eyebrow','THE DIVINE COURT'),
@@ -708,15 +723,15 @@ function renderSheet(){
   const list=node('div','tv280-gods');
   for(const god of gods){
    const disposition=observations.get(god.key);
-   const mood=moods[disposition]||moods.veiled;
+   const mood=window.TerravaleDivineVoicesV281?.status(god.key,disposition,{
+     entanglement:data.divine_state?.entanglement})||{
+     label:'A judgement unspoken',description:god.hint||'No public omen.',tone:'unknown'};
    const entry=node('details','tv280-god');
    const summary=node('summary','');
    const title=node('strong','',god.name);
-   const tag=node('small','tv280-god-signal '+(disposition?'mood-'+disposition:'mood-unknown'),
-     disposition?mood[0]:'No clear sign');
+   const tag=node('small','tv280-god-signal mood-'+mood.tone,mood.label);
    summary.append(title,tag);entry.append(summary);
-   const text=node('p','',disposition?mood[1]+' '+(god.hint||''):
-     god.hint||'Very little is widely known.');
+   const text=node('p','',mood.description);
    entry.append(text);list.append(entry);
   }
   groupEl.append(list);aside.append(groupEl);
