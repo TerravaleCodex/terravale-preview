@@ -13,7 +13,7 @@ for(const src of [ui,catalog])assert.doesNotThrow(()=>new Function(src));
 for(const feature of [
  'divineChargeState(g)','tv285-resource-card','tv285-resource-count',
  'tv285-charge-pips','tv285-charge-pip','− Spend','+ Restore','tv285-resource-recovery',
- "gift.kind==='minor_intercession'",'values.isShared',
+ "g.kind==='minor_intercession'",'values.isShared',
  'renderNativeDivineConsequences(c,sheet.cache.get(c.id)?.data)'
 ])assert.ok(ui.includes(feature),'Source-backed native-style resource feature missing: '+feature);
 assert.ok(ui.includes("text.includes('campaign arc')"),'Campaign-arc resources must not appear long-rest recoverable');
