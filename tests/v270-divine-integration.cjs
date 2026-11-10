@@ -1,4 +1,4 @@
-/* Terravale V2.76 — fail-closed smoke checks for divine UI + deploy. */
+/* Terravale V2.80 — fail-closed smoke checks for divine UI + deploy. */
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -23,7 +23,7 @@ for(const key of ['divine','minor','concordant'])
 assert.ok(js.includes('account().state.profile?.is_dm'));
 assert.ok(js.includes("db.role==='dm'"));
 assert.ok(js.includes('return (db.characters||[]).find'),'Player tab resolves the real sheet character');
-assert.ok(js.includes('data.granted||[]'),'Player rendering must use awarded list');
+assert.ok(js.includes('Array.isArray(data.granted)?data.granted:[]'),'Player rendering must use only verified awarded list');
 assert.ok(js.includes('data.previews||[]'),'Player rendering must use major-god preview');
 assert.ok(!js.includes(".from('terravale_dm_divine_boons')"),'Private boon table must not be fetched in public UI');
 assert.ok(!js.includes('localStorage.setItem'),'Secret boons must not be persisted in browser storage');
@@ -36,7 +36,8 @@ assert.ok(js.includes('adjustFavour'),'Stable favour updates missing');
 assert.ok(js.includes('tv271-boon-filters'),'Filterable boon list missing');
 assert.ok(js.includes('data.dispositions||[]'),'Player sheet must show only vague divine moods');
 assert.ok(js.includes('tv272-dm-workspace'),'Compact Divine Court navigation missing');
-assert.ok(js.includes('tv272-player-pantheon'),'Compact pantheon index missing');
+assert.ok(!js.includes('tv272-player-pantheon'),'Redundant pantheon browser must be removed by request');
+assert.ok(js.includes('tv280-gods-rail'),'Compact right-side major pantheon list missing');
 assert.ok(dispositionSQL.includes("'dispositions'"),'Player RPC has no atmospheric dispositions');
 assert.ok(dispositionSQL.includes("when show_scores"),'Other players must not see relationship hints');
 assert.ok(!dispositionSQL.includes("'score',f.score"),'Exact favour score must not be returned to players');
@@ -64,4 +65,4 @@ assert.ok(embedded,'Public V2 build must embed divine client');
 assert.doesNotThrow(()=>new Function(embedded[1]));
 assert.ok(html.includes("Terravale Codex V2.80"),'Release label out of sync');
 assert.ok(!html.includes('sb_secret_'),'Secret key in public site');
-console.log('PASS V2.75: verified DM Chronicle, player-only awarded boons, three boon families, no private catalogue on player path, client parses and correct build marker.');
+console.log('PASS V2.80: verified DM Chronicle, player-only awarded boons, three boon families, no private catalogue on player path, client parses and correct build marker.');
