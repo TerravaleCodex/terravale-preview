@@ -35,8 +35,8 @@ assert.ok(source.includes("count:1,filter:g=>g.kind==='minor_grace'"));
 assert.ok(source.includes("count:1,filter:g=>g.kind==='minor_intercession'"));
 assert.ok(!source.includes('Browse the major pantheon'),
  'Remove the large redundant pantheon browser, not the gods themselves.');
-assert.ok(source.includes('Minor-god shared uses, Nyrha Revisions, burdens and automatic conditions await the source-rule engine'),
- 'No claims that indexed effect mechanics are automatic.');
+assert.ok(source.includes('Original rules are preserved'),
+ 'Canonical source must be preserved while explicitly-defined trackers are automated.');
 assert.ok(css.includes('grid-template-columns:minmax(0,3fr) minmax(235px,1fr)'));
 assert.ok(css.includes('@media(max-width:850px)'));
 assert.ok(bridge.includes("status:row.status==='approved'?'Approved':'Pending'"),
@@ -44,5 +44,5 @@ assert.ok(bridge.includes("status:row.status==='approved'?'Approved':'Pending'")
 assert.ok(approval.includes("if(!data?.approved)throw Error"),
  'Approval must stay a server-confirmed event.');
 assert.ok(overlay.includes('source = patch_v280(source)'));
-assert.ok(html.includes('Terravale Codex V2.80'));
+assert.ok(html.includes('Terravale Codex V2.81'));
 console.log('PASS V2.80: Class Codex has no forced scrolling, Divine slot layout and server-authoritative approval preserved.');

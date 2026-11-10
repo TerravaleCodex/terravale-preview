@@ -24,6 +24,7 @@ from v248_native_patch import patch as patch_v248
 from v277_class_scroll_patch import patch as patch_v277
 from v278_character_approval_patch import patch as patch_v278
 from v280_class_scroll_patch import patch as patch_v280
+from v281_rest_patch import patch as patch_v281
 source = patch(source)
 source = patch_v245(source)
 source = patch_v246(source)
@@ -31,6 +32,7 @@ source = patch_v248(source)
 source = patch_v277(source)
 source = patch_v278(source)
 source = patch_v280(source)
+source = patch_v281(source)
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
@@ -132,7 +134,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.80')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.81')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -181,6 +183,7 @@ css += "\n" + (ROOT / "site-overrides/v277-class-stability.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v278-character-approvals.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v279-archive2-library.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v280-divine-sheet.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v281-canonical-library.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -212,7 +215,9 @@ class_stability_v277 = (ROOT / "site-overrides/v277-class-stability.js").read_te
 approval_v278 = (ROOT / "site-overrides/v278-character-approvals.js").read_text()
 archive_parser_v279 = (ROOT / "site-overrides/v279-archive2-parser.js").read_text()
 archive_index_v279 = (ROOT / "site-overrides/v279-archive2-library.js").read_text()
-build_meta = json.dumps({"version":"2.80","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+divine_voices_v281 = (ROOT / "site-overrides/v281-divine-voices.js").read_text()
+canonical_library_v281 = (ROOT / "site-overrides/v281-canonical-library.js").read_text()
+build_meta = json.dumps({"version":"2.81","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -291,6 +296,8 @@ inline_js = (
     '<script data-source="v278-character-approvals.js">\n' + approval_v278 + '\n</script>\n'
     '<script data-source="v279-archive2-parser.js">\n' + archive_parser_v279 + '\n</script>\n'
     '<script data-source="v279-archive2-library.js">\n' + archive_index_v279 + '\n</script>\n'
+    '<script data-source="v281-divine-voices.js">\n' + divine_voices_v281 + '\n</script>\n'
+    '<script data-source="v281-canonical-library.js">\n' + canonical_library_v281 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -331,6 +338,8 @@ assert source.count('data-source="v277-class-stability.js"') == 1
 assert source.count('data-source="v278-character-approvals.js"') == 1
 assert source.count('data-source="v279-archive2-parser.js"') == 1
 assert source.count('data-source="v279-archive2-library.js"') == 1
+assert source.count('data-source="v281-divine-voices.js"') == 1
+assert source.count('data-source="v281-canonical-library.js"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source
