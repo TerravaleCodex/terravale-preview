@@ -161,6 +161,14 @@ function mountDM(host,config){
     await perform('terravale_divine_canon_revoke',
       {target_award:a.id,reason:why},'Boon revoked.');
    },'btn ghost small tv254-danger'));
+   if(a.max_uses!==null&&a.max_uses!==undefined&&a.recovery!=='none'){
+    group.append(button('DM restore uses',async()=>{
+     const why=promptReason('Why are the uses of '+a.name+' being restored now?');
+     if(why===null)return;
+     await perform('terravale_divine_canon_dm_refill',
+       {target_award:a.id,reason:why},'Divine uses restored.');
+    }));
+   }
    if(a.kind==='nyrha_revision'&&a.status==='active'){
     group.append(button('Break the Pattern',()=>showFractureForm(row,a)));
    }
@@ -188,6 +196,27 @@ function mountDM(host,config){
   entanglement.append(change);standing.append(entanglement);
   standing.append(node('p','tv281-small','Divine Pressure: '+(state.divine_pressure||0)+
     ' · Minor Intercession: '+(state.minor_intercession_remaining??1)+' / 1'));
+  // An existing Burden is not required before the DM can award the first stack.
+  const patronsPresent=new Set((dmState?.burdens||[]).map(x=>x.patron));
+  const activePatrons=new Set();
+  for(const award of awards){
+   if(['divine','concordant'].includes(award.kind)){
+    if(award.patron)activePatrons.add(award.patron.toLowerCase());
+    if(award.other_patron)activePatrons.add(award.other_patron.toLowerCase());
+   }
+  }
+  const availableBurdens=[...activePatrons].filter(p=>!patronsPresent.has(p));
+  if(availableBurdens.length){
+   const choices=node('div','tv281-actions');
+   choices.append(node('small','tv281-small','Start tracking a patron Burden:'));
+   for(const p of availableBurdens)choices.append(button(p,async()=>{
+    const reason=promptReason('First meaningful Burden for '+p+'. What triggered it?');
+    if(reason===null)return;
+    await perform('terravale_divine_canon_dm_adjust_burden',{
+     target_character:context.character,patron:p,delta:1,reason},'Burden recorded.');
+   }));
+   standing.append(choices);
+  }
   for(const burden of dmState?.burdens||[]){
    const row=node('div','tv281-standing-row');
    row.append(node('strong','',burden.name),
@@ -208,6 +237,21 @@ function mountDM(host,config){
    row.append(actions);standing.append(row);
   }
   const effects=dmState?.effects||[];
+  const statusOptions=['Drunk','Blackout','Rapture','Scorched','Blackout Sign'];
+  const addEffects=node('div','tv281-actions');
+  addEffects.append(node('small','tv281-small','Named divine effects:'));
+  for(const effectName of statusOptions){
+   const stored=effects.find(x=>x.key===effectName);
+   if(stored&&stored.stacks>0)continue;
+   addEffects.append(button('+ '+effectName,async()=>{
+     const note=promptReason('Context or source justification for '+effectName);
+     if(note===null)return;
+     await perform('terravale_divine_canon_dm_set_effect',{
+      target_character:context.character,target_effect:effectName,
+      new_stacks:1,note},effectName+' recorded.');
+   }));
+  }
+  standing.append(addEffects);
   if(effects.length){
    standing.append(node('h5','','Named effects · manual judgement where source is incomplete'));
    for(const effect of effects){
