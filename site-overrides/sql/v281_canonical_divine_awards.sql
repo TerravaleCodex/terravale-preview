@@ -204,6 +204,21 @@ begin
     count_uses:=1;recovery_kind:='seven_days';
   elsif coalesce(e.uses_text,'') ~* 'twice per long rest' then
     count_uses:=2;recovery_kind:='long';
+  elsif coalesce(e.uses_text,'') ~* 'proficiency bonus per long rest' then
+    count_uses:=2+((lv-1)/4);recovery_kind:='long';
+  elsif coalesce(e.uses_text,'') ~* 'once per campaign arc' then
+    count_uses:=1;recovery_kind:='manual';
+  elsif coalesce(e.uses_text,'') ~* 'once per session' then
+    count_uses:=1;recovery_kind:='manual';
+  elsif e.uses_text is null and chosen_slot<>'passive' then
+    -- A limited-use sentence in an otherwise descriptive source is still explicit.
+    if e.source_excerpt ~* 'once per long rest' then
+      count_uses:=1;recovery_kind:='long';
+    elsif e.source_excerpt ~* 'once per short rest' then
+      count_uses:=1;recovery_kind:='short';
+    elsif e.source_excerpt ~* 'once per session' then
+      count_uses:=1;recovery_kind:='manual';
+    end if;
   end if;
  end if;
  insert into public.terravale_divine_canon_awards(
