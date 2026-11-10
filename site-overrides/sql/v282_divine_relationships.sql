@@ -135,7 +135,7 @@ create or replace function public.terravale_divine_dm_set_favour_v282(
 ) returns jsonb language plpgsql security definer set search_path=''
 as $v282_favour$
 declare actor uuid:=(select auth.uid());c public.characters%rowtype;
- source_key text;old_score integer;delta integer;applied jsonb:='[]'::jsonb;
+ v_source_key text;old_score integer;delta integer;applied jsonb:='[]'::jsonb;
  edge record; prior_target integer;adjusted integer;allowed_upper integer;
  progress_before integer;progress_now integer;hits integer;after_progress integer;
  target_id uuid;
@@ -146,9 +146,9 @@ begin
  select * into c from public.characters where id=target_character for update;
  if c.id is null or not authz.is_dm(c.campaign_id) then
  raise exception 'Campaign DM only' using errcode='42501';end if;
- select lower(p.key_name) into source_key from public.terravale_divine_patrons p
+ select lower(p.key_name) into v_source_key from public.terravale_divine_patrons p
  where p.id=target_patron and p.campaign_id=c.campaign_id;
- if source_key is null or source_key='nyrha' or new_score not between -10 and 10 then
+ if v_source_key is null or v_source_key='nyrha' or new_score not between -10 and 10 then
   raise exception 'Invalid conventional patron or Favour score' using errcode='22023';end if;
  select f.score into old_score from public.terravale_divine_favour f
  where f.character_id=c.id and f.patron_id=target_patron for update;
@@ -164,12 +164,12 @@ begin
  and coalesce((select settings.enabled from public.terravale_divine_relation_settings settings
  where settings.campaign_id=c.campaign_id),true) then
   for edge in select l.* from public.terravale_divine_relation_links l
-   where l.campaign_id=c.campaign_id and l.source_key=source_key and l.enabled
+   where l.campaign_id=c.campaign_id and l.source_key=v_source_key and l.enabled
    order by l.target_key
   loop
    insert into public.terravale_divine_relation_progress(character_id,source_key,
     target_key,accumulated)
-   values(c.id,source_key,edge.target_key,0)
+   values(c.id,v_source_key,edge.target_key,0)
    on conflict(character_id,source_key,target_key) do nothing;
    select accumulated into progress_before from public.terravale_divine_relation_progress
    where character_id=c.id and source_key=edge.source_key and target_key=edge.target_key
@@ -200,9 +200,9 @@ begin
    insert into public.terravale_divine_activity(character_id,actor_id,action,
     patron_id,old_score,new_score,reason)
    values(c.id,actor,'favour_resonance',target_id,prior_target,adjusted,
-    left('Linked to '||source_key||': '||edge.note,500));
+    left('Linked to '||v_source_key||': '||edge.note,500));
    applied:=applied||jsonb_build_array(jsonb_build_object(
-     'source',source_key,'target',edge.target_key,
+     'source',v_source_key,'target',edge.target_key,
      'prior',coalesce(prior_target,0),'score',adjusted,
      'change',adjusted-coalesce(prior_target,0),'note',edge.note));
   end loop;
