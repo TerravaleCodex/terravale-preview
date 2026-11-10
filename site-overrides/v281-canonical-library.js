@@ -43,6 +43,30 @@ function renderTermsForm(host,context,entry,done){
  if(host.querySelector('[data-tv281-offer-form]'))return;
  const form=node('section','tv281-offer-form');
  form.dataset.tv281OfferForm='1';
+ if(entry.kind==='tier_zero'){
+  form.append(node('h4','','Offer the original Tier 0 bargain'),
+   node('p','tv281-small',
+    'The original benefits and costs are presented to the player verbatim. No rewritten story justification is necessary.'));
+  const clarify=node('textarea','tv281-term-input');
+  clarify.rows=2;clarify.maxLength=1500;
+  clarify.placeholder='Optional clarification where the original source leaves a cost, person or limit unspecified';
+  clarify.setAttribute('aria-label','Optional clarification');
+  form.append(clarify);
+  const feedback=node('p','tv281-small'),controls=node('div','tv281-actions');
+  const send=button('Present original terms',async()=>{
+   if(context.character!==context.currentCharacter())return;
+   send.disabled=true;
+   try{
+    await rpc('terravale_divine_canon_dm_offer',{
+     target_character:context.character,target_entry:entry.id,
+     terms:{source_exact:true,clarifications:clarify.value.trim()}});
+    statusText(feedback,'The original Tier 0 terms have been offered for explicit player acceptance.');
+    send.remove();done?.();
+   }catch(e){statusText(feedback,e.message,true);send.disabled=false}
+  },'btn primary small');
+  controls.append(send,button('Cancel',()=>form.remove()));form.append(controls,feedback);
+  host.append(form);return;
+ }
  form.append(node('h4','','Formal terms · player accepts separately'),
   node('p','tv281-small',
   'Disclose an actual benefit, certain price, affected parties, duration, reversibility and bounded uncertainty before offering. Silence or rescue is not consent.'));
@@ -102,6 +126,7 @@ function mountDM(host,config){
   currentCharacter:()=>config.currentCharacter?.()||config.character
  };
  const section=node('section','tv281-canonical');
+ let dmOffers=[];
  section.dataset.tv281Canonical='1';
  section.append(node('div','tv254-eyebrow','ORIGINAL ARCHIVE 2 · DM ONLY'),
   node('h3','','Canonical boon catalogue'),
@@ -110,21 +135,28 @@ function mountDM(host,config){
  const owned=node('div','tv281-held');
  const control=node('div','tv281-filter');
  const search=node('input','tv281-search');
- search.type='search';search.placeholder='Search boons or patrons…';
+ search.type='search';search.placeholder='Search names, gods, effects and costs…';
  search.setAttribute('aria-label','Search canonical boons');
  const pick=node('div','tv281-chips');
  const records=node('div','tv281-catalogue-results');
  const counter=node('small','tv281-small');
  const pager=node('div','tv281-actions');
  section.append(owned,control,records,pager,message);
- const options={kind:'all',query:'',offset:0};
+ const options={kind:'all',query:'',patron:'',tier:null,slot:'',availability:'any',
+  uses:'any',sort:'patron',offset:0};
+ let allPatrons=[],patronQuery='';
+ let refreshPatrons=()=>{};
  const page={request:0};
  let dmState=null;
  const same=()=>isDM()&&host.isConnected&&context.currentCharacter()===context.character;
  async function refreshAwards(){
   if(!same())return;
   try{
-   dmState=await rpc('terravale_divine_canon_dm_state',{target_character:context.character});
+   const [state,offers]=await Promise.all([
+    rpc('terravale_divine_canon_dm_state',{target_character:context.character}),
+    rpc('terravale_divine_canon_offers_player_state',{target_character:context.character})
+   ]);
+   dmState=state;dmOffers=offers?.offers||[];
    byCharacter.set(context.character,dmState);
    renderHeld();
   }catch(e){statusText(message,'Could not load canonical awards: '+e.message,true)}
@@ -318,23 +350,29 @@ function mountDM(host,config){
   const request=++page.request;
   statusText(message,'Searching original boon catalogue…');
   try{
-   const data=await rpc('terravale_divine_dm_archive_list',{
-    target_campaign:context.campaign,target_set:null,
-    family:options.kind==='all'?null:options.kind,
-    needle:options.query,page_size:20,page_offset:options.offset
+   const data=await rpc('terravale_divine_dm_archive_search_v282',{
+    target_campaign:context.campaign,target_character:context.character,
+    filter_family:options.kind==='all'?null:options.kind,
+    filter_patron:options.patron||null,
+    filter_tier:options.tier,filter_slot:options.slot||null,
+    filter_availability:options.availability==='any'?null:options.availability,
+    filter_uses:options.uses==='any'?null:options.uses,
+    needle:options.query,sort_by:options.sort,page_size:24,page_offset:options.offset
    });
    if(!same()||request!==page.request)return;
    records.replaceChildren();pager.replaceChildren();
    const count=Number(data.total)||0;
-   counter.textContent=count+' canonical source sections';
+   allPatrons=data.patrons||allPatrons;refreshPatrons();
+   counter.textContent=count?(options.offset+1)+'–'+
+    Math.min(count,options.offset+24)+' of '+count+' matching boons':'No matching boons';
    const grantedIds=new Set((dmState?.awards||[]).map(x=>x.entry_id));
    for(const item of data.entries||[])records.append(renderEntry(item,grantedIds.has(item.id)));
    if(!data.entries?.length)
     records.append(node('p','tv281-small','No source entries match this filter.'));
-   const prev=button('Previous',()=>{options.offset=Math.max(0,options.offset-20);showEntries()});
+   const prev=button('Previous',()=>{options.offset=Math.max(0,options.offset-24);showEntries()});
    prev.disabled=options.offset===0;
-   const next=button('Next',()=>{options.offset+=20;showEntries()});
-   next.disabled=options.offset+20>=count;
+   const next=button('Next',()=>{options.offset+=24;showEntries()});
+   next.disabled=options.offset+24>=count;
    pager.append(prev,counter,next);
    statusText(message,'Canonical source is already imported. No ZIP upload is needed.');
   }catch(e){statusText(message,'Cannot access private catalogue: '+e.message,true)}
@@ -346,7 +384,10 @@ function mountDM(host,config){
   title.append(node('strong','',item.name),
    node('small','',[item.patron,item.other_patron,formatFamily(item.kind),
     item.tier===null?'':'Tier '+item.tier].filter(Boolean).join(' · ')));
-  head.append(title,node('small','',held?'Held':'Read source'));
+  const state=item.availability||'locked';
+  const labels={held:'Held',threshold:'Favour met',locked:'Not yet eligible',formal:'Formal Offer'};
+  head.append(title,node('span','tv282-badge is-'+(held?'held':state),
+   held?'Held':labels[state]||'Read gift'));
   card.append(head);
   const body=node('div','tv281-entry-body');
   card.append(body);
@@ -360,16 +401,33 @@ function mountDM(host,config){
     });
     if(!same()||!card.isConnected)return;
     loaded=true;body.replaceChildren();
-    const raw=node('pre','tv281-mechanics',original.original_mechanics||'');
-    body.append(raw);
+    const renderer=window.TerravaleDivineReaderV282;
+    body.append(renderer?.feature(original.original_mechanics||'',original)||
+     node('p','tv281-small',original.original_mechanics||''));
     body.append(node('p','tv281-small',
       'Source: '+item.source_path+' · Exact text only. Mechanical rulings remain subject to the shared Divine Boons rules.'));
     const limited=['divine','concordant','minor_grace','minor_intercession',
       'nyrha_revision','nyrha_state'].includes(item.kind);
     if(!limited){
-     body.append(node('p','tv281-story-note',
-      'This is a formal story bargain, not an equippable boon. The character must be told the terms and explicitly accept.'));
-     body.append(button('Prepare player Offer',()=>renderTermsForm(body,context,item,refreshAwards)));
+     body.append(node('p','tv281-story-note',item.kind==='tier_zero'?
+      'Tier 0 draws its benefits and costs directly from the source. The player must accept before the DM bestows it.':
+      'Nyrha’s Impossible Offers retain their separate formal requirements.'));
+     if(item.kind==='tier_zero'&&!held&&dmOffers.some(o=>
+       o.entry_id===item.id&&o.status==='accepted')){
+      body.append(button('Bestow accepted Tier 0 bargain',async()=>{
+       try{
+        await rpc('terravale_divine_canon_grant',{
+         target_character:context.character,target_entry:item.id,target_slot:'bargain',
+         target_ability:null,reason:''});
+        statusText(message,'Accepted Tier 0 bargain bestowed.');
+        window.TerravaleV270Divine?.refreshSheet?.(context.character);
+        await refreshAwards();await showEntries();
+       }catch(e){statusText(message,e.message,true)}
+      },'btn primary small'));
+     }else if(held){
+      body.append(node('p','tv281-small','This bargain is already bestowed.'));
+     }else body.append(button(item.kind==='tier_zero'?'Offer original Tier 0 terms':'Prepare Formal Offer',
+      ()=>renderTermsForm(body,context,item,refreshAwards)));
      return;
     }
     if(held){
@@ -410,8 +468,7 @@ function mountDM(host,config){
      if(['minor_grace','minor_intercession'].includes(item.kind)&&!ability){
       statusText(message,'Choose INT, WIS or CHA as Minor Boon Ability.',true);return;
      }
-     const reason=promptReason('Story reason for granting '+item.name);
-     if(reason===null)return;
+     const reason=''; // No lore explanation is required for an unexplained divine gift.
      send.disabled=true;
      try{
       await rpc('terravale_divine_canon_grant',{
@@ -429,18 +486,81 @@ function mountDM(host,config){
   return card;
  }
  control.append(search,pick);
+ const advanced=node('details','tv282-advanced');
+ advanced.open=true;
+ advanced.append(node('summary','','More filters · God, tier, eligibility, slot, uses and sort'));
+ const reset=button('Clear all filters',()=>{
+  Object.assign(options,{kind:'all',query:'',patron:'',tier:null,slot:'',
+   availability:'any',uses:'any',sort:'patron',offset:0});
+  search.value='';patronQuery='';renderFilters();showEntries();
+ },'btn ghost small');
+ advanced.append(reset);
+ const facets=node('div','tv282-filter-row');
+ advanced.append(facets);control.append(advanced);
+ function facet(label,values,field){
+  const panel=node('div','tv282-filter');
+  panel.append(node('strong','',label));
+  const chips=node('div','tv281-chips');
+  for(const [value,name] of values){
+   chip(name,options[field]===value,()=>{
+    if(options[field]===value)return;
+    options[field]=value;options.offset=0;renderFilters();showEntries();
+   },chips);
+  }
+  panel.append(chips);return panel;
+ }
+ function patronFacet(){
+  const panel=node('div','tv282-filter');
+  panel.append(node('strong','','God / divine patron'));
+  const query=node('input','tv281-search');
+  query.type='search';query.value=patronQuery;
+  query.placeholder='Find a god…';
+  query.setAttribute('aria-label','Search source patrons');
+  const choices=node('div','tv281-chips tv282-patron-chips');
+  const draw=()=>{
+   choices.replaceChildren();
+   chip('All gods',!options.patron,()=>{
+    options.patron='';options.offset=0;renderFilters();showEntries();
+   },choices);
+   for(const patron of allPatrons.filter(p=>
+    p.toLowerCase().includes(patronQuery.toLowerCase())).slice(0,50)){
+    chip(patron,options.patron===patron,()=>{
+     options.patron=patron;options.offset=0;renderFilters();showEntries();
+    },choices);
+   }
+  };
+  query.addEventListener('input',()=>{patronQuery=query.value;draw()});
+  refreshPatrons=draw;
+  panel.append(query,choices);draw();return panel;
+ }
  function renderFilters(){
   pick.replaceChildren();
-  chip('All',options.kind==='all',()=>{
+  chip('All families',options.kind==='all',()=>{
    options.kind='all';options.offset=0;renderFilters();showEntries()},pick);
   for(const key of kinds)chip(formatFamily(key),options.kind===key,()=>{
    options.kind=key;options.offset=0;renderFilters();showEntries()},pick);
+  facets.replaceChildren(
+   patronFacet(),
+   facet('Tier',[[null,'Any'],[0,'0'],[1,'I'],[2,'II'],
+    [3,'III'],[4,'IV'],[5,'V']],'tier'),
+   facet('Eligibility',[
+    ['any','All'],['threshold','Favour met'],['locked','Not met'],
+    ['held','Held'],['formal','Formal Offer']],'availability'),
+   facet('Favour slot',[
+    ['','Any'],['passive','Passive'],['reaction','Reaction'],
+    ['major','Major'],['grace','Grace'],['intercession','Intercession']],'slot'),
+   facet('Uses',[
+    ['any','Any'],['limited','Limited'],['unlimited','Passive / unlisted']],'uses'),
+   facet('Sort',[
+    ['patron','By god'],['name','Alphabetical'],['tier_up','Tier ↑'],
+    ['tier_down','Tier ↓']],'sort')
+  );
  }
  renderFilters();
  let timer=null;
  search.addEventListener('input',()=>{
-  options.query=search.value.trim().slice(0,100);options.offset=0;
-  clearTimeout(timer);timer=setTimeout(showEntries,180);
+  options.query=search.value.trim().slice(0,150);options.offset=0;
+  clearTimeout(timer);timer=setTimeout(showEntries,220);
  });
  const anchor=host.children[3]||null;host.insertBefore(section,anchor);
  refreshAwards().then(showEntries);
@@ -491,13 +611,20 @@ function renderPlayerOffers(host,data,character,refresh){
   const card=node('details','tv281-entry');
   card.append(node('summary','',item.title+' · '+item.status));
   const box=node('div','tv281-entry-body');
-  box.append(node('pre','tv281-mechanics',item.source_mechanics||''));
-  for(const [title,key] of [
-   ['Immediate benefit','benefit'],['Certain price','certain_price'],
-   ['Affected parties','affected_parties'],['Duration','duration'],
-   ['Reversibility','reversibility'],['Uncertainty boundary','uncertainty_boundary'],
-   ['Fracture Chain','fracture_chain']]){
-    if(item[key])box.append(node('p','tv281-term-summary',title+': '+item[key]));
+  const renderer=window.TerravaleDivineReaderV282;
+  box.append(renderer?.feature(item.source_mechanics||'',item)||
+   node('p','tv281-small',item.source_mechanics||''));
+  if(item.source_exact){
+   box.append(node('p','tv281-story-note','The original Archive 2 source above contains the terms for this bargain.'));
+   if(item.clarifications)box.append(node('p','tv281-term-summary','Additional clarification: '+item.clarifications));
+  }else{
+   for(const [title,key] of [
+    ['Immediate benefit','benefit'],['Certain price','certain_price'],
+    ['Affected parties','affected_parties'],['Duration','duration'],
+    ['Reversibility','reversibility'],['Uncertainty boundary','uncertainty_boundary'],
+    ['Fracture Chain','fracture_chain']]){
+     if(item[key])box.append(node('p','tv281-term-summary',title+': '+item[key]));
+   }
   }
   if(item.status==='offered'&&character?.owner==='You'){
    const actions=node('div','tv281-actions');

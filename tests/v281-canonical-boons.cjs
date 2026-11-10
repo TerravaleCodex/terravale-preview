@@ -38,7 +38,7 @@ assert.ok(ui.includes('TerravaleDivineVoicesV281?.status'));
 assert.ok(ui.includes("b.source_kind==='canonical'"));
 assert.ok(!lib.includes('localStorage'),'Private catalogue cannot be cached in localStorage');
 assert.ok(!lib.includes('innerHTML'),'Original source text must never render as raw HTML');
-for(const rpc of ['terravale_divine_dm_archive_list','terravale_divine_dm_archive_read',
+for(const rpc of ['terravale_divine_dm_archive_search_v282','terravale_divine_dm_archive_read',
  'terravale_divine_canon_dm_state','terravale_divine_canon_grant',
  'terravale_divine_canon_dm_set_relation','terravale_divine_canon_revoke',
  'terravale_divine_canon_dm_offer','terravale_divine_canon_dm_fracture',
@@ -69,5 +69,5 @@ assert.ok(overlay.includes('v281-divine-voices.js'));
 assert.ok(overlay.includes('v281-canonical-library.js'));
 assert.ok(html.includes('data-source="v281-divine-voices.js"'));
 assert.ok(html.includes('data-source="v281-canonical-library.js"'));
-assert.ok(html.includes('Terravale Codex V2.81'));
+assert.ok(html.includes('Terravale Codex V2.82'));
 console.log('PASS V2.81: 16 unique deity voices, 3×2 boon slots, real canonical grant/Offer flows and protected source data.');

@@ -131,8 +131,9 @@ async function adjustFavour(patron,delta,card){
  controls.forEach(b=>{b.disabled=true});
  const target=dm.character,reason=dm.reason;
  try{
-  const {data,error}=await api().rpc('terravale_divine_dm_set_favour',{
-   target_character:target,target_patron:patron,new_score:next,reason
+  const {data,error}=await api().rpc('terravale_divine_dm_set_favour_v282',{
+   target_character:target,target_patron:patron,new_score:next,reason,
+   apply_links:window.TerravaleDivineRelationsV282?.applies()??true
   });
   if(error)throw error;
   if(target!==dm.character)return;
@@ -140,8 +141,26 @@ async function adjustFavour(patron,delta,card){
   score.dataset.value=String(accepted);
   score.textContent=(accepted>0?'+':'')+accepted;
   score.className='tv270-score '+colourFor(accepted);
-  const old=dm.data.favour.find(f=>f.patron_id===patron);
-  if(old)old.score=accepted;else dm.data.favour.push({patron_id:patron,score:accepted});
+  const updateScore=(id,value)=>{
+   const item=dm.data.favour.find(f=>f.patron_id===id);
+   if(item)item.score=value;else dm.data.favour.push({patron_id:id,score:value});
+  };
+  updateScore(patron,accepted);
+  for(const impact of data?.relationships||[]){
+   const linked=dm.data.patrons.find(p=>String(p.key_name).toLowerCase()===impact.target);
+   if(!linked)continue;updateScore(linked.id,Number(impact.score));
+   const tile=[...dm.host.querySelectorAll('.tv270-favour-row')].find(x=>x.dataset.patron===linked.id);
+   const value=tile?.querySelector('.tv270-score');
+   if(value){
+    value.dataset.value=String(impact.score);
+    value.textContent=(impact.score>0?'+':'')+impact.score;
+    value.className='tv270-score '+colourFor(impact.score);
+    const controls=tile.querySelectorAll('button');
+    if(controls[0])controls[0].disabled=impact.score<=-10;
+    if(controls[1])controls[1].disabled=impact.score>=10;
+   }
+  }
+  window.TerravaleDivineRelationsV282?.impactSummary(data?.relationships||[]);
   const list=dm.host?.querySelector('[data-tv270-favour-history]');
   if(list){
    const record=node('div','tv270-activity');
@@ -174,6 +193,8 @@ function drawFavour(host){
   node('p','tv254-muted','Only conventional major and Greater Gods use −10 to +10 Favour. Minor gods use Notice and Offering; Nyrha uses Entanglement instead. No threshold automatically grants a boon.'));
  const why=input('Reason for the next adjustment (DM-only)',dm.reason,{maxlength:500});
  why.el.addEventListener('input',()=>{dm.reason=why.el.value});body.append(why.wrap);
+ const relationships=node('div','tv282-favour-relationship-target');
+ body.append(relationships);
  const standings=node('div','tv272-standings-grid');
  for(const patron of p){
   const value=scores.get(patron.id)??0;
@@ -188,11 +209,12 @@ function drawFavour(host){
   control.append(score);
   control.append(button('+',()=>adjustFavour(patron.id,1,card),'tv270-counter-button'));
   control.querySelectorAll('button').forEach(b=>{b.disabled=dm.busy||dm.loading||(b.textContent==='−'&&value<=-10)||(b.textContent==='+'&&value>=10)});
-  card.append(info,control);standings.append(card);
+  card.dataset.patron=patron.id;card.append(info,control);standings.append(card);
  }
  body.append(standings);
  if(!p.length)body.append(node('p','tv254-muted','No patrons registered. Add the relevant gods in the Patron register.'));
  host.append(body);
+ window.TerravaleDivineRelationsV282?.mount(relationships,dm.campaign);
  const history=node('details','tv272-history');
  history.append(node('summary','','Private activity history'),
   node('p','tv254-muted','Favour changes, blessings granted, and withdrawals are recorded here.'));
@@ -203,9 +225,10 @@ function drawFavour(host){
  for(const e of events.slice(0,30)){
   const row=node('div','tv270-activity');
   const title=e.action==='favour'?'Favour: '+(names.get(e.patron_id)||'Patron'):
+   e.action==='favour_resonance'?'Related Favour: '+(names.get(e.patron_id)||'Patron'):
    (e.action==='grant'?'Boon granted: ':'Boon withdrawn: ')+(catalog.get(e.boon_id)||'Recorded boon');
   row.append(node('strong','',title),node('small','',dateLabel(e.created_at)));
-  if(e.action==='favour')row.append(node('span','',String(e.old_score??0)+' → '+String(e.new_score)));
+  if(['favour','favour_resonance'].includes(e.action))row.append(node('span','',String(e.old_score??0)+' → '+String(e.new_score)));
   if(e.reason)row.append(node('p','',e.reason));
   activityList.append(row);
  }
@@ -331,14 +354,10 @@ function drawBoons(host){
   const controls=node('div','tv270-actions');
   controls.append(button('Edit',()=>{dm.edit={...boon};drawDM()}));
   if(has)controls.append(button('Revoke',()=>{
-   const reason=window.prompt('Why is this boon being withdrawn? (Recorded in private history)','');
-   if(reason===null)return;
-   mutate('terravale_divine_dm_grant_boon',{target_character:dm.character,target_boon:boon.id,give_boon:false,reason},'Boon withdrawn.');
+   mutate('terravale_divine_dm_grant_boon',{target_character:dm.character,target_boon:boon.id,give_boon:false,reason:''},'Boon withdrawn.');
   },'btn ghost small tv254-danger'));
   else controls.append(button('Grant boon',()=>{
-   const reason=window.prompt('Reason for granting '+boon.name+' (recorded privately)','');
-   if(reason===null)return;
-   mutate('terravale_divine_dm_grant_boon',{target_character:dm.character,target_boon:boon.id,give_boon:true,reason},'Boon bestowed.');
+   mutate('terravale_divine_dm_grant_boon',{target_character:dm.character,target_boon:boon.id,give_boon:true,reason:''},'Boon bestowed.');
   },'btn primary small'));
   controls.lastChild.disabled=dm.busy||dm.loading||(!has&&(boon.state!=='ready'||!can));
   card.append(detail,controls);list.append(card);
@@ -652,8 +671,27 @@ function renderSheet(){
    const remaining=Number(g.charges_remaining);
    content.append(node('small','',Math.max(0,remaining)+' / '+g.max_charges+' uses · '+(g.recovery||'DM review')+' recovery'));
   }
-  if(g.mechanics)content.append(node('pre','tv280-granted-mechanics',g.mechanics));
-  if(g.source_kind==='canonical'&&g.slot!=='passive'&&
+  if(g.mechanics){
+   const renderer=window.TerravaleDivineReaderV282;
+   content.append(renderer?.feature(g.mechanics,g)||
+    node('p','tv280-granted-mechanics',g.mechanics));
+  }
+  if(g.source_kind==='canonical'&&g.kind==='tier_zero'){
+   content.append(node('p','tv281-small',
+    'A formal bargain accepted by this character. The original benefit and cost remain in the text above.'));
+   if(isDM())content.append(button('Record Tier 0 invocation',async()=>{
+    if(sheet.pending.has(g.id))return;
+    sheet.pending.add(g.id);
+    try{
+     const {error}=await api().rpc('terravale_divine_canon_dm_record_bargain',
+      {target_award:g.id,consequence:''});
+     if(error)throw error;
+     notice('Tier 0 invocation recorded. Apply the original consequences as written.');
+    }catch(e){notice('Could not record bargain: '+(e.message||String(e)))}
+    finally{sheet.pending.delete(g.id)}
+   },'btn ghost small'));
+  }
+  if(g.source_kind==='canonical'&&g.kind!=='tier_zero'&&g.slot!=='passive'&&
    g.kind!=='nyrha_revision'&&g.kind!=='minor_grace'){
    const use=button(Number(g.max_charges)>0?'Use recorded charge':'Record invocation',async()=>{
     if(sheet.pending.has(g.id))return;
