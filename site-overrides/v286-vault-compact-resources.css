@@ -1,0 +1,81 @@
+/* V2.86: Item Vault as a curated, searchable three-column shelf. */
+.tv286-vault .tv286-vault-search{min-height:38px;font-size:.79rem}
+.tv286-vault-filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;
+ margin:13px 0 5px;max-width:100%}
+.tv286-vault-filter{border:1px solid var(--edge,#4d4258);background:var(--raised,#191621);
+ color:var(--soft,#bbaec9);font:inherit;font-size:.73rem;font-weight:620;
+ border-radius:100px;min-height:31px;padding:6px 12px;cursor:pointer;
+ transition:background .15s,border-color .15s}
+.tv286-vault-filter:hover{border-color:var(--accent,#c4a9df);
+ background:color-mix(in srgb,var(--accent,#af8fd0) 10%,var(--raised,#191621))}
+.tv286-vault-filter.selected{color:var(--text,#f0e6f4);
+ border-color:var(--accent,#bda1d8);
+ background:color-mix(in srgb,var(--accent,#ba9bdb) 20%,var(--surface,#191621))}
+.tv286-vault-filter:focus-visible{outline:2px solid var(--accent,#c5ace0);outline-offset:2px}
+.tv286-vault-tally{font-size:.7rem;color:var(--soft,#c5b9ce);
+ margin:4px 0 12px;line-height:1.45}
+.tv254-stock-list.tv286-vault-grid{display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+ align-items:stretch;margin-top:0}
+.tv286-vault-grid>.tv254-stock-row.tv286-vault-card{min-width:0;
+ display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;
+ justify-content:space-between;gap:12px;padding:13px 14px 12px;
+ min-height:168px;box-sizing:border-box;border-radius:10px;
+ transition:border-color .15s,background .15s}
+.tv286-vault-grid>.tv254-stock-row.tv286-vault-card:hover{
+ border-color:color-mix(in srgb,var(--accent,#b69bcf) 46%,var(--edge,#4a4156));
+ background:color-mix(in srgb,var(--accent,#b69ad3) 8%,var(--raised,#1a1621))}
+.tv286-vault-card>.tv286-vault-copy{display:flex;flex-direction:column;
+ min-width:0;flex:1 1 auto;gap:7px}
+.tv286-vault-card-heading{display:flex;align-items:start;justify-content:space-between;gap:9px;min-width:0}
+.tv286-vault-card .tv286-vault-name{font-size:.87rem;line-height:1.3;
+ font-weight:720;min-width:0;overflow-wrap:anywhere}
+.tv286-item-type{flex-shrink:0;font-size:.62rem;line-height:1.2;
+ padding:5px 7px;color:var(--soft,#c6b5d0);
+ border:1px solid var(--edge,#52465c);border-radius:6px;
+ text-transform:uppercase;letter-spacing:.055em}
+.tv286-vault-description{font-size:.75rem;line-height:1.48;
+ color:var(--soft,#c3b7ca);margin:0;overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tv286-vault-description.is-empty{opacity:.65;font-style:italic}
+.tv286-vault-meta{display:flex;align-items:center;gap:6px;
+ flex-wrap:wrap;margin-top:auto}
+.tv286-vault-meta small{font-size:.67rem;line-height:1.4;
+ color:var(--soft,#bdafcb)}
+.tv286-vault-meta small:not(:last-child)::after{content:"·";padding-left:6px}
+.tv286-vault-grid .tv286-vault-actions{display:grid;grid-template-columns:1fr 1fr;
+ gap:7px;width:100%;align-items:stretch}
+.tv286-vault-grid .tv286-vault-actions button{min-width:0;min-height:32px;
+ padding:7px 11px;font-size:.74rem}
+.tv286-vault-empty,.tv286-vault-overflow{grid-column:1/-1}
+@media(max-width:1030px){
+ .tv254-stock-list.tv286-vault-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ .tv254-stock-list.tv286-vault-grid{grid-template-columns:1fr}
+ .tv286-vault-grid>.tv254-stock-row.tv286-vault-card{min-height:128px}
+ .tv286-vault-filters{gap:5px}
+ .tv286-vault-filter{padding:5px 9px;font-size:.7rem;min-height:29px}
+}
+/* V2.86: a denser native-style resource shelf — fully functional actions,
+   visible segmented counters, and the same backend recovery restrictions. */
+#pageRoot .tv285-resource-section{margin-top:11px;padding-top:10px}
+#pageRoot .tv285-resource-heading{font-size:.63rem;margin-bottom:9px;letter-spacing:.09em}
+#pageRoot .tv285-resource-grid{gap:7px}
+#pageRoot .tv285-resource-card{gap:4px;padding:9px 11px 8px;border-radius:8px}
+#pageRoot .tv285-resource-title{font-size:.78rem;line-height:1.26}
+#pageRoot .tv285-resource-count{font-size:.83rem}
+#pageRoot .tv285-resource-count b{font-size:.99rem}
+#pageRoot .tv285-resource-count span{font-size:.74rem}
+#pageRoot .tv285-resource-context{display:none}
+#pageRoot .tv285-charge-pips{gap:4px;min-height:5px;padding:1px 0 3px}
+#pageRoot .tv285-charge-pip{width:23px;height:5px}
+#pageRoot .tv285-resource-actions{gap:5px}
+#pageRoot .tv285-resource-actions button{min-height:27px;padding:4px 8px;
+ font-size:.72rem;line-height:1.15;border-radius:6px}
+#pageRoot .tv285-resource-recovery{font-size:.66rem;line-height:1.35;
+ margin-top:1px;color:var(--soft,#bdb1c8)}
+@media(max-width:440px){
+ #pageRoot .tv285-resource-card{padding:8px 9px 7px}
+ #pageRoot .tv285-resource-actions button{min-height:30px}
+}
