@@ -44,5 +44,5 @@ assert.ok(sql.includes('authz.is_dm(target_campaign)'),'DM-only protected search
 assert.ok(sql.includes('revoke all on function'),'No anonymous executable catalogue search');
 assert.ok(overlay.includes('v285-divine-resources.css'));
 assert.ok(published.includes('tv285-charge-pips'));
-assert.ok(published.includes('V2.85'));
+assert.ok(published.includes('V2.86'));
 console.log('PASS V2.85 — separate Major/Minor gods, visual charge slots, native read-only divine consequences and recovery rules.');
