@@ -21,7 +21,7 @@ const ownedCampaigns=()=>typeof db==='undefined'?[]:db.campaigns.filter(c=>c.rol
 const currentCampaign=()=>ownedCampaigns().find(c=>c.id===panelState.campaign)||ownedCampaigns()[0];
 const actorIsDm=()=>ready()&&auth().state.profile?.is_dm&&db.role==='dm'&&ownedCampaigns().length>0;
 const notify=text=>typeof toast==='function'?toast(text):console.info('[Vault]',text);
-const panelState={mode:'chronicle',view:'overview',campaign:null,character:null,vault:[],busy:false,loadedCampaign:null,search:'',editing:null};
+const panelState={mode:'chronicle',view:'overview',campaign:null,character:null,vault:[],busy:false,loadedCampaign:null,search:'',vaultFilter:'all',editing:null};
 const tools=()=>window.TerravaleRulesV4||{currencies:[],tools:[],languages:[]};
 const charsForCampaign=()=>sourceChars().filter(c=>c.campaign===currentCampaign()?.id);
 function select(options,value){
@@ -341,9 +341,34 @@ function createCampaignPicker(host){
  }
  panel.append(group);host.append(panel);
 }
+function vaultItemFamily(item){
+ const kind=String(item?.item_data?.kind||'item').toLowerCase().trim();
+ const name=String(item?.item_data?.name||'').toLowerCase();
+ if(name.split(/[^a-z]+/).includes('ring')||kind==='ring')return 'rings';
+ if(['armour','armor','helmet','shield'].includes(kind))return 'armour';
+ if(['weapon','ammunition'].includes(kind))return 'weapons';
+ if(['trinket','jewellery','jewelry','accessory','relic','amulet','cloak'].includes(kind))
+  return 'accessories';
+ if(['tool','game','instrument','kit'].includes(kind))return 'tools';
+ if(['consumable','potion','scroll','food','drink'].includes(kind))return 'consumables';
+ return 'misc';
+}
+function vaultItemType(item){
+ const category=vaultItemFamily(item);
+ const raw=String(item?.item_data?.kind||'item').toLowerCase();
+ if(category==='rings')return 'Ring';
+ if(raw==='helmet')return 'Helmet';
+ if(raw==='shield')return 'Shield';
+ if(raw==='trinket')return 'Trinket';
+ if(category==='armour')return 'Armour';
+ if(category==='weapons')return 'Weapon';
+ if(category==='tools')return 'Tool';
+ if(category==='consumables')return 'Consumable';
+ return raw?raw[0].toUpperCase()+raw.slice(1):'Item';
+}
 function listVault(host){
  const campaign=currentCampaign();
- const section=node('section','tv254-panel tv254-vault-stock');
+ const section=node('section','tv254-panel tv254-vault-stock tv286-vault');
  const head=node('div','tv254-panel-head');
  head.append(node('div','', ''),button('+ Create item',()=>{
   panelState.editing={mode:'vault',id:null};renderVaultBody();
@@ -352,39 +377,88 @@ function listVault(host){
   node('h2','','Prepared inventory'),
   node('p','tv254-muted',panelState.vault.length+' saved item entries · up to 2,000 independent stock entries'));
  section.append(head);
- const search=node('input','tv254-input');
- search.placeholder='Find a name, type or ability…';search.type='search';
+ const search=node('input','tv254-input tv286-vault-search');
+ search.placeholder='Search names, item types, descriptions or powers…';search.type='search';
  search.value=panelState.search;
- search.addEventListener('input',()=>{panelState.search=search.value;fill()});
- section.append(search);
- const list=node('div','tv254-stock-list');section.append(list);
+ search.setAttribute('aria-label','Search prepared Item Vault stock');
+ const filters=node('div','tv286-vault-filters');
+ filters.setAttribute('role','group');filters.setAttribute('aria-label','Filter prepared items by type');
+ const tally=node('p','tv286-vault-tally');
+ section.append(search,filters,tally);
+ const list=node('div','tv254-stock-list tv286-vault-grid');section.append(list);
+ const groups=[
+  ['all','All'],['rings','Rings'],['armour','Armour'],['weapons','Weapons'],
+  ['accessories','Accessories'],['tools','Tools'],['consumables','Consumables'],
+  ['misc','Other']
+ ];
+ function drawFilters(){
+  filters.replaceChildren();
+  for(const [value,name] of groups){
+   const total=value==='all'?panelState.vault.length:
+    panelState.vault.filter(row=>vaultItemFamily(row)===value).length;
+   const active=(panelState.vaultFilter||'all')===value;
+   const chip=button(name+' · '+total,()=>{
+    if((panelState.vaultFilter||'all')===value)return;
+    panelState.vaultFilter=value;drawFilters();fill();
+   },'tv286-vault-filter'+(active?' selected':''));
+   chip.setAttribute('aria-pressed',String(active));
+   filters.append(chip);
+  }
+ }
  function fill(){
   list.replaceChildren();
-  const match=panelState.vault.filter(x=>
-   (x.item_data?.name+' '+x.item_data?.kind+' '+(x.mechanics?.features||''))
-   .toLowerCase().includes(panelState.search.toLowerCase()));
+  const term=panelState.search.trim().toLowerCase();
+  const category=panelState.vaultFilter||'all';
+  const match=panelState.vault.filter(x=>{
+   if(category!=='all'&&vaultItemFamily(x)!==category)return false;
+   const q=[x.item_data?.name,x.item_data?.kind,x.item_data?.description,
+    x.mechanics?.features,x.mechanics?.rarity].filter(Boolean).join(' ').toLowerCase();
+   return !term||q.includes(term);
+  });
+  tally.textContent=match.length+' matching '+(match.length===1?'item':'items')+
+   ' · '+(category==='all'?'all categories':groups.find(x=>x[0]===category)?.[1]);
   for(const row of match.slice(0,240)){
-   const card=node('div','tv254-stock-row tv256-rarity-item');
+   const card=node('article','tv254-stock-row tv256-rarity-item tv286-vault-card');
    card.dataset.rarity=row.mechanics?.rarity||'Common';
-   const copy=node('div','');
-   copy.append(node('strong','',row.item_data.name||'Unnamed item'),
-    node('small','',Number(row.item_data.qty)||1+' owned · '+(row.item_data.kind||'item')+
-      (Number(row.mechanics?.max_charges)>0?' · '+row.mechanics.charges+'/'+row.mechanics.max_charges+' charges':'')));
-   const actions=node('div','tv254-stock-actions');
+   const content=node('div','tv286-vault-copy');
+   const top=node('div','tv286-vault-card-heading');
+   const itemName=node('strong','tv286-vault-name',row.item_data?.name||'Unnamed item');
+   const categoryTag=node('span','tv286-item-type',vaultItemType(row));
+   top.append(itemName,categoryTag);content.append(top);
+   const description=String(row.item_data?.description||row.mechanics?.features||'').trim();
+   if(description){
+    const snippet=node('p','tv286-vault-description',description);
+    snippet.title=description;
+    content.append(snippet);
+   }else content.append(node('p','tv286-vault-description is-empty','No description supplied'));
+   const meta=node('div','tv286-vault-meta');
+   meta.append(node('small','',String(Number(row.item_data?.qty)||1)+' in stock'));
+   if(row.mechanics?.rarity)
+    meta.append(node('small','',row.mechanics.rarity));
+   if(Number(row.mechanics?.max_charges)>0)
+    meta.append(node('small','',String(row.mechanics?.charges??0)+'/'+row.mechanics.max_charges+' charges'));
+   content.append(meta);
+   const actions=node('div','tv254-stock-actions tv286-vault-actions');
    actions.append(button('Edit',()=>{
     panelState.editing={mode:'vault',id:row.id};renderVaultBody();
    }));
    if(campaign&&charsForCampaign().length){
     actions.append(button('Send',()=>{
-      panelState.editing={mode:'issue',id:row.id};renderVaultBody();
+     panelState.editing={mode:'issue',id:row.id};renderVaultBody();
     },'btn primary small'));
    }
-   card.append(copy,actions);list.append(card);
+   card.append(content,actions);list.append(card);
   }
-  if(match.length>240)list.append(node('p','tv254-muted','Showing first 240 matches. Narrow your search to see the rest.'));
-  if(!match.length)list.append(node('p','tv254-muted','No prepared items yet. Create one above; it will remain here until you issue or remove it.'));
+  if(match.length>240)list.append(node('p','tv254-muted tv286-vault-overflow',
+   'Showing the first 240 matching items. Narrow your search to see the rest.'));
+  if(!match.length)list.append(node('p','tv254-muted tv286-vault-empty',
+   panelState.vault.length?'No items match these filters. Try another category or search.':
+    'No prepared items yet. Create one above; it will remain here until you issue or remove it.'));
  }
- fill();host.append(section);
+ search.addEventListener('input',()=>{
+  panelState.search=search.value;fill();
+ });
+ drawFilters();fill();host.append(section);
 }
 function dispatchEditor(host){
  const row=panelState.vault.find(x=>x.id===panelState.editing?.id);
