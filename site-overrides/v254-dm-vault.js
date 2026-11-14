@@ -344,7 +344,7 @@ function createCampaignPicker(host){
 function vaultItemFamily(item){
  const kind=String(item?.item_data?.kind||'item').toLowerCase().trim();
  const name=String(item?.item_data?.name||'').toLowerCase();
- if(/\\bring\\b/.test(name)||kind==='ring')return 'rings';
+ if(name.split(/[^a-z]+/).includes('ring')||kind==='ring')return 'rings';
  if(['armour','armor','helmet','shield'].includes(kind))return 'armour';
  if(['weapon','ammunition'].includes(kind))return 'weapons';
  if(['trinket','jewellery','jewelry','accessory','relic','amulet','cloak'].includes(kind))
