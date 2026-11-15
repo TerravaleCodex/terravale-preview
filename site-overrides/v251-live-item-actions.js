@@ -80,6 +80,7 @@ function rechargeLabel(p){
 }
 function resource(c,i){
  const p=itemProps(c,i),card=node('div','tv-v251-resource-card');
+ card.dataset.v287ItemId=String(i.id); // Stable source ID for per-character starred preferences.
  const head=node('div','tv-v251-resource-title');
  head.append(node('strong','',i.name),node('small','',i.slot?'Equipped':'Backpack'));card.append(head);
  if(charged(p)){

@@ -33,6 +33,16 @@ source = patch_v277(source)
 source = patch_v278(source)
 source = patch_v280(source)
 source = patch_v281(source)
+# V2.87 — native Resources tab, with the original panels still available
+# as action sources for the starred-only Overview Quick Access.
+v287_tabs = "const sections=[['overview','Overview'],['abilities','Abilities & skills']"
+assert source.count(v287_tabs) >= 1, "Native sheet tabs changed"
+source = source.replace(v287_tabs,
+    "const sections=[['overview','Overview'],['resources','Resources'],['abilities','Abilities & skills']")
+v287_body = "tab==='chronicle'?sheetV220Chronicle(c):sheetV220Overview(c)"
+assert source.count(v287_body) >= 1, "Native sheet tab router changed"
+source = source.replace(v287_body,
+    "tab==='chronicle'?sheetV220Chronicle(c):tab==='resources'?sheetV220ResourcesPanel(c):sheetV220Overview(c)")
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
@@ -134,7 +144,7 @@ dm_guard="function renderDM(){"
 assert source.count(dm_guard)==1, "Native DM view entry changed"
 source=source.replace(dm_guard,
     dm_guard+"\n if(db.role!=='dm'||!window.TerravaleVerifiedAccount?.state?.profile?.is_dm) return pageHeader('DUNGEON MASTER','DM Chronicle is locked','Switch to DM view with a verified Dungeon Master account.')+foot();",1)
-source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.86')
+source=source.replace('Terravale Codex V2.37 · Rest & Death','Terravale Codex V2.87')
 source=source.replace('Choose your people','Choose people & languages')
 source=source.replace('Find your calling','Choose class & tools')
 # The approved offline V2 HTML carries an illustrative-only label.
@@ -189,6 +199,7 @@ css += "\n" + (ROOT / "site-overrides/v283-compact-filters.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v284-concordant-reader.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v285-divine-resources.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v286-vault-compact-resources.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v287-adaptive-resources.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -224,7 +235,8 @@ divine_voices_v281 = (ROOT / "site-overrides/v281-divine-voices.js").read_text()
 canonical_library_v281 = (ROOT / "site-overrides/v281-canonical-library.js").read_text()
 boon_reader_v282 = (ROOT / "site-overrides/v282-boon-reader.js").read_text()
 divine_links_v282 = (ROOT / "site-overrides/v282-divine-relationships.js").read_text()
-build_meta = json.dumps({"version":"2.86","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
+adaptive_v287 = (ROOT / "site-overrides/v287-adaptive-resources.js").read_text()
+build_meta = json.dumps({"version":"2.87","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
 assert auth.count('provider: "discord"') == 1
@@ -307,6 +319,7 @@ inline_js = (
     '<script data-source="v281-canonical-library.js">\n' + canonical_library_v281 + '\n</script>\n'
     '<script data-source="v282-boon-reader.js">\n' + boon_reader_v282 + '\n</script>\n'
     '<script data-source="v282-divine-relationships.js">\n' + divine_links_v282 + '\n</script>\n'
+    '<script data-source="v287-adaptive-resources.js">\n' + adaptive_v287 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -351,6 +364,7 @@ assert source.count('data-source="v281-divine-voices.js"') == 1
 assert source.count('data-source="v281-canonical-library.js"') == 1
 assert source.count('data-source="v282-boon-reader.js"') == 1
 assert source.count('data-source="v282-divine-relationships.js"') == 1
+assert source.count('data-source="v287-adaptive-resources.js"') == 1
 assert 'terravale_set_user_appearance' in source
 assert 'terravale_set_tutorial_progress' in source
 assert 'tv-achievement-notifications' in source

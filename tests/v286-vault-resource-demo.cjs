@@ -61,5 +61,5 @@ assert.ok(demoSeed.includes("if exists(select 1 from public.terravale_divine_can
 assert.ok(demoSeed.includes('false);'),'Prevent linked-favour changes to demo unrelated patrons');
 assert.ok(assembly.includes('v286-vault-compact-resources.css'));
 assert.ok(html.includes('tv286-vault-grid'));
-assert.ok(html.includes('Terravale Codex V2.86'));
+assert.ok(html.includes('Terravale Codex V2.87'));
 console.log('PASS V2.86: 3-column classified vault, compact resource cards, original-source charge inference and protected 7-member demo party.');
