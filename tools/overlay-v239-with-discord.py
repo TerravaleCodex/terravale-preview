@@ -36,6 +36,7 @@ source = patch_v281(source)
 # V2.87 — native Resources tab, with the original panels still available
 # as action sources for the starred-only Overview Quick Access.
 v287_tabs = "const sections=[['overview','Overview'],['abilities','Abilities & skills']"
+print("V287 DEBUG tabs:",source.count(v287_tabs),"nearby:",repr(source[source.find("const sections="):source.find("const sections=")+220]))
 assert source.count(v287_tabs) == 1, "Native sheet tabs changed"
 source = source.replace(v287_tabs,
     "const sections=[['overview','Overview'],['resources','Resources'],['abilities','Abilities & skills']",1)
