@@ -5,6 +5,8 @@
 #pageRoot .sheet20-content>.sheet20-resource-panel.tv287-native-source{
   display:none!important;
 }
+#pageRoot .sheet20-dashboard.tv287-no-resources{grid-template-columns:minmax(0,1fr)}
+#pageRoot .sheet20-dashboard.tv287-no-resources .sheet20-secondary-stack{display:none}
 #pageRoot .tv287-quick-panel{padding:16px 17px;min-width:0}
 #pageRoot .tv287-topline{display:flex;align-items:start;justify-content:space-between;gap:8px;margin-bottom:9px}
 #pageRoot .tv287-eyebrow{font-size:10px;letter-spacing:.11em;color:var(--accent,#c5a1ea);font-weight:800;text-transform:uppercase}
