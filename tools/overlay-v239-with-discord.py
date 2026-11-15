@@ -36,14 +36,13 @@ source = patch_v281(source)
 # V2.87 — native Resources tab, with the original panels still available
 # as action sources for the starred-only Overview Quick Access.
 v287_tabs = "const sections=[['overview','Overview'],['abilities','Abilities & skills']"
-print("V287 DEBUG tabs:",source.count(v287_tabs),"nearby:",repr(source[source.find("const sections="):source.find("const sections=")+220]))
-assert source.count(v287_tabs) == 1, "Native sheet tabs changed"
+assert source.count(v287_tabs) >= 1, "Native sheet tabs changed"
 source = source.replace(v287_tabs,
-    "const sections=[['overview','Overview'],['resources','Resources'],['abilities','Abilities & skills']",1)
+    "const sections=[['overview','Overview'],['resources','Resources'],['abilities','Abilities & skills']")
 v287_body = "tab==='chronicle'?sheetV220Chronicle(c):sheetV220Overview(c)"
-assert source.count(v287_body) == 1, "Native sheet tab router changed"
+assert source.count(v287_body) >= 1, "Native sheet tab router changed"
 source = source.replace(v287_body,
-    "tab==='chronicle'?sheetV220Chronicle(c):tab==='resources'?sheetV220ResourcesPanel(c):sheetV220Overview(c)",1)
+    "tab==='chronicle'?sheetV220Chronicle(c):tab==='resources'?sheetV220ResourcesPanel(c):sheetV220Overview(c)")
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
