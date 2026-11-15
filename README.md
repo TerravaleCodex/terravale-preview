@@ -1,3 +1,10 @@
+## V2.87 — Adaptive character Resources tab and starred Quick Access
+- Character sheet Overview now uses a compact **Quick Access** sidebar, displaying only resources starred by the viewer; resource-free characters do not retain a blank sidebar.
+- Added a native **Resources** tab with a flat responsive 3/2/1-column catalog, category pill filters, search and star toggles. Spells, class abilities, charged items and granted divine uses only appear when actually available.
+- The original resource elements stay mounted (but hidden visually), and Quick Access / catalog call their actual buttons. Charge spending, attunement, long-rest recovery, shared divine pools and protected DM controls remain governed by the same native or Supabase actions.
+- Item stars are keyed by stable inventory IDs; native resources by source resource IDs and divine uses by granted award ID. Stars persist per character and verified account in the current browser (not yet cross-device synced).
+- This update does not alter the verified backend schema, divine awards, approval lifecycle, account permissions or 283-public/36-private lore access boundaries.
+
 # Terravale Living Codex — Public Preview
 
 ## V2.68 — Public dashboard launch
