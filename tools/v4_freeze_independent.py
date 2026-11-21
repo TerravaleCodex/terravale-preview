@@ -81,12 +81,15 @@ def main():
         if t not in live:raise RuntimeError("Incomplete live V2.87 source: "+t)
     html=port(live)
     blank_check(html)
-    out=Path(args.output).resolve()
+    dest=Path(args.output).resolve()
     # A one-time fork must never overwrite edited V4 modules on rerun.
-    # Refuse instead of removing the existing directory.
-    if out.exists():
-        raise RuntimeError("Independent V4 source already exists at "+str(out)+
+    if dest.exists():
+        raise RuntimeError("Independent V4 source already exists at "+str(dest)+
                            ". Never regenerate it from live; edit V4 directly.")
+    # Build into a staging directory. A failed conversion never leaves a broken
+    # V4 installation that blocks the next attempt or overwrites good work.
+    out=dest.with_name(dest.name+'.building')
+    if out.exists():shutil.rmtree(out)
     out.mkdir(parents=True)
     assets=split_html(html,out)
     if (out/'index.html').stat().st_size<5_000 or len(assets)<10:
@@ -121,11 +124,16 @@ def main():
         'setting-specific UI strings remain and need to be audited. '
         'Remaining offline RPCs and the campaign-specific native creator '
         'are not fully implemented yet.\n',encoding='utf-8')
-    archive=out.parent/(out.name+'.zip')
-    with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=7) as z:
+    archive=dest.parent/(dest.name+'.zip')
+    temporary_archive=archive.with_suffix('.zip.building')
+    if temporary_archive.exists():temporary_archive.unlink()
+    with zipfile.ZipFile(temporary_archive,'w',zipfile.ZIP_DEFLATED,compresslevel=7) as z:
         for path in out.rglob('*'):
-            if path.is_file():z.write(path,arcname=out.name+'/'+path.relative_to(out).as_posix())
-    print('Independent V4 source:',out)
+            if path.is_file():z.write(path,arcname=dest.name+'/'+path.relative_to(out).as_posix())
+    # Publish the prepared independent source and archive only on success.
+    out.rename(dest)
+    temporary_archive.replace(archive)
+    print('Independent V4 source:',dest)
     print('Original layout, scripts and styles retained:',len(assets),'assets')
     print('Editable V4 zip:',archive)
 
