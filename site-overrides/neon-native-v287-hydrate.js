@@ -46,8 +46,11 @@
    if(!isRecord(db.featuredCharacters))db.featuredCharacters={};
    db.featuredCharacters[campaignId]=id;
    loaded=true;
+   send("PHASE",{phase:"store-hydrated"});
    navigate("/characters/"+id);
+   send("PHASE",{phase:"navigated"});
    renderPage(false);
+   send("PHASE",{phase:"rendered"});
    const page=document.querySelector("#pageRoot");
    if(!page)throw new TypeError("Native V2.87 character page did not mount");
    const firstCheck=()=>{const sheet=document.querySelector("#pageRoot .sheet20");
