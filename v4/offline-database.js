@@ -333,6 +333,127 @@ async function rpc(name,args={}){
           throw Error('Last DM cannot leave. Assign another DM first.');
         await remove('campaign_members',m.id);return ok({left:true});
       }
+      case 'terravale_wallet_adjust':
+      case 'terravale_wallet_self_adjust':{
+        const c=await get('characters',args.target_character);
+        if(!c)throw Error('Character not found');
+        if(name==='terravale_wallet_adjust')await assertDm(c.campaign_id);
+        else if(c.owner_id!==uid)throw Error('Only the character owner may alter their own wallet');
+        const denomination=String(args.target_denomination||'').trim();
+        const delta=Number(args.delta_quantity);
+        if(!denomination||!Number.isSafeInteger(delta)||Math.abs(delta)>100000)
+          throw Error('Invalid denomination or coin quantity');
+        const records=await list('terravale_character_wallet');
+        const existing=records.find(x=>x.character_id===c.id&&x.denomination_id===denomination);
+        const before=Number(existing?.quantity||0),remaining=before+delta;
+        if(!Number.isSafeInteger(remaining)||remaining<0)
+          throw Error('Not enough currency for this transaction');
+        await save('terravale_character_wallet',{...existing,
+          id:existing?.id||uuid(),character_id:c.id,denomination_id:denomination,
+          quantity:remaining});
+        await save('terravale_wallet_ledger',{id:uuid(),campaign_id:c.campaign_id,
+          character_id:c.id,denomination_id:denomination,delta,
+          note:String(args.purpose||''),operation:name==='terravale_wallet_adjust'?'dm_adjust':'owner_adjust',
+          actor_id:uid});
+        return ok({denomination_id:denomination,quantity:remaining});
+      }
+      case 'terravale_vault_save_item':{
+        await assertDm(args.target_campaign);
+        const existing=args.existing_item
+          ?await get('terravale_dm_vault_items',args.existing_item):null;
+        if(existing&&existing.campaign_id!==args.target_campaign)
+          throw Error('Vault item belongs to another campaign');
+        if(args.delete_item){
+          if(!existing)throw Error('Vault item not found');
+          await remove('terravale_dm_vault_items',existing.id);
+          return ok({deleted:true});
+        }
+        const payload=args.item_payload||{},mechanics=args.mechanics_payload||{};
+        if(!String(payload.name||'').trim())throw Error('Item name required');
+        const item=await save('terravale_dm_vault_items',{
+          id:existing?.id||uuid(),campaign_id:args.target_campaign,
+          item_data:{...existing?.item_data,...payload},
+          mechanics:{...existing?.mechanics,...mechanics}});
+        return ok(item);
+      }
+      case 'terravale_vault_issue_item':{
+        const item=await get('terravale_dm_vault_items',args.vault_item_id);
+        const c=await get('characters',args.recipient_character);
+        if(!item||!c||item.campaign_id!==c.campaign_id)throw Error('Vault and recipient mismatch');
+        await assertDm(item.campaign_id);
+        const amount=Number(args.send_quantity||1),stock=Number(item.item_data?.qty||1);
+        if(!Number.isSafeInteger(amount)||amount<=0||amount>stock)throw Error('Not enough item stock');
+        const row=(await list('character_state')).find(x=>x.character_id===c.id);
+        const inv=Array.isArray(row?.inventory)?row.inventory.slice():[];
+        const newItem={...item.item_data,id:uuid(),qty:amount};
+        inv.push(newItem);
+        await save('character_state',{...(row||{}),id:row?.id||uuid(),character_id:c.id,
+          inventory:inv,hp:row?.hp??0,blood_state:row?.blood_state??0});
+        await save('character_item_properties',{id:uuid(),character_id:c.id,
+          item_id:newItem.id,properties:item.mechanics||{}});
+        item.item_data.qty=stock-amount;
+        if(item.item_data.qty===0)await remove('terravale_dm_vault_items',item.id);
+        else await save('terravale_dm_vault_items',item);
+        return ok({issued:true,inventory:inv});
+      }
+      case 'terravale_dm_edit_inventory_item':{
+        const c=await get('characters',args.target_character);
+        if(!c)throw Error('Character not found');
+        await assertDm(c.campaign_id);
+        const state=(await list('character_state')).find(x=>x.character_id===c.id);
+        const inv=Array.isArray(state?.inventory)?state.inventory.slice():[];
+        const index=inv.findIndex(x=>x.id===args.item_id);
+        let id=args.item_id||uuid();
+        if(args.delete_item){
+          if(index<0)throw Error('Inventory item not found');
+          inv.splice(index,1);
+        }else{
+          const payload=args.item_payload||{};
+          if(!String(payload.name||'').trim())throw Error('Item name required');
+          if(index>=0)inv[index]={...inv[index],...payload,id};
+          else{inv.push({...payload,id});}
+        }
+        await save('character_state',{...state,id:state?.id||uuid(),
+          character_id:c.id,inventory:inv,hp:state?.hp??0,
+          blood_state:state?.blood_state??0});
+        const records=(await list('character_item_properties')).filter(x=>x.character_id===c.id);
+        const matching=records.find(x=>x.item_id===id);
+        if(args.delete_item){if(matching)await remove('character_item_properties',matching.id)}
+        else await save('character_item_properties',{...matching,id:matching?.id||uuid(),
+          character_id:c.id,item_id:id,properties:args.mechanics||{}});
+        const properties=Object.fromEntries(
+          (await list('character_item_properties')).filter(x=>x.character_id===c.id)
+            .map(x=>[x.item_id,x.properties]));
+        return ok({inventory:inv,item_properties:properties});
+      }
+      case 'terravale_dm_save_custom_feat':{
+        await assertDm(args.target_campaign);
+        const old=args.existing_feat
+          ?await get('terravale_dm_custom_feats',args.existing_feat):null;
+        if(old&&old.campaign_id!==args.target_campaign)throw Error('Feat belongs to another campaign');
+        if(args.delete_feat){
+          if(!old)throw Error('Feat not found');
+          await save('terravale_dm_custom_feats',{...old,state:'archived'});
+          return ok({archived:true});
+        }
+        const spec=args.feat_spec||{};
+        if(!String(spec.name||'').trim())throw Error('Feat name required');
+        return ok(await save('terravale_dm_custom_feats',{...old,...spec,
+          id:old?.id||uuid(),campaign_id:args.target_campaign}));
+      }
+      case 'terravale_dm_assign_custom_feat':{
+        const feat=await get('terravale_dm_custom_feats',args.target_feat);
+        const c=await get('characters',args.target_character);
+        if(!feat||!c||feat.campaign_id!==c.campaign_id)throw Error('Feat/character mismatch');
+        await assertDm(c.campaign_id);
+        if(args.grant_feat&&feat.state==='archived')throw Error('Archived feats cannot be newly granted');
+        const records=await list('terravale_character_custom_feats');
+        const old=records.find(x=>x.feat_id===feat.id&&x.character_id===c.id);
+        return ok(await save('terravale_character_custom_feats',{...old,
+          id:old?.id||uuid(),feat_id:feat.id,character_id:c.id,
+          campaign_id:c.campaign_id,status:args.grant_feat?'active':'revoked',
+          granted_at:old?.granted_at||now(),reason:String(args.reason||'')}));
+      }
       case 'terravale_set_personal_adblocker':return ok({count:25,enabled:!!args.desired_enabled});
       case 'terravale_unlock_verdant_growth':return ok({unlocked:false,new:false});
       default:return errorRPC(name);
