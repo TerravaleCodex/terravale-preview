@@ -50,7 +50,8 @@
    renderPage(false);
    const page=document.querySelector("#pageRoot");
    if(!page)throw new TypeError("Native V2.87 character page did not mount");
-   const firstCheck=()=>!!document.querySelector("#pageRoot .sheet20");
+   const firstCheck=()=>{const sheet=document.querySelector("#pageRoot .sheet20");
+     return !!sheet&&sheet.textContent.includes(String(ch.name));};
    setTimeout(()=>{if(firstCheck())send("LOADED",{id,nativeSheet:true});
      else send("ERROR",{id,reason:"Original V2.87 sheet did not render"})},180);
  }
