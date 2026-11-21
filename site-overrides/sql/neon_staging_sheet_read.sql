@@ -26,6 +26,7 @@ SELECT jsonb_build_object(
      'name',c.name,
      'status',c.status,
      'campaign',c.campaign_name,
+     'campaign_id',c.campaign_id,
      'access',CASE WHEN c.owner_id=auth.uid() THEN 'owned' ELSE 'dm' END,
      'approved_build',c.approved_build
   ),
