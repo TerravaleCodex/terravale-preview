@@ -46,9 +46,6 @@
      if(!event.target?.closest?.("#pageRoot .sheet20-tabs [data-value]"))return;
      setTimeout(()=>window.TerravaleNeonNativeMountV254?.(),125);
    },true);
-   // Prefetch only already-granted custom feats for the original native
-   // Features tab; no extra network read or custom HTML renderer.
-   Promise.resolve(window.TerravaleV258Feats?.refresh?.(id,campaignId,true)).catch(()=>{});
    // The original V2.87 sheet reads db.characters and renders #pageRoot. The
    // approved build is never edited; this is an in-memory clone in a sandbox.
    db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
@@ -81,6 +78,9 @@
    navigate("/characters/"+id);
    send("PHASE",{phase:"navigated"});
    renderPage(false);
+   // Wait for the native route's hashchange invalidation before caching grants.
+   // The canonical V2 Feat reader then renders the exact saved feat rules.
+   setTimeout(()=>Promise.resolve(window.TerravaleV258Feats?.refresh?.(id,campaignId,true)).catch(()=>{}),185);
    // Mount native panels directly from the existing V2.54 renderer. No
    // synthetic cloud-sync event is necessary (it would clear feat caches).
    window.TerravaleNeonNativeMountV254?.();
