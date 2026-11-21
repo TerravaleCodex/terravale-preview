@@ -69,8 +69,21 @@ export function createNeonReadOnlyBridge({
         ...(method === "POST" ? {body: JSON.stringify(body ?? {})} : {}),
       });
       if (!response.ok) {
-        // Do not echo raw backend errors, user identifiers, or tokens in UI.
-        return {data: null, error: {message: "Neon staging read denied (HTTP " + response.status + ")"}};
+        // A 404 can mean a table (PGRST205) or newly created RPC (PGRST202)
+        // is missing from the server-side schema cache. Keep only the known
+        // PostgREST error CODE, never echo server messages, details or JWTs.
+        let code = null;
+        try {
+          const info = await response.json();
+          if (typeof info?.code === "string" && /^PGRST[0-9]{3}$/.test(info.code))
+            code = info.code;
+        } catch (_) { /* e.g. a proxy returned HTML rather than PostgREST JSON */ }
+        const status = Number.isInteger(response.status) ? response.status : 0;
+        return {data: null, error: {
+          message: "Neon staging read denied (HTTP " + status +
+            (code ? ", " + code : "") + ")",
+          status, code,
+        }};
       }
       return {data: await response.json(), error: null};
     } catch (error) {
