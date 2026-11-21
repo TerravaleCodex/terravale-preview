@@ -38,16 +38,16 @@ const snapshot={
  canonical_awards:[]}
 };
 const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
-<iframe id="native" title="original V2.87" sandbox="allow-scripts" src="/terravale-preview/neon-staging-auth/native-v287/" style="width:1260px;height:960px"></iframe>
+<iframe id="native" title="original V2.87" sandbox="allow-scripts" src="/terravale-preview/neon-staging-auth/native-v287/?audit-native-panels=1" style="width:1260px;height:960px"></iframe>
 <script>
 const frame=document.querySelector("#native");
 const snapshot=${JSON.stringify(snapshot)};
-let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[],diagnostic=null,deadline=null;
+let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[],diagnostic=null,panels=null,deadline=null;
 const finish=(timedOut=false)=>{
  if(document.body.dataset.nativeTest)return;
  clearInterval(timer);clearTimeout(deadline);
- const pass=ready&&handshake&&originMatched&&loaded&&!error;
- document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,pass,timeout:timedOut}));
+ const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true;
+ document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,panels,pass,timeout:timedOut}));
 };
 deadline=setTimeout(()=>finish(true),60000);
 window.addEventListener("message",event=>{
@@ -56,6 +56,7 @@ window.addEventListener("message",event=>{
  if(event.data?.type==="TV_NEON_NATIVE_V287_HANDSHAKE"){handshake=true;originMatched=event.data.originMatched===true}
  if(event.data?.type==="TV_NEON_NATIVE_V287_PHASE")phases.push(event.data.phase);
  if(event.data?.type==="TV_NEON_NATIVE_V287_DIAGNOSTIC")diagnostic=event.data;
+ if(event.data?.type==="TV_NEON_NATIVE_V287_PANEL_AUDIT")panels=event.data;
  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
    ready=true;
    // The full, 7MB V2.87 page can take time to boot; start the load deadline
@@ -68,7 +69,7 @@ window.addEventListener("message",event=>{
 });
 const timer=setInterval(()=>{
  const report={ready,handshake,originMatched,loaded,error,messages,phases,pass:ready&&handshake&&originMatched&&loaded&&!error};
- if(report.pass||error||messages>3&&loaded){
+ if(report.pass||error||panels){
    finish(false);
  }
 },120);
