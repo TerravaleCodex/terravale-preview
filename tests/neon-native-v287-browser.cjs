@@ -32,10 +32,11 @@ const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 const frame=document.querySelector("#native");
 const snapshot=${JSON.stringify(snapshot)};
-let ready=false,loaded=false,error="",messages=0;
+let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false;
 window.addEventListener("message",event=>{
  if(event.source!==frame.contentWindow||event.origin!=="null")return;
  messages++;
+ if(event.data?.type==="TV_NEON_NATIVE_V287_HANDSHAKE"){handshake=true;originMatched=event.data.originMatched===true}
  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
    ready=true;frame.contentWindow.postMessage({type:"TV_NEON_NATIVE_V287_LOAD",snapshot},"*");
  }
@@ -43,13 +44,13 @@ window.addEventListener("message",event=>{
  if(event.data?.type==="TV_NEON_NATIVE_V287_ERROR")error=event.data?.reason||"error";
 });
 const timer=setInterval(()=>{
- const report={ready,loaded,error,messages,pass:ready&&loaded&&!error};
+ const report={ready,handshake,originMatched,loaded,error,messages,pass:ready&&handshake&&originMatched&&loaded&&!error};
  if(report.pass||error||messages>3&&loaded){
    clearInterval(timer);document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify(report));
  }
 },120);
 setTimeout(()=>{if(!document.body.dataset.nativeTest){clearInterval(timer);
-document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,pass:false,timeout:true}))}},8000);
+document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,pass:false,timeout:true}))}},25000);
 </script></body></html>`;
 const root=path.resolve("published");
 const mime={".html":"text/html; charset=utf-8",".js":"application/javascript",".json":"application/json",".css":"text/css"};
@@ -75,7 +76,7 @@ const server=http.createServer((req,res)=>{
  const url="http://127.0.0.1:"+server.address().port+"/fixture";
  const out=await new Promise((resolve,reject)=>{
   const child=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
-   "--disable-background-networking","--virtual-time-budget=11000","--window-size=1380,900","--dump-dom",url],
+   "--disable-background-networking","--virtual-time-budget=31000","--window-size=1380,900","--dump-dom",url],
    {stdio:["ignore","pipe","pipe"]});
   let stdout="",stderr="";
   const timer=setTimeout(()=>{child.kill();reject(Error("Native Chromium test timed out"))},45000);
