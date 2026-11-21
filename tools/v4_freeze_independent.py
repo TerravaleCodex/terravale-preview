@@ -76,7 +76,7 @@ def main():
     raw=Path(args.input).read_bytes()
     if len(raw)<7_000_000:raise RuntimeError("Input is not the 7+ MB live V2.87 site")
     live=raw.decode('utf-8')
-    version=re.search(r'Terravale Codex V(2\\.\\d+)',live)
+    version=re.search(r'Terravale Codex V(2\.\d+)',live)
     if not version or int(version.group(1).split('.')[1])<85:
         raise RuntimeError("Unexpected or outdated live source. Need the actual V2.85+ application.")
     for t in ('data-source="v254-dm-vault.js"',
