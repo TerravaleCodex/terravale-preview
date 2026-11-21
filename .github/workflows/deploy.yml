@@ -8,6 +8,8 @@ on:
       - "site-overrides/launch-home.html"
       - "site-overrides/neon-staging-auth.html"
       - "site-overrides/neon-readonly-bridge.mjs"
+      - "site-overrides/neon-v2-sheet-preview.mjs"
+      - "tests/neon-v2-sheet-preview.mjs"
       - "site-overrides/sql/neon_staging_sheet_read.sql"
       - "tests/neon-staging-sheet-read.cjs"
       - "site-overrides/neon-v2-account-context.mjs"
@@ -277,6 +279,8 @@ jobs:
         run: node tests/neon-v2-account-context.mjs
       - name: Verify RLS-scoped original V2 sheet reads (staging)
         run: node tests/neon-staging-sheet-read.cjs
+      - name: Verify existing V2 sheet read-only staging adapter
+        run: node tests/neon-v2-sheet-preview.mjs
       - name: Verify Neon V2-style read bridge
         run: node tests/neon-v2-read-compatibility.mjs
       - name: Verify isolated Neon staging Discord login page
@@ -320,6 +324,7 @@ jobs:
           mkdir -p published/neon-staging-auth
           cp site-overrides/neon-staging-auth.html published/neon-staging-auth/index.html
           cp site-overrides/neon-readonly-bridge.mjs published/neon-staging-auth/bridge.mjs
+          cp site-overrides/neon-v2-sheet-preview.mjs published/neon-staging-auth/v2-sheet-preview.mjs
           cp site-overrides/neon-v2-account-context.mjs published/neon-staging-auth/account-context.mjs
           python3 - <<'PY'
           from pathlib import Path
@@ -346,6 +351,8 @@ jobs:
           assert staging.read_text(encoding="utf-8")==Path("site-overrides/neon-staging-auth.html").read_text(encoding="utf-8")
           bridge=Path("published/neon-staging-auth/bridge.mjs")
           assert bridge.read_text(encoding="utf-8")==Path("site-overrides/neon-readonly-bridge.mjs").read_text(encoding="utf-8")
+          sheet_adapter=Path("published/neon-staging-auth/v2-sheet-preview.mjs")
+          assert sheet_adapter.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-sheet-preview.mjs").read_text(encoding="utf-8")
           identity=Path("published/neon-staging-auth/account-context.mjs")
           assert identity.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-account-context.mjs").read_text(encoding="utf-8")
           assert "client.signIn.social" in staging.read_text(encoding="utf-8")

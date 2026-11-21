@@ -50,6 +50,10 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 .sheet-read dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:11px;margin:14px 0 0}
 .sheet-read dt{color:var(--sub);font-size:12px}
 .sheet-read dd{margin:3px 0 0;font-weight:700;overflow-wrap:anywhere}
+.sheet-v2{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.sheet-v2 iframe{display:block;width:100%;min-height:650px;height:900px;border:1px solid var(--line);border-radius:12px;background:#0d0a13}
+.sheet-v2 p{font-size:12px;color:var(--sub);margin:8px 0 14px}
+main:has(#sheet-frame-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
 
 
 @media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
@@ -89,9 +93,16 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
         <h3 id="sheet-read-title">Saved character sheet</h3>
         <p class="hint">Read-only check of the actual saved build, state, inventory and resources. This is not a replacement for the V2 character sheet.</p>
         <dl id="sheet-read-summary"></dl>
+        <div class="controls" style="margin-top:15px">
+          <button class="secondary" id="sheet-open-v2" type="button" disabled>View in original V2 sheet (read-only)</button>
+        </div>
+        <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
+          <p><strong>Original V2 embedded renderer.</strong> This displays saved Neon character data through the existing V2 layout. Editing is disabled. Some newer custom spell, boon and resource details are not yet supported by this renderer; the diagnostic summary above does not represent a complete field-by-field comparison.</p>
+          <iframe id="sheet-frame" title="Existing V2 character sheet read-only preview" referrerpolicy="no-referrer"></iframe>
+        </section>
       </section>
     </section>
-    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only read-only permission counts and limited character summaries are displayed. No full sheets are returned or modified.</p>
+    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only authorised owner/DM sheet reads are available; the saved sheet stays in memory for your session preview and is never modified.</p>
   </section>
   <p class="footer"><span class="marker">Separate test environment</span><br>
   <a href="/terravale-preview/veiled-codex/">Return to the live Codex</a> ·
@@ -105,11 +116,22 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   characters:document.getElementById("characters"),characterPreview:document.getElementById("character-preview"),
   characterList:document.getElementById("character-list"),
   sheetRead:document.getElementById("sheet-read"),sheetReadTitle:document.getElementById("sheet-read-title"),sheetReadSummary:document.getElementById("sheet-read-summary"),
+  sheetOpen:document.getElementById("sheet-open-v2"),sheetFramePanel:document.getElementById("sheet-frame-panel"),sheetFrame:document.getElementById("sheet-frame"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null;
+let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null;
+const V2_SHEET_URL="/terravale-preview/characters/sheet-render-fixed-20261101/?live=1";
+let verifiedSheetPayload=null;
+function clearSheetPreview(){
+  verifiedSheetPayload=null;
+  els.sheetOpen.disabled=true;
+  els.sheetFramePanel.hidden=true;
+  els.sheetFrame.removeAttribute("src");
+  els.sheetFrame.style.height="900px";
+}
+
 function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
@@ -126,6 +148,7 @@ function showSession(user){
   els.characterList.replaceChildren();
   els.sheetRead.hidden=true;
   els.sheetReadSummary.replaceChildren();
+  clearSheetPreview();
   els.permissionResult.hidden=true;
   els.permissionResult.textContent="";
   if(user){
@@ -323,6 +346,7 @@ async function previewMigratedCharacters(){
   els.characterList.replaceChildren();
   els.sheetRead.hidden=true;
   els.sheetReadSummary.replaceChildren();
+  clearSheetPreview();
   status("info","Loading migrated characters…","Checking the signed Discord account against Neon's original character ownership and visibility rules.");
   try{
     const jwt=await getSignedStagingJwt();
@@ -373,6 +397,7 @@ async function inspectSavedSheet(characterId){
   setBusy(true);
   els.sheetRead.hidden=true;
   els.sheetReadSummary.replaceChildren();
+  clearSheetPreview();
   status("info","Reading saved character sheet…",
     "Neon is verifying ownership or campaign DM access and loading saved character state through RLS.");
   try{
@@ -413,11 +438,42 @@ async function inspectSavedSheet(characterId){
     }
     els.sheetReadTitle.textContent=String(character.name||details.name||"Saved character sheet").slice(0,120);
     els.sheetRead.hidden=false;
+    // Render using the EXISTING embedded V2 layout only after this authorised
+    // RPC succeeds. The adapter never receives the session JWT.
+    try {
+      verifiedSheetPayload=toV2ReadOnlySheet(v,characterId);
+      els.sheetOpen.disabled=false;
+    } catch (_unsupported) {
+      // Diagnostic data still loads; unsupported fields never become invented.
+      verifiedSheetPayload=null;
+      els.sheetOpen.disabled=true;
+    }
     status("success","Original sheet state loaded from Neon",
       "The signed account retrieved its saved build, HP, resources, conditions, inventory and wallet through the read-only, RLS-guarded sheet RPC.");
   }catch(err){status("error","Could not inspect saved sheet",safeError(err))}
   finally{setBusy(false)}
 }
+// Read-only original V2 iframe. Same-origin message checks and a verified
+// owner/DM payload are mandatory; no parent handler processes save requests.
+els.sheetOpen.addEventListener("click",()=>{
+  if(!signedIn||busy||!verifiedSheetPayload||!verifiedSheetPayload.readOnly)return;
+  els.sheetFramePanel.hidden=false;
+  // A clean frame prevents stale character data from surviving a new inspect.
+  els.sheetFrame.src=V2_SHEET_URL;
+});
+window.addEventListener("message",ev=>{
+  if(ev.origin!==location.origin||ev.source!==els.sheetFrame.contentWindow||
+     !signedIn||!verifiedSheetPayload||els.sheetFramePanel.hidden)return;
+  if(ev.data?.type==="TV_SHEET_READY"){
+    els.sheetFrame.contentWindow.postMessage({type:"TV_SHEET_LOAD",character:verifiedSheetPayload},location.origin);
+  }else if(ev.data?.type==="TV_SHEET_HEIGHT"&&ev.data.id===verifiedSheetPayload.id){
+    const height=Number(ev.data.height);
+    if(Number.isFinite(height))els.sheetFrame.style.height=Math.min(2200,Math.max(650,height+20))+"px";
+  }else if(ev.data?.type==="TV_SHEET_LOAD_ERROR"){
+    status("error","Existing V2 renderer could not display this migrated sheet",
+      "The saved Neon data was not changed; use the diagnostic summary and migration checklist.");
+  }
+});
 els.signout.addEventListener("click",async()=>{
   if(!client||busy)return;
   setBusy(true);status("info","Signing out of staging…","Your live Supabase session is unaffected.");
@@ -439,6 +495,7 @@ try{
   // Separate staging-only bridge; it does not replace the live V2's Supabase client.
   const {createNeonReadOnlyBridge}=await import("./bridge.mjs");
   const {buildV2ReadOnlyAccountContext,loadVerifiedV2AccountProfile}=await import("./account-context.mjs");
+  ({toV2ReadOnlySheet}=await import("./v2-sheet-preview.mjs"));
   makeLegacyContext=buildV2ReadOnlyAccountContext;
   loadOriginalProfile=loadVerifiedV2AccountProfile;
   readBridge=createNeonReadOnlyBridge({
