@@ -71,7 +71,7 @@ const finish=(timedOut=false)=>{
  clearInterval(timer);clearTimeout(deadline);
  const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true&&panels?.divine===true&&panels?.divineResources===true&&panels?.zeroCharges===true&&
  panels?.itemResources===true&&panels?.itemZeroCharges===true&&panels?.itemPartialCharges===true&&
- panels?.hiddenItemOmitted===true&&panels?.adaptiveItemCatalog===true&&panels?.noInventedSpells===true;
+ panels?.hiddenItemOmitted===true&&panels?.itemActivationBlocked===true&&panels?.adaptiveItemCatalog===true&&panels?.noInventedSpells===true;
  document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,panels,pass,timeout:timedOut}));
 };
 deadline=setTimeout(()=>finish(true),60000);
