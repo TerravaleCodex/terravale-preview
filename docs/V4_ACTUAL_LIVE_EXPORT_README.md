@@ -1,44 +1,42 @@
-# V4 — Actual V2.87 Live UI with Offline Database Emulation
+# V4 — real live V2.87 layout, blank content, offline database
 
-The exact **original V2.87 live HTML** is still compiled using the original official site sources and remains available as a byte-for-byte untouched reference. The local V4 fork keeps its native dashboard, characters, sheets, Session Room and Chronicle scripts.
+The V4 build uses the **actual original V2.87 website source and UI**. It does not redraw or imitate its dashboard, character sheets, Session Room, DM Chronicle, or components. Only a separate local copy is modified; the production site is untouched.
 
-## Running the local fork
+**V4 is a world-agnostic platform, not a bundled Terravale campaign.**
 
-Run `python tools/export-v4-offline-first-pass.py` in the source repository or the companion Windows builder. Open the resulting `dist/V4_Live_Layout_Offline_First_Pass.html`, preferably served from `http://127.0.0.1:8765` so the local database keeps a stable browser origin.
+## What the offline build strips
 
-On Windows use `BUILD_FROM_LIVE.bat` then `START_OFFLINE.bat` from the downloadable builder. The first command downloads the source; the second runs without internet.
+- Lore Codex V14: the original 283 public articles, 36 restricted placeholders, 31 calendar events, and other serialized world content
+- The curated Terravale demo party and premade characters
+- Built-in rules-registry languages, tools, currency denominations, and other setting-specific options
+- Native `RULES` world-content lists (classes, ancestries, spell, feat, world entries) where the original JS catalog can be located and safely rewritten
 
-The V4 data compatibility layer lives at `v4/offline-database.js`; it replaces the V2 Discord/Supabase client in this local build. It never calls production RPCs, and no authenticated account, protected lore or production record is copied.
+The source reference is first compiled **unchanged** using the official V2 workflow. The exporter then applies `tools/v4_blank_content_patch.py` to its output before adding the local database adapter. It writes `V4_BLANK_CONTENT_REPORT.json` listing what was removed. The original unmodified source is never included in the distributed user-facing offline ZIP.
 
-## Implemented local data methods
+**Limitations:** Original UI labels, sample dialogue, and small constants may still reference Terravale, even after the full lore payload is stripped. These need further genericisation. We do not claim that every original setting-specific word has been removed or that all data-dependent pages work yet.
 
-The IndexedDB emulator (with a localStorage fallback) stores versioned records for profiles, campaigns, membership, join codes, parties, campaign-enabled content, characters, state, approvals, inventory, DM vault, wallet/ledger, custom feats and backup metadata.
+## Local data emulator
 
-- Separate local DM/player profiles, with campaign-scoped DM memberships
-- Campaign creation, invitation codes, joining and leave safeguards
-- Campaigns default to **zero enabled classes and ancestries**
-- Character-save validation rejects any class or ancestry not enabled by that campaign
-- Original V2 character create/save/sync and initial or level-up approval RPCs
-- Basic DM Item Vault create/edit/delete, stock issuing, inventory edit
-- Character wallets and ledger with non-negative balances and owner/DM controls
-- Custom feat creation, archival, grants and revocation
-- JSON full database export/import for portability
+`v4/offline-database.js` stores account, campaign, class/ancestry enablement, party, character, state, wallet, vault, feat, approval and backup records in IndexedDB with a localStorage fallback. Unsupported RPCs return explicit errors rather than claiming to save.
 
-The new `Offline DB` control in the real V2 header exposes local profile switching, campaign content enablement, co-DM assignments, parties, and backup controls.
+New campaigns start with **no classes, ancestries, lore, characters, items, currencies, or gods**. A DM must add or import their own content. Saving a character is rejected until its specific class and ancestry have been enabled.
 
-## Still outstanding
+The V2 native creator's class/ancestry menus still need to read these new DM-authored schemas; the blank catalog is not yet a complete replacement for V2's original hardcoded class rules. The divine backend, remaining rest/charges, media, and realtime collaboration are incomplete.
 
-This is a **functional partial offline backend**, not full V2.87 parity. Divine boon/favour RPCs, charge/rest mechanics, advanced class/proficiency choices, media uploads, real-time cross-device play, final multi-party session routing, and every remaining cloud RPC require porting.
+## Build on Windows
 
-Unimplemented methods return a visible `Offline database: Method ... needs an offline implementation` error; they do **not** claim a successful save.
+Use the `Living_Codex_V4_Blank_Content_Live_UI_Builder.zip` companion builder, or run:
 
-The existing visual campaign library and character creation menus are still the authentic V2 ones; save-time campaign eligibility is enforced, but full campaign-filtered menu rendering remains a separate task. Local profile switching is a simulator on one computer, not secure online authentication.
-
-## Verification
-
-```
+```bash
+python tools/export-v4-offline-first-pass.py
 python -m unittest discover -s tests -p 'test_v4_actual_live_parity.py' -v
 node tests/v4-offline-database.cjs
 ```
 
-The production main branch and live Supabase/Neon data are not modified. Work takes place solely in `v4/offline-live-baseline`.
+The resulting local edition is `dist/V4_Live_Layout_Offline_First_Pass.html` and the distributable ZIP is `dist/V4_Live_Layout_Offline_First_Pass.zip`. The original reference `dist/V4_Live_Exact_Source_Baseline.zip` contains live world data and must **not** be given to end users. The Windows builder deletes this temporary reference and all downloaded sources after a successful export.
+
+## GitHub Actions
+
+[View the isolated V4 workflow](https://github.com/TerravaleCodex/terravale-preview/actions/workflows/v4-export-live-baseline.yml)
+
+It publishes only the sanitized offline ZIP and blank-content report. The GitHub Pages production branch and authenticated databases are untouched.
