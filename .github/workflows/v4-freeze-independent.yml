@@ -10,6 +10,7 @@ on:
       - "tools/v4_freeze_independent.py"
       - "tools/v4_transform_snapshot.py"
       - "tools/v4_blank_content_patch.py"
+      - "tests/test_v4_independent_snapshot.py"
   workflow_dispatch:
 
 permissions:
@@ -23,6 +24,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
+      - name: Test standalone V4 extraction without contacting live or legacy builders
+        run: python -m unittest discover -s tests -p 'test_v4_independent_snapshot.py' -v
       - name: One-time capture of finished deployed HTML (not patch scripts)
         shell: bash
         run: |
