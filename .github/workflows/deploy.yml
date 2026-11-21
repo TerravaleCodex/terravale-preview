@@ -10,6 +10,7 @@ on:
       - "site-overrides/neon-readonly-bridge.mjs"
       - "site-overrides/neon-v2-sheet-preview.mjs"
       - "tests/neon-v2-sheet-preview.mjs"
+      - "tests/neon-v2-sheet-browser.cjs"
       - "site-overrides/sql/neon_staging_sheet_read.sql"
       - "tests/neon-staging-sheet-read.cjs"
       - "site-overrides/neon-v2-account-context.mjs"
@@ -281,6 +282,8 @@ jobs:
         run: node tests/neon-staging-sheet-read.cjs
       - name: Verify existing V2 sheet read-only staging adapter
         run: node tests/neon-v2-sheet-preview.mjs
+      - name: Browser-test existing V2 sheet rendering from an isolated read-only fixture
+        run: node tests/neon-v2-sheet-browser.cjs
       - name: Verify Neon V2-style read bridge
         run: node tests/neon-v2-read-compatibility.mjs
       - name: Verify isolated Neon staging Discord login page
