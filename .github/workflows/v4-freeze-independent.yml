@@ -8,6 +8,8 @@ on:
     paths:
       - ".github/workflows/v4-freeze-independent.yml"
       - "tools/v4_freeze_independent.py"
+      - "tools/v4_transform_snapshot.py"
+      - "tools/v4_blank_content_patch.py"
   workflow_dispatch:
 
 permissions:
@@ -29,7 +31,8 @@ jobs:
             "https://terravalecodex.github.io/terravale-preview/veiled-codex/?snapshot=$GITHUB_SHA" \
             -o "$RUNNER_TEMP/live-v287.html"
           test "$(wc -c < "$RUNNER_TEMP/live-v287.html")" -gt 7000000
-          grep -q 'data-source="v287-adaptive-resources.js"' "$RUNNER_TEMP/live-v287.html"
+          grep -q 'data-source="v254-dm-vault.js"' "$RUNNER_TEMP/live-v287.html"
+          grep -q 'id="tv238-v14-content"' "$RUNNER_TEMP/live-v287.html"
       - name: Freeze V2 once into independent content-blank V4 source
         shell: bash
         run: |
