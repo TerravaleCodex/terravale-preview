@@ -36,6 +36,8 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
    throw new TypeError("Original V2.87 sheet sources are missing or access does not match");
  }
  const wallet=requireArray(core.wallet,"wallet",500);
+ const walletLedger=requireArray(linked.wallet_ledger,"wallet ledger",7);
+ const bonusRequests=requireArray(linked.bonus_requests,"proficiency requests",60);
  const props=requireArray(core.item_properties,"item properties",200);
  const custom=requireArray(linked.custom_feats,"custom feat grants",100);
  const legacy=requireArray(linked.granted_boons,"granted legacy boons",100);
@@ -54,6 +56,8 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
      approved_build:build,
      character_state:st,
      wallet,
+     wallet_ledger:walletLedger,
+     bonus_requests:bonusRequests,
      item_properties:props,
      proficiencies:linked.proficiencies,
      training:linked.training,
@@ -79,6 +83,8 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
      inventory:st.inventory.length,
      saved_class_resources:st.resources.length,
      wallet_denominations:wallet.length,
+     wallet_ledger:walletLedger.length,
+     bonus_requests:bonusRequests.length,
      item_properties:props.length,
      item_charge_properties:props.filter(entry=>isRecord(entry?.properties)&&
        (Object.hasOwn(entry.properties,"charges")||Object.hasOwn(entry.properties,"max_charges"))).length,
