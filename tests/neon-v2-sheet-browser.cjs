@@ -8,7 +8,9 @@
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
 const cp=require("node:child_process"),assert=require("node:assert/strict");
 const root=path.resolve("site-overrides");
-const html=fs.readFileSync(path.join(root,"sheet-live-v091.html"),"utf8");
+const original=fs.readFileSync(path.join(root,"sheet-live-v091.html"),"utf8");
+const lock=fs.readFileSync(path.join(root,"neon-staging-sheet-lock.js"),"utf8");
+const html=original.replace("</body>",'<script src="./staging-readonly-lock.js" defer></script></body>');
 assert.match(html,/TV_SHEET_READY/);
 assert.match(html,/TV_SHEET_LOAD/);
 const fixtures=Object.freeze({
@@ -22,7 +24,7 @@ const fixtures=Object.freeze({
  }
 });
 const fixtureHtml=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Neon staging read-only original V2 renderer test</title></head><body>
-<iframe id="v2" title="V2 character" src="/terravale-preview/characters/sheet-render-fixed-20261101/?live=1" style="width:1300px;height:1000px"></iframe>
+<iframe id="v2" title="V2 character" src="/terravale-preview/neon-staging-auth/sheet/?live=1" style="width:1300px;height:1000px"></iframe>
 <script>
 const f=document.getElementById('v2');
 const payload=${JSON.stringify(fixtures.character)};
@@ -65,14 +67,15 @@ const check=setInterval(()=>{
  }
 },130);
 </script></body></html>`;
-const prefix="/terravale-preview/characters/sheet-render-fixed-20261101/";
+const prefix="/terravale-preview/neon-staging-auth/sheet/";
 const mime={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json"};
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,"http://127.0.0.1");
  if(url.pathname==="/fixture"){res.writeHead(200,{"Content-Type":mime[".html"],"Cache-Control":"no-store"});res.end(fixtureHtml);return}
  if(!url.pathname.startsWith(prefix)){res.writeHead(404);res.end();return}
  let file=url.pathname.slice(prefix.length);
- if(!file||file==="index.html")file="sheet-live-v091.html";
+ if(!file||file==="index.html"){res.writeHead(200,{"Content-Type":mime[".html"]});res.end(html);return}
+ if(file==="staging-readonly-lock.js"){res.writeHead(200,{"Content-Type":mime[".js"]});res.end(lock);return}
  if(file==="class-feature-rules.json"){res.writeHead(200,{"Content-Type":mime[".json"]});res.end('{"classes":{}}');return}
  if(!/^[a-zA-Z0-9_.-]+$/.test(file)||file===".."||file.startsWith(".")){res.writeHead(403);res.end();return}
  const location=path.resolve(root,file);
