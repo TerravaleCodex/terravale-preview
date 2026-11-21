@@ -1,0 +1,59 @@
+/* V2.30 refinements: original Codex components retained. */
+.sheet226-classline{font-size:13px!important;line-height:1.6!important;letter-spacing:.06em}
+.v230-class-subclass{color:var(--tv-accent,#dbc0ff);font-weight:700}
+.sheet226-hero .v230-character-title{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:7px 0 5px;color:var(--s20-gold,#f0dabb);font-size:15px;line-height:1.5}
+.v230-title-edit{font:700 11px sans-serif;border:1px solid var(--s20-edge,#504452);border-radius:7px;background:transparent;color:var(--s20-soft,#c5bacf);padding:5px 9px;cursor:pointer}
+.v230-title-edit:hover{border-color:var(--tv-accent,#bca0df);color:var(--s20-ink,#f3eef6)}
+.sheet226-hero .v230-concept{margin:0 0 6px;color:var(--s20-soft,#bdb2c6);font-size:12.5px}
+.v230-main-feature{font-size:12px!important;white-space:normal;min-height:36px}
+.v230-main-feature:disabled{opacity:.88;color:var(--tv-accent,#c8a7e5);border-color:var(--tv-accent,#9971b8);cursor:default}
+.v229-feature-grid{grid-template-columns:1fr!important}
+.v230-feature-card{background:color-mix(in srgb,var(--surface,#17151c) 88%,black);padding:17px 19px}
+.v230-feature-card h4{margin-top:7px;font-size:20px}
+.v230-feature-card p{font-size:14px!important;line-height:1.7!important;color:var(--ink,#ece6f0)!important}
+.v230-exact-rules{margin-top:14px;border-top:1px solid var(--line,#4b4053);padding:10px 0 0;font-size:14px;line-height:1.75}
+.v230-exact-rules summary{cursor:pointer;color:var(--tv-accent,#d3b7eb);font-weight:700}
+.v230-exact-rules div{margin-top:12px;color:var(--ink,#eee);max-width:720px}
+.v230-exact-rules h3,.v230-exact-rules h4{font-size:17px}
+.v230-exact-rules li{margin:7px 0}
+.v229-choice h4{font:22px Georgia,serif;color:var(--s20-gold,#f7e6d1);margin:0 0 10px}
+.v229-choice>p{font-size:14px;line-height:1.65;margin-bottom:15px}
+.v230-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:10px 0}
+.v230-choice-list{display:grid;gap:8px;max-height:440px;overflow-y:auto;overscroll-behavior:contain;padding:1px}
+.v230-pick-grid,.v230-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:9px 0 14px}
+.v230-choice-card{min-height:83px;display:flex;align-items:flex-start;text-align:left;gap:12px;border:1px solid var(--line,#52455c);border-radius:10px;background:color-mix(in srgb,var(--surface,#19151e) 90%,black);color:var(--ink,#f5edf5);padding:14px 13px;cursor:pointer;width:100%}
+.v230-choice-card>span:last-child{display:flex;flex-direction:column;gap:5px;min-width:0}
+.v230-choice-card strong{font-size:14px;line-height:1.4}
+.v230-choice-card small,.v230-choice-card em{font-size:12.5px;line-height:1.55;font-style:normal;color:var(--muted,#beb4c8);overflow-wrap:anywhere}
+.v230-choice-card .v230-choice-marker{flex:0 0 20px;font-size:20px;color:var(--tv-accent,#cba8e8);line-height:1.1}
+.v230-choice-card.selected{border-color:var(--tv-accent,#cba8e8);background:color-mix(in srgb,var(--tv-accent,#a687d1) 16%,var(--surface,#141219))}
+.v230-choice-card:hover:not(:disabled){border-color:var(--tv-accent,#d8c0ed)}
+.v230-choice-card:disabled{opacity:.43;cursor:not-allowed}
+.v230-asi-details{border-top:1px solid var(--line,#4a3b53);margin-top:18px;padding-top:13px}
+.v230-asi-details h5{font-size:15px;margin:15px 0 8px;color:var(--ink,#fff)}
+.v230-feat-picker{margin-top:16px}
+#v230-feat-query{background:var(--bg,#0b0a0e);border:1px solid var(--line,#504357);border-radius:9px;color:var(--ink,#fff);width:100%;padding:12px 14px;min-height:45px;font:14px sans-serif;margin:8px 0 12px}
+.v230-feat-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:250px;overflow-y:auto}
+.v230-feat-entry{border:1px solid var(--line,#47354e);background:transparent;border-radius:9px;display:flex;flex-direction:column;gap:5px;text-align:left;padding:13px;color:var(--ink,#fff);cursor:pointer}
+.v230-feat-entry strong{font-size:14px}
+.v230-feat-entry small{font-size:12px;line-height:1.45;color:var(--muted,#bcb1c6)}
+.v230-feat-entry>span{font-size:11px;color:var(--tv-accent,#d2b0ed)}
+.v230-feat-entry.selected{border-color:var(--tv-accent,#d2b0ed);background:color-mix(in srgb,var(--tv-accent,#b68fd8) 12%,transparent)}
+.v230-feat-entry[hidden]{display:none}
+.v230-feat-entry:disabled{opacity:.45;cursor:not-allowed}
+.v230-feat-preview{border:1px solid var(--tv-accent,#745a84);border-radius:11px;padding:17px;margin-top:15px}
+.v230-feat-preview h4{font:20px Georgia,serif;margin:8px 0}
+.v230-feat-preview p{font-size:13px;line-height:1.65}
+.v230-feat-ability{padding-top:12px;margin-top:13px;border-top:1px solid var(--line,#3b3442)}
+.v230-sourcing-note{font-size:12px;color:var(--muted,#beb3c5);line-height:1.55}
+.sheet228-reader .sheet227-reader-entries button strong{font-size:14.5px!important;line-height:1.47}
+.sheet228-reader .sheet227-reader-entries button small{font-size:12.5px!important;line-height:1.4}
+.sheet228-reader .sheet227-reader-count{font-size:12.5px!important}
+.sheet228-reader .sheet227-reader-detail .sheet228-rule-prose,.sheet228-reader .sheet227-reader-detail .sheet228-rule-prose p,.sheet228-reader .sheet227-reader-detail .sheet228-rule-prose li{font-size:15.5px!important;line-height:1.82!important}
+.sheet228-reader .sheet227-reader-body{min-height:0!important}
+.sheet228-reader .sheet227-reader-detail{padding:24px 29px 30px!important}
+.sheet228-reader .sheet227-reader-entries{max-height:min(63vh,650px)!important;overflow-y:auto}
+.sheet228-reader .sheet227-reader-index{min-width:0}
+.sheet228-reader .sheet228-rule-prose{max-width:920px!important}
+@media(max-width:810px){.v230-mode-grid,.v230-feat-list{grid-template-columns:1fr}.v230-pick-grid,.v230-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet228-reader .sheet227-reader-detail{padding:20px 16px!important}.sheet228-reader .sheet227-reader-entries{max-height:290px!important}}
+@media(max-width:520px){.v230-pick-grid,.v230-stat-grid{grid-template-columns:1fr 1fr}.v230-choice-card{padding:12px 10px}.v230-choice-card strong{font-size:13.5px}.v230-choice-card small{font-size:12px}.v230-stat-grid .v230-choice-card{min-height:70px}}

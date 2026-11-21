@@ -1,0 +1,85 @@
+
+/* V2.39 | Chromatic Codex · V2 native theme tokens and readable hierarchy */
+.tv-lore{
+  --lore-history:#edba76;--lore-places:#91c9e8;--lore-peoples:#91d2b2;
+  --lore-faith:#d2a9ef;--lore-institutions:#e5a9a6;--lore-world:#bfb3ed;
+  --lore-heritage:#efb5ce;
+}
+.tv-lore .lore-world{--topic:color-mix(in srgb,var(--lore-world) 82%,var(--lore-accent))}
+.tv-lore .lore-history{--topic:color-mix(in srgb,var(--lore-history) 84%,var(--lore-accent))}
+.tv-lore .lore-places{--topic:color-mix(in srgb,var(--lore-places) 84%,var(--lore-accent))}
+.tv-lore .lore-peoples{--topic:color-mix(in srgb,var(--lore-peoples) 84%,var(--lore-accent))}
+.tv-lore .lore-faith{--topic:color-mix(in srgb,var(--lore-faith) 85%,var(--lore-accent))}
+.tv-lore .lore-institutions{--topic:color-mix(in srgb,var(--lore-institutions) 82%,var(--lore-accent))}
+.tv-lore .lore-card.heritage{--topic:color-mix(in srgb,var(--lore-heritage) 76%,var(--lore-accent))}
+.tv-lore .lore-head{border-left:3px solid var(--lore-accent);padding-left:clamp(12px,1.5vw,22px);margin-top:4px}
+.tv-lore .lore-head h1{font-size:clamp(38px,4vw,55px);letter-spacing:-.028em}
+.tv-lore .lore-head p{font-size:14px;line-height:1.7}
+.tv-lore .lore-count{font-size:13px}
+.tv-lore .lore-count strong{font-size:18px;color:var(--lore-text)}
+.tv-lore .lore-tabs .lore-tab{font-size:13px;padding:11px 19px}
+.tv-lore .lore-controls{padding:17px}
+.tv-lore .lore-chip{font-size:12px;position:relative;transition:background .16s,border-color .16s}
+.tv-lore .lore-chip:not(.lore-all){--topic:var(--lore-accent)}
+.tv-lore .lore-chip.lore-history{--topic:var(--lore-history)}
+.tv-lore .lore-chip.lore-places{--topic:var(--lore-places)}
+.tv-lore .lore-chip.lore-peoples{--topic:var(--lore-peoples)}
+.tv-lore .lore-chip.lore-faith{--topic:var(--lore-faith)}
+.tv-lore .lore-chip.lore-institutions{--topic:var(--lore-institutions)}
+.tv-lore .lore-chip.lore-world{--topic:var(--lore-world)}
+.tv-lore .lore-chip:not(.lore-all){color:var(--topic);border-color:color-mix(in srgb,var(--topic) 42%,var(--lore-border));background:color-mix(in srgb,var(--topic) 8%,var(--lore-deep))}
+.tv-lore .lore-chip:not(.lore-all).active{background:color-mix(in srgb,var(--topic) 22%,var(--lore-deep));border-color:var(--topic)}
+.tv-lore .lore-grid{gap:13px;align-items:stretch}
+.tv-lore .lore-card{
+ --shine:color-mix(in srgb,var(--topic) 17%,transparent);
+ border:1px solid color-mix(in srgb,var(--topic) 24%,var(--lore-border));
+ border-top:2px solid color-mix(in srgb,var(--topic) 72%,var(--lore-border));
+ background:radial-gradient(ellipse at 93% 3%,var(--shine),transparent 63%),linear-gradient(145deg,color-mix(in srgb,var(--topic) 5%,var(--lore-bg)),var(--lore-bg) 75%);
+ padding:19px 20px 16px;min-height:210px;transition:transform .18s,border-color .18s,box-shadow .18s;
+}
+.tv-lore .lore-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--topic);opacity:.82;pointer-events:none}
+.tv-lore .lore-card:hover{border-color:var(--topic);box-shadow:0 12px 28px #0004}
+.tv-lore .lore-card .card-symbol{border-color:color-mix(in srgb,var(--topic) 55%,var(--lore-border));color:var(--topic);width:40px;height:40px;font-size:20px;background:color-mix(in srgb,var(--topic) 12%,var(--lore-deep))}
+.tv-lore .lore-card .card-top{color:var(--topic);font-size:10.5px;gap:15px;letter-spacing:.1em}
+.tv-lore .lore-card .card-top span:last-child{color:var(--topic)}
+.tv-lore .lore-card h2{font-size:clamp(21px,1.8vw,29px);line-height:1.15;margin:18px 0 11px}
+.tv-lore .lore-card p{font-size:13px;line-height:1.64;-webkit-line-clamp:3}
+.tv-lore .lore-card .card-bottom{font-size:11px;gap:16px}
+.tv-lore .lore-card .card-bottom strong{color:var(--topic)}
+.tv-lore .lore-card.spotlight{min-height:264px;padding:25px 28px 20px;--shine:color-mix(in srgb,var(--topic) 25%,transparent)}
+.tv-lore .lore-card.spotlight h2{font-size:clamp(28px,2.7vw,41px);letter-spacing:-.02em;margin-top:23px;max-width:18ch}
+.tv-lore .lore-card.spotlight p{font-size:14px;-webkit-line-clamp:3;max-width:57ch}
+.tv-lore .lore-card.wide:not(.spotlight){min-height:220px}
+.tv-lore .lore-card.compact{min-height:153px;padding:15px 17px 12px}
+.tv-lore .lore-card.compact .card-symbol{width:32px;height:32px;font-size:16px}
+.tv-lore .lore-card.compact h2{font-size:clamp(19px,1.5vw,22px);margin:11px 0 7px}
+.tv-lore .lore-card.compact p{font-size:12px;line-height:1.5;-webkit-line-clamp:2;margin-bottom:9px}
+.tv-lore .lore-card.heritage{border-top-color:var(--topic)}
+.tv-lore.reader-view .reader-hero{border-top:3px solid var(--topic,var(--lore-accent));background:radial-gradient(ellipse at 95% 10%,color-mix(in srgb,var(--topic,var(--lore-accent)) 22%,transparent),transparent 66%),var(--lore-bg)}
+.tv-lore.reader-view .reader-hero .lore-ey{color:var(--topic,var(--lore-accent));font-size:11px}
+.tv-lore.reader-view .reader-hero h1{font-size:clamp(42px,5vw,72px)}
+.tv-lore.reader-view .reader-body{font-size:16px;line-height:1.83;padding:clamp(26px,3.4vw,52px)}
+.tv-lore.reader-view .reader-body>*{max-width:84ch}
+.tv-lore.reader-view .reader-body h2{font-size:clamp(27px,2.4vw,35px);border-color:color-mix(in srgb,var(--topic,var(--lore-accent)) 38%,var(--lore-border));color:var(--lore-text)}
+.tv-lore.reader-view .reader-body h2::before{content:'✦';font:14px system-ui;color:var(--topic,var(--lore-accent));margin-right:10px;vertical-align:3px}
+.tv-lore.reader-view .reader-body h3{font-size:24px;color:color-mix(in srgb,var(--topic,var(--lore-accent)) 66%,var(--lore-text))}
+.tv-lore.reader-view .reader-body strong{color:color-mix(in srgb,var(--topic,var(--lore-accent)) 55%,var(--lore-text))}
+.tv-lore.reader-view .reader-aside{border-top:2px solid var(--topic,var(--lore-accent));padding:23px}
+.tv-lore.reader-view .reader-aside h2{font-size:25px;line-height:1.25}
+.tv-lore.reader-view .reader-related{font-size:13px;line-height:1.6}
+.tv-lore .cal-hero{border-top:3px solid var(--lore-history);background:radial-gradient(ellipse at right top,color-mix(in srgb,var(--lore-history) 17%,transparent),transparent 60%),var(--lore-bg)}
+.tv-lore .cal-hero h2{font-size:clamp(33px,3.2vw,46px)}
+.tv-lore .cal-event{border-left:3px solid var(--lore-faith);font-size:11px}
+.tv-lore .cal-event.established{border-left-color:var(--lore-history)}
+.tv-lore .moon-panel:first-child{border-top:2px solid var(--lore-history)}
+.tv-lore .moon-panel:last-child{border-top:2px solid var(--lore-places)}
+.tv-discord .tv-ident-table code{font-size:14px;font-weight:800;letter-spacing:.07em;white-space:nowrap;color:var(--accent)}
+.tv-discord .tv-ident-head h2{font-size:clamp(27px,2.5vw,34px)}
+.tv-discord .tv-ident-head{padding-bottom:7px}
+/* Give morph overlay cloned articles their Lore styling without altering other pages. */
+.menu-morph-layer.tv-lore{--lore-border:var(--edge,#36313f);--lore-bg:var(--surface,#111119);--lore-deep:var(--bg,#09090d);--lore-text:var(--ink,#eae6f0);--lore-soft:var(--soft,#b3acbb);--lore-accent:var(--accent,#bba1e4)}
+@media(max-width:1120px){.tv-lore .lore-card.spotlight{min-height:244px}.tv-lore .lore-card.spotlight h2{font-size:30px}}
+@media(max-width:700px){.tv-lore .lore-grid{gap:11px}.tv-lore .lore-card{padding:17px;min-height:185px}.tv-lore .lore-card.spotlight{min-height:211px;padding:21px}.tv-lore .lore-card h2{font-size:23px}.tv-lore .lore-card.spotlight h2{font-size:30px}.tv-lore .lore-card.compact{min-height:143px}.tv-lore.reader-view .reader-body{font-size:15.5px;line-height:1.8;padding:23px 19px}.tv-lore .lore-chip{padding:8px 11px}}
+@media(max-width:460px){.tv-lore .lore-card.spotlight,.tv-lore .lore-card.wide{grid-column:span 1}.tv-lore .lore-card.spotlight{min-height:220px}.tv-lore .lore-card.spotlight h2{font-size:30px}.tv-lore .lore-card:not(.spotlight){min-height:177px}.tv-lore .lore-card.compact{min-height:143px}.tv-lore.reader-view .reader-hero h1{font-size:42px}.tv-lore .lore-head h1{font-size:39px}}
+@media(prefers-reduced-motion:reduce){.tv-lore .lore-card,.tv-lore .lore-chip{transition:none!important}}
+

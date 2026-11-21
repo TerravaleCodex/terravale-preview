@@ -1,0 +1,34 @@
+
+/* Terravale Codex V2.28 — return to the original single-article ability reader. */
+.sheet228-reader .sheet227-reader-tabs{flex-wrap:wrap}
+.sheet228-reader .sheet227-reader-body{min-height:360px}
+.sheet228-reader .sheet227-reader-detail{background:var(--s20-panel);padding:23px 28px 32px}
+.sheet228-reader .sheet227-rule-heading h3{margin:7px 0 11px}
+.sheet228-reader .sheet228-status{font-size:11px;color:var(--s20-soft);margin-bottom:17px}
+.sheet228-reader .sheet228-rule-prose{display:block!important;max-width:850px;font-size:13px;line-height:1.88;overflow-wrap:anywhere;white-space:normal}
+.sheet228-reader .sheet228-rule-prose > :first-child{margin-top:0}
+.sheet228-reader .sheet228-rule-prose p{font-size:13px;line-height:1.9;margin:11px 0 15px}
+.sheet228-reader .sheet228-rule-prose strong{color:var(--s20-ink)}
+.sheet228-reader .sheet228-rule-prose h2,.sheet228-reader .sheet228-rule-prose h3,.sheet228-reader .sheet228-rule-prose h4{font:600 20px/1.35 Georgia,serif;color:var(--s20-gold);margin:24px 0 10px}
+.sheet228-reader .sheet228-rule-prose ul,.sheet228-reader .sheet228-rule-prose ol{padding-left:23px;margin:10px 0 14px}
+.sheet228-reader .sheet228-rule-prose li{margin:7px 0;line-height:1.8}
+.sheet228-reader .sheet228-rule-prose blockquote{margin:13px 0;padding:10px 16px;border-left:2px solid var(--s20-accent)}
+.sheet228-reader .sheet228-rule-prose table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:12px}
+.sheet228-reader .sheet228-rule-prose th,.sheet228-reader .sheet228-rule-prose td{border:1px solid var(--s20-edge);padding:8px 11px;text-align:left}
+.sheet228-reader .sheet228-deep-prompt{border-top:1px solid var(--s20-edge);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:26px;padding-top:17px;font-size:12px;color:var(--s20-soft)}
+.sheet228-reader .sheet228-list-label{padding:14px 12px 6px;margin-top:2px;border-bottom:1px solid var(--s20-edge);font-size:10px;line-height:1.5;letter-spacing:1px;text-transform:uppercase;color:var(--s20-soft);font-weight:700}
+.sheet228-reader .sheet227-reader-entries .sheet227-entry{min-height:60px}
+.campaign-characters-link{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:11px;padding:5px 7px;margin-left:auto;white-space:nowrap}
+.campaign-characters-link:hover{text-decoration:underline;color:var(--text)}
+.sheet228-profile-lock{background:var(--surface);border:1px solid var(--edge);border-radius:10px;padding:13px 15px;margin:15px 0;display:flex;flex-direction:column;gap:4px}
+.sheet228-profile-lock strong{font-size:13px}.sheet228-profile-lock small{font-size:11px;color:var(--muted);line-height:1.6}
+.sheet228-grant-method{background:var(--bg);border:1px solid var(--edge);border-radius:10px;padding:14px;margin-top:14px}
+.sheet228-grant-method>.v2-overline{display:block;margin-bottom:9px}
+.sheet228-method-picks{display:flex;flex-wrap:wrap;gap:8px}
+.sheet228-method-picks label{display:flex;align-items:center;gap:7px;border:1px solid var(--edge);border-radius:9px;padding:10px 14px;font-size:12px;cursor:pointer;min-height:42px}
+.sheet228-method-picks label:has(input:checked){border-color:var(--accent);background:var(--surface)}
+.sheet228-method-picks label:has(input:disabled){opacity:.55;cursor:not-allowed}
+.sheet228-grant-method>small{display:block;margin-top:10px;color:var(--muted);font-size:11px}
+.sheet227-dm-actions [data-v227-level]:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:730px){.sheet228-reader .sheet227-reader-detail{padding:17px 15px 23px}.sheet228-reader .sheet227-reader-entries{display:flex;gap:8px}.sheet228-reader .sheet228-list-label{display:none}.campaign-feature-actions{flex-wrap:wrap}.campaign-characters-link{margin-left:0}.sheet228-reader .sheet228-rule-prose p{font-size:12.5px}}
+

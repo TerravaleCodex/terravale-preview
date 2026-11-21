@@ -1,0 +1,26 @@
+
+/* V2.33 — existing offline Codex, corrected source navigation and interaction parity */
+.v233-path-reader .v232-class-layout{grid-template-columns:minmax(230px,30%) minmax(0,1fr)}
+.v233-path-reader .v232-option-links{max-height:670px}
+.v233-path-reader .v232-option-links button{padding:14px 15px;min-height:47px;font-size:15px}
+.v233-path-reader .v232-option-links button b{font-size:15px}
+.v233-level-steps{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 18px;padding:0 0 15px;border-bottom:1px solid var(--edge)}
+.v233-level-steps button{display:flex;flex-direction:column;text-align:left;gap:5px;min-width:104px;flex:1;border:1px solid var(--edge);border-radius:10px;background:var(--raised);color:var(--ink);padding:11px 13px;font-size:15px;font-weight:750}
+.v233-level-steps button small{font-size:12px;font-weight:400;color:var(--soft);white-space:normal;line-height:1.35}
+.v233-level-steps button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface))}
+.v233-path-content{padding:20px;background:color-mix(in srgb,var(--accent) 4%,var(--surface));border:1px solid var(--edge);border-radius:10px;min-height:180px}
+.v233-path-content h4{font:600 24px Georgia,serif;margin:7px 0 16px;color:var(--ink)}
+.v233-path-content .v232-class-prose{font-size:15px;line-height:1.8}
+.v233-discovery-card{min-height:105px;display:flex;flex-direction:column;gap:7px;padding:19px}
+.v233-discovery-card h4{font-size:22px;margin:0}.v233-discovery-card p{font-size:14px;line-height:1.65;margin:0;max-width:740px}
+.v233-stage-section{margin-top:20px;padding:21px;border:1px solid var(--edge);border-radius:13px;background:var(--surface)}
+.v233-stage-section h3{font:26px Georgia,serif;margin:5px 0 9px}.v233-stage-section p{color:var(--soft);font-size:13px}
+.v233-stage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:15px}
+.v233-stage-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border:1px solid var(--edge);border-radius:10px;padding:15px;background:var(--bg)}
+.v233-stage-row b,.v233-stage-row small{display:block}.v233-stage-row b{font-size:15px}.v233-stage-row small{font-size:12px;color:var(--soft);margin-top:4px}
+.v233-stage-row select{border:1px solid var(--edge);background:var(--raised);color:var(--ink);border-radius:8px;padding:11px;min-width:172px;font-size:14px}
+.v232-lab-node{transform:translate(-50%,-50%);z-index:2;box-shadow:0 3px 9px #0008}
+.v232-lab-graph path,.v231-tree-canvas path:not(marker path){fill:none;stroke:var(--soft);stroke-width:2.5;opacity:.6;stroke-linecap:round;stroke-linejoin:round}
+.v232-lab-graph path.owned,.v231-tree-canvas path.owned{stroke:var(--accent);stroke-width:3.5;opacity:1}
+.v232-lab-graph svg,.v231-tree-canvas svg{z-index:0}.v231-node{z-index:2}
+@media(max-width:720px){.v233-path-reader .v232-class-layout{grid-template-columns:1fr}.v233-stage-grid{grid-template-columns:1fr}.v233-level-steps button{min-width:85px}.v233-path-content{padding:15px}}

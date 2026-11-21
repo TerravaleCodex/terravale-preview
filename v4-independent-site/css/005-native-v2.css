@@ -1,0 +1,155 @@
+
+/* Terravale Codex V2.5 — Return to the previously approved Session Room composition.
+   Designed at ordinary 1366/1440/1920 desktop widths; adaptive rail remains instant. */
+.app .sidebar, .app .sidebar *, .app .main-wrap, .app .content { transition-property: background-color,border-color,color,opacity !important; transition-duration: 0s !important; }
+::view-transition-old(root),::view-transition-new(root) { animation:none !important; }
+
+.page-session{--sr-border:var(--tv-hex-44364e,#44364e);}
+.page-session .page-intro {margin:0 0 10px;}
+.page-session .sr-statusbar {min-height:55px;padding:11px 16px;margin:0 0 12px;}
+.page-session .sr-status-campaign strong {font-size:16px;}
+.page-session .sr-workspace,
+.app.rail-mode .page-session .sr-workspace {display:flex !important;flex-direction:column !important;grid-template-columns:none !important;gap:12px !important;align-items:stretch !important;min-width:0;}
+.page-session .sr-workspace > .sr-encounter,
+.app.rail-mode .page-session .sr-workspace > .sr-encounter {display:flex !important;flex-direction:column !important;grid-template-columns:none !important;gap:0 !important;order:1 !important;width:100% !important;margin:0 !important;padding:15px 18px 16px !important;min-width:0;}
+.page-session .sr-encounter > .sr-section-head {order:0 !important;grid-area:auto !important;width:100% !important;margin:0 0 11px !important;padding:0 !important;}
+.page-session .sr-encounter > .sr-queue {order:1 !important;grid-area:auto !important;width:100% !important;margin:0 !important;}
+.page-session .sr-encounter > .sr-focus {order:2 !important;grid-area:auto !important;width:100% !important;}
+.page-session .sr-encounter > .sr-turn-tools {order:3 !important;grid-area:auto !important;width:100% !important;}
+.page-session .sr-section-head h2 {font-size:25px;margin:3px 0 0;}
+.page-session .sr-section-head p {display:none;}
+.page-session .sr-queue {display:flex !important;align-items:stretch;gap:10px;padding:0 2px 10px;overflow-x:auto;scroll-snap-type:x proximity;}
+.page-session .sr-queue .sr-combatant,
+.app.rail-mode .page-session .sr-queue .sr-combatant {flex:0 0 clamp(148px,15vw,193px) !important;max-width:193px !important;min-height:179px !important;height:179px !important;padding:11px 12px 10px !important;scroll-snap-align:start;}
+.page-session .sr-combatant-top {min-height:15px;}
+.page-session .sr-portrait {height:55px;width:55px;margin:8px auto 7px;}
+.page-session .sr-portrait-letter {font-size:28px;}
+.page-session .sr-portrait-orbit {height:65px;width:33px;}
+.page-session .sr-combatant-title {font-size:15px;}
+.page-session .sr-combatant-meta {font-size:10px;margin-top:3px;}
+.page-session .sr-combatant-hp-top {margin-top:auto;padding-top:6px;margin-bottom:5px;}
+.page-session .sr-focus {margin-top:2px;border-radius:11px;}
+.page-session .sr-focus-head {padding:12px 15px;min-height:65px;}
+.page-session .sr-focus-sigil {width:38px;height:38px;}
+.page-session .sr-focus-identity {gap:11px;}
+.page-session .sr-focus-identity h3 {font-size:22px;margin:2px 0;}
+.page-session .sr-focus-body {padding:10px 14px 11px;}
+.page-session .sr-resource-grid {gap:8px;}
+.page-session .sr-resource {min-height:67px;padding:9px 12px;}
+.page-session .sr-resource strong {font-size:23px;}
+.page-session .sr-focus-toolbar {margin-top:9px;}
+.page-session .sr-quick-actions {margin-top:8px;padding-top:7px;}
+.page-session .sr-focus-footer {margin-top:8px;padding-top:7px;}
+.page-session .sr-turn-tools {display:flex;flex-direction:column;gap:0;margin-top:9px;padding:0 12px;background:var(--tv-hex-17121e,#17121e);border:1px solid var(--tv-hex-43364d,#43364d);border-radius:9px;}
+.page-session .sr-turn-tools-head {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;}
+.page-session .sr-turn-tools-label {display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.page-session .sr-turn-tools-upnext {font-size:11px;color:var(--tv-hex-ae9bb8,#ae9bb8);}
+.page-session .sr-turn-tools-upnext strong {color:var(--tv-hex-e1cbf3,#e1cbf3);}
+.page-session .sr-turn-tools-body {border-top:1px solid var(--tv-hex-41354b,#41354b);padding:10px 0 11px;}
+.page-session .sr-turn-tools-caption {color:var(--tv-hex-ab9ab3,#ab9ab3);font-size:10px;margin-bottom:9px;}
+.page-session .sr-turn-tools-body .sr-action-slots {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+.page-session .sr-turn-tools-body .sr-action-slot {min-height:45px;padding:7px 9px;}
+.page-session .sr-workspace > .sr-operations,
+.app.rail-mode .page-session .sr-workspace > .sr-operations {display:flex !important;flex-direction:column !important;order:2 !important;grid-area:auto !important;gap:12px !important;width:100% !important;margin:0 !important;min-width:0;}
+.page-session .sr-operations > .sr-lower,
+.app.rail-mode .page-session .sr-operations > .sr-lower {display:grid !important;grid-template-columns:minmax(0,1.17fr) minmax(305px,.83fr) !important;align-items:stretch !important;gap:12px !important;order:1 !important;margin:0 !important;min-width:0;}
+.page-session .sr-operations .sr-chat-panel,
+.app.rail-mode .page-session .sr-operations .sr-chat-panel,
+.page-session .sr-operations .sr-dice-panel,
+.app.rail-mode .page-session .sr-operations .sr-dice-panel {order:initial !important;grid-area:auto !important;align-self:stretch !important;min-width:0 !important;width:100% !important;min-height:320px; padding:14px 17px;}
+.page-session .sr-operations .sr-chat-feed,
+.app.rail-mode .page-session .sr-operations .sr-chat-feed {height:225px !important;max-height:290px !important;min-height:180px !important;flex:1 1 auto !important;}
+.page-session .sr-panel-head {padding-bottom:8px;}
+.page-session .sr-panel-head h3{font-size:23px;}
+.page-session .sr-dice-area {padding-top:9px;}
+.page-session .sr-dice-description {margin-bottom:9px;}
+.page-session .sr-dice-grid,
+.app.rail-mode .page-session .sr-operations .sr-dice-grid {grid-template-columns:repeat(7,minmax(0,1fr)) !important;gap:5px !important;}
+.page-session .sr-die {min-height:42px;padding:6px 1px;}
+.page-session .sr-operations > .sr-pulse,
+.app.rail-mode .page-session .sr-operations > .sr-pulse {order:2 !important;grid-area:auto !important;width:100% !important;margin:0 !important;}
+.page-session .sr-workspace > .sr-dm-desk,
+.app.rail-mode .page-session .sr-workspace > .sr-dm-desk {order:3 !important;grid-area:auto !important;margin:0 !important;}
+.page-session .sr-offline-note {margin-top:12px;}
+/* Layouts maintain old-style full-width initiative; never move conversation up beside cards. */
+@container (min-width:1250px) {
+  .page-session .sr-workspace,
+  .app.rail-mode .page-session .sr-workspace {display:flex !important;flex-direction:column !important;}
+  .page-session .sr-encounter {display:flex !important;grid-template-columns:none !important;}
+  .page-session .sr-operations>.sr-lower {display:grid !important;}
+}
+@container (min-width:830px) and (max-width:1249px) {
+  .page-session .sr-workspace {display:flex !important;flex-direction:column !important;}
+  .page-session .sr-encounter {display:flex !important;}
+  .page-session .sr-operations>.sr-lower {display:grid !important;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr) !important;}
+}
+@container (min-width:830px) and (max-width:1020px) {
+  .page-session .sr-operations>.sr-lower {grid-template-columns:minmax(0,1.08fr) minmax(290px,.92fr) !important;}
+}
+@container (max-width:829px) {
+  .page-session .sr-workspace,.app.rail-mode .page-session .sr-workspace {display:flex !important;flex-direction:column !important;}
+  .page-session .sr-encounter {display:flex !important;}
+  .page-session .sr-operations>.sr-lower {display:grid !important;grid-template-columns:minmax(0,1fr) !important;}
+  .page-session .sr-queue .sr-combatant {flex:0 0 158px !important;min-height:181px !important;height:181px !important;}
+  .page-session .sr-turn-tools-body .sr-action-slots {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .page-session .sr-operations .sr-chat-feed {height:230px !important;}
+}
+@media(max-width:760px) {
+  .page-session .sr-statusbar {gap:8px;}
+  .page-session .sr-encounter {padding:13px 11px 12px !important;}
+  .page-session .sr-section-head {gap:9px;}
+  .page-session .sr-focus-head {flex-wrap:wrap;}
+  .page-session .sr-operations .sr-chat-panel,.page-session .sr-operations .sr-dice-panel {min-height:0;padding:13px;}
+}
+@media(max-width:420px) {
+  .page-session .sr-status-links {gap:7px;}
+  .page-session .sr-queue .sr-combatant {flex-basis:147px !important;}
+  .page-session .sr-resource-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+  .page-session .sr-resource {padding:9px 6px;}
+.page-session .sr-focus-controls {width:100%;}
+  .page-session .sr-operations .sr-dice-grid {grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+}
+
+/* Use the entire available row; do not let the earlier side-utility grid
+   cap the chat/dice columns at their intrinsic widths. */
+.page-session .sr-operations > .sr-lower,
+.app.rail-mode .page-session .sr-operations > .sr-lower {width:100% !important;align-self:stretch !important;}
+.page-session .sr-operations>.sr-lower>.sr-chat-panel,
+.page-session .sr-operations>.sr-lower>.sr-dice-panel {width:100% !important;max-width:none !important;}
+
+/* Compact the expanded active combatant without hiding its statistics,
+   conditions, health controls or links. The combatant still spans the board. */
+@container (min-width:950px) {
+ .page-session .sr-focus-body {display:grid !important;grid-template-columns:minmax(0,1.52fr) minmax(290px,.67fr) !important;grid-template-areas:'resources conditions' 'health conditions' 'footer footer';column-gap:14px;row-gap:5px;padding:9px 13px 10px;align-items:start;}
+ .page-session .sr-focus-body>.sr-resource-grid {grid-area:resources !important;min-width:0;}
+ .page-session .sr-focus-body>.sr-focus-toolbar {grid-area:conditions !important;margin:0 !important;padding:5px 0 0 14px;border-left:1px solid var(--tv-hex-433648,#433648);align-self:stretch;align-items:flex-start;flex-direction:column;justify-content:flex-start;min-width:0;}
+ .page-session .sr-focus-body>.sr-quick-actions {grid-area:health !important;margin:0 !important;padding:6px 0 0;min-width:0;}
+ .page-session .sr-focus-body>.sr-focus-footer {grid-area:footer !important;margin:2px 0 0 !important;padding:7px 0 0 !important;}
+ .page-session .sr-focus-body>.sr-death {grid-column:1/-1;grid-row:auto;}
+ .page-session .sr-quick-action-row {gap:5px;}
+ .page-session .sr-focus-head {padding-block:10px;min-height:59px;}
+ .page-session .sr-resource {min-height:63px;padding:8px 10px;}
+ .page-session .sr-focus-toolbar .sr-no-conditions {font-size:11px;}
+}
+
+/* Remove unnecessary stacked header height; the inspector remains fully open. */
+@container (min-width:950px) {
+ .page-session .sr-focus-controls {flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;}
+ .page-session .sr-focus-head {min-height:0;padding:8px 13px;}
+ .page-session .sr-focus-identity h3 {font-size:21px;margin:0;}
+ .page-session .sr-focus-identity p {margin:1px 0 0;}
+ .page-session .sr-focus-sigil {height:36px;width:36px;}
+ .page-session .sr-focus-body {padding:6px 12px 7px;row-gap:3px;}
+ .page-session .sr-resource {min-height:60px;padding:7px 9px;}
+ .page-session .sr-focus-footer {min-height:0;padding:4px 0 0 !important;margin:0 !important;}
+ .page-session .sr-quick-actions {padding-top:4px !important;}
+ .page-session .sr-focus-toolbar {padding-top:3px;}
+ .page-session .sr-queue .sr-combatant {min-height:171px !important;height:171px !important;}
+ .page-session .sr-queue {padding-bottom:7px;}
+ .page-session .sr-turn-tools {margin-top:5px;}
+ .page-session .sr-turn-tools-head {min-height:30px;}
+}
+
+/* The compact status strip doubles as the visual page heading. Retain H1 for assistive technology. */
+.page-session>.page-intro {position:absolute !important;clip-path:inset(50%) !important;width:1px !important;height:1px !important;overflow:hidden !important;white-space:nowrap !important;margin:0 !important;padding:0 !important;border:0 !important;}
+

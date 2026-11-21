@@ -1,0 +1,260 @@
+
+/* V2.4 • Cohesive first-screen tactical workspace and gentle menu switching.
+   The initial page content is moved substantially closer to the top.
+   Layout adapts to *available* width; the desktop rail is not presumed to be ultrawide. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* CSS supports older browsers; Chromium / modern Safari can additionally
+     crossfade the *final* geometry through the View Transitions API. */
+  .app .sidebar {transition:width .28s cubic-bezier(.2,.7,.18,1),padding .28s cubic-bezier(.2,.7,.18,1),background-color .18s ease,border-color .18s ease;}
+  ::view-transition-old(root){animation:.15s cubic-bezier(.4,0,1,1) both v24-fade-old;}
+  ::view-transition-new(root){animation:.26s cubic-bezier(0,0,.2,1) both v24-fade-new;}
+  @keyframes v24-fade-old {to{opacity:0;filter:blur(1.4px)}}
+  @keyframes v24-fade-new {from{opacity:.28;filter:blur(1.4px)}to{opacity:1;filter:blur(0)}}
+}
+@media (prefers-reduced-motion:reduce) {
+  .app .sidebar {transition:none!important;}
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.01ms!important;}
+}
+
+/* Dashboard: align the party panel with the adventurer *card*, not its
+   section heading. Use the remaining column height for Curiosities. */
+@container (min-width:1180px) {
+  .app.rail-mode .page-dashboard>.dashboard-grid {align-items:stretch;}
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack {
+    padding-top:78px;
+    align-self:stretch;
+    display:grid;
+    grid-template-rows:auto minmax(215px,1fr);
+    gap:18px;
+  }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack>section {width:100%;min-width:0;}
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack .cabinet-widget {
+    display:flex;flex-direction:column;justify-content:flex-start;
+  }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack .cabinet-row {
+    flex:1;align-items:center;padding-block:12px;
+  }
+}
+@media (min-width:1040px) {
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid {align-items:stretch;}
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid>.right-stack {
+    padding-top:74px;display:grid;grid-template-rows:auto minmax(210px,1fr);align-self:stretch;
+  }
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid>.right-stack .cabinet-widget {
+    display:flex;flex-direction:column;
+  }
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid>.right-stack .cabinet-row {flex:1;align-items:center;}
+}
+@media(max-width:1039px) {
+  .page-dashboard .dashboard-grid>.right-stack {padding-top:0!important;}
+}
+
+/* Replace the duplicate decorative banner with a single useful, tight row. */
+.page-session .page-intro {margin-bottom:12px;}
+.sr-statusbar {
+  display:flex;align-items:center;gap:16px;min-height:56px;
+  border:1px solid var(--tv-hex-42354d,#42354d);border-radius:11px;
+  padding:10px 17px;margin-bottom:13px;
+  background:linear-gradient(110deg,var(--tv-hex-21182b,#21182b),var(--tv-hex-121019,#121019) 72%);
+  color:var(--tv-hex-c9bed2,#c9bed2);
+}
+.sr-status-campaign {display:flex;flex-direction:column;min-width:140px;gap:2px;}
+.sr-status-campaign strong {font:500 18px/1.2 var(--serif);color:var(--tv-hex-f0e3f5,#f0e3f5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-status-current {display:flex;align-items:center;gap:9px;min-width:0;flex:1;font-size:11px;color:var(--tv-hex-aea1b9,#aea1b9);}
+.sr-status-current strong {color:var(--tv-hex-d9c6ed,#d9c6ed);font-weight:750;}
+.sr-status-live {display:block;width:7px;height:7px;border-radius:50%;background:var(--tv-hex-a6d5b2,#a6d5b2);box-shadow:0 0 9px var(--tv-hex-84c3a766,#84c3a766);flex:none;}
+.sr-status-links {display:flex;align-items:center;gap:15px;white-space:nowrap;}
+.sr-status-links .sr-text-link {font-size:10.5px;}
+.sr-statusbar .sr-local-tag {font-size:8px;padding:5px 7px;margin:0;color:var(--tv-hex-b6a6c4,#b6a6c4);}
+.sr-status-metrics {display:flex;gap:13px;white-space:nowrap;padding-left:16px;border-left:1px solid var(--tv-hex-55445c,#55445c);}
+.sr-status-metrics span {font-size:8px;letter-spacing:.07em;color:var(--tv-hex-a392b2,#a392b2);display:flex;flex-direction:column;gap:3px;}
+.sr-status-metrics strong {font:500 18px var(--serif);color:var(--tv-hex-e4d5ee,#e4d5ee);}
+
+.page-session .sr-encounter {padding:16px 17px 14px;margin:0;min-width:0;}
+.page-session .sr-section-head {gap:13px;margin-bottom:11px;align-items:center;}
+.page-session .sr-section-head h2 {font-size:25px;margin:3px 0 3px;}
+.page-session .sr-section-head p {display:none;}
+.page-session .sr-section-head .v2-overline {font-size:8px;}
+.page-session .sr-queue {gap:9px;padding:1px 1px 10px;margin:0;}
+.page-session .sr-queue .sr-combatant {
+  min-height:164px;flex:1 0 150px;max-width:245px;
+  padding:10px 11px 10px;border-radius:10px;
+}
+.page-session .sr-combatant-top {min-height:14px;}
+.page-session .sr-portrait {height:47px;width:47px;margin:7px auto 7px;}
+.page-session .sr-portrait:before{inset:5px;}
+.page-session .sr-portrait-orbit{height:56px;width:25px;}
+.page-session .sr-portrait-letter {font-size:25px;}
+.page-session .sr-combatant-title {font-size:14px;}
+.page-session .sr-combatant-meta {font-size:9px;margin-top:3px;}
+.page-session .sr-combatant-hp-top {margin:9px 0 5px;}
+.page-session .sr-focus {margin-top:7px;}
+.page-session .sr-focus-head {padding:13px 14px;}
+.page-session .sr-focus-sigil {width:36px;height:36px;border-radius:9px;}
+.page-session .sr-focus-sigil .icon{width:18px;height:18px;}
+.page-session .sr-focus-identity {gap:10px;}
+.page-session .sr-focus-identity h3 {font-size:20px;margin:2px 0;}
+.page-session .sr-focus-body {padding:11px 13px;}
+.page-session .sr-resource-grid {gap:7px;}
+.page-session .sr-resource {min-height:73px;padding:9px 10px;gap:3px;}
+.page-session .sr-resource strong {font-size:24px;}
+.page-session .sr-resource strong small {font-size:13px;}
+.page-session .sr-focus-toolbar {margin-top:10px;}
+.page-session .sr-quick-actions {margin-top:9px;padding-top:9px;}
+.page-session .sr-focus-footer {margin-top:9px;padding-top:8px;}
+.page-session .sr-compass {gap:10px;margin:7px 0 0;padding:13px 15px;}
+.page-session .sr-action-slots {gap:5px;}
+.page-session .sr-action-slot {min-height:54px;padding:7px 6px;}
+.page-session .sr-action-slot>span:nth-child(2){font-size:10px;}
+.page-session .sr-action-slot>small{font-size:8px;}
+.page-session .sr-compass-heading{gap:4px;}
+.page-session .sr-compass-heading small{font-size:8px;}
+.page-session .sr-compass-lead strong{font-size:21px;}
+.page-session .sr-compass-next strong{font-size:17px;}
+.page-session .sr-operations {min-width:0;margin:0;}
+.page-session .sr-lower {margin:0;}
+.page-session .sr-chat-panel,.page-session .sr-dice-panel {padding:14px 15px;}
+.page-session .sr-panel-head {padding-bottom:10px;}
+.page-session .sr-panel-head h3 {font-size:22px;margin-top:3px;}
+.page-session .sr-chat-feed {height:220px;padding-top:10px;}
+.page-session .sr-pulse {margin:10px 0;}
+.page-session .sr-pulse-head {min-height:52px;padding:10px 13px;}
+.page-session .sr-pulse-glyph {width:31px;height:31px;}
+.page-session .sr-pulse-label h3 {font-size:16px;}
+.page-session .sr-offline-note {margin-top:14px;}
+
+/* On a conventional desktop the tactical workspace, chat and dice are
+   neighbours; no full-screen welcome area above the interactive controls. */
+@container (min-width:1250px) {
+  .page-session .sr-workspace {display:grid;grid-template-columns:minmax(0,1.45fr) minmax(345px,.76fr);gap:14px;align-items:start;}
+  .page-session .sr-workspace>.sr-encounter {grid-column:1;grid-row:1;}
+  .page-session .sr-workspace>.sr-operations,
+  .app.rail-mode .page-session .sr-workspace>.sr-operations {
+    grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:10px;margin:0;min-width:0;
+  }
+  .page-session .sr-workspace>.sr-operations>.sr-lower,
+  .app.rail-mode .page-session .sr-workspace>.sr-operations>.sr-lower {
+    display:contents;
+  }
+  .page-session .sr-operations .sr-chat-panel,
+  .app.rail-mode .page-session .sr-operations .sr-chat-panel {
+    order:1;grid-column:auto;grid-row:auto;min-height:0;align-self:stretch;
+  }
+  .page-session .sr-operations .sr-dice-panel,
+  .app.rail-mode .page-session .sr-operations .sr-dice-panel {
+    order:2;grid-column:auto;grid-row:auto;min-height:0;
+  }
+  .page-session .sr-operations>.sr-pulse,
+  .app.rail-mode .page-session .sr-operations>.sr-pulse {
+    order:3;grid-column:auto;grid-row:auto;margin:0;
+  }
+  .page-session .sr-operations .sr-chat-feed,
+  .app.rail-mode .page-session .sr-operations .sr-chat-feed {height:180px;min-height:160px;max-height:240px;flex:none;}
+  .page-session .sr-workspace>.sr-dm-desk {grid-column:1/-1;grid-row:2;margin:0;}
+  .page-session .sr-encounter {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(255px,.82fr);gap:10px;align-items:start;}
+  .page-session .sr-encounter>.sr-section-head{grid-column:1/-1;grid-row:1;}
+  .page-session .sr-encounter>.sr-queue{grid-column:1/-1;grid-row:2;}
+  .page-session .sr-encounter>.sr-focus{grid-column:1;grid-row:3;margin:0;}
+  .page-session .sr-encounter>.sr-compass{grid-column:2;grid-row:3;margin:0;align-self:stretch;display:flex;flex-direction:column;padding:12px!important;gap:10px;}
+  .page-session .sr-encounter>.sr-compass .sr-action-slots{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .page-session .sr-encounter>.sr-compass .sr-compass-lead{padding:0 0 9px;border-right:0;border-bottom:1px solid var(--tv-hex-53425e,#53425e);}
+  .page-session .sr-encounter>.sr-compass .sr-compass-next{border-left:0;border-top:1px solid var(--tv-hex-53425e,#53425e);padding:9px 0 0;display:flex;flex-direction:column;gap:3px;}
+  .page-session .sr-encounter>.sr-compass .sr-action-slot{min-height:46px;}
+  .page-session .sr-dice-area .sr-dice-grid {gap:5px;}
+  .page-session .sr-die {min-width:0;}
+}
+@container (min-width:1250px) and (max-width:1450px) {
+  .page-session .sr-workspace{grid-template-columns:minmax(0,1.4fr) minmax(330px,.8fr);gap:12px;}
+.page-session .sr-encounter{grid-template-columns:minmax(0,1.1fr) minmax(238px,.82fr);}
+  .page-session .sr-queue .sr-combatant{flex-basis:132px;}
+  .page-session .sr-resource{padding:8px;}
+  .page-session .sr-operations .sr-chat-feed{height:175px;}
+}
+/* Mid-sized windows: initiative at top, chat + dice just beneath in two columns. */
+@container (min-width:830px) and (max-width:1249px) {
+  .page-session .sr-workspace {display:flex;flex-direction:column;gap:13px;}
+  .page-session .sr-workspace>.sr-encounter,.page-session .sr-workspace>.sr-operations {width:100%;}
+  .page-session .sr-workspace>.sr-operations,.app.rail-mode .page-session .sr-workspace>.sr-operations {display:flex;flex-direction:column;gap:12px;margin:0;}
+  .page-session .sr-workspace>.sr-operations>.sr-lower,
+  .app.rail-mode .page-session .sr-workspace>.sr-operations>.sr-lower {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.85fr);gap:13px;margin:0;}
+  .page-session .sr-chat-feed {height:230px;}
+}
+@container (max-width:829px) {
+  .page-session .sr-workspace {display:flex;flex-direction:column;gap:12px;}
+  .page-session .sr-workspace>* {width:100%;}
+  .page-session .sr-statusbar {flex-wrap:wrap;}
+  .page-session .sr-workspace>.sr-operations {display:flex;flex-direction:column;gap:10px;}
+  .page-session .sr-workspace>.sr-operations>.sr-lower {display:grid;grid-template-columns:1fr;gap:11px;margin:0;}
+}
+@media (max-width:1120px) {.sr-status-links{gap:8px;}.sr-status-current{display:none;}}
+@media (max-width:760px) {
+  .sr-statusbar {padding:10px 12px;min-height:0;gap:10px;flex-wrap:wrap;}
+  .sr-status-campaign {min-width:0;flex:1;}
+  .sr-status-metrics {padding-left:9px;gap:10px;}
+  .sr-status-links {order:3;width:100%;border-top:1px solid var(--tv-hex-43364c,#43364c);padding-top:7px;flex-wrap:wrap;}
+  .page-session .sr-queue .sr-combatant{flex:0 0 145px;}
+  .page-session .sr-encounter {padding:13px 12px;}
+  .page-session .sr-section-head {flex-wrap:wrap;}
+  .page-session .sr-section-head .v2-actions {width:100%;justify-content:flex-end;}
+  .page-session .sr-resource-grid{gap:5px;}
+  .page-session .sr-resource{padding:9px 7px;}
+}
+
+/* Final alignment corrections: reset explicit three-column grid placements
+   inherited from V2.2 when the 1920px rail uses the balanced V2.3 view. */
+@container (min-width:1180px) {
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack {padding-top:104px;grid-template-columns:minmax(0,1fr)!important;}
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack>section:first-child,
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack>section:nth-child(2) {
+    grid-column:1!important;grid-row:auto!important;
+  }
+}
+@media (min-width:1040px) {
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid>.right-stack {padding-top:104px;}
+}
+/* The 1080p combat utility column can fit all seven quick dice on one row.
+   Do not inherit the older four-across rail arrangement. */
+@container (min-width:1050px) {
+  .page-session .sr-operations .sr-dice-grid,
+  .app.rail-mode .page-session .sr-operations .sr-dice-grid {grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px;}
+  .page-session .sr-operations .sr-die {gap:3px;padding:7px 1px;}
+  .page-session .sr-operations .sr-die-symbol {font-size:15px;}
+  .page-session .sr-operations .sr-die strong {font-size:9px;}
+  .page-session .sr-operations .sr-dice-description {margin-bottom:9px;}
+}
+/* The full-width (expanded-menu) variant still brings the chat and dice
+   beside the combat board instead of hiding them a screen further down. */
+@container (min-width:1050px) and (max-width:1249px) {
+  .page-session .sr-workspace {display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.93fr);gap:12px;align-items:start;}
+  .page-session .sr-workspace>.sr-encounter {grid-column:1;grid-row:1;min-width:0;}
+  .page-session .sr-workspace>.sr-operations,
+  .app.rail-mode .page-session .sr-workspace>.sr-operations {grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:10px;margin:0;min-width:0;}
+  .page-session .sr-workspace>.sr-operations>.sr-lower,
+  .app.rail-mode .page-session .sr-workspace>.sr-operations>.sr-lower{display:contents;}
+  .page-session .sr-operations .sr-chat-panel,
+  .app.rail-mode .page-session .sr-operations .sr-chat-panel {order:1;grid-column:auto;grid-row:auto;min-height:0;}
+  .page-session .sr-operations .sr-dice-panel,
+  .app.rail-mode .page-session .sr-operations .sr-dice-panel {order:2;grid-column:auto;grid-row:auto;}
+  .page-session .sr-operations>.sr-pulse,
+  .app.rail-mode .page-session .sr-operations>.sr-pulse {order:3;grid-column:auto;grid-row:auto;margin:0;}
+  .page-session .sr-operations .sr-chat-feed,
+  .app.rail-mode .page-session .sr-operations .sr-chat-feed {height:170px;min-height:0;flex:none;}
+  .page-session .sr-workspace>.sr-dm-desk {grid-column:1/-1;grid-row:2;margin:0;}
+  .page-session .sr-encounter {display:flex;flex-direction:column;gap:9px;}
+  .page-session .sr-encounter>.sr-section-head,
+  .page-session .sr-encounter>.sr-queue,
+  .page-session .sr-encounter>.sr-compass,
+  .page-session .sr-encounter>.sr-focus {width:100%;}
+  .page-session .sr-encounter>.sr-compass {order:3;display:grid;grid-template-columns:minmax(125px,.65fr) minmax(0,1.5fr);padding:11px 12px;}
+  .page-session .sr-encounter>.sr-focus {order:4;margin:0;}
+  .page-session .sr-encounter>.sr-compass .sr-compass-next {grid-column:1/-1;display:flex;flex-direction:row;align-items:baseline;gap:12px;border-left:0;border-top:1px solid var(--tv-hex-53425e,#53425e);padding:9px 0 0;}
+  .page-session .sr-encounter>.sr-compass .sr-action-slots {grid-template-columns:repeat(4,minmax(0,1fr));}
+  .page-session .sr-encounter>.sr-compass .sr-action-slot {min-height:49px;}
+  .page-session .sr-queue .sr-combatant {flex-basis:132px;}
+}
+@container (min-width:1050px) {
+  .page-session .sr-workspace .sr-operations .sr-chat-panel,
+  .page-session .sr-workspace .sr-operations .sr-dice-panel {width:100%;}
+}
+

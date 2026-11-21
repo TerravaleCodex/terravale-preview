@@ -1,0 +1,2 @@
+
+.v235-cadence,.v235-target-limit{display:block;margin-top:8px;font-size:12px;line-height:1.55;color:var(--muted,#aaa);max-width:65ch}.v235-target-limit{color:var(--accent,#c6a4ea)}.v235-rest-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;padding-top:15px;border-top:1px solid var(--line,#38313c)}.v235-rest-actions button{font-size:12px;min-height:38px;border-radius:8px;padding:8px 12px}.v235-rest-hint{flex-basis:100%;line-height:1.5;color:var(--muted,#aaa);font-size:12px}@media(max-width:560px){.v235-rest-actions button{flex:1}}

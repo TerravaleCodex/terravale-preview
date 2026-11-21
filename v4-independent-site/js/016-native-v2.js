@@ -1,0 +1,1 @@
+window.TERRAVALE_V227_BASE_GEAR=sheetV220Equipment;

@@ -1,0 +1,84 @@
+
+/* V2.13 — live sidebar choreography, no cloned menu and no layout snapping.
+   The page's V2.12 card geometry animation is intentionally unchanged. */
+.app .sidebar,.app .main-wrap,.app .content{transition:none!important}
+.menu-morph-layer{position:fixed;inset:0;z-index:145;pointer-events:none!important;overflow:visible;contain:layout style}
+.menu-morph-card{position:fixed;isolation:isolate;pointer-events:none!important;box-sizing:border-box;overflow:hidden!important;will-change:width,height,transform}
+.menu-morph-card *{pointer-events:none!important}
+/* Only active while a desktop sidebar toggle is under way. */
+.sidebar.menu-morph-running{
+ padding-left:var(--sb-pad-x)!important;padding-right:var(--sb-pad-x)!important;
+ overflow-x:clip!important;
+}
+.sidebar.menu-morph-running .brand{
+ justify-content:flex-start!important;
+ padding-left:var(--sb-brand-pad)!important;
+ padding-right:0!important;
+ margin-bottom:var(--sb-brand-bottom)!important;
+ gap:11px!important;
+ overflow:hidden!important;
+}
+.sidebar.menu-morph-running .brand-mark{
+ width:var(--sb-brand-size)!important;height:var(--sb-brand-size)!important;
+ flex:none!important;
+}
+.sidebar.menu-morph-running .brand-word{
+ display:block!important;visibility:visible!important;
+ flex:0 0 auto!important;white-space:nowrap!important;
+ opacity:var(--sb-label-alpha)!important;
+ transform:translateX(var(--sb-text-shift));
+}
+.sidebar.menu-morph-running .side-search{
+ display:flex!important;justify-content:flex-start!important;
+ padding:0 8px 0 var(--sb-search-pad)!important;
+ height:43px!important;min-height:43px!important;
+ margin-bottom:var(--sb-search-bottom)!important;
+ gap:11px!important;overflow:hidden!important;
+}
+.sidebar.menu-morph-running .side-search .icon{flex:none!important}
+.sidebar.menu-morph-running .side-search span{
+ display:inline!important;visibility:visible!important;white-space:nowrap!important;
+ flex:0 0 auto!important;opacity:var(--sb-label-alpha)!important;
+ transform:translateX(var(--sb-text-shift));
+}
+.sidebar.menu-morph-running .side-search .search-kbd{
+ display:inline!important;visibility:visible!important;white-space:nowrap!important;
+ opacity:var(--sb-kbd-alpha)!important;
+}
+.sidebar.menu-morph-running .nav{overflow-x:hidden!important}
+.sidebar.menu-morph-running .nav-group{
+ position:relative!important;border-top:0!important;
+ padding-top:var(--sb-group-pad)!important;
+ margin-bottom:var(--sb-group-bottom)!important;
+}
+.sidebar.menu-morph-running .nav-group::before{
+ content:'';position:absolute;top:0;left:0;right:0;height:1px;
+ background:var(--tv-hex-292332,#292332);opacity:var(--sb-divider-alpha);pointer-events:none;
+}
+.sidebar.menu-morph-running .group-label{
+ display:flex!important;visibility:visible!important;align-items:center!important;
+ box-sizing:border-box!important;height:var(--sb-heading-height)!important;
+ min-height:0!important;padding:0 10px!important;
+ margin:0!important;overflow:hidden!important;
+ opacity:var(--sb-heading-alpha)!important;white-space:nowrap!important;
+}
+.sidebar.menu-morph-running .group-chevron{flex:none!important}
+.sidebar.menu-morph-running .nav-item{
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ box-sizing:border-box!important;
+ height:var(--sb-nav-row)!important;min-height:var(--sb-nav-row)!important;
+ padding:0 0 0 var(--sb-nav-pad)!important;gap:10px!important;
+ overflow:hidden!important;
+}
+.sidebar.menu-morph-running .nav-item .icon{
+ width:var(--sb-icon-size)!important;height:var(--sb-icon-size)!important;
+ flex:0 0 var(--sb-icon-size)!important;
+}
+.sidebar.menu-morph-running .nav-caption{
+ display:inline-block!important;visibility:visible!important;
+ opacity:var(--sb-label-alpha)!important;white-space:nowrap!important;
+ flex:0 0 auto!important;transform:translateX(var(--sb-text-shift));
+}
+/* Do not replay the desktop motion for reduced-motion users. */
+@media(prefers-reduced-motion:reduce){.menu-morph-layer{display:none!important}}
+

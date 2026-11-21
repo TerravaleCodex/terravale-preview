@@ -1,0 +1,12 @@
+
+/* V2.25 — one consistent source reader, themed with the existing palette */
+.v225-rule-text{padding:13px 15px;margin:12px 0;background:var(--surface-secondary,var(--card-bg,rgba(255,255,255,.035)));border:1px solid var(--edge,var(--border,rgba(176,153,202,.22)));border-radius:10px;color:var(--ink,var(--text,#eee5f2));font-size:.94rem;line-height:1.68;overflow-wrap:break-word;max-width:100%;}
+.v225-rule-text p{margin:0 0 .85em;line-height:inherit;color:inherit}.v225-rule-text p:last-child{margin-bottom:0}
+.v225-rule-text ul{padding-left:1.45em;margin:.45em 0 1.1em;list-style:disc}.v225-rule-text li{margin:.33em 0;line-height:1.57}.v225-rule-text strong{font-weight:700;color:var(--ink,var(--text,#eee5f2))}.v225-rule-text em{color:inherit}.v225-rule-text code{font-size:.9em;padding:.1em .32em;border-radius:4px;background:rgba(130,123,140,.16)}
+.v225-rule-text h4{font-family:inherit;font-size:.91rem;margin:1em 0 .4em;color:var(--ink,var(--text,#eee5f2))}
+.v225-rule-note{font-size:.78rem;line-height:1.5;margin:.6rem 0 0;color:var(--muted,var(--soft,#c0b1cc));opacity:.86}
+.v224-option-body .v225-rule-text,.sheet22-feat-body .v225-rule-text{margin:8px 0}.v224-option-body .v225-rule-text{max-height:42rem;overflow-y:auto;scrollbar-width:thin}
+.v225-sheet-guide{margin-top:.8rem;border:1px solid var(--edge,var(--border,rgba(176,153,202,.22)));border-radius:10px;padding:.6rem .8rem}.v225-sheet-guide>summary{cursor:pointer;font-weight:650;color:var(--ink,var(--text,#eee5f2))}
+.v225-feat .v225-rule-text{max-height:none}.v225-feat .v223-feat-body{min-width:0}.v225-rule-text li::marker{color:var(--accent,var(--purple,#a98bd2))}
+@media (max-width:700px){.v225-rule-text{font-size:.88rem;line-height:1.57;padding:11px 12px}.v225-rule-text ul{padding-left:1.2em}.v225-sheet-guide{padding:.5rem .6rem}}
+

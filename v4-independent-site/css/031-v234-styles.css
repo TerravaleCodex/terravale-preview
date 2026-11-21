@@ -1,0 +1,43 @@
+/* V2.34 additions: same panel palette; responsive compact counters and graph exclusivity */
+.v234-resource-group{margin-top:20px;border-top:1px solid var(--s20-edge,var(--edge));padding-top:16px}
+.v234-resource-group>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.v234-resource-group>header>span{font-size:11px;letter-spacing:1.4px;font-weight:800;color:var(--s20-muted,var(--soft))}
+.v234-resource-group>header>small{font-size:12px;color:var(--s20-muted,var(--soft))}
+.v234-resource-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.v234-spell-grid{grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr))}
+.v234-resource-item{padding:13px;border:1px solid var(--s20-edge,var(--edge));border-radius:11px;background:var(--s20-panel,var(--surface));min-width:0}
+.v234-resource-line{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.v234-resource-line strong{display:block;font-size:13px;line-height:1.4}
+.v234-resource-line small{display:block;font-size:11px;color:var(--s20-muted,var(--soft));margin:4px 0 0}
+.v234-resource-line b{font-size:20px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.v234-resource-line em{font-style:normal;font-size:12px;color:var(--s20-muted,var(--soft))}
+.v234-resource-pips{display:flex;gap:4px;margin:11px 0 10px;align-items:center}
+.v234-resource-pips span{flex:1 1 0;max-width:24px;height:5px;border-radius:50px;background:var(--s20-edge,var(--edge));min-width:3px}
+.v234-resource-pips span.filled{background:var(--accent,var(--s20-accent,#b99acb))}
+.v234-resource-pips small{font-size:10px;white-space:nowrap;color:var(--soft)}
+.v234-resource-actions{display:flex;gap:5px;margin-top:9px}
+.v234-resource-actions button{border:1px solid var(--s20-edge,var(--edge));background:var(--s20-panel,var(--raised));color:var(--s20-ink,var(--ink));border-radius:7px;font-size:11px;font-weight:700;padding:8px 9px;flex:1}
+.v234-resource-actions button:disabled{opacity:.35;cursor:not-allowed}
+.v234-resource-source{display:block;margin-top:10px;font-size:10px;line-height:1.3;color:var(--s20-muted,var(--soft));overflow-wrap:anywhere}
+.v234-resource-empty{color:var(--soft);line-height:1.6}
+.v234-resource-help,.v234-derived-note{font-size:12px;line-height:1.6;color:var(--s20-muted,var(--soft));margin-top:14px}
+.v234-derived-note{border-left:2px solid var(--accent);padding-left:10px}
+.v234-resources{height:max-content}
+.v234-planning-note{color:var(--soft);font-size:12px;margin-top:18px}
+.v234-exclusive-node{outline:1px dashed #e58d86!important;outline-offset:1px}
+.v234-exclusive-node .v234-route-badge{display:block;color:#f3afa6!important;font-size:10px!important;font-weight:800;letter-spacing:.6px;margin-top:4px}
+.v234-branch-blocked{filter:saturate(.45);border-color:#c85d5d!important;opacity:.6}
+.v234-branch-blocked .v234-route-badge{color:#f16d6d!important}
+.v231-tree-canvas svg .v234-conflict-edge,.v232-lab-graph svg .v234-conflict-edge{stroke:#f08080!important;stroke-dasharray:7 6!important;stroke-width:3.3!important;fill:none!important;opacity:.95!important}
+.v231-tree-canvas svg .v234-conflict-label,.v232-lab-graph svg .v234-conflict-label{fill:#ffa4a4;font-size:24px;stroke:#160e13;stroke-width:2.5;paint-order:stroke;font-weight:900}
+.v234-conflict-legend{margin:7px 6px 9px;font-size:12px;line-height:1.5;color:var(--s20-muted,var(--soft))}
+.v234-conflict-legend strong{color:var(--s20-ink,var(--ink))}
+.v234-dashed-swatch{display:inline-block;width:23px;height:0;border-top:3px dashed #f08080;margin-right:7px;vertical-align:middle}
+.sheet227-reader-entries [hidden]{display:none!important}
+@media(max-width:740px){.v234-resource-grid,.v234-spell-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v234-resource-item{padding:10px}.v234-resource-line strong{font-size:12px}.v234-resource-line b{font-size:18px}}
+@media(max-width:380px){.v234-resource-grid,.v234-spell-grid{grid-template-columns:1fr}}
+
+.v234-pair-jump{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.v234-pair-jump button{border:1px solid #7f464c;background:color-mix(in srgb,#8e404c 16%,transparent);color:var(--s20-ink,var(--ink));padding:6px 9px;border-radius:8px;font-size:11px;line-height:1.4}
+.v234-pair-jump button span{color:#ff9b9b;font-weight:900;padding:0 3px}
+.v234-pair-jump button:hover,.v234-pair-jump button:focus-visible{border-color:#f08080;outline:none}

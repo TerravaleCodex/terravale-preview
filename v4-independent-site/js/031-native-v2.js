@@ -1,0 +1,1 @@
+window.TERRAVALE_V239={sourceVersion:"V2.38 + Lore V14",visual:"Chromatic Lore",tvuidPattern:"TV-XXXXXX",morphDurationMs:1500,liveModified:false};

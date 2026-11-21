@@ -1,0 +1,631 @@
+{
+  "source": "one-time finished V2.87 live HTML snapshot",
+  "original_sha256": "8b10a62e740d477f485f82a3c7e17d9e2528b23022bd8a2fdcd2ead6505518d2",
+  "original_bytes": 8235843,
+  "v4_sha256": "542baca79a15e80d4aa0d62c5594937e7c3c8f5f8d390d29c9a05b8805f280f2",
+  "layout": "original native live V2.87",
+  "world_data": "bulk lore and preset content removed",
+  "storage": "IndexedDB offline adapter",
+  "independent_of_live_build": true,
+  "assets": [
+    {
+      "type": "js",
+      "file": "js/001-data.js.js",
+      "sha256": "5d4a30881ef67edc7ae7a5e27ac02afa83a1ee5b3401b7c24a2798b3f271ab98",
+      "bytes": 19392
+    },
+    {
+      "type": "js",
+      "file": "js/002-rules-data.js.js",
+      "sha256": "bab9acdd58bfc8822d87d1718e856b5f1f8c51b892818521d80d72abd13a1178",
+      "bytes": 24654
+    },
+    {
+      "type": "js",
+      "file": "js/003-rules-foundation.js.js",
+      "sha256": "0630c44c8f0e97ac0fc434b9267a81936233cb8fe9e596f5a61e5f8be500eacf",
+      "bytes": 6570
+    },
+    {
+      "type": "js",
+      "file": "js/004-rules-v219.js.js",
+      "sha256": "61ce756769582d076631f81aec20d8e4af49b2c31c72e1b3fcf8ccfb7abe7c6c",
+      "bytes": 6150
+    },
+    {
+      "type": "js",
+      "file": "js/005-creator-v218.js.js",
+      "sha256": "7904edca8bb81c8492050827ece0cd132ec77be45efb83fecbe12e01bb27bd25",
+      "bytes": 34277
+    },
+    {
+      "type": "js",
+      "file": "js/006-rules-ui.js.js",
+      "sha256": "eee4e6c1f9443e181821de0b67078504d2180b86b083e4d0191dbf534dec99ac",
+      "bytes": 8123
+    },
+    {
+      "type": "js",
+      "file": "js/007-sheet-progression-v220.js.js",
+      "sha256": "52ab82e5e96bc360d2700767c2bffb73dd6b270f1b372930a717e7481b1b4177",
+      "bytes": 1377
+    },
+    {
+      "type": "js",
+      "file": "js/008-sheet-v220.js.js",
+      "sha256": "5c7639ac4a30e824c299968714a3bf1e9f4e41bb80071e0eaf09e398758a4ff9",
+      "bytes": 36805
+    },
+    {
+      "type": "js",
+      "file": "js/009-sheet-v222.js.js",
+      "sha256": "8d3daaa6a14c3dadfabc1ee432eefa0fdf153e87bd35b433d10c42a7aa4ca484",
+      "bytes": 19546
+    },
+    {
+      "type": "js",
+      "file": "js/010-codex-v223-data.js.js",
+      "sha256": "810ebcdec45f5ea14b9c6a8e29d8b5d5c7f83a30ce1884cbeb9a34123c336269",
+      "bytes": 13688
+    },
+    {
+      "type": "js",
+      "file": "js/011-codex-v223-progression.js.js",
+      "sha256": "c1cbc55b0a4794459fef6bdc3ea9697ff62ba9d6569b99d04861fe53c7e0ef63",
+      "bytes": 7165
+    },
+    {
+      "type": "js",
+      "file": "js/012-codex-v223-feat-briefs.js.js",
+      "sha256": "a42b8a564cb6991cd2c5162da35f14c9f7fcc46c4d4f3bcee138b4748f298de9",
+      "bytes": 8794
+    },
+    {
+      "type": "js",
+      "file": "js/013-codex-v224-details.js.js",
+      "sha256": "d2c14c51da0f281b8aa07ce7ee2e023bc3a8bea9a3b3c77d1e1019e006cd982a",
+      "bytes": 22079
+    },
+    {
+      "type": "js",
+      "file": "js/014-codex-v225-rules.js.js",
+      "sha256": "f8a185d5be423709e8c267073cdaf0abe6ae642d4bcdc187ffaecbb5ba631f7d",
+      "bytes": 65465
+    },
+    {
+      "type": "js",
+      "file": "js/015-codex-v2251-subclasses.js.js",
+      "sha256": "c012a3a666842c32ef52e8af57e8f4ce7fad472c15001b3c279fe46847cf111b",
+      "bytes": 11539
+    },
+    {
+      "type": "js",
+      "file": "js/016-native-v2.js",
+      "sha256": "4b9692d85d7793243db05982c8904b9d0d9e5350732a41150eceaadb3ea8155b",
+      "bytes": 51
+    },
+    {
+      "type": "js",
+      "file": "js/017-app.js.js",
+      "sha256": "0a85273dff715ed111b378af250835b42634892abc65ac37c10d25bf59b8c6bd",
+      "bytes": 193581
+    },
+    {
+      "type": "js",
+      "file": "js/018-native-v2.js",
+      "sha256": "1748adeeff73505118653689af0ab12d64219a171fb0fc6766b7b07fa544110d",
+      "bytes": 15440
+    },
+    {
+      "type": "js",
+      "file": "js/019-terravale-v228-patch.js",
+      "sha256": "50ae3b3fcb6b8bc44e3578f2cf51bd2c10772958b76d25ea9783365a85470635",
+      "bytes": 21972
+    },
+    {
+      "type": "js",
+      "file": "js/020-native-v2.js",
+      "sha256": "825e6cb1d51424002c416018978fad1560b35a364ef815842d6240a67a037fd2",
+      "bytes": 3111
+    },
+    {
+      "type": "js",
+      "file": "js/021-v229-targeted-logic.js",
+      "sha256": "e34772abd9c4ffe6e19d1d9541240b4976813baf69e62494157e5ce3af387f75",
+      "bytes": 41742
+    },
+    {
+      "type": "js",
+      "file": "js/022-v230-enhancements.js",
+      "sha256": "9338a440f19af0498a631ca772310b200c2381fc785b90e47d4a2c708c23cc3c",
+      "bytes": 8049
+    },
+    {
+      "type": "js",
+      "file": "js/023-v231-refinements.js",
+      "sha256": "c8490efe71b7c15b5414bc57d3d7b693ab771179c0fca07edfd3990f11e01115",
+      "bytes": 17724
+    },
+    {
+      "type": "js",
+      "file": "js/024-v232-refinements.js",
+      "sha256": "b7e37f8bfed099e8fabc42cb9faaf5baeeb3ee86b2a8c7dde57943c155c281b0",
+      "bytes": 33502
+    },
+    {
+      "type": "js",
+      "file": "js/025-v233-behaviour.js",
+      "sha256": "e37c515026f78b335abd3abfe8220413cc184eaa6ee2c34a5913c8fe2dad6f3b",
+      "bytes": 2876
+    },
+    {
+      "type": "js",
+      "file": "js/026-v234-behaviour.js",
+      "sha256": "87870aece3a19fe4a85923487c661cacacc89b39524710cf93efe05b682c865e",
+      "bytes": 16977
+    },
+    {
+      "type": "js",
+      "file": "js/027-v235-behaviour.js",
+      "sha256": "a0e79472ed756f8b518f19b9d1e5eb4d5745e6cfb951df04341a68cda62dec26",
+      "bytes": 9340
+    },
+    {
+      "type": "js",
+      "file": "js/028-v236-eight-character-entry.js",
+      "sha256": "67c97792b722e85808f33598078f03a929146a9c826d29f11e8321e493670f4e",
+      "bytes": 1965
+    },
+    {
+      "type": "js",
+      "file": "js/029-v237-rest-death-behaviour.js",
+      "sha256": "f5053393379af2f859b0cc0049a92ada615472e3771e26dd0e6211e7828bf2cd",
+      "bytes": 15527
+    },
+    {
+      "type": "js",
+      "file": "js/030-tv238-integrated-logic.js",
+      "sha256": "dce755028466e6a241041bdc1f0dec8d32f510713f39edb850d95a8d942b6dc5",
+      "bytes": 29212
+    },
+    {
+      "type": "js",
+      "file": "js/031-native-v2.js",
+      "sha256": "a6a89470f235ac035ee4acada2c29837d0d52994a9017c5df421524f6b88cb7b",
+      "bytes": 146
+    },
+    {
+      "type": "js",
+      "file": "js/032-v2-empty-workspace-integration.js",
+      "sha256": "d2eb8c77c81ae9e3d8f40284c30325ce15eba1c667798059c3f4d0f2b694fa77",
+      "bytes": 574
+    },
+    {
+      "type": "js",
+      "file": "js/033-v243-campaign-achievement-bridge.js.js",
+      "sha256": "87ff259cec43eebd802db8b87812280eac93da746f89bf0edb54de90c3624118",
+      "bytes": 26514
+    },
+    {
+      "type": "js",
+      "file": "js/034-v246-real-characters.js.js",
+      "sha256": "fc603db2fe54d41cbb885d87463ef6a84521c0cb7eba74005cb955f64fbb534a",
+      "bytes": 10464
+    },
+    {
+      "type": "js",
+      "file": "js/035-v246-ui-controls.js.js",
+      "sha256": "4026991700f1252b80279a6c674d062f9833b77a91002ccbfcc2db608fd73b03",
+      "bytes": 8667
+    },
+    {
+      "type": "js",
+      "file": "js/036-v247-theme-variants.js.js",
+      "sha256": "e189879b7fe53b01108b99b91bb4e5d5bde980c76cac621df85d625e97bb749e",
+      "bytes": 6665
+    },
+    {
+      "type": "js",
+      "file": "js/037-v248-achievement-notices.js.js",
+      "sha256": "e52e3808858ba03fecbed8d74e3b6d89e30a438b76beab0a43a13e5ef1b78d1e",
+      "bytes": 7184
+    },
+    {
+      "type": "js",
+      "file": "js/038-v248-live-preferences-tutorial.js.js",
+      "sha256": "f50f25988da511f84e93bffcab672324f29b72c44e1cad5bcd928fd185c637be",
+      "bytes": 24121
+    },
+    {
+      "type": "js",
+      "file": "js/039-v250-dm-backpack-editor.js.js",
+      "sha256": "2ab2b7055b8b0fba1f62a2e7253a696490f25e78202d5e4812323ccc195624c7",
+      "bytes": 16351
+    },
+    {
+      "type": "js",
+      "file": "js/040-v251-live-item-actions.js.js",
+      "sha256": "f15344b55c21333ad2ed33095adeb6dcfd9c061f7e2d66d619b353b50083f2cd",
+      "bytes": 19974
+    },
+    {
+      "type": "js",
+      "file": "js/041-v253-backpack-gifts.js.js",
+      "sha256": "514e9a28d6227b4e04ef48532a2b9e65c9020cdf279ead6a1de3aeca4bdbbd3e",
+      "bytes": 10360
+    },
+    {
+      "type": "js",
+      "file": "js/042-v254-rules-registry.js.js",
+      "sha256": "62666da5277118ff1ce257f6b5f2ac4667faa18692f80af12ca764ab23534b8b",
+      "bytes": 102
+    },
+    {
+      "type": "js",
+      "file": "js/043-v254-dm-vault.js.js",
+      "sha256": "c11d27d104d5c8dbd4673d62a7ee9e0cbf794243b12d41bb5509f0c5e8b87707",
+      "bytes": 43338
+    },
+    {
+      "type": "js",
+      "file": "js/044-v254-character-proficiencies-wallet.js.js",
+      "sha256": "88c0725b86b413618b8607c091ef8318585f5c71b9e18102242b3a33785b5ee4",
+      "bytes": 22236
+    },
+    {
+      "type": "js",
+      "file": "js/045-v255-build.js",
+      "sha256": "92d19db2210b2c29549250f67af40b5f82e1b7d8fa5d2dd977f23036c6da5603",
+      "bytes": 65
+    },
+    {
+      "type": "js",
+      "file": "js/046-v255-creator-native-choices.js.js",
+      "sha256": "fb583aae74bcfd754e42ff5fcc659a665fb58e32aeb3e34b79b0c9fd3afac664",
+      "bytes": 11607
+    },
+    {
+      "type": "js",
+      "file": "js/047-v255-character-training.js.js",
+      "sha256": "c21d700532626f959c36114f720e9197a81713440d51602fda7def057ad1c236",
+      "bytes": 20487
+    },
+    {
+      "type": "js",
+      "file": "js/048-v255-native-wallet.js.js",
+      "sha256": "5831ac5078f097d3d30bee24e160101b3447b233858eb1bb177c1b53752586e7",
+      "bytes": 21607
+    },
+    {
+      "type": "js",
+      "file": "js/049-v255-custom-feat-forge.js.js",
+      "sha256": "007595e80b5d2806867dd3d4d1b6278b267aed99e7d0dd1c53c8575a3ed068dd",
+      "bytes": 20148
+    },
+    {
+      "type": "js",
+      "file": "js/050-v255-shell-role-version.js.js",
+      "sha256": "e5e0672dbc3f8f17bc26d52e9699f8a96fd93aea450f3fa4fe0f62f3ce06f8ef",
+      "bytes": 2634
+    },
+    {
+      "type": "js",
+      "file": "js/051-v261-owner-byline.js.js",
+      "sha256": "21a0a157e3a5602d3e117d18206760c30d6c5c377be711e534ee525770d26182",
+      "bytes": 2249
+    },
+    {
+      "type": "js",
+      "file": "js/052-v263-compact-equipment-preview.js.js",
+      "sha256": "71f4d43f39b3332ea07b9f11ceaa9f9a8ce6e86e5dcaa951b2d8a7ffda38309f",
+      "bytes": 10978
+    },
+    {
+      "type": "js",
+      "file": "js/053-v270-divine-workspace.js.js",
+      "sha256": "73e6c7e0acb126067429f60ad25e1416736fea123e1c2bb00ddef3e5bc2de8a8",
+      "bytes": 49234
+    },
+    {
+      "type": "js",
+      "file": "js/054-v273-boon-archive-import.js.js",
+      "sha256": "1f2b14c134c1f2a9454cee8d93333ded4e2c60f5d54828ce99e5165b9a2e9b88",
+      "bytes": 18752
+    },
+    {
+      "type": "js",
+      "file": "js/055-v275-source-vault.js.js",
+      "sha256": "a7bbca50e4461edb51dca73b8f4c1cd115b60fbc14a3897f947bf41b9473bfae",
+      "bytes": 7155
+    },
+    {
+      "type": "js",
+      "file": "js/056-v276-ui-stability.js.js",
+      "sha256": "72de39df439bbff1a3c1b021e6ce0ed05460ef5e267b744c3a8530ec6e48f2f6",
+      "bytes": 5597
+    },
+    {
+      "type": "js",
+      "file": "js/057-v277-class-stability.js.js",
+      "sha256": "922c8820441eb0877225efef63d44247cb63f7167cfcda86d23d1681576a99be",
+      "bytes": 2033
+    },
+    {
+      "type": "js",
+      "file": "js/058-v278-character-approvals.js.js",
+      "sha256": "fa1a00a627c4e613ef8aef322c488c16c85105462378f7471d119eda0a79ddd9",
+      "bytes": 10350
+    },
+    {
+      "type": "js",
+      "file": "js/059-v279-archive2-parser.js.js",
+      "sha256": "f79eba09579f3665c1173321cda1fc72d3e6a797bf4770652d393fa064d6474c",
+      "bytes": 6319
+    },
+    {
+      "type": "js",
+      "file": "js/060-v279-archive2-library.js.js",
+      "sha256": "19066c4e21816d5191fffe0931d2c545d4425515c4042365ea636c408a1d4a41",
+      "bytes": 12912
+    },
+    {
+      "type": "js",
+      "file": "js/061-v281-divine-voices.js.js",
+      "sha256": "3b9ade7e34737b61d7eef011ecd46aaaa54fdb6ce977697fcd8758e97d75ee8a",
+      "bytes": 5423
+    },
+    {
+      "type": "js",
+      "file": "js/062-v281-canonical-library.js.js",
+      "sha256": "68fd3f0f35744d0c6edc6e80a08ef6059707c9074c44b32d3b08ec0d415d34f0",
+      "bytes": 39199
+    },
+    {
+      "type": "js",
+      "file": "js/063-v282-boon-reader.js.js",
+      "sha256": "c03934016402747c19e3768800290297063c8c478ae917eb8345dbdd11774d96",
+      "bytes": 5433
+    },
+    {
+      "type": "js",
+      "file": "js/064-v282-divine-relationships.js.js",
+      "sha256": "e37ec67462fff64899291d5d625a94922eec3075189d13946aa76f83aba73cd2",
+      "bytes": 7148
+    },
+    {
+      "type": "js",
+      "file": "js/065-v287-adaptive-resources.js.js",
+      "sha256": "ae93c47466aa3a907e3881e93acba80e021e55882e97c6356fb4a70b081b569b",
+      "bytes": 11558
+    },
+    {
+      "type": "js",
+      "file": "js/066-v4-offline-database.js.js",
+      "sha256": "97d5c80f526efc0407bf163502368a461ab6d4afe253aa168810c4415457b9f9",
+      "bytes": 37954
+    },
+    {
+      "type": "js",
+      "file": "js/067-v4-offline-controls.js",
+      "sha256": "880c9f8ad81c0af8ade758ab4af60fc159bfbc68c827abf23c97e1faa7b03d2d",
+      "bytes": 2277
+    },
+    {
+      "type": "css",
+      "file": "css/001-native-v2.css",
+      "sha256": "60941ac991ed4c7136de91b00fbfd57b8a56c0d82576dcf4625f89e0edddf27f",
+      "bytes": 26441
+    },
+    {
+      "type": "css",
+      "file": "css/002-native-v2.css",
+      "sha256": "147234cb8bb6783390121aee5b400d626aaf9e6ffbe98ff40e048a49d8373eb3",
+      "bytes": 86133
+    },
+    {
+      "type": "css",
+      "file": "css/003-native-v2.css",
+      "sha256": "7b604bc69c21d26250995f3a7eb6a8240c6c61e44138d5093e50af5a93d71cbd",
+      "bytes": 9072
+    },
+    {
+      "type": "css",
+      "file": "css/004-native-v2.css",
+      "sha256": "0d8663b69ae137cc2384bd4bbeca46d7ac017556d84bb8095930713a83f752c4",
+      "bytes": 15893
+    },
+    {
+      "type": "css",
+      "file": "css/005-native-v2.css",
+      "sha256": "d4de32ecb979af636255f4a025f4119d386dca9f74852ba8e4cd943070daeb75",
+      "bytes": 12056
+    },
+    {
+      "type": "css",
+      "file": "css/006-native-v2.css",
+      "sha256": "95c732f7a9cb95aa0568811ab670c6e1e1b122fcc2bec40dcd7ac0a2cab733b0",
+      "bytes": 3974
+    },
+    {
+      "type": "css",
+      "file": "css/007-native-v2.css",
+      "sha256": "eabe76671e19532f95a3aeea3adcf628a9a8e4847099a38129954f4e8dc81410",
+      "bytes": 20657
+    },
+    {
+      "type": "css",
+      "file": "css/008-native-v2.css",
+      "sha256": "7c1e6c415b2015759701d120b27a559ba85518d896175eb12b534cccb7b206aa",
+      "bytes": 18506
+    },
+    {
+      "type": "css",
+      "file": "css/009-native-v2.css",
+      "sha256": "ae0e6729ba7a8ec26d8f64860773d492baa2b6437ca7eb0668ee5654237eb6b6",
+      "bytes": 4879
+    },
+    {
+      "type": "css",
+      "file": "css/010-native-v2.css",
+      "sha256": "cede709d6716d1763c971a8d91ce6628debeeb622f034b0e706d9077d36eea78",
+      "bytes": 15590
+    },
+    {
+      "type": "css",
+      "file": "css/011-native-v2.css",
+      "sha256": "62302c54bc8a39fedefa1a15196bee5d9b5493771fb41277bbcb627c7b87f41b",
+      "bytes": 108037
+    },
+    {
+      "type": "css",
+      "file": "css/012-native-v2.css",
+      "sha256": "28d55474648f562e50ff9612df78fdeb630e11ac39e22092850e103389c9014b",
+      "bytes": 8479
+    },
+    {
+      "type": "css",
+      "file": "css/013-native-v2.css",
+      "sha256": "809326e6d99276b91f94887fda1c87c99808fcd053c8e48b91f624a87829e779",
+      "bytes": 13115
+    },
+    {
+      "type": "css",
+      "file": "css/014-native-v2.css",
+      "sha256": "035a38bcd44a4467324433099d0af7ebeba63dfeb1cce7f9900fa7ce2d35768c",
+      "bytes": 8485
+    },
+    {
+      "type": "css",
+      "file": "css/015-native-v2.css",
+      "sha256": "62d2b3da07e1d34e5327a2ccdbe7cf2fa0c886575023a06702de2d3189c0a441",
+      "bytes": 6532
+    },
+    {
+      "type": "css",
+      "file": "css/016-native-v2.css",
+      "sha256": "000033397f9efd3a77bc1a3f46b090ecc2d2602e846f1d90445253982a512a4e",
+      "bytes": 6043
+    },
+    {
+      "type": "css",
+      "file": "css/017-native-v2.css",
+      "sha256": "401315ca016c2feb336c2050fd49d1ab9d58e378631e5d1e229895d7b85f536b",
+      "bytes": 2053
+    },
+    {
+      "type": "css",
+      "file": "css/018-native-v2.css",
+      "sha256": "7a32456645ea547936cac1435f21ac3de32b041b929b11231f86c7097c39e9c4",
+      "bytes": 1816
+    },
+    {
+      "type": "css",
+      "file": "css/019-native-v2.css",
+      "sha256": "c0769fa839ed6be0599f24c1e400bb4112f0fb3860f49552e7fcfcce778cb3e4",
+      "bytes": 1693
+    },
+    {
+      "type": "css",
+      "file": "css/020-native-v2.css",
+      "sha256": "4d28ab973a12189026d32a99ae5372260fdb05f9c26aac5e5c1ff045f67ada62",
+      "bytes": 10962
+    },
+    {
+      "type": "css",
+      "file": "css/021-native-v2.css",
+      "sha256": "3de96883e4a2116f88101d7a47e7f99240512a7ff084f939a0773524626da63a",
+      "bytes": 9409
+    },
+    {
+      "type": "css",
+      "file": "css/022-terravale-v228-refinements.css",
+      "sha256": "1cc6af83c7a192e539d68b7c3ff724ce4d1816d7ab0a8855c8a4ebadb51db262",
+      "bytes": 3813
+    },
+    {
+      "type": "css",
+      "file": "css/023-v229-targeted-styles.css",
+      "sha256": "4d26c20992d184350eb02f646e46107bebd69cfbf46a3325623f9af5dc8d8da4",
+      "bytes": 9999
+    },
+    {
+      "type": "css",
+      "file": "css/024-native-v2.css",
+      "sha256": "498ef8137ced6a3f187c7a7751c890b1badd24f385161c30bb4e121a926989be",
+      "bytes": 11177
+    },
+    {
+      "type": "css",
+      "file": "css/025-v232-refinements.css",
+      "sha256": "bf5711f42811733d1819d720c2743f0e6a15a9a66d7287de96975792247ad51a",
+      "bytes": 14064
+    },
+    {
+      "type": "css",
+      "file": "css/026-tv239-chromatic-lore.css",
+      "sha256": "be960620228ce2bfa093f1a50e8eca7acf665f26b1c307cad473dea444179616",
+      "bytes": 7974
+    },
+    {
+      "type": "css",
+      "file": "css/027-native-v2.css",
+      "sha256": "73461321294c0bfc810653894be258d9aeb619b7cae9ec950f64d490b566f5ef",
+      "bytes": 333944
+    },
+    {
+      "type": "css",
+      "file": "css/028-v4-offline-theme.css",
+      "sha256": "bba390a55183976595a151043987527fa941b80e4c2589e7249809badcde7f2c",
+      "bytes": 2576
+    },
+    {
+      "type": "css",
+      "file": "css/029-v230-refinements.css",
+      "sha256": "cbb1b56316bb31609893f0d163149fc888a83ea1397a40b741db18f865e8a9de",
+      "bytes": 6113
+    },
+    {
+      "type": "css",
+      "file": "css/030-v233-corrections-styles.css",
+      "sha256": "b5e1a1fc0bb88e6eb0252359a92c8d6a0dd892d2dae29fc9ab79f9e34c8c797a",
+      "bytes": 3020
+    },
+    {
+      "type": "css",
+      "file": "css/031-v234-styles.css",
+      "sha256": "76d34a1b586d2033d7843920927f6dbbe5b5cc915b48da786141d4f2020fe838",
+      "bytes": 4459
+    },
+    {
+      "type": "css",
+      "file": "css/032-v235-styles.css",
+      "sha256": "adea653fa66d61d0eb1bf2d364f6857732cd0b17d9c8c1f3cb31292fb116fd05",
+      "bytes": 549
+    },
+    {
+      "type": "css",
+      "file": "css/033-v237-rest-death-styles.css",
+      "sha256": "6fdd43dac7291dc29924ca2503fc210aae4e8512358c6a3328cd3dcb049a143a",
+      "bytes": 3594
+    },
+    {
+      "type": "css",
+      "file": "css/034-tv238-style.css",
+      "sha256": "4a67f33f0a68a55761340503ac0c5568db5fe4d53d9880d8c52003e52f94b95e",
+      "bytes": 17276
+    }
+  ],
+  "remaining_setting_terminology": {
+    "Frostvale": 44,
+    "Terravale": 1144,
+    "Kalma": 76,
+    "Eshael": 3,
+    "Crimsonborn": 408,
+    "Dvergr": 108,
+    "Thalassari": 122,
+    "Flügel": 38,
+    "Null Meridian": 31,
+    "The Wayfarers": 6
+  },
+  "caution": "Advanced offline mechanics and native creator content provider need further migration"
+}

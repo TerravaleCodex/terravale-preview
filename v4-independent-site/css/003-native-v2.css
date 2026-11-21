@@ -1,0 +1,175 @@
+
+/* Terravale Codex V2.3 — dashboard composition and navigation refinements.
+   A deliberately restrained follow-up to V2.2. Designed at 1366/1440/1920,
+   with room for browser chrome, 24-inch 1080p screens and mobile. */
+
+/* Reflow directly instead of triggering every container-query breakpoint
+   partway through a width animation. Interactive controls still animate. */
+@media (min-width:761px) {
+  .app .sidebar { transition: background-color .16s ease, border-color .16s ease; }
+}
+.app .main-wrap { min-width:0; }
+.app .content { min-width:0; }
+
+/* Preserve the gentle hierarchy while making the text actually readable at
+   100% display scale. The V2.2 desktop screenshot exposed 10px metadata. */
+.page-dashboard .page-intro { margin-bottom:20px; }
+.page-dashboard .page-intro h1 { font-size:clamp(29px,2.1vw,35px); }
+.page-dashboard .hero-desc { font-size:13.5px; line-height:1.7; }
+.page-dashboard .hero .eyebrow { font-size:10px; }
+.page-dashboard .stat-label { font-size:10px; }
+.page-dashboard .stat-note { font-size:11px; line-height:1.45; }
+.page-dashboard .stat-value { font-size:25px; }
+.page-dashboard .stat-value.small-value { font-size:19px; }
+.page-dashboard .section-head h2 { font-size:29px; }
+.page-dashboard .section-head p { font-size:12px; line-height:1.5; }
+.page-dashboard .panel-kicker { font-size:10px; }
+.page-dashboard .panel-title h3,
+.page-dashboard .cabinet-top h3 { font-size:24px; }
+.page-dashboard .character-class { font-size:12px; }
+.page-dashboard .character-summary { font-size:12px; line-height:1.65; }
+.page-dashboard .quick-card small { font-size:11.5px; }
+.page-dashboard .quick-card strong { font-size:18px; }
+.page-dashboard .recent-title { font-size:12.5px; }
+.page-dashboard .recent-meta { font-size:11px; }
+.page-dashboard .cabinet-stats small { font-size:11.5px; }
+.page-dashboard .cabinet-stats button { font-size:12px; }
+.page-dashboard .side-callout { font-size:11px; }
+.page-dashboard .explore-card p { font-size:11.5px; }
+.page-dashboard .footer { margin-top:34px; }
+
+/* Fix the cross-selector bug: 'recent-list' is also used by the party roster.
+   Party members must never inherit the three tiny column reading trail. */
+.page-dashboard #partyContent .recent-list { display:flex!important; flex-direction:column!important; gap:0; }
+.page-dashboard #partyContent .recent-item {
+  display:flex; flex-direction:row; align-items:center;
+  min-height:54px; padding:12px 2px; gap:12px;
+  border:0; border-top:1px solid var(--tv-hex-342c3d,#342c3d);
+  border-radius:0; background:transparent;
+}
+.page-dashboard #partyContent .recent-item:first-child { border-top:0; }
+.page-dashboard #partyContent .recent-item:hover { background:var(--tv-hex-231a2b55,#231a2b55); }
+.page-dashboard #partyContent .recent-icon { width:35px; height:35px; }
+.page-dashboard #partyContent .recent-title { white-space:normal; overflow-wrap:anywhere; }
+.page-dashboard #partyContent .recent-meta { white-space:normal; }
+.page-dashboard #partyContent .recent-arrow { margin-left:auto; }
+.page-dashboard .cabinet-row { min-width:0; }
+.page-dashboard .cabinet-stats { min-width:0; }
+
+/* A consistent vertical rhythm for the dashboard's work areas. */
+.page-dashboard .dashboard-grid { gap:18px; align-items:start; }
+.page-dashboard .dashboard-grid>.stack { min-width:0; gap:18px; }
+.page-dashboard .dashboard-grid>.left-stack>section:first-child { min-width:0; }
+.page-dashboard .dashboard-grid .quick-grid { gap:11px; margin-top:13px; }
+.page-dashboard .dashboard-grid .quick-card { min-height:108px; padding:15px 16px; }
+.page-dashboard .dashboard-grid .panel { padding:22px 24px; }
+.page-dashboard .dashboard-grid .panel-title { gap:12px; }
+.page-dashboard .dashboard-grid .cabinet-widget { padding:23px 24px; }
+.page-dashboard .dashboard-grid .recent-item { min-width:0; }
+.page-dashboard .archive-section { margin-top:30px; }
+
+/* Wide collapsed sidebar: two balanced, independently flowing columns.
+   Section 1+reading trail share the left; party+Curiosities share the right.
+   This avoids the accidental void introduced by the V2.2 3-column grid. */
+@container (min-width:1180px) {
+  .app.rail-mode .page-dashboard>.dashboard-grid {
+    display:grid;
+    grid-template-columns:minmax(0,1.52fr) minmax(370px,.88fr);
+    gap:20px;
+    align-items:start;
+    margin-top:23px;
+  }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.left-stack,
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack {
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    min-width:0;
+  }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.left-stack { grid-column:1; grid-row:1; }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack { grid-column:2; grid-row:1; }
+  .app.rail-mode .page-dashboard>.dashboard-grid>.left-stack>section,
+  .app.rail-mode .page-dashboard>.dashboard-grid>.right-stack>section {
+    grid-column:auto; grid-row:auto; min-width:0;
+  }
+  .app.rail-mode .page-dashboard .quick-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .app.rail-mode .page-dashboard #recentList { display:flex; flex-direction:column; gap:0; }
+  .app.rail-mode .page-dashboard #recentList .recent-item {
+    background:transparent; border:0; border-top:1px solid var(--tv-hex-332c3c,#332c3c);
+    padding:13px 4px; border-radius:0;
+  }
+  .app.rail-mode .page-dashboard #recentList .recent-item:first-child { border-top:0; }
+  .app.rail-mode .page-dashboard .dashboard-grid .panel { width:100%; }
+  .app.rail-mode .page-dashboard .hero {
+    padding:31px 35px; min-height:268px; align-items:center;
+  }
+  .app.rail-mode .page-dashboard .stats .stat { justify-content:center; }
+}
+
+/* On real-world 1080p desktops, don't squash the right-hand widgets.
+   Let the hero breathe without making metrics enormous. */
+@container (min-width:1180px) and (max-width:1450px) {
+  .app.rail-mode .page-dashboard>.dashboard-grid {
+    grid-template-columns:minmax(0,1.4fr) minmax(375px,.9fr);
+    gap:17px;
+  }
+  .app.rail-mode .page-dashboard .dashboard-grid .panel { padding:20px; }
+  .app.rail-mode .page-dashboard .dashboard-grid .cabinet-widget { padding:20px; }
+  .app.rail-mode .page-dashboard .quick-card { min-height:104px; }
+  .app.rail-mode .page-dashboard .hero { padding:28px 31px; }
+  .app.rail-mode .page-dashboard .hero h2 { font-size:clamp(38px,3.5vw,52px); }
+}
+
+/* In expanded mode, the narrower central workspace should remain clearly
+   composed, rather than using the giant-canvas variant. */
+@media (min-width:1040px) {
+  .app:not(.rail-mode) .page-dashboard .dashboard-grid {
+    grid-template-columns:minmax(0,1.5fr) minmax(290px,.9fr);
+  }
+}
+@media (max-width:1250px) {
+  .page-dashboard .hero .sigil { width:190px; height:190px; }
+  .page-dashboard .cabinet-row { gap:13px; }
+  .page-dashboard .mini-ring { width:76px; height:76px; }
+}
+@media (max-width:1039px) {
+  .page-dashboard .dashboard-grid { grid-template-columns:1fr; }
+  .page-dashboard .dashboard-grid>.right-stack { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+}
+@media (max-width:760px) {
+  .page-dashboard .dashboard-grid>.right-stack { display:flex; flex-direction:column; }
+  .page-dashboard .dashboard-grid .panel,
+  .page-dashboard .dashboard-grid .cabinet-widget { padding:18px; }
+  .page-dashboard .dashboard-grid .quick-card { min-height:100px; }
+.page-dashboard .stat-label { font-size:9px; }
+  .page-dashboard .page-intro h1 { font-size:28px; }
+  .page-dashboard .hero-desc { font-size:12.5px; }
+}
+@media (max-width:530px) {
+  .page-dashboard .dashboard-grid .quick-grid { grid-template-columns:1fr; }
+  .page-dashboard .dashboard-grid .quick-card { min-height:82px; }
+  .page-dashboard .cabinet-top h3 { font-size:22px; }
+}
+/* Keep all three welcome actions on a single row when the hero shares a
+   1440px desktop with the four workspace metrics. */
+@container (min-width:1180px) and (max-width:1540px) {
+  .app.rail-mode .page-dashboard>.hero { grid-template-columns:minmax(0,1fr) 168px; gap:12px; }
+  .app.rail-mode .page-dashboard>.hero .hero-art { padding-left:6px; }
+  .app.rail-mode .page-dashboard>.hero .sigil { width:163px; height:163px; }
+  .app.rail-mode .page-dashboard>.hero .sigil-glyph { font-size:9px; }
+  .app.rail-mode .page-dashboard>.hero .sigil-glyph span { font-size:8px; }
+  .app.rail-mode .page-dashboard>.hero .hero-buttons { gap:7px; }
+  .app.rail-mode .page-dashboard>.hero .btn { padding:10px 11px; font-size:10.5px; }
+}
+@container (min-width:1180px) and (max-width:1300px) {
+  .app.rail-mode .page-dashboard>.hero { grid-template-columns:minmax(0,1fr) 132px; padding-inline:25px; }
+  .app.rail-mode .page-dashboard>.hero .sigil { width:126px; height:126px; }
+  .app.rail-mode .page-dashboard>.hero .hero-desc { font-size:12.5px; }
+}
+/* The older tablet rule set align-items:start on the right stack.
+   In a mobile flex column that silently shrinks the party card to content width. */
+@media (max-width:760px) {
+  .page-dashboard .dashboard-grid>.right-stack { align-items:stretch; width:100%; }
+  .page-dashboard .dashboard-grid>.right-stack>section { width:100%; min-width:0; }
+}
+

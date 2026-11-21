@@ -1,0 +1,66 @@
+
+
+/* V2.21 · refinements to character sheets, designed to inherit all five themes */
+/* The Ledger's portrait rules were scoped to .page-characters. The sheet needs its own safe frame. */
+.page-sheet .sheet20-hero-left .ledger-portrait,
+.page-sheet .sheet20-hero-left .ledger-portrait-large{
+ display:grid;place-items:center;position:relative;flex:0 0 116px;width:116px!important;height:116px!important;min-width:116px;max-width:116px;max-height:116px;
+ overflow:hidden;isolation:isolate;border-radius:16px;border:1px solid var(--s20-edge);background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--s20-accent) 28%,var(--s20-inset)),var(--s20-inset) 70%);
+ color:var(--s20-accent);box-shadow:inset 0 0 30px color-mix(in srgb,var(--s20-accent) 10%,transparent)
+}
+.page-sheet .sheet20-hero-left .ledger-portrait img,
+.page-sheet .sheet20-hero-left .ledger-portrait-large img{
+ display:block;width:100%!important;height:100%!important;max-width:100%;max-height:100%;min-width:0;
+ object-fit:cover;object-position:center;position:absolute;inset:0;z-index:2;border-radius:inherit
+}
+.page-sheet .sheet20-hero-left .ledger-portrait-monogram{font:600 52px/1 Georgia,serif;position:relative;z-index:1}
+.page-sheet .sheet20-hero-left .ledger-portrait-lines{position:absolute;width:116%;height:116%;opacity:.23;inset:-8%;pointer-events:none}
+.sheet20-hero-copy{flex:1;min-width:0}.sheet20-hero-left{flex:1 1 400px;min-width:0}.sheet20-hero-actions{flex:0 1 auto}
+.sheet21-ability-instruction{font-size:11px;line-height:1.6;color:var(--s20-soft);margin:0 0 12px}
+.sheet21-ability-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-items:start}
+.sheet21-ability-grid.is-compact{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sheet21-ability-card{min-width:0;border:1px solid var(--s20-edge);border-radius:10px;background:var(--s20-inset);overflow:hidden}
+.sheet21-ability-card[open]{border-color:color-mix(in srgb,var(--s20-accent) 60%,var(--s20-edge));box-shadow:inset 0 1px color-mix(in srgb,var(--s20-accent) 18%,transparent)}
+.sheet21-ability-card summary{padding:14px;cursor:pointer;list-style:none;display:grid;gap:12px;min-width:0}
+.sheet21-ability-card summary::-webkit-details-marker{display:none}
+.sheet21-ability-card summary:focus-visible{outline:2px solid var(--s20-accent);outline-offset:-3px}
+.sheet21-ability-card summary:hover{background:color-mix(in srgb,var(--s20-accent) 7%,transparent)}
+.sheet21-ability-top{display:flex;align-items:start;justify-content:space-between;gap:7px;min-width:0}
+.sheet21-ability-name{font-weight:700;font-size:12px;min-width:0;color:var(--s20-ink)}
+.sheet21-ability-name small{display:block;color:var(--s20-soft);font-size:9px;font-weight:500;letter-spacing:.1em;margin-top:5px}
+.sheet21-ability-value{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.sheet21-ability-value strong{font:normal 31px/1 Georgia,serif;color:var(--s20-ink)}
+.sheet21-ability-value b{font-size:12px;border:1px solid var(--s20-edge);border-radius:6px;padding:5px 6px;color:var(--s20-accent)}
+.sheet21-ability-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;color:var(--s20-soft);font-size:10px}
+.sheet21-ability-chevron{display:inline-block;transition:transform .15s ease}.sheet21-ability-card[open] .sheet21-ability-chevron{transform:rotate(180deg)}
+.sheet21-ability-detail{border-top:1px solid var(--s20-edge);padding:5px 12px 9px;display:grid;gap:0;background:color-mix(in srgb,var(--s20-accent) 4%,var(--s20-inset))}
+.sheet21-ability-saving,.sheet21-ability-skill{display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--s20-edge);padding:9px 0;color:var(--s20-ink);font-size:11px;min-width:0}
+.sheet21-ability-skill:last-child{border-bottom:0}.sheet21-ability-saving{color:var(--s20-accent)}
+.sheet21-ability-saving span,.sheet21-ability-skill span{min-width:0;overflow-wrap:anywhere}
+.sheet21-ability-saving strong,.sheet21-ability-skill strong{flex:none;font-size:12px}.sheet21-ability-detail small{display:inline-block;font-size:9px;margin-left:4px;color:var(--s20-soft)}
+.sheet21-ability-page .sheet21-ability-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Equipment inventory */
+.sheet21-equipment-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.sheet21-gear-slots{gap:9px}.sheet21-gear-slot{border:1px dashed var(--s20-edge);border-radius:9px;padding:12px;min-height:79px;display:grid;align-content:start;gap:6px;background:color-mix(in srgb,var(--s20-accent) 2%,var(--s20-panel));min-width:0;transition:border-color .12s,background .12s}
+.sheet21-gear-slot.has-item{border-style:solid;background:color-mix(in srgb,var(--s20-accent) 11%,var(--s20-panel))}
+.sheet21-gear-slot.is-blocked{opacity:.72}.sheet21-gear-slot-title{display:flex;justify-content:space-between;gap:5px;align-items:center}
+.sheet21-gear-slot-title span{font-size:10px;color:var(--s20-soft)}.sheet21-gear-slot strong{font-size:12px;overflow-wrap:anywhere}.sheet21-gear-slot>small{font-size:10px;color:var(--s20-soft)}
+.sheet21-gear-slot-title button{font-size:9px;padding:4px 6px;background:var(--s20-inset);border:1px solid var(--s20-edge);border-radius:5px;color:var(--s20-ink);cursor:pointer}
+.sheet21-backpack-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.sheet21-backpack-heading h3{margin:0}.sheet21-backpack-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.sheet21-backpack-zone{padding:12px;border:1px dashed var(--s20-edge);background:color-mix(in srgb,var(--s20-accent) 3%,var(--s20-inset));border-radius:9px;min-height:130px;transition:border-color .12s,background .12s}
+.sheet21-drop-label{display:block;color:var(--s20-soft);font-size:9px;letter-spacing:.08em;margin-bottom:10px;font-weight:750}
+.sheet21-drag-over{outline:2px solid var(--s20-accent);outline-offset:1px;background:color-mix(in srgb,var(--s20-accent) 22%,var(--s20-inset))!important}
+.sheet21-gear-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 11px;border:1px solid var(--s20-edge);border-radius:8px;background:var(--s20-panel);min-width:0}
+.sheet21-gear-item[draggable=true]{cursor:grab}.sheet21-gear-item[draggable=true]:active{cursor:grabbing}
+.sheet21-gear-identity{min-width:0;display:grid;gap:4px}.sheet21-gear-identity strong{font-size:12px;overflow-wrap:anywhere;color:var(--s20-ink)}
+.sheet21-gear-identity small{font-size:10px;color:var(--s20-soft);line-height:1.35}.sheet21-item-origin{opacity:.7}
+.sheet21-item-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex:none}.sheet21-item-actions button{background:var(--s20-inset);border:1px solid var(--s20-edge);border-radius:6px;color:var(--s20-ink);font-size:10px;padding:6px 7px;cursor:pointer}
+.sheet21-item-actions button:hover,.sheet21-gear-slot-title button:hover{border-color:var(--s20-accent)}
+.sheet21-equipped-list{margin-top:21px}.sheet21-equipped-list h4{margin:0 0 11px}.sheet21-equipped-list .sheet20-item-list{gap:6px}
+@media(min-width:1600px){.sheet21-ability-page .sheet21-ability-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1250px){.sheet21-equipment-columns{grid-template-columns:1fr}.sheet21-ability-grid,.sheet21-ability-page .sheet21-ability-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:950px){.sheet21-ability-grid.is-compact{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:660px){.page-sheet .sheet20-hero-left .ledger-portrait,.page-sheet .sheet20-hero-left .ledger-portrait-large{width:76px!important;height:76px!important;min-width:76px;flex-basis:76px}.page-sheet .sheet20-hero-left .ledger-portrait-monogram{font-size:34px}.sheet21-ability-grid,.sheet21-ability-grid.is-compact,.sheet21-ability-page .sheet21-ability-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet21-ability-top{flex-wrap:wrap}.sheet21-ability-card summary{padding:10px}.sheet21-ability-foot{flex-wrap:wrap}.sheet21-backpack-zone{padding:10px}.sheet21-gear-item{align-items:flex-start;flex-wrap:wrap}.sheet21-item-actions{width:100%;justify-content:flex-start}}
+@media(max-width:420px){.sheet21-ability-grid,.sheet21-ability-grid.is-compact,.sheet21-ability-page .sheet21-ability-grid{grid-template-columns:1fr}.sheet21-gear-slots{grid-template-columns:1fr 1fr}.sheet21-gear-slot{padding:9px;min-height:72px}}
+@media(prefers-reduced-motion:reduce){.sheet21-ability-chevron,.sheet21-gear-slot,.sheet21-backpack-zone{transition:none}}
+

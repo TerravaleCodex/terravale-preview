@@ -1,0 +1,10 @@
+
+/* V2.25.1 · source coverage shown honestly with full local-source import */
+.v2251-class-options .v223-section-head{align-items:start}.v2251-import-strip{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 18px;margin:12px 0 23px;background:var(--surface-secondary,var(--card-bg,rgba(255,255,255,.03)));border:1px solid var(--edge,var(--border,rgba(200,180,220,.23)));border-radius:12px}
+.v2251-import-strip>div{min-width:210px;flex:1}.v2251-import-strip strong{color:var(--ink,#eee);font-size:12px}.v2251-import-strip p{margin:4px 0 0;color:var(--muted,#aaa);font-size:11px;line-height:1.65}
+.v2251-upload{display:inline-flex;align-items:center;justify-content:center;min-height:39px;position:relative;border:1px solid var(--accent,#ae8dd2);padding:9px 13px;border-radius:9px;font-size:11px;color:var(--ink,#eee);background:var(--surface-secondary,rgba(140,100,160,.12));cursor:pointer;font-weight:700}
+.v2251-upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}.v2251-upload:focus-within{outline:2px solid var(--accent,#ae8dd2);outline-offset:3px}
+.v2251-rule-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;font-size:12px;border:1px solid var(--edge,var(--border,rgba(180,180,180,.22)));border-radius:9px;background:var(--surface-secondary,rgba(255,255,255,.035));padding:14px 15px;color:var(--ink,#eee);max-height:740px;overflow-y:auto}
+.v2251-option summary small{color:var(--muted,#bdb6c4);font-size:10px}.v2251-option .v224-option-body{min-width:0}.v2251-option{min-width:0}
+@media(max-width:700px){.v2251-import-strip{padding:12px;gap:9px}.v2251-upload{width:100%}.v2251-rule-text{font-size:11px;padding:10px}}
+

@@ -1,0 +1,23 @@
+
+/* V2.24: all new surfaces use the existing theme tokens. */
+.v224-subclass-section .v223-section-head p{max-width:760px;line-height:1.6}
+.v224-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.v224-option{min-width:0;border:1px solid var(--edge);border-radius:11px;background:var(--surface);transition:border-color .15s ease,background-color .15s ease}
+.v224-option[open]{border-color:color-mix(in srgb,var(--accent) 64%,var(--edge));background:color-mix(in srgb,var(--raised) 90%,var(--accent) 10%)}
+.v224-option summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:15px;color:var(--ink)}
+.v224-option summary::-webkit-details-marker{display:none}
+.v224-option summary span:first-child{display:grid;gap:5px;min-width:0}
+.v224-option summary strong{font-family:var(--serif);font-size:16px;font-weight:600}
+.v224-option summary small{font-size:10px;color:var(--soft)}
+.v224-option summary>span:last-child{color:var(--accent)}
+.v224-option-body{border-top:1px solid var(--edge);padding:14px 16px;color:var(--ink);font-size:12px;line-height:1.65}
+.v224-option-body p{margin:0 0 9px}.v224-option-body small{color:var(--soft)}
+.v224-source-tag{color:var(--accent)!important}.v224-unimported{color:var(--soft)}
+.sheet24-subclasses{grid-column:1 / -1}.sheet24-subclass-chips{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 18px}
+.sheet24-subclass-chip{border:1px solid var(--edge);padding:8px 11px;border-radius:8px;color:var(--soft);background:var(--surface);font-size:11px}
+.sheet24-subclass-chip.is-selected{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+.sheet24-mechanics{font-size:12px;line-height:1.75;margin:12px 0;color:var(--ink)}
+.sheet24-source{color:var(--accent);font-size:10px}
+.sheet22-feature-body .sheet22-feature-level{font-size:11px;color:var(--soft);margin-bottom:12px}
+@media(max-width:700px){.v224-option-grid{grid-template-columns:1fr}.v224-option summary{padding:13px}}
+

@@ -1,0 +1,49 @@
+
+
+/* V4 first pass: colours and fixed sidebar ONLY. The original V2.87
+   markup, page handlers, sheets, spacing, cards and room remain unmodified. */
+html[data-v4-theme="classic"],html[data-v4-theme="classic"] body{
+  --bg:#0c0912;--surface:#1b1424;--raised:#24192b;
+  --panel:#1b1424;--panel2:#24192b;--line:#46364b;
+  --ink:#ede5f0;--text:#ede5f0;--soft:#c0b3c7;--muted:#94879d;
+  --dim:#94879d;--accent:#b68cdb;--gold:#c5a66b;
+  --gold2:#f0d5a1;--edge:#46364b;--public-nav:#100c16;
+  --public-card:#1b1424;--public-ink:#150f1c;
+}
+html[data-v4-theme="midnight"],html[data-v4-theme="midnight"] body{
+  --bg:#06050a;--surface:#15121d;--raised:#1c1725;
+  --panel:#15121d;--panel2:#1c1725;--line:#363145;
+  --ink:#eeeaf5;--text:#eeeaf5;--soft:#b5b1c5;--muted:#8c879f;
+  --dim:#8c879f;--accent:#a6a4dc;--gold:#b4adc8;
+  --gold2:#e0d9eb;--edge:#363145;--public-nav:#0d0a12;
+  --public-card:#15121d;--public-ink:#0d0a12;
+}
+html[data-v4-theme] body{background:var(--bg)!important;color:var(--text)}
+html[data-v4-theme] .sidebar,
+html[data-v4-theme] .app-frame .topbar,
+html[data-v4-theme] .topbar{background:var(--public-nav)!important;border-color:var(--edge)!important}
+html[data-v4-theme] .app-frame,
+html[data-v4-theme] .main-wrap,
+html[data-v4-theme] .page-content{background:var(--bg);color:var(--text)}
+html[data-v4-theme] .panel,
+html[data-v4-theme] .v2-card,
+html[data-v4-theme] .character-card,
+html[data-v4-theme] .campaign-card{border-color:var(--edge);color:var(--text)}
+/* Desktop: keep the original expanded nav permanently. No resizing animation. */
+@media(min-width:761px){
+  .sidebar-desktop-toggle,button[aria-label="Collapse sidebar"],
+  button[aria-label="Expand sidebar"]{display:none!important}
+  .sidebar,.app-frame .sidebar,.main-wrap,.app-frame .main-wrap,
+  .sidebar-nav-section,.nav-section-links{transition:none!important;animation:none!important}
+  .app-frame.sidebar-is-collapsed{--sidebar-width:208px!important}
+  .app-frame.sidebar-is-collapsed .sidebar{width:208px!important;min-width:208px!important}
+  .app-frame.sidebar-is-collapsed .nav-text,
+  .app-frame.sidebar-is-collapsed .brand-words{display:initial!important}
+}
+.v4-theme-controls{display:inline-flex;gap:3px;border:1px solid var(--edge);
+  padding:3px;border-radius:7px;background:var(--surface);align-items:center}
+.v4-theme-controls button{border:0;background:transparent;color:var(--soft);
+  padding:5px 9px;border-radius:5px;font-size:11px;cursor:pointer}
+.v4-theme-controls button[aria-pressed="true"]{color:var(--text);
+  background:var(--raised);outline:1px solid var(--edge)}
+
