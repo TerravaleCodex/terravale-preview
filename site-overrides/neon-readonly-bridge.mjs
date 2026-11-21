@@ -16,6 +16,7 @@ const TABLE_COLUMNS = Object.freeze({
 const RPC_NAMES = Object.freeze([
   "terravale_neon_staging_probe",
   "terravale_neon_staging_character_preview",
+  "terravale_neon_staging_account_bootstrap",
 ]);
 
 function allowedName(value, options) {
