@@ -52,7 +52,7 @@ BEGIN
     END IF;
     IF regexp_count(source_definition,'\mbegin\M',1,'i') <> 1
       OR source_definition !~* 'actor\s+uuid\s*:?=\s*\(?select\s+auth\.uid\(\)'
-      OR ltrim(split_part(lower(source_definition),'begin',2)) NOT LIKE 'select * into %'
+      OR btrim(split_part(lower(source_definition),'begin',2),E' \t\n\r') NOT LIKE 'select * into %'
       OR strpos(left(split_part(lower(source_definition),'begin',2),350),'for update')=0
     THEN
       RAISE EXCEPTION 'Unexpected function layout for %, refusing partial patch',
