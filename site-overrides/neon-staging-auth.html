@@ -111,7 +111,8 @@ els.connect.addEventListener("click",async()=>{
   try{
     const {error}=await client.signIn.social({provider:"discord",callbackURL:CALLBACK_URL});
     if(error)throw error;
-    setTimeout(()=>{if(document.visibilityState==="visible")checkSession()},1200);
+    setBusy(false);
+    if(document.visibilityState==="visible")await checkSession();
   }catch(err){
     status("error","Discord sign-in could not start",safeError(err));
     setBusy(false);
