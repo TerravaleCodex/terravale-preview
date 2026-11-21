@@ -26,6 +26,11 @@ class LiveLayoutParity(unittest.TestCase):
           <section id="actual-dm-chronicle">DM Chronicle</section>
           </main>
           <script data-source="v287-adaptive-resources.js">window.REAL_V287=true;</script>
+          <script type="application/json" id="tv238-v14-content">{"articles":[{"id":"1","title":"Hidden Kingdom","html":"Secrets"}],"heritageArticles":[],"events":[{"name":"Festival of Ice"}]}</script>
+          <script data-source="v247-demo-party-admin.js">const curatedParty=["Demo Player"];</script>
+          <script data-source="v248-curated-demo-sheets.js">const curatedSheet=["Demo Hero"];</script>
+          <script data-source="v254-rules-registry.js">window.TerravaleRulesV4={"tools":[{"name":"Runecarver"}],"languages":[{"name":"Dvergr"}],"currencies":[],"classes":{}};</script>
+          <script>const RULES={classes:[{name:"Daemon Knight"}],ancestries:[{name:"Shadowfolk"}],skills:["Perception"]};</script>
           <script type="module" data-source="v2-discord-auth.mjs">fetch("https://example.org/");</script>
           <script type="module" data-source="v2-ads-atelier.mjs">fetch("https://example.org/");</script>
           </body></html>'''
@@ -37,6 +42,13 @@ class LiveLayoutParity(unittest.TestCase):
         self.assertNotIn('data-source="v2-discord-auth.mjs"',result)
         self.assertNotIn('data-source="v2-ads-atelier.mjs"',result)
         self.assertIn('--bg:#0c0912',result)
+        self.assertNotIn('Hidden Kingdom',result)
+        self.assertNotIn('Festival of Ice',result)
+        self.assertNotIn('Runecarver',result)
+        self.assertNotIn('Daemon Knight',result)
+        self.assertNotIn('Demo Hero',result)
+        self.assertIn('skills:["Perception"]',result)
+        self.assertIn('classes:[]',result)
         self.assertIn('--bg:#06050a',result)
         self.assertIn('sidebar-is-collapsed',result)
         self.assertIn('v4-offline-controls',result)
