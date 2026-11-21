@@ -15,6 +15,7 @@ on:
       - v4/offline-database.js
       - tests/v4-offline-database.cjs
       - tests/test_v4_actual_live_parity.py
+      - tools/v4_blank_content_patch.py
   workflow_dispatch:
 
 permissions:
@@ -37,12 +38,15 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_v4_actual_live_parity.py' -v
       - name: Verify V2 offline database behaviour, ownership and backups
         run: node tests/v4-offline-database.cjs
-      - name: Publish exact live source and first-pass V4 preview (never deploy)
+      - name: Publish blank-content offline V4 only (no unredacted source)
+        run: |
+          python -c "import json; r=json.load(open('dist/V4_BLANK_CONTENT_REPORT.json')); assert r['redacted_collections'] and len(r['removed_demo_modules']) == 2"
+      - name: Publish blank-content offline V4 artifact (never deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: V4-ACTUAL-LIVE-SITE-AND-OFFLINE-FIRST-PASS
+          name: V4-EMPTY-PLATFORM-LIVE-UI-OFFLINE-DB
           path: |
-            dist/V4_Live_Exact_Source_Baseline.zip
             dist/V4_Live_Layout_Offline_First_Pass.zip
+            dist/V4_BLANK_CONTENT_REPORT.json
           if-no-files-found: error
           retention-days: 30
