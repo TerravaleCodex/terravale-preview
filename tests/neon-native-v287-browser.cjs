@@ -80,27 +80,78 @@ const server=http.createServer((req,res)=>{
 (async()=>{
  let chrome=[process.env.CHROME_BIN,"/usr/bin/chromium","/usr/bin/google-chrome","/usr/bin/chromium-browser"].filter(Boolean).find(fs.existsSync);
  if(!chrome)for(const name of ["chromium","google-chrome","chromium-browser"]){
- try{chrome=cp.execFileSync("which",[name],{encoding:"utf8"}).trim();break}catch{}
+   try{chrome=cp.execFileSync("which",[name],{encoding:"utf8"}).trim();break}catch{}
  }
  if(!chrome)throw Error("Chromium is required for native V2.87 browser validation");
- await new Promise(r=>server.listen(0,"127.0.0.1",r));
+ const os=require("node:os");
+ const profile=fs.mkdtempSync(path.join(os.tmpdir(),"terravale-neon-v287-"));
+ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ let browser=null,ws=null;
  try{
- const url="http://127.0.0.1:"+server.address().port+"/fixture";
- const out=await new Promise((resolve,reject)=>{
-  const child=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
-   "--disable-background-networking","--virtual-time-budget=125000","--window-size=1380,900","--dump-dom",url],
-   {stdio:["ignore","pipe","pipe"]});
-  let stdout="",stderr="";
-  const timer=setTimeout(()=>{child.kill();reject(Error("Native Chromium test timed out"))},45000);
-  child.stdout.on("data",v=>{stdout+=v.toString();if(stdout.length>6e6)child.kill()});
-  child.stderr.on("data",v=>{stderr+=v.toString();if(stderr.length>11000)stderr=stderr.slice(-11000)});
-  child.on("error",e=>{clearTimeout(timer);reject(e)});
-  child.on("close",code=>{clearTimeout(timer);code===0?resolve({stdout,stderr}):reject(Error("Chromium exit "+code+": "+stderr.slice(-1300)))});
- });
- const match=out.stdout.match(/data-native-test="([^"]+)"/);
- assert.ok(match,"Native V2.87 staging browser never completed the synthetic session: "+out.stderr.slice(-400));
- const report=JSON.parse(decodeURIComponent(match[1]));
- console.log("Native V2.87 staging browser report:",JSON.stringify(report));
- assert.ok(report.pass,"Real V2.87 compiled UI did not load synthetic Neon character");
- }finally{server.close()}
+   const url="http://127.0.0.1:"+server.address().port+"/fixture";
+   browser=cp.spawn(chrome,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
+     "--disable-background-networking","--remote-debugging-port=0","--user-data-dir="+profile,
+     "--window-size=1400,950",url],{stdio:"ignore"});
+   let port="";
+   for(let k=0;k<100;k++){
+     const marker=path.join(profile,"DevToolsActivePort");
+     if(fs.existsSync(marker)){
+       port=fs.readFileSync(marker,"utf8").split("\n")[0];break;
+     }
+     await sleep(100);
+   }
+   assert.ok(port,"Chromium DevTools did not start");
+   let target=null;
+   for(let k=0;k<100;k++){
+     const rows=await (await fetch("http://127.0.0.1:"+port+"/json/list")).json();
+     target=rows.find(x=>x.type==="page"&&x.url.includes("/fixture"));
+     if(target)break;
+     await sleep(100);
+   }
+   assert.ok(target?.webSocketDebuggerUrl,"Native V2.87 fixture page not found");
+   ws=new WebSocket(target.webSocketDebuggerUrl);
+   await new Promise((resolve,reject)=>{
+     ws.addEventListener("open",resolve,{once:true});
+     ws.addEventListener("error",reject,{once:true});
+   });
+   let seq=0;const pending=new Map();
+   ws.addEventListener("message",event=>{
+     let item;try{item=JSON.parse(event.data)}catch{return}
+     const next=pending.get(item.id);
+     if(next){pending.delete(item.id);clearTimeout(next.timer);
+       if(item.error)next.reject(Error(JSON.stringify(item.error)));
+       else next.resolve(item.result)}
+   });
+   const request=(method,params={})=>new Promise((resolve,reject)=>{
+     const id=++seq;
+     const timer=setTimeout(()=>{pending.delete(id);reject(Error("Chrome DevTools call timed out: "+method))},7000);
+     pending.set(id,{resolve,reject,timer});
+     ws.send(JSON.stringify({id,method,params}));
+   });
+   await request("Runtime.enable");
+   let report=null,progress="";
+   // Real browser time, not Chromium's virtual-time fast-forward: iframe
+   // postMessage handlers must have the opportunity to execute asynchronously.
+   for(let n=0;n<100;n++){
+     const evaluated=await request("Runtime.evaluate",{
+       expression:'document.body?.dataset?.nativeTest || ""',returnByValue:true});
+     const value=evaluated?.result?.value;
+     if(value){report=JSON.parse(decodeURIComponent(value));break;}
+     if(n%12===0){
+       const state=await request("Runtime.evaluate",{
+         expression:'JSON.stringify({ready,handshake,originMatched,loaded,error,messages,phases})',
+         returnByValue:true});
+       progress=state?.result?.value||"";
+     }
+     await sleep(250);
+   }
+   console.log("Native V2.87 staging browser report:",JSON.stringify(report||{timeout:true,progress}));
+   assert.ok(report?.pass===true,"Original V2.87 did not mount the authorised synthetic character");
+ }finally{
+   try{ws?.close()}catch{}
+   try{browser?.kill("SIGKILL")}catch{}
+   fs.rmSync(profile,{recursive:true,force:true});
+   server.close();
+ }
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
