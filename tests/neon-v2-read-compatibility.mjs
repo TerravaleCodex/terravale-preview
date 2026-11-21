@@ -42,11 +42,13 @@ for(const f of [
  ()=>api.from("characters").order("owner_id"),
  ()=>api.from("characters").in("id",Array(30).fill("x")),
  ()=>api.from("characters").select("id").limit(10000),
+ ()=>createNeonReadOnlyBridge({dataApiUrl:"https://attacker.test",getAccessToken:()=>jwt,request:fetchStub}),
+])assert.throws(f,TypeError,"Unsafe request should be rejected");
+for(const f of [
  ()=>api.rpc("terravale_delete_character"),
  ()=>api.rpc("terravale_wallet_self_adjust"),
  ()=>api.rpc("terravale_neon_staging_probe",{userId:"fake"}),
- ()=>createNeonReadOnlyBridge({dataApiUrl:"https://attacker.test",getAccessToken:()=>jwt,request:fetchStub}),
-])assert.throws(f,TypeError,"Unsafe request should be rejected");
+])await assert.rejects(f,TypeError,"Disallowed asynchronous RPC must reject");
 
 const badSession=createNeonReadOnlyBridge({
  dataApiUrl:url,getAccessToken:async()=>"opaque-session",request:fetchStub
