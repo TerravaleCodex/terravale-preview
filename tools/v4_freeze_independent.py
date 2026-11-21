@@ -76,9 +76,13 @@ def main():
     raw=Path(args.input).read_bytes()
     if len(raw)<7_000_000:raise RuntimeError("Input is not the 7+ MB live V2.87 site")
     live=raw.decode('utf-8')
-    for t in ('Terravale Codex V2.87','data-source="v287-adaptive-resources.js"',
-              'data-source="v254-dm-vault.js"','id="tv238-v14-content"'):
-        if t not in live:raise RuntimeError("Incomplete live V2.87 source: "+t)
+    version=re.search(r'Terravale Codex V(2\\.\\d+)',live)
+    if not version or int(version.group(1).split('.')[1])<85:
+        raise RuntimeError("Unexpected or outdated live source. Need the actual V2.85+ application.")
+    for t in ('data-source="v254-dm-vault.js"',
+              'data-source="v270-divine-workspace.js"',
+              'id="tv238-v14-content"'):
+        if t not in live:raise RuntimeError("Incomplete live V2 source: "+t)
     html=port(live)
     blank_check(html)
     dest=Path(args.output).resolve()
@@ -98,10 +102,11 @@ def main():
     if js_bytes<500_000:
         raise RuntimeError("Native V2 JavaScript was not fully extracted")
     manifest={
-        'source':'one-time finished V2.87 live HTML snapshot',
+        'source':'one-time completed live V2 HTML snapshot',
+        'captured_live_version':version.group(1),
         'original_sha256':sha(raw),'original_bytes':len(raw),
         'v4_sha256':sha(html.encode('utf-8')),
-        'layout':'original native live V2.87',
+        'layout':'original native completed live V2',
         'world_data':'bulk lore and preset content removed',
         'storage':'IndexedDB offline adapter',
         'independent_of_live_build':True,
@@ -114,7 +119,7 @@ def main():
     (out/'V4_SOURCE_MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     (out/'README.md').write_text(
         '# Independent Living Codex V4 source\n\n'
-        'This is a one-time frozen copy of the actual live V2.87 application, '
+        'This is a one-time frozen copy of the actual deployed live V2 application, '
         'not a redesigned interface or an automatic rebuild from V2.\n\n'
         'The V4 source is in index.html, css/ and js/. Edit those files directly. '
         'No original archive or historical patch tooling is required.\n\n'
