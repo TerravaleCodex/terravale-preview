@@ -61,7 +61,10 @@
    // The isolated frame is NOT signed into Supabase and must only recognise
    // the single verified Neon campaign from its approved snapshot.
    const originalBridge=window.TerravaleV2Bridge||{};
-   window.TerravaleV2Bridge=Object.freeze({
+   // The original V2.54 creator bridge installs a wrapper on this object.
+   // Keep it mutable so that native initialization completes; its methods are
+   // still inert and the iframe has no write-capable database connection.
+   window.TerravaleV2Bridge={
      ...originalBridge,
      hasCampaign:value=>String(value)===campaignId,
      isDemo:()=>false,
@@ -70,7 +73,7 @@
      joinCampaign:async()=>({error:"Neon read-only preview"}),
      createCampaign:async()=>({error:"Neon read-only preview"}),
      syncCampaigns:async()=>{}
-   });
+   };
    if(!isRecord(db.featuredCharacters))db.featuredCharacters={};
    db.featuredCharacters[campaignId]=id;
    loaded=true;
