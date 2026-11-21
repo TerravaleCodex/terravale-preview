@@ -2,6 +2,7 @@
 const fs=require("node:fs");
 const assert=require("node:assert/strict");
 const {spawnSync}=require("node:child_process");
+const vm=require("node:vm");
 const html=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
 const wf=fs.readFileSync(".github/workflows/deploy.yml","utf8");
 assert.ok(html.startsWith("<!doctype html>"));
@@ -18,6 +19,12 @@ for(const snippet of [
  "await client.getSession()",
  "await client.signOut()",
  "await client.token()",
+ "await getSignedStagingJwt()",
+ "client.getSession()",
+ 'AUTH_URL+"/token"',
+ 'credentials:"include"',
+ "function looksLikeJwt(value)",
+ "tokenFromAuthResult(payload)",
  "https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.neon.tech/terravale/rest/v1",
  "DATA_API_URL+\"/rpc/terravale_neon_staging_probe\"",
  "Authorization\":\"Bearer \"+jwt",
@@ -52,3 +59,56 @@ for(const marker of [
 const built="published/neon-staging-auth/index.html";
 if(fs.existsSync(built))assert.equal(fs.readFileSync(built,"utf8"),html);
 console.log("PASS: Neon staging sign-in page is isolated, syntactically valid, safe and distinct from the live Supabase app.");
+// Unit-test JWT extraction without real accounts, cookies, or live bearer tokens.
+const from=code.indexOf("function looksLikeJwt(");
+const to=code.indexOf("async function verifyCharacterPermissions(",from);
+assert.ok(from>=0&&to>from,"JWT helpers should be independently testable");
+const helpers=code.slice(from,to);
+const dummyTokens={sdk:"abc.def.ghi",session:"jkl.mno.pqr",endpoint:"stu.vwx.yza"};
+async function exercise(client,reply){
+ let called=0;
+ const ctx={
+  client,AUTH_URL:"https://staging-auth.example/terravale/auth",
+  fetch:async(url,opts)=>{
+   called++;
+   assert.equal(url,ctx.AUTH_URL+"/token","JWT fetch must use the fixed Neon Auth origin");
+   assert.equal(opts.method,"GET");
+   assert.equal(opts.credentials,"include");
+   assert.equal(opts.cache,"no-store");
+   return reply;
+  }
+ };
+ vm.createContext(ctx);
+ vm.runInContext(helpers,ctx);
+ const result=await vm.runInContext("getSignedStagingJwt()",ctx);
+ return {result,called};
+}
+(async()=>{
+ const sdk=await exercise({
+  token:async()=>({data:{token:dummyTokens.sdk}}),
+  getSession:async()=>{throw Error("Unnecessary session request")}
+ },null);
+ assert.equal(sdk.result,dummyTokens.sdk);assert.equal(sdk.called,0);
+
+ const cached=await exercise({
+  token:async()=>({data:{session:{token:"opaque-session-id"}}}),
+  getSession:async()=>({data:{session:{token:dummyTokens.session}}})
+ },null);
+ assert.equal(cached.result,dummyTokens.session);assert.equal(cached.called,0);
+
+ const endpoint=await exercise({
+  token:async()=>({data:{session:{token:"not-a-jwt"}}}),
+  getSession:async()=>({data:{session:{token:"another-opaque-token"}}})
+ },{ok:true,json:async()=>({token:dummyTokens.endpoint})});
+ assert.equal(endpoint.result,dummyTokens.endpoint);assert.equal(endpoint.called,1);
+
+ const empty={
+  token:async()=>({data:{session:{token:"opaque"}}}),
+  getSession:async()=>({data:{session:{token:"opaque"}}})
+ };
+ await assert.rejects(exercise(empty,{ok:true,json:async()=>({token:"opaque"})}),
+   /no signed access JWT/);
+ await assert.rejects(exercise(empty,{ok:false,status:401}),
+   /HTTP 401/);
+ console.log("PASS: Neon staging auth JWT fallback (SDK, cached session, direct endpoint) and safe failure.");
+})().catch(e=>{console.error(e);process.exitCode=1});
