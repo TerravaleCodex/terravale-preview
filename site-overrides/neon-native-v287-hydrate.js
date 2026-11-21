@@ -56,8 +56,9 @@
      else send("ERROR",{id,reason:"Original V2.87 sheet did not render"})},180);
  }
  window.addEventListener("message",event=>{
-   if(event.source!==window.parent||event.origin!==originalOrigin||
-      event.data?.type!==tag+"_LOAD")return;
+   if(event.source!==window.parent||event.data?.type!==tag+"_LOAD")return;
+   send("HANDSHAKE",{originMatched:event.origin===originalOrigin});
+   if(event.origin!==originalOrigin)return;
    try{load(event.data.snapshot)}catch(err){send("ERROR",{reason:String(err?.message||"Native sheet unavailable").slice(0,130)})}
  });
  function ready(){send("READY")}
