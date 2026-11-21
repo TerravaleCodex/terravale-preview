@@ -17,15 +17,31 @@ for(const snippet of [
  "client.signIn.social({provider:\"discord\",callbackURL:CALLBACK_URL})",
  "await client.getSession()",
  "await client.signOut()",
+ "await client.token()",
+ "https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.neon.tech/terravale/rest/v1",
+ "DATA_API_URL+\"/rpc/terravale_neon_staging_probe\"",
+ "Authorization\":\"Bearer \"+jwt",
+ "typeof info.owned_characters",
+ 'id="permissions"',
+ "Verify character access (read-only)",
+ "Real Neon permission check passed",
  "data?.user",
  'name="robots" content="noindex,nofollow,noarchive"',
  'name="referrer" content="no-referrer"',
  'Neon staging session active',
- 'Existing character ownership'
+ 'existing character ownership'
 ])assert.ok(html.includes(snippet),"Expected staging-only auth behaviour: "+snippet);
-assert.ok(!/sb_secret_|service_role|postgres(ql)?:\/\/|clientSecret\s*[:=]|apiKey\s*[:=]|getJWTToken\(|\.token\(\)/i.test(html),"Staging page must never reveal credentials or bearer tokens");
+assert.ok(!/sb_secret_|service_role|postgres(ql)?:\/\/|clientSecret\s*[:=]|apiKey\s*[:=]|getJWTToken\(/i.test(html),"Staging page must never reveal credentials or bearer tokens");
 assert.ok(!/supabase-js|supabase\.auth|supabase\.from|supabase\.rpc/i.test(code),"Staging sign-in must never touch Supabase");
 assert.ok(!/innerHTML\s*=|eval\(|new Function\(/.test(code),"User data must be handled safely");
+assert.ok(!/localStorage|sessionStorage|console\.log\(jwt\)|textContent\s*=\s*jwt/.test(code),
+  "The signed JWT must never be logged, displayed, or persisted by the staging check");
+assert.ok(!/\.insert\(|\.update\(|\.delete\(|\.upsert\(/.test(code),
+  "The staging probe must never mutate database records");
+assert.ok(code.includes('method:"POST"') && code.includes('body:"{}"'),
+  "Staging probe should call its designated read-only RPC only");
+assert.ok(code.includes('els.permissionResult.textContent='),
+  "Staging probe should display aggregate counts only");
 assert.ok(html.includes('No passwords, OAuth secrets, session tokens or database credentials'));
 for(const marker of [
  'cp site-overrides/launch-home.html published/index.html',
