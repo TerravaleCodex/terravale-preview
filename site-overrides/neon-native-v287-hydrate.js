@@ -71,9 +71,7 @@
      const root=document.querySelector("#pageRoot");
      send("DIAGNOSTIC",{pageRoot:!!root,sheetCount:document.querySelectorAll(".sheet20").length,
        rootHasName:!!root?.textContent.includes(String(ch.name)),
-       hash:location.hash.slice(0,85),
-       route:typeof route==="function"?String(route()).slice(0,85):"unavailable",
-       rootPreview:String(root?.textContent||"").replace(/\\s+/g," ").slice(0,120)});
+       nativeRoute:typeof route==="function"&&String(route()).startsWith("/characters/")});
      return !!sheet&&sheet.textContent.includes(String(ch.name));};
    setTimeout(()=>{if(firstCheck())send("LOADED",{id,nativeSheet:true});
      else send("ERROR",{id,reason:"Original V2.87 sheet did not render"})},180);
