@@ -39,15 +39,32 @@
        .filter(x=>x?.item_id&&isRecord(x.properties))
        .map(x=>[x.item_id,x.properties]))
    };
+   // V2.54's original mount is invoked after each native tab repaint, because
+   // the older native page replaces its content root and invalidates old DOM
+   // observers. Do not reconstruct a wallet or training UI.
+   document.addEventListener("click",event=>{
+     if(!event.target?.closest?.("#pageRoot .sheet20-tabs [data-value]"))return;
+     setTimeout(()=>window.TerravaleNeonNativeMountV254?.(),125);
+   },true);
    // The original V2.87 sheet reads db.characters and renders #pageRoot. The
    // approved build is never edited; this is an in-memory clone in a sandbox.
    db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
    db.characters=[ch];db.campaign=campaignId;db.mode="sample";
+   db.role=snapshot.access==="dm"?"dm":"player";
+   // Existing native V2.87 training, feat and wallet modules call the
+   // Supabase-shaped reader. This one is entirely in-memory, source-scoped,
+   // has no JWT and rejects every RPC/write. Never add a real DB client here.
+   if(typeof window.TerravaleNeonV287ReadOnlyClient?.create!=="function")
+     throw new TypeError("Native source reader not installed");
+   window.TerravaleVerifiedAccount=window.TerravaleNeonV287ReadOnlyClient.create(snapshot);
    // The live V2.87 campaign-access gate reads this runtime bridge.
    // The isolated frame is NOT signed into Supabase and must only recognise
    // the single verified Neon campaign from its approved snapshot.
    const originalBridge=window.TerravaleV2Bridge||{};
-   window.TerravaleV2Bridge=Object.freeze({
+   // The original V2.54 creator bridge installs a wrapper on this object.
+   // Keep it mutable so that native initialization completes; its methods are
+   // still inert and the iframe has no write-capable database connection.
+   window.TerravaleV2Bridge={
      ...originalBridge,
      hasCampaign:value=>String(value)===campaignId,
      isDemo:()=>false,
@@ -56,7 +73,7 @@
      joinCampaign:async()=>({error:"Neon read-only preview"}),
      createCampaign:async()=>({error:"Neon read-only preview"}),
      syncCampaigns:async()=>{}
-   });
+   };
    if(!isRecord(db.featuredCharacters))db.featuredCharacters={};
    db.featuredCharacters[campaignId]=id;
    loaded=true;
@@ -64,6 +81,12 @@
    navigate("/characters/"+id);
    send("PHASE",{phase:"navigated"});
    renderPage(false);
+   // Wait for the native route's hashchange invalidation before caching grants.
+   // The canonical V2 Feat reader then renders the exact saved feat rules.
+   setTimeout(()=>Promise.resolve(window.TerravaleV258Feats?.refresh?.(id,campaignId,true)).catch(()=>{}),185);
+   // Mount native panels directly from the existing V2.54 renderer. No
+   // synthetic cloud-sync event is necessary (it would clear feat caches).
+   window.TerravaleNeonNativeMountV254?.();
    send("PHASE",{phase:"rendered"});
    const page=document.querySelector("#pageRoot");
    if(!page)throw new TypeError("Native V2.87 character page did not mount");
@@ -73,8 +96,56 @@
        rootHasName:!!root?.textContent.includes(String(ch.name)),
        nativeRoute:typeof route==="function"&&String(route()).startsWith("/characters/")});
      return !!sheet&&sheet.textContent.includes(String(ch.name));};
-   setTimeout(()=>{if(firstCheck())send("LOADED",{id,nativeSheet:true});
-     else send("ERROR",{id,reason:"Original V2.87 sheet did not render"})},180);
+   async function auditNativePanels(){
+     // Synthetic CI only. Use the actual old V2 tabs and real native readers;
+     // never relay character names, feat text, wallet values or identities.
+     const listTabs=()=>[...document.querySelectorAll("#pageRoot .sheet20-tabs [data-value]")];
+     const values=listTabs().map(x=>x.dataset.value);
+     const view=async value=>{
+       // Every native sheetTab action may replace the entire tab DOM.
+       const el=listTabs().find(x=>x.dataset.value===value);
+       if(!el)return false;
+       el.click();await new Promise(r=>setTimeout(r,700));return true;
+     };
+     await view("abilities");
+     const trainEl=document.querySelector("#tv254-sheet-proficiencies");
+     const training=!!trainEl?.textContent.includes("smith");
+     const trainingMounted=!!trainEl;
+     const trainingReady=!!trainEl&&!trainEl.textContent.includes("Loading");
+     const abilitySelected=!!document.querySelector('#pageRoot .sheet20-tabs [data-value="abilities"][aria-selected="true"]');
+     await view("features");
+     const featTab=document.querySelector('.sheet227-reader [data-v228-tab="feats"]')||
+       document.querySelector('#pageRoot [data-v228-tab="feats"]');
+     featTab?.click();
+     await new Promise(r=>setTimeout(r,480));
+     const featEl=document.querySelector(".sheet227-reader");
+     const feats=!!featEl?.textContent.includes("Audit Feat");
+     const featMounted=!!featEl;
+     const featuresSelected=!!document.querySelector('#pageRoot .sheet20-tabs [data-value="features"][aria-selected="true"]');
+     const inventoryTab=values.find(x=>["inventory","equipment","backpack"].includes(x));
+     if(inventoryTab)await view(inventoryTab);
+     const walletEl=document.querySelector("#tv254-sheet-wallet");
+     const wallet=!!walletEl?.textContent.includes("Coin");
+     send("PANEL_AUDIT",{training,feats,wallet,trainingMounted,trainingReady,
+       abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
+       nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
+       hasRules:!!window.TerravaleRulesV4,
+       hasV255Training:!!window.TerravaleV255Training?.renderSheet,
+       hasV258FeatReader:!!window.TerravaleV258Feats?.getEntries,
+       currentFeats:window.TerravaleV258Feats?.getEntries?.(id,campaignId)?.length??null,
+       backpackZone:!!document.querySelector("#pageRoot .sheet20-content .sheet21-backpack-zone"),
+       nativeContent:!!document.querySelector("#pageRoot .sheet20-content"),
+       hasAbilities:values.includes("abilities"),
+       hasFeatures:values.includes("features"),
+       hasInventory:!!inventoryTab});
+   }
+   setTimeout(()=>{
+     if(firstCheck()){
+       send("LOADED",{id,nativeSheet:true});
+       if(new URLSearchParams(location.search).has("audit-native-panels"))
+         auditNativePanels().catch(()=>send("PANEL_AUDIT",{training:false,feats:false,wallet:false,error:true}));
+     }else send("ERROR",{id,reason:"Original V2.87 sheet did not render"});
+   },180);
  }
  window.addEventListener("message",event=>{
    if(event.source!==window.parent||event.data?.type!==tag+"_LOAD")return;

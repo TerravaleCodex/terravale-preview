@@ -12,6 +12,8 @@ on:
       - "site-overrides/neon-v287-sheet-snapshot.mjs"
       - "site-overrides/neon-native-v287-bootstrap.js"
       - "site-overrides/neon-native-v287-hydrate.js"
+      - "site-overrides/neon-native-v287-read-client.js"
+      - "tests/neon-native-v287-read-client.cjs"
       - "tools/build-neon-native-v287.cjs"
       - "tests/neon-native-v287-browser.cjs"
       - "tests/neon-v287-sheet-snapshot.mjs"
@@ -347,6 +349,7 @@ jobs:
           node tools/build-neon-staging-sheet.cjs
           node --check site-overrides/neon-native-v287-bootstrap.js
           node --check site-overrides/neon-native-v287-hydrate.js
+          node --check site-overrides/neon-native-v287-read-client.js
           node tools/build-neon-native-v287.cjs
           python3 - <<'PY'
           from pathlib import Path
@@ -385,6 +388,7 @@ jobs:
           native=Path("published/neon-staging-auth/native-v287/index.html")
           assert native.stat().st_size > 7000000
           assert 'data-source="v287-adaptive-resources.js"' in native.read_text(encoding="utf-8")
+          assert 'data-source="neon-native-v287-read-client.js"' in native.read_text(encoding="utf-8")
           assert 'data-source="v2-discord-auth.mjs"' not in native.read_text(encoding="utf-8")
           identity=Path("published/neon-staging-auth/account-context.mjs")
           assert identity.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-account-context.mjs").read_text(encoding="utf-8")
@@ -411,6 +415,8 @@ jobs:
         run: node tests/v268-public-home.cjs
       - name: Verify actual native Dashboard default route
         run: node tests/v269-dashboard-default.cjs
+      - name: Verify original V2.87 in-memory read client matches authorized feats, training and wallet
+        run: node tests/neon-native-v287-read-client.cjs
       - name: Browser-test original V2.87 native sheet with synthetic Neon snapshot and no network
         run: node tests/neon-native-v287-browser.cjs
       - name: Upload safe GitHub Pages site
