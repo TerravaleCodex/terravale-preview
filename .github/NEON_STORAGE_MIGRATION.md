@@ -14,6 +14,8 @@ In `TerravaleCodex/terravale-preview`, open **Settings → Secrets and variables
 - `TERRAVALE_NEON_S3_ACCESS_KEY_ID`: the Object Storage S3 access key ID for Neon **staging** branch `br-wandering-queen-bg2v6gjp`.
 - `TERRAVALE_NEON_S3_SECRET_ACCESS_KEY`: the corresponding Neon **staging** Object Storage S3 secret.
 
+These keys are highly privileged. Only trusted maintainers should modify and run workflows on `main`. **Remove the three repository secrets after the verified final synchronization is complete.**
+
 Use the existing Neon [staging branch](https://console.neon.tech/app/projects/still-dust-11470556/branches/br-wandering-queen-bg2v6gjp), **not Neon main**. The script pins both the production Supabase source project and the staging Neon storage endpoint. The source URL, destination URL and region are fixed in the Action; there are no extra secrets to enter.
 
 ## Execute safely
