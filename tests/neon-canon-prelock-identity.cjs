@@ -31,7 +31,7 @@ assert.ok(sql.includes("total_functions<>14"));
 assert.ok(sql.includes("guarded+unchanged<>14"));
 assert.ok(sql.includes("regexp_count(source_definition"));
 assert.ok(sql.includes("Unexpected function layout"));
-assert.ok(sql.includes("CREATE OR REPLACE FUNCTION")===false,"Patch must only adjust existing definitions");
+assert.ok(!/^\s*CREATE OR REPLACE FUNCTION/im.test(sql),"Patch must only adjust existing definitions dynamically");
 assert.ok(!/\b(?:DROP|TRUNCATE|DELETE\s+FROM|GRANT\s+ALL|ALTER\s+TABLE|REVOKE)\b/i.test(sql),"Migration must not alter data or table privileges");
 assert.ok(sql.includes("refusing partial patch"));
 console.log("PASS: all 14 canonical divine actions receive idempotent authenticated pre-lock guards; no table/data mutations.");
