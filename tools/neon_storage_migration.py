@@ -25,6 +25,9 @@ BUCKETS = {
     "terravale-profile-avatars": {"public": True, "max_bytes": 2_097_152, "expected": 3},
 }
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
+EXPECTED_SOURCE = "https://emwlvbmnrrhxhrmlwkhs.supabase.co"
+EXPECTED_TARGET = "https://br-wandering-queen-bg2v6gjp.storage.c-9.eu-central-1.aws.neon.tech"
+EXPECTED_REGION = "eu-central-1"
 MAX_OBJECTS = 200
 LIST_LIMIT = 100
 
@@ -190,6 +193,8 @@ def main() -> int:
     args.add_argument("--execute", action="store_true", help="Write and round-trip verify Neon staging objects")
     options = args.parse_args()
     root = approved_endpoint(need_env("TERRAVALE_SUPABASE_URL"), ".supabase.co")
+    if root != EXPECTED_SOURCE:
+        raise ValueError("Source project mismatch; refusing migration")
     service_key = need_env("TERRAVALE_SUPABASE_SERVICE_ROLE_KEY")
     if options.execute and os.environ.get("CONFIRM_NEON_STORAGE_WRITE") != "yes":
         raise ValueError("--execute needs CONFIRM_NEON_STORAGE_WRITE=yes")
@@ -206,9 +211,13 @@ def main() -> int:
     import boto3
     from botocore.config import Config
     endpoint = approved_endpoint(need_env("TERRAVALE_NEON_S3_ENDPOINT"), ".neon.tech")
+    if endpoint != EXPECTED_TARGET:
+        raise ValueError("Destination must be the reviewed Neon staging branch")
     access_id = need_env("TERRAVALE_NEON_S3_ACCESS_KEY_ID")
     secret = need_env("TERRAVALE_NEON_S3_SECRET_ACCESS_KEY")
     region = need_env("TERRAVALE_NEON_S3_REGION")
+    if region != EXPECTED_REGION:
+        raise ValueError("Neon staging S3 region mismatch")
     s3 = boto3.client(
         "s3", endpoint_url=endpoint, region_name=region,
         aws_access_key_id=access_id, aws_secret_access_key=secret,
