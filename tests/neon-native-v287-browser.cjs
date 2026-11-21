@@ -33,11 +33,12 @@ const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 const frame=document.querySelector("#native");
 const snapshot=${JSON.stringify(snapshot)};
-let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false;
+let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[];
 window.addEventListener("message",event=>{
  if(event.source!==frame.contentWindow||event.origin!=="null")return;
  messages++;
  if(event.data?.type==="TV_NEON_NATIVE_V287_HANDSHAKE"){handshake=true;originMatched=event.data.originMatched===true}
+ if(event.data?.type==="TV_NEON_NATIVE_V287_PHASE")phases.push(event.data.phase);
  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
    ready=true;frame.contentWindow.postMessage({type:"TV_NEON_NATIVE_V287_LOAD",snapshot},"*");
  }
@@ -45,13 +46,13 @@ window.addEventListener("message",event=>{
  if(event.data?.type==="TV_NEON_NATIVE_V287_ERROR")error=event.data?.reason||"error";
 });
 const timer=setInterval(()=>{
- const report={ready,handshake,originMatched,loaded,error,messages,pass:ready&&handshake&&originMatched&&loaded&&!error};
+ const report={ready,handshake,originMatched,loaded,error,messages,phases,pass:ready&&handshake&&originMatched&&loaded&&!error};
  if(report.pass||error||messages>3&&loaded){
    clearInterval(timer);document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify(report));
  }
 },120);
 setTimeout(()=>{if(!document.body.dataset.nativeTest){clearInterval(timer);
-document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,pass:false,timeout:true}))}},25000);
+document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,pass:false,timeout:true}))}},25000);
 </script></body></html>`;
 const root=path.resolve("published");
 const mime={".html":"text/html; charset=utf-8",".js":"application/javascript",".json":"application/json",".css":"text/css"};
