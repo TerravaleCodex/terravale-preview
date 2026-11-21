@@ -69,9 +69,11 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
       <button type="button" id="check" class="secondary" disabled>Check session</button>
       <button type="button" id="permissions" class="secondary" disabled>Verify character access (read-only)</button>
       <button type="button" id="characters" class="secondary" disabled>Preview migrated characters</button>
+      <button type="button" id="v2reads" class="secondary" disabled>Test V2-style Neon reads</button>
       <button type="button" id="signout" class="secondary" hidden>Sign out of staging</button>
     </div>
     <output id="permissions-result" class="hint" hidden aria-live="polite"></output>
+    <output id="v2reads-result" class="hint" hidden aria-live="polite"></output>
     <section id="character-preview" class="character-preview" hidden aria-label="Migrated character summaries">
       <h2>Migrated characters</h2>
       <p class="hint">Limited to characters your Discord account can view. Names, ancestry, class and level only; no private sheets, inventory, or favour scores.</p>
@@ -90,19 +92,23 @@ const DATA_API_URL="https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.
 const els={connect:document.getElementById("connect"),check:document.getElementById("check"),permissions:document.getElementById("permissions"),permissionResult:document.getElementById("permissions-result"),
   characters:document.getElementById("characters"),characterPreview:document.getElementById("character-preview"),
   characterList:document.getElementById("character-list"),
+  v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false;
+let client=null,busy=false,signedIn=false,readBridge=null;
 function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
 }
-function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.permissions.disabled=value||!client||!signedIn;els.characters.disabled=value||!client||!signedIn;els.signout.disabled=value;}
+function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.permissions.disabled=value||!client||!signedIn;els.characters.disabled=value||!client||!signedIn;els.v2reads.disabled=value||!client||!signedIn||!readBridge;els.signout.disabled=value;}
 function showSession(user){
   signedIn=Boolean(user);
   els.permissions.disabled=busy||!client||!signedIn;
   els.characters.disabled=busy||!client||!signedIn;
+  els.v2reads.disabled=busy||!client||!signedIn||!readBridge;
+  els.v2readsResult.hidden=true;
+  els.v2readsResult.textContent="";
   els.characterPreview.hidden=true;
   els.characterList.replaceChildren();
   els.permissionResult.hidden=true;
@@ -231,6 +237,45 @@ async function verifyCharacterPermissions(){
   finally{setBusy(false)}
 }
 els.permissions.addEventListener("click",verifyCharacterPermissions);
+// First compatibility step: exercise the same from().select().order().limit()
+// chain V2 uses, against the real Neon PostgREST endpoint and signed JWT.
+async function testV2ReadCompatibility(){
+  if(!client||busy||!signedIn||!readBridge)return;
+  setBusy(true);
+  els.v2readsResult.hidden=true;
+  els.v2readsResult.textContent="";
+  status("info","Testing V2-style Neon queries…",
+    "Comparing the RLS-limited characters and campaigns returned by regular table SELECTs with the migration probe.");
+  try{
+    const [characters,campaigns,summary]=await Promise.all([
+      readBridge.from("characters").select("id,name,status,campaign_id")
+        .order("name",{ascending:true}).limit(25),
+      readBridge.from("campaigns").select("id,name")
+        .order("name",{ascending:true}).limit(25),
+      readBridge.rpc("terravale_neon_staging_probe"),
+    ]);
+    for(const result of [characters,campaigns,summary]) {
+      if(result.error)throw new Error(result.error.message);
+    }
+    const report=Array.isArray(summary.data)?summary.data[0]:summary.data;
+    if(!report?.identity_recognised || !Array.isArray(characters.data) ||
+       !Array.isArray(campaigns.data) ||
+       characters.data.length!==report.visible_characters ||
+       campaigns.data.length!==report.visible_campaigns){
+      throw new Error("Staging tables and migration permission probe disagree; no changes were made.");
+    }
+    els.v2readsResult.textContent=
+      "V2-style table reads passed: "+characters.data.length+
+      " characters and "+campaigns.data.length+
+      " campaigns, matching the independently checked Neon RLS results.";
+    els.v2readsResult.hidden=false;
+    status("success","Neon V2 read compatibility passed",
+      "The existing V2 query pattern works with signed Neon authentication and RLS. This is read-only and does not enable character editing.");
+  }catch(err){
+    status("error","V2 read compatibility failed",safeError(err));
+  }finally{setBusy(false)}
+}
+els.v2reads.addEventListener("click",testV2ReadCompatibility);
 // A separate RLS-invoker RPC returns only a bounded character summary.
 // All user-created fields are rendered with textContent (never innerHTML).
 async function previewMigratedCharacters(){
@@ -293,6 +338,12 @@ try{
   const {createAuthClient}=await import("https://esm.sh/@neon/auth@0.8.2?bundle");
   if(typeof createAuthClient!=="function")throw new Error("Neon Auth client unavailable");
   client=createAuthClient(AUTH_URL);
+  // Separate staging-only bridge; it does not replace the live V2's Supabase client.
+  const {createNeonReadOnlyBridge}=await import("./bridge.mjs");
+  readBridge=createNeonReadOnlyBridge({
+    dataApiUrl:DATA_API_URL,
+    getAccessToken:()=>getSignedStagingJwt()
+  });
   if(callbackError){els.connect.disabled=false;els.check.disabled=false}
   else await checkSession();
 }catch(err){
