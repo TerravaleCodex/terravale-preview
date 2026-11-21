@@ -1,0 +1,28 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const {spawnSync}=require("node:child_process");
+const sql=fs.readFileSync("site-overrides/sql/neon_staging_profile_cached_route_fallback.sql","utf8");
+const html=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
+const adapter=fs.readFileSync("site-overrides/neon-v2-account-context.mjs","utf8");
+assert.match(sql,/CREATE OR REPLACE FUNCTION public\.terravale_neon_staging_character_preview\(\)/);
+assert.match(sql,/LANGUAGE sql\s+STABLE/);
+assert.doesNotMatch(sql,/SECURITY DEFINER/i,"Keep character-preview RLS invoker context");
+assert.match(sql,/'account', CASE WHEN auth\.uid\(\) IS NOT NULL/);
+assert.match(sql,/public\.terravale_neon_staging_account_bootstrap\(\)/);
+assert.match(sql,/LIMIT 25/);
+assert.match(sql,/REVOKE ALL ON FUNCTION public\.terravale_neon_staging_character_preview\(\) FROM PUBLIC/);
+assert.match(sql,/GRANT EXECUTE ON FUNCTION public\.terravale_neon_staging_character_preview\(\) TO authenticated/);
+assert.doesNotMatch(sql,/\b(?:INSERT INTO|UPDATE public\.|DELETE FROM|TRUNCATE TABLE)\b/i,
+  "No table writes on read-only diagnostic route");
+assert.match(adapter,/directResult\?\.error\?\.status !== 404/);
+assert.match(adapter,/readBridge\.rpc\("terravale_neon_staging_character_preview"\)/);
+assert.match(adapter,/buildV2ReadOnlyAccountContext\(profile\)/);
+assert.match(html,/loadOriginalProfile\(readBridge,originalProfile\)/);
+assert.match(html,/profileResult\.usedFallback/);
+const source=html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
+assert.ok(source);
+const checked=spawnSync(process.execPath,["--input-type=module","--check"],{input:source,encoding:"utf8"});
+assert.equal(checked.status,0,"Page module syntax error "+checked.stderr);
+assert.ok(!/innerHTML\s*=|console\.log\(\s*jwt|localStorage|sessionStorage/.test(html));
+console.log("PASS: Neon staging profile 404 fallback remains owner-only, RLS constrained, read-only and browser-safe.");

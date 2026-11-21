@@ -96,7 +96,7 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null;
+let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null;
 function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
@@ -255,11 +255,14 @@ async function testV2ReadCompatibility(){
       readBridge.rpc("terravale_neon_staging_probe"),
       readBridge.rpc("terravale_neon_staging_account_bootstrap"),
     ]);
+    // Only a 404 on the new profile route may use the already-registered,
+    // RLS-limited character-preview RPC. Permission failures never fall back.
+    const profileResult=await loadOriginalProfile(readBridge,originalProfile);
     const checks=[
       {label:"characters table",result:characters},
       {label:"campaigns table",result:campaigns},
       {label:"ownership RPC",result:summary},
-      {label:"original V2 profile RPC",result:originalProfile},
+      {label:"original V2 profile RPC",result:profileResult},
     ];
     const failed=checks.filter(x=>x.result?.error);
     if(failed.length){
@@ -267,7 +270,7 @@ async function testV2ReadCompatibility(){
       throw new Error("Failed endpoint(s): "+details.join(" · "));
     }
     const report=Array.isArray(summary.data)?summary.data[0]:summary.data;
-    const bootstrap=Array.isArray(originalProfile.data)?originalProfile.data[0]:originalProfile.data;
+    const bootstrap=Array.isArray(profileResult.data)?profileResult.data[0]:profileResult.data;
     const identity=makeLegacyContext(bootstrap);
     // The UUID retained by V2 must be the verified original owner, not the
     // new Neon Auth UUID. This object is staging-only, never put on live globals.
@@ -285,6 +288,7 @@ async function testV2ReadCompatibility(){
       "Original V2 account: "+identity.state.profile.discord_username+
       " · TVUID: "+identity.state.profile.tvuid+
       " · DM: "+(identity.state.profile.is_dm?"Yes":"No")+
+      (profileResult.usedFallback?" · Read-only cached-route fallback":" · Direct profile RPC")+
       " · Visible: "+characters.data.length+" characters, "+
       campaigns.data.length+" campaigns. Original character-owner identity preserved.";
     els.v2readsResult.hidden=false;
@@ -359,8 +363,9 @@ try{
   client=createAuthClient(AUTH_URL);
   // Separate staging-only bridge; it does not replace the live V2's Supabase client.
   const {createNeonReadOnlyBridge}=await import("./bridge.mjs");
-  const {buildV2ReadOnlyAccountContext}=await import("./account-context.mjs");
+  const {buildV2ReadOnlyAccountContext,loadVerifiedV2AccountProfile}=await import("./account-context.mjs");
   makeLegacyContext=buildV2ReadOnlyAccountContext;
+  loadOriginalProfile=loadVerifiedV2AccountProfile;
   readBridge=createNeonReadOnlyBridge({
     dataApiUrl:DATA_API_URL,
     getAccessToken:()=>getSignedStagingJwt()
