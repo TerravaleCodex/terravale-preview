@@ -135,7 +135,7 @@ def blank_native_rules(html: str) -> tuple[str,int,list[str]]:
         entries=_top_level_entries(content)
         updates=[]
         for a,b,entry in entries:
-            match=re.match(r'(\s*(?:"|\\x27)?([A-Za-z_][\w]*)(?:"|\\x27)?\s*:\s*)([\s\S]*)',entry)
+            match=re.match(r"(\s*['\"]?([A-Za-z_]\w*)['\"]?\s*:\s*)([\s\S]*)",entry)
             if not match:continue
             key=match.group(2).lower()
             if key not in WORLD_COLLECTIONS:continue
