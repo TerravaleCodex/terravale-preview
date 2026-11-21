@@ -44,12 +44,12 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
   <header>
     <div class="logo" aria-hidden="true">✧</div>
     <div class="eyebrow">The Living Codex · Staging</div>
-    <h1>Discord connection test</h1>
-    <p class="lead">This isolated page checks your new <strong>Neon staging</strong> login. It does not open campaigns, access character data, or change your live Terravale account.</p>
+    <h1>Discord and character access test</h1>
+    <p class="lead">This isolated page checks your new <strong>Neon staging</strong> login. It checks your Discord session and reads permission counts from Neon. It cannot change your characters, campaigns, or live Terravale account.</p>
   </header>
   <section class="panel" aria-label="Neon staging authentication">
     <div class="info"><strong>Neon · Better Auth</strong><span class="pill">STAGING ONLY</span></div>
-    <p class="hint">Sign in with the same Discord account you use for the live Codex. Afterwards, you can check whether Neon established a session. Existing character ownership will be checked separately on the backend.</p>
+    <p class="hint">Sign in with the same Discord account you use for the live Codex. Afterwards, check whether Neon established a session, then verify the existing character ownership mapping through a read-only database request.</p>
     <div class="status" data-kind="info" id="status" role="status" aria-live="polite">
       <strong id="status-title">Checking staging connection…</strong>
       <p id="status-detail">The live Codex remains connected to Supabase.</p>
@@ -58,9 +58,11 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
     <div class="controls">
       <button type="button" id="connect" disabled>Continue with Discord</button>
       <button type="button" id="check" class="secondary" disabled>Check session</button>
+      <button type="button" id="permissions" class="secondary" disabled>Verify character access (read-only)</button>
       <button type="button" id="signout" class="secondary" hidden>Sign out of staging</button>
     </div>
-    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page.</p>
+    <output id="permissions-result" class="hint" hidden aria-live="polite"></output>
+    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only aggregate permission counts are displayed; no character records are returned or modified.</p>
   </section>
   <p class="footer"><span class="marker">Separate test environment</span><br>
   <a href="/terravale-preview/veiled-codex/">Return to the live Codex</a> ·
@@ -69,22 +71,27 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 <script type="module">
 const AUTH_URL="https://ep-young-mode-bg86754w.neonauth.c-9.eu-central-1.aws.neon.tech/terravale/auth";
 const CALLBACK_URL="https://terravalecodex.github.io/terravale-preview/neon-staging-auth/";
-const els={connect:document.getElementById("connect"),check:document.getElementById("check"),
+const DATA_API_URL="https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.neon.tech/terravale/rest/v1";
+const els={connect:document.getElementById("connect"),check:document.getElementById("check"),permissions:document.getElementById("permissions"),permissionResult:document.getElementById("permissions-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false;
+let client=null,busy=false,signedIn=false;
 function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
 }
-function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.signout.disabled=value;}
+function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.permissions.disabled=value||!client||!signedIn;els.signout.disabled=value;}
 function showSession(user){
+  signedIn=Boolean(user);
+  els.permissions.disabled=busy||!client||!signedIn;
+  els.permissionResult.hidden=true;
+  els.permissionResult.textContent="";
   if(user){
     els.account.hidden=false;els.account.textContent="Neon session: "+String(user.name||"Signed-in user");
     els.signout.hidden=false;
     status("success","Neon staging session active",
-      "Neon authenticated this session. Discord provider linkage and Terravale character ownership still require a separate server-side check.");
+      "Neon authenticated this session. Select Verify character access to test the signed JWT against Terravale’s migrated row-level security.");
   }else{
     els.account.hidden=true;els.account.textContent="";els.signout.hidden=true;
     status("info","Not signed in to Neon staging",
@@ -119,6 +126,44 @@ els.connect.addEventListener("click",async()=>{
   }
 });
 els.check.addEventListener("click",checkSession);
+async function verifyCharacterPermissions(){
+  if(!client||busy||!signedIn)return;
+  setBusy(true);
+  status("info","Checking read-only ownership…",
+    "Neon is verifying the signed session token and calculating the character counts allowed by row-level security.");
+  try{
+    // Token stays in memory, is sent ONLY to Neon's staging Data API, and is never displayed or stored.
+    const {data,error}=await client.token();
+    if(error)throw error;
+    const jwt=data?.token;
+    if(typeof jwt!=="string"||!jwt)throw new Error("No signed Neon session token available; try Check session.");
+    const response=await fetch(DATA_API_URL+"/rpc/terravale_neon_staging_probe",{
+      method:"POST",mode:"cors",cache:"no-store",
+      headers:{"Authorization":"Bearer "+jwt,"Content-Type":"application/json","Accept":"application/json"},
+      body:"{}"
+    });
+    if(!response.ok)throw new Error("The Neon database rejected this read-only request (HTTP "+response.status+").");
+    const result=await response.json();
+    const info=Array.isArray(result)?result[0]:result;
+    if(!info||typeof info.owned_characters!=="number"||typeof info.visible_campaigns!=="number"
+       ||typeof info.visible_characters!=="number"||typeof info.identity_recognised!=="boolean")
+      throw new Error("The staging database returned an unexpected response.");
+    if(!info.identity_recognised){
+      status("error","Discord account not yet linked to a Terravale owner",
+        "The signed Neon session worked, but the migrated ownership rules did not recognize an original account.");
+      return;
+    }
+    els.permissionResult.textContent="Owned characters: "+info.owned_characters+
+      " · Characters you can access: "+info.visible_characters+
+      " · Visible campaigns: "+info.visible_campaigns+
+      " · DM privileges: "+(info.site_dm?"Yes":"No");
+    els.permissionResult.hidden=false;
+    status("success","Real Neon permission check passed",
+      "The database accepted the signed Discord session, resolved the original owner, and applied row-level security. This was read-only.");
+  }catch(err){status("error","Permission check could not complete",safeError(err))}
+  finally{setBusy(false)}
+}
+els.permissions.addEventListener("click",verifyCharacterPermissions);
 els.signout.addEventListener("click",async()=>{
   if(!client||busy)return;
   setBusy(true);status("info","Signing out of staging…","Your live Supabase session is unaffected.");
