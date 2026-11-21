@@ -43,6 +43,15 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
  const legacy=requireArray(linked.granted_boons,"granted legacy boons",100);
  const awards=requireArray(linked.canonical_awards,"canonical awards",100);
  const effects=requireArray(linked.divine_effects,"divine effects",100);
+ const court=requireArray(linked.divine_previews,"public divine patrons",100);
+ const dispositions=requireArray(linked.divine_dispositions,"coarse divine dispositions",100);
+ const burdens=requireArray(linked.divine_burdens,"divine burdens",100);
+ const fractures=requireArray(linked.divine_fractures,"unresolved divine fractures",100);
+ const offers=requireArray(linked.divine_offers,"disclosed divine offers",100);
+ if(!isRecord(linked.divine_state) ||
+    !["entanglement","divine_pressure","minor_intercession_remaining"].every(k=>
+      Object.hasOwn(linked.divine_state,k)))
+   throw new TypeError("Divine resource state was not retrieved from Neon");
  const build=c.approved_build;
  const approved=build.character;
  const basePrefs=isRecord(approved.sheetV220)?approved.sheetV220:{};
@@ -64,7 +73,13 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
      custom_feats:custom,
      granted_boons:legacy,
      canonical_awards:awards,
-     divine_effects:effects
+     divine_effects:effects,
+     divine_previews:court,
+     divine_dispositions:dispositions,
+     divine_state:linked.divine_state,
+     divine_burdens:burdens,
+     divine_fractures:fractures,
+     divine_offers:offers
    },
    resource_sources:{
      saved_class_resources:st.resources,
@@ -91,7 +106,10 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
      custom_feats:custom.length,
      granted_boons:legacy.length,
      canonical_awards:awards.length,
-     divine_effects:effects.length
+     divine_effects:effects.length,
+     divine_burdens:burdens.length,
+     divine_fractures:fractures.length,
+     divine_offers:offers.length
    }
  };
  // Do not emit a 'native UI ready' flag. Live V2.87 render parity has NOT
