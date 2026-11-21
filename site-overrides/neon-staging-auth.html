@@ -60,7 +60,10 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 .sheet-v2{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
 .sheet-v2 iframe{display:block;width:100%;min-height:650px;height:900px;border:1px solid var(--line);border-radius:12px;background:#0d0a13}
 .sheet-v2 p{font-size:12px;color:var(--sub);margin:8px 0 14px}
-main:has(#sheet-frame-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
+main:has(#sheet-frame-panel:not([hidden])),main:has(#native-v287-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
+.native-v287{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
+.native-v287 iframe{width:100%;height:1100px;min-height:720px;border:1px solid var(--line);border-radius:12px;display:block;background:#0d0a13}
+.native-v287 .hint{margin:0 0 13px}
 
 
 @media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
@@ -103,12 +106,17 @@ main:has(#sheet-frame-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
         <div class="controls" style="margin-top:15px">
           <button class="secondary" id="sheet-open-v2" type="button" disabled>Open V2 legacy renderer (read-only)</button>
           <button class="secondary" id="sheet-extras-open" type="button" disabled>Verify linked V2.87 data (read-only)</button>
+          <button class="secondary" id="native-v287-open" type="button" disabled>Open actual V2.87 sheet (read-only)</button>
         </div>
         <section id="sheet-extras-panel" class="linked-read" hidden aria-label="Verified additional V2.87 character data">
           <h4>Linked character data in Neon</h4>
           <p class="hint">Additional saved proficiencies, feats, and granted boons. Only verified owner or campaign DM reads. No exact favour scores or hidden divine choices.</p>
           <dl id="sheet-extras-summary"></dl>
           <div id="sheet-extras-groups"></div>
+        </section>
+        <section class="native-v287" id="native-v287-panel" hidden aria-label="Original V2.87 native character sheet">
+          <p class="hint"><strong>Actual V2.87 character page, not a redesign.</strong> An isolated copy of the original build displays the authorised Neon character snapshot. Editing, saved browser storage, external network connections and gameplay requests are blocked.</p>
+          <iframe id="native-v287-frame" title="Actual V2.87 character sheet — read only" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="eager"></iframe>
         </section>
         <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
           <p><strong>Legacy V2 sheet compatibility preview.</strong> This uses the repository’s earlier V2 embedded renderer with data read from Neon. It is not the current complete live V2.87 interface. Editing stays disabled; newer custom spells, divine boons and resources remain unverified.</p>
@@ -133,18 +141,24 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   sheetOpen:document.getElementById("sheet-open-v2"),sheetFramePanel:document.getElementById("sheet-frame-panel"),sheetFrame:document.getElementById("sheet-frame"),
   sheetExtrasOpen:document.getElementById("sheet-extras-open"),sheetExtrasPanel:document.getElementById("sheet-extras-panel"),
   sheetExtrasSummary:document.getElementById("sheet-extras-summary"),sheetExtrasGroups:document.getElementById("sheet-extras-groups"),
+  nativeOpen:document.getElementById("native-v287-open"),nativePanel:document.getElementById("native-v287-panel"),
+  nativeFrame:document.getElementById("native-v287-frame"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
 let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null,makeV287NeonReadOnlySnapshot=null;
 const V2_SHEET_URL="/terravale-preview/neon-staging-auth/sheet/?live=1";
+const V287_NATIVE_URL="/terravale-preview/neon-staging-auth/native-v287/";
 let verifiedSheetPayload=null,currentSheetId=null,currentCoreSheet=null,currentV287Snapshot=null;
 function clearSheetPreview(){
   verifiedSheetPayload=null;
   currentCoreSheet=null;
   currentV287Snapshot=null;
   currentSheetId=null;
+  els.nativeOpen.disabled=true;
+  els.nativePanel.hidden=true;
+  els.nativeFrame.removeAttribute("src");
   els.sheetExtrasOpen.disabled=true;
   els.sheetExtrasPanel.hidden=true;
   els.sheetExtrasSummary.replaceChildren();
@@ -505,6 +519,7 @@ async function inspectLinkedV2Data(){
     // full V2.87 UI and is never forwarded to the legacy embedded renderer.
     const v287=makeV287NeonReadOnlySnapshot(currentCoreSheet,v,characterId);
     currentV287Snapshot=v287;
+    els.nativeOpen.disabled=false;
     const arr=x=>Array.isArray(x)?x:[];
     const rows=[
       ["Tool proficiencies",arr(v.proficiencies.tools).length],
@@ -552,9 +567,35 @@ async function inspectLinkedV2Data(){
   finally{
     setBusy(false);
     els.sheetExtrasOpen.disabled=!currentSheetId||!signedIn;
+    if(!currentV287Snapshot)els.nativeOpen.disabled=true;
   }
 }
 els.sheetExtrasOpen.addEventListener("click",inspectLinkedV2Data);
+els.nativeOpen.addEventListener("click",()=>{
+  if(busy||!signedIn||!currentV287Snapshot||!currentSheetId||
+     currentV287Snapshot.id!==currentSheetId||!currentV287Snapshot.read_only)return;
+  els.nativePanel.hidden=false;
+  els.nativeFrame.src=V287_NATIVE_URL;
+});
+window.addEventListener("message",event=>{
+  // No allow-same-origin: the native iframe has an opaque, isolated origin.
+  // Only the precise iframe window can request the approved, in-memory source.
+  if(event.source!==els.nativeFrame.contentWindow||event.origin!=="null"||
+     !signedIn||els.nativePanel.hidden||!currentV287Snapshot||
+     !currentSheetId||currentV287Snapshot.id!==currentSheetId)return;
+  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
+    els.nativeFrame.contentWindow.postMessage({
+      type:"TV_NEON_NATIVE_V287_LOAD",snapshot:currentV287Snapshot
+    },"*"); // sandboxed opaque origin requires wildcard target
+  }else if(event.data?.type==="TV_NEON_NATIVE_V287_LOADED" &&
+           event.data.id===currentSheetId && event.data.nativeSheet===true){
+    status("success","Actual V2.87 sheet displayed from Neon (read-only)",
+      "The original V2.87 character view is running in an isolated, no-network staging frame. No saves are permitted.");
+  }else if(event.data?.type==="TV_NEON_NATIVE_V287_ERROR"){
+    status("error","Native V2.87 sheet preview failed",
+      typeof event.data.reason==="string"?event.data.reason.slice(0,130):"The source data was not changed.");
+  }
+});
 // Read-only original V2 iframe. Same-origin message checks and a verified
 // owner/DM payload are mandatory; no parent handler processes save requests.
 els.sheetOpen.addEventListener("click",()=>{
