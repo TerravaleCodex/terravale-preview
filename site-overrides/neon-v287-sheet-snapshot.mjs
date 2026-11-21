@@ -27,7 +27,7 @@ function copied(value){
 export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
  const c=core?.character,st=core?.state;
  if(!validId(expectedId)||core?.read_only!==true||linked?.read_only!==true||
-    !isRecord(c)||c.id!==expectedId||linked?.character_id!==expectedId||
+    !isRecord(c)||c.id!==expectedId||!validId(c.campaign_id)||linked?.character_id!==expectedId||
     !["owned","dm"].includes(c.access)||linked?.access!==c.access||
     !isRecord(c.approved_build)||!isRecord(c.approved_build.character)||
     !isRecord(st)||!Array.isArray(st.resources)||!Array.isArray(st.inventory)||
@@ -49,7 +49,7 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
    read_only:true,
    id:expectedId,
    access:c.access,
-   character:{id:expectedId,name:c.name,status:c.status,campaign:c.campaign},
+   character:{id:expectedId,name:c.name,status:c.status,campaign:c.campaign,campaign_id:c.campaign_id},
    sources:{
      approved_build:build,
      character_state:st,
