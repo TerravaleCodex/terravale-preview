@@ -43,6 +43,13 @@
    // approved build is never edited; this is an in-memory clone in a sandbox.
    db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
    db.characters=[ch];db.campaign=campaignId;db.mode="sample";
+   db.role=snapshot.access==="dm"?"dm":"player";
+   // Existing native V2.87 training, feat and wallet modules call the
+   // Supabase-shaped reader. This one is entirely in-memory, source-scoped,
+   // has no JWT and rejects every RPC/write. Never add a real DB client here.
+   if(typeof window.TerravaleNeonV287ReadOnlyClient?.create!=="function")
+     throw new TypeError("Native source reader not installed");
+   window.TerravaleVerifiedAccount=window.TerravaleNeonV287ReadOnlyClient.create(snapshot);
    // The live V2.87 campaign-access gate reads this runtime bridge.
    // The isolated frame is NOT signed into Supabase and must only recognise
    // the single verified Neon campaign from its approved snapshot.
