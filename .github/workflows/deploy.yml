@@ -10,6 +10,10 @@ on:
       - "site-overrides/neon-readonly-bridge.mjs"
       - "site-overrides/neon-v2-sheet-preview.mjs"
       - "site-overrides/neon-v287-sheet-snapshot.mjs"
+      - "site-overrides/neon-native-v287-bootstrap.js"
+      - "site-overrides/neon-native-v287-hydrate.js"
+      - "tools/build-neon-native-v287.cjs"
+      - "tests/neon-native-v287-browser.cjs"
       - "tests/neon-v287-sheet-snapshot.mjs"
       - "tests/neon-v2-sheet-preview.mjs"
       - "tests/neon-v2-sheet-browser.cjs"
@@ -341,6 +345,9 @@ jobs:
           cp site-overrides/neon-v287-sheet-snapshot.mjs published/neon-staging-auth/v287-snapshot.mjs
           cp site-overrides/neon-v2-account-context.mjs published/neon-staging-auth/account-context.mjs
           node tools/build-neon-staging-sheet.cjs
+          node --check site-overrides/neon-native-v287-bootstrap.js
+          node --check site-overrides/neon-native-v287-hydrate.js
+          node tools/build-neon-native-v287.cjs
           python3 - <<'PY'
           from pathlib import Path
           entry=Path("published/index.html").read_text(encoding="utf-8")
@@ -375,6 +382,10 @@ jobs:
           assert "staging-readonly-lock.js" not in Path("published/veiled-codex/index.html").read_text(encoding="utf-8")
           assert Path("published/neon-staging-auth/sheet/death-mechanics.js").is_file()
           assert Path("published/neon-staging-auth/sheet/class-feature-rules.json").is_file()
+          native=Path("published/neon-staging-auth/native-v287/index.html")
+          assert native.stat().st_size > 7000000
+          assert 'data-source="v287-adaptive-resources.js"' in native.read_text(encoding="utf-8")
+          assert 'data-source="v2-discord-auth.mjs"' not in native.read_text(encoding="utf-8")
           identity=Path("published/neon-staging-auth/account-context.mjs")
           assert identity.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-account-context.mjs").read_text(encoding="utf-8")
           assert "client.signIn.social" in staging.read_text(encoding="utf-8")
@@ -400,6 +411,8 @@ jobs:
         run: node tests/v268-public-home.cjs
       - name: Verify actual native Dashboard default route
         run: node tests/v269-dashboard-default.cjs
+      - name: Browser-test original V2.87 native sheet with synthetic Neon snapshot and no network
+        run: node tests/neon-native-v287-browser.cjs
       - name: Upload safe GitHub Pages site
         uses: actions/upload-pages-artifact@v3
         with:
