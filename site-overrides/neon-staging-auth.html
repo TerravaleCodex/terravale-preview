@@ -126,6 +126,56 @@ els.connect.addEventListener("click",async()=>{
   }
 });
 els.check.addEventListener("click",checkSession);
+// Never log, display, store, or decode a bearer token for authorization.
+// Only the Neon Data API decides whether it is signed and valid.
+function looksLikeJwt(value){
+  return typeof value==="string" && /^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value);
+}
+function tokenFromAuthResult(result){
+  const candidates=[
+    result?.data?.token,
+    result?.data?.session?.token,
+    result?.session?.token,
+    result?.token
+  ];
+  return candidates.find(looksLikeJwt)||null;
+}
+async function getSignedStagingJwt(){
+  // Some SDK builds return a cached session object from .token().
+  // Accept a proper JWT from the Neon wrapper, never an opaque session ID.
+  try{
+    const result=await client.token();
+    if(!result?.error){
+      const jwt=tokenFromAuthResult(result);
+      if(jwt)return jwt;
+    }
+  }catch(_ignored){/* Try the managed session response next. */}
+  try{
+    const result=await client.getSession();
+    if(!result?.error){
+      const jwt=tokenFromAuthResult(result);
+      if(jwt)return jwt;
+    }
+  }catch(_ignored){/* Try the official token endpoint directly next. */}
+  // Bypass the SDK's stale-session token cache using Neon Auth's /token endpoint.
+  // Restrict this cross-origin request to our configured Neon Auth URL.
+  let response;
+  try{
+    response=await fetch(AUTH_URL+"/token",{
+      method:"GET",mode:"cors",credentials:"include",cache:"no-store",
+      headers:{"Accept":"application/json"}
+    });
+  }catch(_ignored){
+    throw new Error("The Neon token endpoint could not be reached from this browser. Check cross-site cookies or try another browser.");
+  }
+  if(!response.ok){
+    throw new Error("Neon could not issue a signed access token (HTTP "+response.status+"). Try signing out of staging and back in.");
+  }
+  const payload=await response.json();
+  const jwt=tokenFromAuthResult(payload);
+  if(!jwt)throw new Error("Neon returned a valid session but no signed access JWT. Try signing out of staging and back in.");
+  return jwt;
+}
 async function verifyCharacterPermissions(){
   if(!client||busy||!signedIn)return;
   setBusy(true);
@@ -133,10 +183,7 @@ async function verifyCharacterPermissions(){
     "Neon is verifying the signed session token and calculating the character counts allowed by row-level security.");
   try{
     // Token stays in memory, is sent ONLY to Neon's staging Data API, and is never displayed or stored.
-    const {data,error}=await client.token();
-    if(error)throw error;
-    const jwt=data?.token;
-    if(typeof jwt!=="string"||!jwt)throw new Error("No signed Neon session token available; try Check session.");
+    const jwt=await getSignedStagingJwt();
     const response=await fetch(DATA_API_URL+"/rpc/terravale_neon_staging_probe",{
       method:"POST",mode:"cors",cache:"no-store",
       headers:{"Authorization":"Bearer "+jwt,"Content-Type":"application/json","Accept":"application/json"},
