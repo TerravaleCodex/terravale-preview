@@ -109,7 +109,7 @@ class StorageSafetyTests(unittest.TestCase):
 
     def test_dry_run_does_not_touch_neon(self):
         with mock.patch.dict(migration.os.environ, {
-            "TERRAVALE_SUPABASE_URL": "https://a.supabase.co",
+            "TERRAVALE_SUPABASE_URL": migration.EXPECTED_SOURCE,
             "TERRAVALE_SUPABASE_SERVICE_ROLE_KEY": "non-real-secret",
         }, clear=True), mock.patch.object(migration, "list_objects",
              return_value=[]), mock.patch.object(sys, "argv", ["script"]):
@@ -119,10 +119,19 @@ class StorageSafetyTests(unittest.TestCase):
 
     def test_write_needs_separate_confirmation(self):
         with mock.patch.dict(migration.os.environ, {
-            "TERRAVALE_SUPABASE_URL": "https://a.supabase.co",
+            "TERRAVALE_SUPABASE_URL": migration.EXPECTED_SOURCE,
             "TERRAVALE_SUPABASE_SERVICE_ROLE_KEY": "non-real-secret",
         }, clear=True), mock.patch.object(sys, "argv", ["script", "--execute"]):
             with self.assertRaisesRegex(ValueError, "CONFIRM_NEON_STORAGE_WRITE"):
+                migration.main()
+
+
+    def test_refuses_another_supabase_project(self):
+        with mock.patch.dict(migration.os.environ, {
+            "TERRAVALE_SUPABASE_URL": "https://not-ours.supabase.co",
+            "TERRAVALE_SUPABASE_SERVICE_ROLE_KEY": "non-real-secret",
+        }, clear=True), mock.patch.object(sys, "argv", ["script"]):
+            with self.assertRaisesRegex(ValueError, "Source project mismatch"):
                 migration.main()
 
 
