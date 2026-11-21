@@ -23,7 +23,7 @@
    const approved=source.approved_build.character;
    const state=source.character_state;
    const id=snapshot.id;
-   const campaignId=actor.campaign;
+   const campaignId=actor.campaign_id;
    if(!uuid(campaignId))throw new TypeError("Migrated character lacks an original campaign identifier");
    const ch={
      ...approved,id,name:actor.name??approved.name??"Adventurer",
@@ -41,7 +41,7 @@
    };
    // The original V2.87 sheet reads db.characters and renders #pageRoot. The
    // approved build is never edited; this is an in-memory clone in a sandbox.
-   db.campaigns=[{id:campaignId,name:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
+   db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
    db.characters=[ch];db.campaign=campaignId;db.mode="sample";
    if(!isRecord(db.featuredCharacters))db.featuredCharacters={};
    db.featuredCharacters[campaignId]=id;
