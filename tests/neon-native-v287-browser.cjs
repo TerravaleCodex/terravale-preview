@@ -35,7 +35,19 @@ const snapshot={
  custom_feats:[{id:"feat-grant",feat_id:"33333333-3333-4333-8333-333333333333",
    name:"Audit Feat",summary:"Original feat description",rules:"Guard yourself",
    prerequisites:"Dvergr",rarity:"Custom",action_type:"passive",uses_per_rest:1,recovery:"long"}],
- canonical_awards:[]}
+ granted_boons:[],
+ canonical_awards:[{id:"44444444-4444-4444-8444-444444444444",
+   kind:"divine",name:"Audited Grace",summary:"Granted test gift",
+   mechanics:"Read-only granted rules",patron:"Pae",source_kind:"canonical",
+   slot:"divine",max_charges:2,charges_remaining:0,uses_remaining:0,
+   max_uses:2,recovery:"long"}],
+ divine_effects:[{key:"divine-echo",stacks:2,note:"Audited effect"}],
+ divine_previews:[{key:"pae",name:"Pae",rank:"major",hint:"Visible to all"}],
+ divine_dispositions:[{key:"pae",disposition:"watchful"}],
+ divine_state:{entanglement:0,divine_pressure:1,minor_intercession_remaining:0},
+ divine_burdens:[{patron:"pae",name:"Sacred Burden",stacks:1,overflow_pending:false}],
+ divine_fractures:[],
+ divine_offers:[]}
 };
 const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <iframe id="native" title="original V2.87" sandbox="allow-scripts" src="/terravale-preview/neon-staging-auth/native-v287/?audit-native-panels=1" style="width:1260px;height:960px"></iframe>
@@ -46,7 +58,7 @@ let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=f
 const finish=(timedOut=false)=>{
  if(document.body.dataset.nativeTest)return;
  clearInterval(timer);clearTimeout(deadline);
- const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true;
+ const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true&&panels?.divine===true&&panels?.divineResources===true&&panels?.zeroCharges===true;
  document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,panels,pass,timeout:timedOut}));
 };
 deadline=setTimeout(()=>finish(true),60000);

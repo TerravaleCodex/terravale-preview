@@ -26,7 +26,7 @@
   try{Object.defineProperty(window,"confirm",{configurable:true,value:()=>false})}catch{}
   window.TerravaleNeonNativeFrame={staging:true,readOnly:true};
   function allowNavigation(target){
-    return !!target.closest(".sheet20-tabs [data-action='sheetTab'],.sheet20-tabs [role='tab'],button[data-action='sheetTab'],[role='tab'],[data-v228-tab],summary");
+    return !!target.closest(".sheet20-tabs [data-action='sheetTab'],.sheet20-tabs [role='tab'],button[data-action='sheetTab'],[role='tab'],[data-v228-tab],.tv284-read-gift,.tv284-close-detail,summary");
   }
   document.addEventListener("click",event=>{
     const button=event.target?.closest?.("button,input[type='button'],input[type='submit'],a");

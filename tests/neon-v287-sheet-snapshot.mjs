@@ -17,7 +17,10 @@ const extras={read_only:true,character_id:id,access:"owned",
  bonus_requests:[],
  custom_feats:[{id:"feat",name:"Magical Talent"}],granted_boons:[],
  canonical_awards:[{id:"divine",name:"Grace",uses_remaining:0,max_uses:2,recovery:"long"}],
- divine_effects:[]};
+ divine_effects:[],divine_previews:[{key:"pae",name:"Pae",rank:"major",hint:"A public hint"}],
+ divine_dispositions:[{key:"pae",disposition:"watchful"}],
+ divine_state:{entanglement:0,divine_pressure:0,minor_intercession_remaining:1},
+ divine_burdens:[],divine_fractures:[],divine_offers:[]};
 const out=makeV287NeonReadOnlySnapshot(core,extras,id);
 assert.equal(out.read_only,true);
 assert.equal(out.schema,"terravale.neon.v287.sheet.readonly.v1");
@@ -30,9 +33,13 @@ assert.deepEqual(out.resource_sources.saved_sheet_resource_settings,{show:"custo
 assert.equal(out.resource_sources.granted_divine_charge_records[0].current,0);
 assert.equal(out.resource_sources.granted_divine_charge_records[0].max,2);
 assert.deepEqual(out.counts,{inventory:1,saved_class_resources:0,wallet_denominations:1,wallet_ledger:1,bonus_requests:0,
- item_properties:2,item_charge_properties:1,custom_feats:1,granted_boons:0,canonical_awards:1,divine_effects:0});
+ item_properties:2,item_charge_properties:1,custom_feats:1,granted_boons:0,canonical_awards:1,divine_effects:0,
+ divine_burdens:0,divine_fractures:0,divine_offers:0});
 assert.deepEqual(out.sources.approved_build,build,"Approved build retains its original values");
 assert.equal(out.sources.favour,undefined,"Raw favour is never included");
+assert.deepEqual(out.sources.divine_dispositions,[{key:"pae",disposition:"watchful"}]);
+assert.equal(out.sources.divine_state.minor_intercession_remaining,1);
+assert.throws(()=>makeV287NeonReadOnlySnapshot(core,{...extras,divine_state:{}},id));
 assert.ok(Object.isFrozen(out)&&Object.isFrozen(out.sources)&&Object.isFrozen(out.sources.approved_build));
 assert.ok(Object.isFrozen(out.resource_sources.granted_divine_charge_records));
 assert.notEqual(out.sources.approved_build,build,"Original RPC response must not share mutable references");

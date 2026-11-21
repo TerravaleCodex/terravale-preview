@@ -126,7 +126,26 @@
      if(inventoryTab)await view(inventoryTab);
      const walletEl=document.querySelector("#tv254-sheet-wallet");
      const wallet=!!walletEl?.textContent.includes("Coin");
-     send("PANEL_AUDIT",{training,feats,wallet,trainingMounted,trainingReady,
+     // Test the actual V2.70 Divine tab and V2.87 adaptive resource cards.
+     // Never infer zero from an empty panel: the original named grant must
+     // be present with exactly its persisted remaining/max charge counts.
+     const divineTab=document.querySelector('#pageRoot .sheet20-tabs [data-tv270-divine-tab]');
+     divineTab?.click();
+     await new Promise(r=>setTimeout(r,750));
+     const divinePane=document.querySelector('#pageRoot .tv270-divine-sheet:not([hidden])');
+     const divine=!!divinePane?.textContent.includes("Audited Grace") &&
+       !!divinePane?.textContent.includes("Sacred Burden");
+     const giftRead=divinePane?.querySelector('.tv284-read-gift');
+     giftRead?.click();
+     await new Promise(r=>setTimeout(r,170));
+     const rules=!!divinePane?.textContent.includes("Read-only granted rules");
+     await view("resources");
+     const resources=document.querySelector('#pageRoot .sheet20-resource-panel');
+     const divineResources=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("Audited Grace");
+     const zeroCharges=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("0 / 2");
+     send("PANEL_AUDIT",{training,feats,wallet,divine:divine&&rules,
+       divineTab:!!divineTab,divineResources,zeroCharges,
+       trainingMounted,trainingReady,
        abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
        hasRules:!!window.TerravaleRulesV4,

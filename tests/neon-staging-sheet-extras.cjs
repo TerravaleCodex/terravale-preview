@@ -20,7 +20,16 @@ for(const table of [
  "terravale_character_custom_feats","terravale_character_divine_boons",
  "terravale_divine_canon_awards","terravale_divine_canon_effects"
 ])assert.ok(sql.includes(table));
-assert.doesNotMatch(sql,/'score'|private_note|grant_reason|auth\.identities|source_excerpt|proposed_boon/i);
+// The canonical player RPC legitimately returns the *source excerpt* for
+// granted awards and previously disclosed offers. No excerpt from ungranted
+// catalogue candidates may be returned by this staging function.
+assert.match(sql,/'mechanics',x\.source_excerpt/);
+assert.match(sql,/WHERE a\.character_id=selected\.id AND a\.status='active'/);
+assert.match(sql,/WHERE o\.character_id=selected\.id AND/);
+assert.match(sql,/o\.status IN \('offered','accepted','fulfilled'\)/);
+assert.doesNotMatch(sql,/'score'|'required_favour'|private_note|grant_reason|auth\.identities|proposed_boon/i);
+assert.match(sql,/CASE WHEN f\.score<=-6 THEN 'ominous'/);
+assert.match(sql,/p\.rank IN \('major','greater'\)/);
 assert.doesNotMatch(sql,/\b(INSERT INTO|UPDATE public\.|DELETE FROM|TRUNCATE TABLE|GRANT SELECT ON|GRANT ALL)\b/i);
 assert.match(sql,/REVOKE ALL ON FUNCTION.*FROM PUBLIC/);
 assert.match(sql,/GRANT EXECUTE ON FUNCTION.*TO authenticated/);
