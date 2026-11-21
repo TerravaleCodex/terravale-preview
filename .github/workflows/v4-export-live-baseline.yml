@@ -12,6 +12,8 @@ on:
       - tools/overlay-v239-with-discord.py
       - site-overrides/**
       - tools/export-v4-offline-first-pass.py
+      - v4/offline-database.js
+      - tests/v4-offline-database.cjs
       - tests/test_v4_actual_live_parity.py
   workflow_dispatch:
 
@@ -33,6 +35,8 @@ jobs:
         run: python tools/export-v4-offline-first-pass.py
       - name: Verify exact live DOM and V2 module preservation
         run: python -m unittest discover -s tests -p 'test_v4_actual_live_parity.py' -v
+      - name: Verify V2 offline database behaviour, ownership and backups
+        run: node tests/v4-offline-database.cjs
       - name: Publish exact live source and first-pass V4 preview (never deploy)
         uses: actions/upload-artifact@v4
         with:
