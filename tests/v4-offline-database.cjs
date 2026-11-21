@@ -54,6 +54,32 @@ const wait=async()=>{for(let i=0;i<90;i++)await Promise.resolve()};
     {target_request:request.data.id,approve_level:true});
   assert.equal(decision.data.status,'approved');
   assert.equal((await api.from('characters').select()).data[0].approved_build.level,2);
+  const currency=await api.rpc('terravale_wallet_adjust',{target_character:id,
+    target_denomination:'guild-copper',delta_quantity:25,purpose:'Issued by DM'});
+  assert.equal(currency.data.quantity,25);
+  const overspend=await api.rpc('terravale_wallet_adjust',{target_character:id,
+    target_denomination:'guild-copper',delta_quantity:-50,purpose:'Invalid'});
+  assert(overspend.error,'Cannot go below zero coins');
+  const wallet=(await api.from('terravale_character_wallet')
+    .select('denomination_id,quantity').eq('character_id',id)).data;
+  assert.equal(wallet[0].quantity,25);
+  const vault=await api.rpc('terravale_vault_save_item',{target_campaign:campaign,
+    existing_item:null,item_payload:{name:'Silver Lantern',qty:2},
+    mechanics_payload:{rarity:'rare'},delete_item:false});
+  assert(vault.data.id);
+  const issued=await api.rpc('terravale_vault_issue_item',{vault_item_id:vault.data.id,
+    recipient_character:id,send_quantity:1});
+  assert.equal(issued.data.inventory.length,1);
+  const inventoryEdit=await api.rpc('terravale_dm_edit_inventory_item',{
+    target_character:id,item_id:issued.data.inventory[0].id,
+    item_payload:{name:'Silver Lantern +1',qty:1},mechanics:{rarity:'rare'}});
+  assert.equal(inventoryEdit.data.inventory[0].name,'Silver Lantern +1');
+  const feat=await api.rpc('terravale_dm_save_custom_feat',{target_campaign:campaign,
+    feat_spec:{name:'Winterwalker',state:'ready'}});
+  assert(feat.data.id);
+  const grant=await api.rpc('terravale_dm_assign_custom_feat',{target_feat:feat.data.id,
+    target_character:id,grant_feat:true,reason:'DM approval'});
+  assert.equal(grant.data.status,'active');
   const invitation=await api.rpc('create_campaign_join_code',{target_campaign:campaign});
   assert.match(invitation.data,/^TV-[A-Z0-9]{6}$/);
   const player=await api.createProfile('Player',false);
@@ -64,7 +90,7 @@ const wait=async()=>{for(let i=0;i<90;i++)await Promise.resolve()};
   assert.equal((await api.from('characters').select()).data.length,0,'Private sheets remain invisible to players');
   assert((await api.rpc('terravale_dm_approve_initial_character',{target_character:id})).error,
     'A player must not approve a character');
-  const forbidden=await api.rpc('terravale_wallet_self_adjust',{target_character:id,amount:1});
+  const forbidden=await api.rpc('terravale_item_action',{target_character:id,target_item:'unknown',operation:'use'});
   assert(forbidden.error,'Unsupported RPC must explicitly fail, not silently succeed');
   await api.adopt(initial);
   const coDM=await api.createProfile('Second DM',false);
@@ -79,5 +105,5 @@ const wait=async()=>{for(let i=0;i<90;i++)await Promise.resolve()};
   assert(backup.tables.campaign_members.length>=3);
   await api.importData(backup);
   assert.equal((await api.from('campaigns').select()).data.length,1,'Backup import should restore local campaign');
-  console.log('PASS: genuine V2 query shapes, empty campaign gate, saves, approvals, local multi-user, co-DM, backup and unsupported RPC safety');
+  console.log('PASS: genuine V2 query shapes, empty campaign gate, saves, approvals, local multi-user, co-DM, wallet, vault, feats, backup and unsupported RPC safety');
 })().catch(error=>{console.error(error);process.exitCode=1});
