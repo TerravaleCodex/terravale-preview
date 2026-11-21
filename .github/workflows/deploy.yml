@@ -6,6 +6,8 @@ on:
     paths:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
+      - "site-overrides/neon-staging-auth.html"
+      - "tests/neon-staging-auth-probe.cjs"
       - "tests/v268-public-home.cjs"
       - "tests/v269-dashboard-default.cjs"
       - ".preview-v239-approved/**"
@@ -247,6 +249,8 @@ jobs:
         run: node tests/v285-divine-god-groups-charges.cjs
       - name: Verify compact Item Vault, resource display and source-backed demo boons
         run: node tests/v286-vault-resource-demo.cjs
+      - name: Verify isolated Neon staging Discord login page
+        run: node tests/neon-staging-auth-probe.cjs
       - name: Verify V2.87 adaptive resource routing and live source actions
         run: node tests/v287-adaptive-resources.cjs
       - name: Inspect native character rest actions
@@ -283,6 +287,8 @@ jobs:
           set -euo pipefail
           cp site-overrides/launch-home.html published/index.html
           cp site-overrides/launch-home.html published/404.html
+          mkdir -p published/neon-staging-auth
+          cp site-overrides/neon-staging-auth.html published/neon-staging-auth/index.html
           python3 - <<'PY'
           from pathlib import Path
           entry=Path("published/index.html").read_text(encoding="utf-8")
@@ -302,8 +308,11 @@ jobs:
           public=Path("published/veiled-codex/index.html")
           assert public.stat().st_size > 7000000
           assert sorted(x.name for x in Path("published").iterdir()) == [
-              "404.html","index.html","veiled-codex"
+              "404.html","index.html","neon-staging-auth","veiled-codex"
           ], "Unexpected root files in published site"
+          staging=Path("published/neon-staging-auth/index.html")
+          assert staging.read_text(encoding="utf-8")==Path("site-overrides/neon-staging-auth.html").read_text(encoding="utf-8")
+          assert "client.signIn.social" in staging.read_text(encoding="utf-8")
           assert sorted(x.name for x in public.parent.iterdir()) == ["ads","index.html"]
           assert len(list((public.parent/"ads").glob("zip-*.webp")))==56
           html=public.read_text(encoding="utf-8")
@@ -320,6 +329,8 @@ jobs:
           print("PASS: OAuth callback query and native SPA route are both preserved")
           print("PASS: signed-in site and 283+36 lore access structure remain unchanged")
           PY
+      - name: Verify the isolated Neon staging page is packaged
+        run: node tests/neon-staging-auth-probe.cjs
       - name: Verify the launched public entrance and OAuth forwarding
         run: node tests/v268-public-home.cjs
       - name: Verify actual native Dashboard default route

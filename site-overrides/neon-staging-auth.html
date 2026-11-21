@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0a13">
+<title>Terravale · Neon Staging — Discord Sign-in Test</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+--bg:#0d0a13;--paper:#17101f;--panel:#201729;--ink:#f5edf5;--sub:#c8b6cd;--line:#50405c;--gold:#e9c78d;--violet:#bca0ed}
+*{box-sizing:border-box}html{min-height:100%}body{margin:0;min-height:100vh;color:var(--ink);
+background:radial-gradient(ellipse at 55% -30%,#473260 0,transparent 58%),radial-gradient(ellipse at 95% 90%,#1d152b 0,transparent 45%),var(--bg)}
+main{width:min(720px,calc(100% - 32px));margin:clamp(32px,8vh,104px) auto 42px}
+header{text-align:center;margin-bottom:28px}
+.logo{margin:0 auto 20px;width:56px;height:56px;border:1px solid #b797d6;border-radius:50%;display:grid;place-items:center;
+box-shadow:0 0 0 8px #b798d20d,0 0 0 16px #b798d208;color:var(--gold);font-size:26px}
+.eyebrow{font-size:11px;color:var(--gold);font-weight:800;letter-spacing:.20em;text-transform:uppercase}
+h1{font-family:Georgia,serif;font-size:clamp(32px,5vw,46px);font-weight:normal;margin:13px 0 8px}
+.lead{color:var(--sub);line-height:1.6;max-width:580px;margin:0 auto;font-size:14px}
+.panel{border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#271d31 0%,#16101e 95%);
+box-shadow:0 14px 55px #0008;padding:clamp(20px,5vw,35px)}
+.info{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
+.info strong{font-size:14px}.pill{border-radius:20px;border:1px solid #735c80;color:#e1c5f3;padding:5px 10px;font-size:11px;font-weight:700}
+p{line-height:1.62}.hint{font-size:13px;color:var(--sub)}
+.status{padding:15px;border:1px solid #544362;background:#120f19;border-radius:9px;margin:22px 0;min-height:96px}
+.status strong{display:block;margin-bottom:7px;font-size:14px}.status p{margin:0;font-size:13px;color:var(--sub)}
+.status[data-kind=success]{border-color:#52846c}.status[data-kind=error]{border-color:#9d6763}
+.controls{display:flex;flex-wrap:wrap;gap:9px}.controls button{border-radius:8px;cursor:pointer;padding:12px 16px;border:1px solid #7a5c90;
+background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
+.controls button.secondary{background:transparent;color:var(--ink);border-color:#64536f}
+.controls button:disabled{opacity:.55;cursor:wait}
+.controls button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.footer{margin-top:20px;color:#b39fbf;font-size:11px;line-height:1.7;text-align:center}
+.footer a{color:var(--gold)}.marker{color:#aa9cba;font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:700}
+#account{font-weight:700;color:var(--gold);overflow-wrap:anywhere}
+@media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="logo" aria-hidden="true">✧</div>
+    <div class="eyebrow">The Living Codex · Staging</div>
+    <h1>Discord connection test</h1>
+    <p class="lead">This isolated page checks your new <strong>Neon staging</strong> login. It does not open campaigns, access character data, or change your live Terravale account.</p>
+  </header>
+  <section class="panel" aria-label="Neon staging authentication">
+    <div class="info"><strong>Neon · Better Auth</strong><span class="pill">STAGING ONLY</span></div>
+    <p class="hint">Sign in with the same Discord account you use for the live Codex. Afterwards, you can check whether Neon established a session. Existing character ownership will be checked separately on the backend.</p>
+    <div class="status" data-kind="info" id="status" role="status" aria-live="polite">
+      <strong id="status-title">Checking staging connection…</strong>
+      <p id="status-detail">The live Codex remains connected to Supabase.</p>
+    </div>
+    <p id="account" hidden></p>
+    <div class="controls">
+      <button type="button" id="connect" disabled>Continue with Discord</button>
+      <button type="button" id="check" class="secondary" disabled>Check session</button>
+      <button type="button" id="signout" class="secondary" hidden>Sign out of staging</button>
+    </div>
+    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page.</p>
+  </section>
+  <p class="footer"><span class="marker">Separate test environment</span><br>
+  <a href="/terravale-preview/veiled-codex/">Return to the live Codex</a> ·
+  <a href="https://github.com/TerravaleCodex/terravale-preview/issues/70" rel="noopener noreferrer">Migration checklist</a></p>
+</main>
+<script type="module">
+const AUTH_URL="https://ep-young-mode-bg86754w.neonauth.c-9.eu-central-1.aws.neon.tech/terravale/auth";
+const CALLBACK_URL="https://terravalecodex.github.io/terravale-preview/neon-staging-auth/";
+const els={connect:document.getElementById("connect"),check:document.getElementById("check"),
+  signout:document.getElementById("signout"),account:document.getElementById("account"),
+  status:document.getElementById("status"),title:document.getElementById("status-title"),
+  detail:document.getElementById("status-detail")};
+let client=null,busy=false;
+function status(kind,heading,body){
+  els.status.dataset.kind=kind;
+  els.title.textContent=heading;els.detail.textContent=body;
+}
+function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.signout.disabled=value;}
+function showSession(user){
+  if(user){
+    els.account.hidden=false;els.account.textContent="Neon session: "+String(user.name||"Signed-in user");
+    els.signout.hidden=false;
+    status("success","Neon staging session active",
+      "Neon authenticated this session. Discord provider linkage and Terravale character ownership still require a separate server-side check.");
+  }else{
+    els.account.hidden=true;els.account.textContent="";els.signout.hidden=true;
+    status("info","Not signed in to Neon staging",
+      "Choose Continue with Discord to test the OAuth redirect. This does not sign you out of the live Codex.");
+  }
+}
+function safeError(err){
+  return String(err?.message||err?.code||"Unexpected authentication error").slice(0,300);
+}
+async function checkSession(){
+  if(!client||busy)return;
+  setBusy(true);
+  status("info","Checking session…","Reading only the session from Neon Auth.");
+  try{
+    const {data,error}=await client.getSession();
+    if(error)throw error;
+    showSession(data?.user||data?.session?.user||null);
+  }catch(err){status("error","Could not read Neon session",safeError(err))}
+  finally{setBusy(false)}
+}
+els.connect.addEventListener("click",async()=>{
+  if(!client||busy)return;
+  setBusy(true);status("info","Opening Discord…","Authorize the Discord app, then return to this staging page.");
+  try{
+    const {error}=await client.signIn.social({provider:"discord",callbackURL:CALLBACK_URL});
+    if(error)throw error;
+    setBusy(false);
+    if(document.visibilityState==="visible")await checkSession();
+  }catch(err){
+    status("error","Discord sign-in could not start",safeError(err));
+    setBusy(false);
+  }
+});
+els.check.addEventListener("click",checkSession);
+els.signout.addEventListener("click",async()=>{
+  if(!client||busy)return;
+  setBusy(true);status("info","Signing out of staging…","Your live Supabase session is unaffected.");
+  try{const {error}=await client.signOut();if(error)throw error;showSession(null)}
+  catch(err){status("error","Unable to sign out of staging",safeError(err))}
+  finally{setBusy(false)}
+});
+const query=new URLSearchParams(location.search);
+const callbackError=query.get("error");
+if(callbackError){
+  status("error","Discord callback returned an error",String(query.get("error_description")||callbackError).slice(0,260));
+  history.replaceState(null,"",CALLBACK_URL);
+}
+try{
+  // Official Neon-managed Better Auth client. No raw OAuth token or DIY callback handling.
+  const {createAuthClient}=await import("https://esm.sh/@neon/auth@0.8.2?bundle");
+  if(typeof createAuthClient!=="function")throw new Error("Neon Auth client unavailable");
+  client=createAuthClient(AUTH_URL);
+  if(callbackError){els.connect.disabled=false;els.check.disabled=false}
+  else await checkSession();
+}catch(err){
+  status("error","Unable to load the Neon authentication client",
+    "Please try a desktop browser or reload this page. "+safeError(err));
+}
+</script>
+</body>
+</html>
