@@ -83,21 +83,32 @@
    async function auditNativePanels(){
      // Synthetic CI only. Use the actual old V2 tabs and real native readers;
      // never relay character names, feat text, wallet values or identities.
-     const tabs=[...document.querySelectorAll("#pageRoot .sheet20-tabs [data-value]")];
-     const values=tabs.map(x=>x.dataset.value);
+     const listTabs=()=>[...document.querySelectorAll("#pageRoot .sheet20-tabs [data-value]")];
+     const values=listTabs().map(x=>x.dataset.value);
      const view=async value=>{
-       const el=tabs.find(x=>x.dataset.value===value);
+       // Every native sheetTab action may replace the entire tab DOM.
+       const el=listTabs().find(x=>x.dataset.value===value);
        if(!el)return false;
-       el.click();await new Promise(r=>setTimeout(r,430));return true;
+       el.click();await new Promise(r=>setTimeout(r,700));return true;
      };
      await view("abilities");
-     const training=!!document.querySelector("#tv254-sheet-proficiencies")?.textContent.includes("smith");
+     const trainEl=document.querySelector("#tv254-sheet-proficiencies");
+     const training=!!trainEl?.textContent.includes("smith");
+     const trainingMounted=!!trainEl;
+     const trainingReady=!!trainEl&&!trainEl.textContent.includes("Loading");
+     const abilitySelected=!!document.querySelector('#pageRoot .sheet20-tabs [data-value="abilities"][aria-selected="true"]');
      await view("features");
-     const feats=!!document.querySelector(".sheet227-reader")?.textContent.includes("Audit Feat");
+     const featEl=document.querySelector(".sheet227-reader");
+     const feats=!!featEl?.textContent.includes("Audit Feat");
+     const featMounted=!!featEl;
+     const featuresSelected=!!document.querySelector('#pageRoot .sheet20-tabs [data-value="features"][aria-selected="true"]');
      const inventoryTab=values.find(x=>["inventory","equipment","backpack"].includes(x));
      if(inventoryTab)await view(inventoryTab);
-     const wallet=!!document.querySelector("#tv254-sheet-wallet")?.textContent.includes("Coin");
-     send("PANEL_AUDIT",{training,feats,wallet,
+     const walletEl=document.querySelector("#tv254-sheet-wallet");
+     const wallet=!!walletEl?.textContent.includes("Coin");
+     send("PANEL_AUDIT",{training,feats,wallet,trainingMounted,trainingReady,
+       abilitySelected,featMounted,featuresSelected,walletMounted:!!walletEl,
+       nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
        hasAbilities:values.includes("abilities"),
        hasFeatures:values.includes("features"),
        hasInventory:!!inventoryTab});
