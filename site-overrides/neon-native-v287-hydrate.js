@@ -113,6 +113,12 @@
      send("PANEL_AUDIT",{training,feats,wallet,trainingMounted,trainingReady,
        abilitySelected,featMounted,featuresSelected,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
+       hasRules:!!window.TerravaleRulesV4,
+       hasV255Training:!!window.TerravaleV255Training?.renderSheet,
+       hasV258FeatReader:!!window.TerravaleV258Feats?.getEntries,
+       currentFeats:window.TerravaleV258Feats?.getEntries?.(id,campaignId)?.length??null,
+       backpackZone:!!document.querySelector("#pageRoot .sheet20-content .sheet21-backpack-zone"),
+       nativeContent:!!document.querySelector("#pageRoot .sheet20-content"),
        hasAbilities:values.includes("abilities"),
        hasFeatures:values.includes("features"),
        hasInventory:!!inventoryTab});
