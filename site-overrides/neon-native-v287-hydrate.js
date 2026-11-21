@@ -43,6 +43,20 @@
    // approved build is never edited; this is an in-memory clone in a sandbox.
    db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
    db.characters=[ch];db.campaign=campaignId;db.mode="sample";
+   // The live V2.87 campaign-access gate reads this runtime bridge.
+   // The isolated frame is NOT signed into Supabase and must only recognise
+   // the single verified Neon campaign from its approved snapshot.
+   const originalBridge=window.TerravaleV2Bridge||{};
+   window.TerravaleV2Bridge=Object.freeze({
+     ...originalBridge,
+     hasCampaign:value=>String(value)===campaignId,
+     isDemo:()=>false,
+     canCreate:()=>false,
+     createCharacter:async()=>({error:"Neon read-only preview"}),
+     joinCampaign:async()=>({error:"Neon read-only preview"}),
+     createCampaign:async()=>({error:"Neon read-only preview"}),
+     syncCampaigns:async()=>{}
+   });
    if(!isRecord(db.featuredCharacters))db.featuredCharacters={};
    db.featuredCharacters[campaignId]=id;
    loaded=true;
