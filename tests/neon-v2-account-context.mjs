@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import {buildV2ReadOnlyAccountContext} from "../site-overrides/neon-v2-account-context.mjs";
+import {buildV2ReadOnlyAccountContext,loadVerifiedV2AccountProfile} from "../site-overrides/neon-v2-account-context.mjs";
 const original="11111111-1111-4111-8111-111111111111";
 const verified={
  verified:true,profile_exists:true,read_only:true,
@@ -47,3 +47,49 @@ const actualDefinition=sql.slice(sql.indexOf("CREATE OR REPLACE FUNCTION"),sql.i
 assert.doesNotMatch(actualDefinition,/\b(?:INSERT INTO|UPDATE public\.|DELETE FROM|TRUNCATE)\b/i,
   "Profile bootstrap must not write to user/campaign tables");
 console.log("PASS: signed Neon Discord account preserves original V2 user.id, TvUID, role and identity without writes.");
+
+
+let attempts=0;
+const onlyPreview={
+ async rpc(name){
+   attempts++;
+   assert.equal(name,"terravale_neon_staging_character_preview",
+     "Only the already-approved preview RPC may be used as fallback");
+   return {data:{read_only:true,characters:[],account:verified},error:null};
+ }
+};
+const staleRpc={data:null,error:{status:404,message:"Neon read denied (HTTP 404)"}};
+const resolved=await loadVerifiedV2AccountProfile(onlyPreview,staleRpc);
+assert.equal(attempts,1);
+assert.equal(resolved.usedFallback,true);
+assert.equal(buildV2ReadOnlyAccountContext(resolved.data).state.user.id,original);
+
+const direct=await loadVerifiedV2AccountProfile(onlyPreview,{data:verified,error:null});
+assert.equal(direct.usedFallback,false);
+assert.equal(attempts,1,"A successful direct route must not call fallback");
+
+for(const status of [400,401,403,500,503]){
+ const denied=await loadVerifiedV2AccountProfile(onlyPreview,
+   {data:null,error:{status,message:"Denied (HTTP "+status+")"}});
+ assert.equal(denied.usedFallback,false,"Only 404 may use a fallback");
+ assert.equal(denied.error.status,status);
+}
+assert.equal(attempts,1,"No fallback for forbidden or server failures");
+
+for(const payload of [
+ {read_only:true,characters:[],account:{verified:false,profile_exists:false}},
+ {read_only:true,characters:[],account:null},
+ {read_only:false,characters:[],account:verified},
+ {read_only:true,characters:[],account:{...verified,user_id:"bad"}},
+]){
+ const untrusted=await loadVerifiedV2AccountProfile(
+   {rpc:async()=>({data:payload,error:null})},staleRpc
+ ).catch(e=>e);
+ assert.ok(untrusted instanceof TypeError || Boolean(untrusted.error),
+   "No forged/unverified account can be accepted from the fallback");
+}
+const fallbackFailed=await loadVerifiedV2AccountProfile(
+ {rpc:async()=>({data:null,error:{message:"Denied (HTTP 403)",status:403}})},staleRpc);
+assert.equal(fallbackFailed.data,null);
+assert.match(fallbackFailed.error.message,/fallback failed/);
+
