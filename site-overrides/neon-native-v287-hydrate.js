@@ -80,8 +80,35 @@
        rootHasName:!!root?.textContent.includes(String(ch.name)),
        nativeRoute:typeof route==="function"&&String(route()).startsWith("/characters/")});
      return !!sheet&&sheet.textContent.includes(String(ch.name));};
-   setTimeout(()=>{if(firstCheck())send("LOADED",{id,nativeSheet:true});
-     else send("ERROR",{id,reason:"Original V2.87 sheet did not render"})},180);
+   async function auditNativePanels(){
+     // Synthetic CI only. Use the actual old V2 tabs and real native readers;
+     // never relay character names, feat text, wallet values or identities.
+     const tabs=[...document.querySelectorAll("#pageRoot .sheet20-tabs [data-value]")];
+     const values=tabs.map(x=>x.dataset.value);
+     const view=async value=>{
+       const el=tabs.find(x=>x.dataset.value===value);
+       if(!el)return false;
+       el.click();await new Promise(r=>setTimeout(r,430));return true;
+     };
+     await view("abilities");
+     const training=!!document.querySelector("#tv254-sheet-proficiencies")?.textContent.includes("smith");
+     await view("features");
+     const feats=!!document.querySelector(".sheet227-reader")?.textContent.includes("Audit Feat");
+     const inventoryTab=values.find(x=>["inventory","equipment","backpack"].includes(x));
+     if(inventoryTab)await view(inventoryTab);
+     const wallet=!!document.querySelector("#tv254-sheet-wallet")?.textContent.includes("Coin");
+     send("PANEL_AUDIT",{training,feats,wallet,
+       hasAbilities:values.includes("abilities"),
+       hasFeatures:values.includes("features"),
+       hasInventory:!!inventoryTab});
+   }
+   setTimeout(()=>{
+     if(firstCheck()){
+       send("LOADED",{id,nativeSheet:true});
+       if(new URLSearchParams(location.search).has("audit-native-panels"))
+         auditNativePanels().catch(()=>send("PANEL_AUDIT",{training:false,feats:false,wallet:false,error:true}));
+     }else send("ERROR",{id,reason:"Original V2.87 sheet did not render"});
+   },180);
  }
  window.addEventListener("message",event=>{
    if(event.source!==window.parent||event.data?.type!==tag+"_LOAD")return;
