@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"tools"))
-from export_v4_offline_first_pass import port
+from v4_transform_snapshot import port
 
 SCRIPT = re.compile(r'<script\b(?P<attrs>[^>]*)>(?P<body>[\s\S]*?)</script\s*>',re.I)
 STYLE = re.compile(r'<style\b(?P<attrs>[^>]*)>(?P<body>[\s\S]*?)</style\s*>',re.I)
