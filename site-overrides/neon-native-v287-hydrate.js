@@ -143,8 +143,29 @@
      const resources=document.querySelector('#pageRoot .sheet20-resource-panel');
      const divineResources=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("Audited Grace");
      const zeroCharges=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("0 / 2");
+     // Use the *existing* V2.51 item resource components and V2.87 adaptive
+     // catalog. Never replace a charge value or invent class/spell pools.
+     const itemCards=[...resources?.querySelectorAll('.tv-v251-resource-card')||[]];
+     const empty=itemCards.find(card=>card.dataset.v287ItemId==="empty_wand");
+     const partial=itemCards.find(card=>card.dataset.v287ItemId==="charged_staff");
+     const itemResources=!!empty&&!!partial;
+     const itemZeroCharges=!!empty?.textContent.includes("0 / 3 charges")&&
+       !!empty?.textContent.includes("Short or long rest");
+     const itemPartialCharges=!!partial?.textContent.includes("2 / 5 charges")&&
+       !!partial?.textContent.includes("Long rest")&&
+       !!partial?.textContent.includes("Activate · 2 charges");
+     const hiddenItemOmitted=!itemCards.some(card=>card.dataset.v287ItemId==="hidden_amulet"||
+       card.dataset.v287ItemId==="ordinary_apple");
+     // Original V2.87 view should index exactly the two visible item resources.
+     const catalog=document.querySelector('#pageRoot #tv287-resource-catalog');
+     const itemCatalogCards=[...catalog?.querySelectorAll('.tv287-card[data-resource-id^="item:"]')||[]];
+     const adaptiveItemCatalog=itemCatalogCards.length===2&&
+       itemCatalogCards.some(card=>card.textContent.includes("Empty Wand"))&&
+       itemCatalogCards.some(card=>card.textContent.includes("Charged Staff"));
+     const noInventedSpells=!resources?.querySelector('.v234-spell-grid .v234-resource-item');
      send("PANEL_AUDIT",{training,feats,wallet,divine:divine&&rules,
-       divineTab:!!divineTab,divineResources,zeroCharges,
+       divineTab:!!divineTab,divineResources,zeroCharges,itemResources,
+       itemZeroCharges,itemPartialCharges,hiddenItemOmitted,adaptiveItemCatalog,noInventedSpells,
        trainingMounted,trainingReady,
        abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
