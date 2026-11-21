@@ -14,6 +14,8 @@ on:
       - "site-overrides/neon-staging-sheet-lock.js"
       - "tools/build-neon-staging-sheet.cjs"
       - "site-overrides/sql/neon_staging_sheet_read.sql"
+      - "site-overrides/sql/neon_staging_sheet_extras_read.sql"
+      - "tests/neon-staging-sheet-extras.cjs"
       - "tests/neon-staging-sheet-read.cjs"
       - "site-overrides/neon-v2-account-context.mjs"
       - "site-overrides/sql/neon_staging_profile_cached_route_fallback.sql"
@@ -282,6 +284,8 @@ jobs:
         run: node tests/neon-v2-account-context.mjs
       - name: Verify RLS-scoped original V2 sheet reads (staging)
         run: node tests/neon-staging-sheet-read.cjs
+      - name: Verify owner/DM-only extra character grants and linked divine reads
+        run: node tests/neon-staging-sheet-extras.cjs
       - name: Verify existing V2 sheet read-only staging adapter
         run: node tests/neon-v2-sheet-preview.mjs
       - name: Browser-test existing V2 sheet rendering from an isolated read-only fixture
