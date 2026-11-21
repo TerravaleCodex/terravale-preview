@@ -137,11 +137,13 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null;
+let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null,makeV287NeonReadOnlySnapshot=null;
 const V2_SHEET_URL="/terravale-preview/neon-staging-auth/sheet/?live=1";
-let verifiedSheetPayload=null,currentSheetId=null;
+let verifiedSheetPayload=null,currentSheetId=null,currentCoreSheet=null,currentV287Snapshot=null;
 function clearSheetPreview(){
   verifiedSheetPayload=null;
+  currentCoreSheet=null;
+  currentV287Snapshot=null;
   currentSheetId=null;
   els.sheetExtrasOpen.disabled=true;
   els.sheetExtrasPanel.hidden=true;
@@ -459,6 +461,7 @@ async function inspectSavedSheet(characterId){
     }
     els.sheetReadTitle.textContent=String(character.name||details.name||"Saved character sheet").slice(0,120);
     els.sheetRead.hidden=false;
+    currentCoreSheet=v;
     currentSheetId=characterId;
     els.sheetExtrasOpen.disabled=false;
     // Render using the EXISTING embedded V2 layout only after this authorised
@@ -495,7 +498,13 @@ async function inspectLinkedV2Data(){
        !["owned","dm"].includes(v.access)||!keys.every(k=>Array.isArray(v[k])&&v[k].length<=100)||
        !v.proficiencies||typeof v.proficiencies!=="object"||
        !v.training||typeof v.training!=="object")throw new Error("Unexpected or unauthorised linked character data.");
-    if(currentSheetId!==characterId||!signedIn)return;
+    if(currentSheetId!==characterId||!signedIn||!currentCoreSheet)
+      throw new Error("Original authorised character sheet is no longer available.");
+    // Both RPCs independently apply the same verified owner/DM access rules.
+    // The native-source contract preserves original data; this is NOT yet the
+    // full V2.87 UI and is never forwarded to the legacy embedded renderer.
+    const v287=makeV287NeonReadOnlySnapshot(currentCoreSheet,v,characterId);
+    currentV287Snapshot=v287;
     const arr=x=>Array.isArray(x)?x:[];
     const rows=[
       ["Tool proficiencies",arr(v.proficiencies.tools).length],
@@ -504,7 +513,10 @@ async function inspectLinkedV2Data(){
       ["Granted custom feats",v.custom_feats.length],
       ["Granted divine boons",v.granted_boons.length],
       ["Canonical divine awards",v.canonical_awards.length],
-      ["Active divine effects",v.divine_effects.length]
+      ["Active divine effects",v.divine_effects.length],
+      ["Saved item charge entries",v287.counts.item_charge_properties],
+      ["Saved class resource entries",v287.counts.saved_class_resources],
+      ["Wallet denominations",v287.counts.wallet_denominations]
     ];
     for(const [label,value] of rows){
       const wrap=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");
@@ -534,8 +546,8 @@ async function inspectLinkedV2Data(){
     makeGroup("Canonical awards",v.canonical_awards,chargeLabel);
     makeGroup("Active divine effects",v.divine_effects,x=>typeof x?.key==="string"?x.key.slice(0,80):"");
     els.sheetExtrasPanel.hidden=false;
-    status("success","Linked V2.87 data verified through Neon",
-      "Authorised read complete. No favours, ungranted boons, or gameplay records were changed.");
+    status("success","V2.87 source snapshot checked (read-only)",
+      "The approved build, current state, wallet, item charges and granted character data agree on the same authorised character. Native V2.87 rendering is a separate milestone; no records changed.");
   }catch(err){status("error","Linked V2.87 verification failed",safeError(err))}
   finally{
     setBusy(false);
@@ -586,6 +598,7 @@ try{
   const {createNeonReadOnlyBridge}=await import("./bridge.mjs");
   const {buildV2ReadOnlyAccountContext,loadVerifiedV2AccountProfile}=await import("./account-context.mjs");
   ({toV2ReadOnlySheet}=await import("./v2-sheet-preview.mjs"));
+  ({makeV287NeonReadOnlySnapshot}=await import("./v287-snapshot.mjs"));
   makeLegacyContext=buildV2ReadOnlyAccountContext;
   loadOriginalProfile=loadVerifiedV2AccountProfile;
   readBridge=createNeonReadOnlyBridge({
