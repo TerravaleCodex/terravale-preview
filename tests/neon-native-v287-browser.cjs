@@ -22,7 +22,7 @@ const character={name:"Neon Native Fixture",className:"Gatewarden",ancestry:"Dve
  features:["Aegis"],spells:[],sheetV220:{resources:{}}};
 const snapshot={
  schema:"terravale.neon.v287.sheet.readonly.v1",read_only:true,id,access:"owned",
- character:{id,campaign:campaignId,name:character.name,status:"approved"},
+ character:{id,campaign:"Fixture campaign",campaign_id:campaignId,name:character.name,status:"approved"},
  sources:{approved_build:{class:"Gatewarden",ancestry:"Dvergr",level:4,character},
  character_state:{hp:20,temp_hp:1,blood_state:0,inventory:[],resources:[],conditions:[],death_saves:{dead:false,stable:false,successes:0,failures:0}},
  item_properties:[],wallet:[],proficiencies:{tools:[],languages:[]},custom_feats:[],canonical_awards:[]}
