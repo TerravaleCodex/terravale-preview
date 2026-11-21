@@ -13,6 +13,8 @@ const core={read_only:true,character:{id,name:"Sample",campaign:"Frostvale",camp
  ]};
 const extras={read_only:true,character_id:id,access:"owned",
  proficiencies:{tools:["Forge"],languages:["Common"]},training:{extra_tools:[]},
+ wallet_ledger:[{id:"row",denomination_id:"cp",delta:-1,note:"Trade",operation:"withdraw",created_at:"2026-01-01"}],
+ bonus_requests:[],
  custom_feats:[{id:"feat",name:"Magical Talent"}],granted_boons:[],
  canonical_awards:[{id:"divine",name:"Grace",uses_remaining:0,max_uses:2,recovery:"long"}],
  divine_effects:[]};
@@ -27,7 +29,7 @@ assert.deepEqual(out.resource_sources.saved_spell_list,[{name:"Light"}]);
 assert.deepEqual(out.resource_sources.saved_sheet_resource_settings,{show:"custom"});
 assert.equal(out.resource_sources.granted_divine_charge_records[0].current,0);
 assert.equal(out.resource_sources.granted_divine_charge_records[0].max,2);
-assert.deepEqual(out.counts,{inventory:1,saved_class_resources:0,wallet_denominations:1,
+assert.deepEqual(out.counts,{inventory:1,saved_class_resources:0,wallet_denominations:1,wallet_ledger:1,bonus_requests:0,
  item_properties:2,item_charge_properties:1,custom_feats:1,granted_boons:0,canonical_awards:1,divine_effects:0});
 assert.deepEqual(out.sources.approved_build,build,"Approved build retains its original values");
 assert.equal(out.sources.favour,undefined,"Raw favour is never included");
