@@ -7,7 +7,7 @@ const staging=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
 const body=fs.readFileSync("site-overrides/neon-native-v287-hydrate.js","utf8");
 for(const mark of ['data-source="v287-adaptive-resources.js"','id="tv238-v14-content"','sheet20-resource-panel'])
  assert.ok(native.includes(mark),"Native copy lost V2.87 component: "+mark);
-for(const mark of ['connect-src \'none\'','frame-src \'none\'','data-source="neon-native-v287-bootstrap.js"','data-source="neon-native-v287-hydrate.js"'])
+for(const mark of ['connect-src \'none\'','frame-src \'none\'','data-source="neon-native-v287-bootstrap.js"','data-source="neon-native-v287-read-client.js"','data-source="neon-native-v287-hydrate.js"'])
  assert.ok(native.includes(mark),"Staging native safety control missing: "+mark);
 assert.ok(!native.includes('data-source="v2-discord-auth.mjs"'));
 assert.ok(!native.includes('data-source="v2-ads-atelier.mjs"'));
@@ -26,7 +26,16 @@ const snapshot={
  character:{id,campaign:"Fixture campaign",campaign_id:campaignId,name:character.name,status:"approved"},
  sources:{approved_build:{class:"Gatewarden",ancestry:"Dvergr",level:4,character},
  character_state:{hp:20,temp_hp:1,blood_state:0,inventory:[],resources:[],conditions:[],death_saves:{dead:false,stable:false,successes:0,failures:0}},
- item_properties:[],wallet:[],proficiencies:{tools:[],languages:[]},custom_feats:[],canonical_awards:[]}
+ item_properties:[],
+ wallet:[{denomination_id:"gp",quantity:3}],
+ wallet_ledger:[{id:"transaction",denomination_id:"gp",delta:-1,note:"Sample purchase",operation:"adjust",created_at:"2026-11-01T00:00:00Z"}],
+ bonus_requests:[],proficiencies:{tools:[{id:"smith",source:"Starting training"}],
+   languages:[{id:"common",source:"Ancestry"}],submitted:true,pending_languages:[],dm_bonus:[]},
+ training:{hidden_tools:[],hidden_languages:[],extra_tools:[],extra_languages:[],language_modes:{}},
+ custom_feats:[{id:"feat-grant",feat_id:"33333333-3333-4333-8333-333333333333",
+   name:"Audit Feat",summary:"Original feat description",rules:"Guard yourself",
+   prerequisites:"Dvergr",rarity:"Custom",action_type:"passive",uses_per_rest:1,recovery:"long"}],
+ canonical_awards:[]}
 };
 const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <iframe id="native" title="original V2.87" sandbox="allow-scripts" src="/terravale-preview/neon-staging-auth/native-v287/" style="width:1260px;height:960px"></iframe>
