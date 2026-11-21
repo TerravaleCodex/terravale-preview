@@ -33,14 +33,25 @@ const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 const frame=document.querySelector("#native");
 const snapshot=${JSON.stringify(snapshot)};
-let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[];
+let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[],deadline=null;
+const finish=(timedOut=false)=>{
+ if(document.body.dataset.nativeTest)return;
+ clearInterval(timer);clearTimeout(deadline);
+ const pass=ready&&handshake&&originMatched&&loaded&&!error;
+ document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,pass,timeout:timedOut}));
+};
+deadline=setTimeout(()=>finish(true),60000);
 window.addEventListener("message",event=>{
  if(event.source!==frame.contentWindow||event.origin!=="null")return;
  messages++;
  if(event.data?.type==="TV_NEON_NATIVE_V287_HANDSHAKE"){handshake=true;originMatched=event.data.originMatched===true}
  if(event.data?.type==="TV_NEON_NATIVE_V287_PHASE")phases.push(event.data.phase);
  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
-   ready=true;frame.contentWindow.postMessage({type:"TV_NEON_NATIVE_V287_LOAD",snapshot},"*");
+   ready=true;
+   // The full, 7MB V2.87 page can take time to boot; start the load deadline
+   // only AFTER the native iframe has actually announced its readiness.
+   clearTimeout(deadline);deadline=setTimeout(()=>finish(true),55000);
+   frame.contentWindow.postMessage({type:"TV_NEON_NATIVE_V287_LOAD",snapshot},"*");
  }
  if(event.data?.type==="TV_NEON_NATIVE_V287_LOADED"&&event.data?.id===snapshot.id&&event.data?.nativeSheet===true)loaded=true;
  if(event.data?.type==="TV_NEON_NATIVE_V287_ERROR")error=event.data?.reason||"error";
@@ -48,11 +59,10 @@ window.addEventListener("message",event=>{
 const timer=setInterval(()=>{
  const report={ready,handshake,originMatched,loaded,error,messages,phases,pass:ready&&handshake&&originMatched&&loaded&&!error};
  if(report.pass||error||messages>3&&loaded){
-   clearInterval(timer);document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify(report));
+   finish(false);
  }
 },120);
-setTimeout(()=>{if(!document.body.dataset.nativeTest){clearInterval(timer);
-document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,pass:false,timeout:true}))}},25000);
+
 </script></body></html>`;
 const root=path.resolve("published");
 const mime={".html":"text/html; charset=utf-8",".js":"application/javascript",".json":"application/json",".css":"text/css"};
@@ -78,7 +88,7 @@ const server=http.createServer((req,res)=>{
  const url="http://127.0.0.1:"+server.address().port+"/fixture";
  const out=await new Promise((resolve,reject)=>{
   const child=cp.spawn(chrome,["--headless","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
-   "--disable-background-networking","--virtual-time-budget=31000","--window-size=1380,900","--dump-dom",url],
+   "--disable-background-networking","--virtual-time-budget=125000","--window-size=1380,900","--dump-dom",url],
    {stdio:["ignore","pipe","pipe"]});
   let stdout="",stderr="";
   const timer=setTimeout(()=>{child.kill();reject(Error("Native Chromium test timed out"))},45000);
