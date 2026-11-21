@@ -33,12 +33,12 @@ const host=`<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 const frame=document.querySelector("#native");
 const snapshot=${JSON.stringify(snapshot)};
-let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[],deadline=null;
+let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=false,phases=[],diagnostic=null,deadline=null;
 const finish=(timedOut=false)=>{
  if(document.body.dataset.nativeTest)return;
  clearInterval(timer);clearTimeout(deadline);
  const pass=ready&&handshake&&originMatched&&loaded&&!error;
- document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,pass,timeout:timedOut}));
+ document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,pass,timeout:timedOut}));
 };
 deadline=setTimeout(()=>finish(true),60000);
 window.addEventListener("message",event=>{
@@ -46,6 +46,7 @@ window.addEventListener("message",event=>{
  messages++;
  if(event.data?.type==="TV_NEON_NATIVE_V287_HANDSHAKE"){handshake=true;originMatched=event.data.originMatched===true}
  if(event.data?.type==="TV_NEON_NATIVE_V287_PHASE")phases.push(event.data.phase);
+ if(event.data?.type==="TV_NEON_NATIVE_V287_DIAGNOSTIC")diagnostic=event.data;
  if(event.data?.type==="TV_NEON_NATIVE_V287_READY"){
    ready=true;
    // The full, 7MB V2.87 page can take time to boot; start the load deadline
