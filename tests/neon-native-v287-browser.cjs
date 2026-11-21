@@ -14,7 +14,8 @@ assert.ok(!native.includes('data-source="v2-ads-atelier.mjs"'));
 assert.ok(live.includes('data-source="v2-discord-auth.mjs"'),"Production live V2 not retained unchanged");
 assert.match(staging,/sandbox="allow-scripts"/);
 assert.doesNotMatch(staging,/sandbox="allow-scripts allow-same-origin"/);
-assert.match(body,/event\.source!==window\.parent\|\|event\.origin!==originalOrigin/);
+assert.match(body,/event\.source!==window\.parent/);
+assert.match(body,/if\(event\.origin!==originalOrigin\)return/);
 const id="11111111-1111-4111-8111-111111111111";
 const campaignId="22222222-2222-4222-8222-222222222222";
 const character={name:"Neon Native Fixture",className:"Gatewarden",ancestry:"Dvergr",level:4,
