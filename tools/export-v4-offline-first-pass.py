@@ -19,6 +19,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from v4_blank_content_patch import blank_platform
 
 ROOT = Path(__file__).resolve().parents[1]
