@@ -11,6 +11,7 @@ on:
       - tools/assemble-approved-v239.py
       - tools/overlay-v239-with-discord.py
       - site-overrides/**
+      - tools/export-v4-offline-first-pass.py
   workflow_dispatch:
 
 permissions:
@@ -27,10 +28,14 @@ jobs:
           python-version: '3.12'
       - name: Assemble the original deployed V2.87 site without visual edits
         run: python tools/export-v4-live-baseline.py
-      - name: Publish source snapshot only as a downloadable artifact
+      - name: Make V4 local first pass from actual live HTML (no recreation)
+        run: python tools/export-v4-offline-first-pass.py
+      - name: Publish exact live source and first-pass V4 preview (never deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: V4-EXACT-LIVE-V2-SNAPSHOT-NOT-YET-OFFLINE
-          path: dist/V4_Live_Exact_Source_Baseline.zip
+          name: V4-ACTUAL-LIVE-SITE-AND-OFFLINE-FIRST-PASS
+          path: |
+            dist/V4_Live_Exact_Source_Baseline.zip
+            dist/V4_Live_Layout_Offline_First_Pass.zip
           if-no-files-found: error
           retention-days: 30
