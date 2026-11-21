@@ -93,7 +93,10 @@
        // Every native sheetTab action may replace the entire tab DOM.
        const el=listTabs().find(x=>x.dataset.value===value);
        if(!el)return false;
-       el.click();await new Promise(r=>setTimeout(r,700));return true;
+       el.click();
+       await new Promise(r=>setTimeout(r,110));
+       window.dispatchEvent(new CustomEvent("terravale-characters-synced"));
+       await new Promise(r=>setTimeout(r,700));return true;
      };
      await view("abilities");
      const trainEl=document.querySelector("#tv254-sheet-proficiencies");
