@@ -255,8 +255,16 @@ async function testV2ReadCompatibility(){
       readBridge.rpc("terravale_neon_staging_probe"),
       readBridge.rpc("terravale_neon_staging_account_bootstrap"),
     ]);
-    for(const result of [characters,campaigns,summary,originalProfile]) {
-      if(result.error)throw new Error(result.error.message);
+    const checks=[
+      {label:"characters table",result:characters},
+      {label:"campaigns table",result:campaigns},
+      {label:"ownership RPC",result:summary},
+      {label:"original V2 profile RPC",result:originalProfile},
+    ];
+    const failed=checks.filter(x=>x.result?.error);
+    if(failed.length){
+      const details=failed.map(x=>x.label+": "+x.result.error.message);
+      throw new Error("Failed endpoint(s): "+details.join(" · "));
     }
     const report=Array.isArray(summary.data)?summary.data[0]:summary.data;
     const bootstrap=Array.isArray(originalProfile.data)?originalProfile.data[0]:originalProfile.data;

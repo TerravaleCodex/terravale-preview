@@ -49,6 +49,10 @@ assert.ok(code.includes('method:"POST"') && code.includes('body:"{}"'),
   "Staging probe should call its designated read-only RPC only");
 assert.ok(code.includes('els.permissionResult.textContent='),
   "Staging probe should display aggregate counts only");
+for(const marker of [
+ 'characters table', 'campaigns table', 'ownership RPC',
+ 'original V2 profile RPC', 'Failed endpoint(s):'
+])assert.ok(code.includes(marker),"Staging V2 test must identify each failing read endpoint");
 assert.ok(html.includes('No passwords, OAuth secrets, session tokens or database credentials'));
 for(const marker of [
  'cp site-overrides/launch-home.html published/index.html',

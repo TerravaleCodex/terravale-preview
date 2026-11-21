@@ -70,4 +70,42 @@ assert.equal(noAccess.data,null);
 assert.match(noAccess.error.message,/403/);
 assert.ok(!JSON.stringify(noAccess).includes(jwt),"Never echo JWTs in error payload");
 
-console.log("PASS: staging-only V2-style SELECT/RPC bridge, strict field/table allowlists, JWT-only access, no writes.");
+// 404 diagnostics distinguish missing table cache (205) and missing RPC
+// cache (202), exposing only the standardized code, not backend prose.
+const rejectedTable=createNeonReadOnlyBridge({
+ dataApiUrl:url,getAccessToken:async()=>jwt,
+ request:async()=>({ok:false,status:404,json:async()=>({
+   code:"PGRST205",message:"PRIVATE BACKEND DETAIL",hint:"Sensitive hint"
+ })})
+});
+const missingTable=await rejectedTable.from("characters").select("id");
+assert.equal(missingTable.error.code,"PGRST205");
+assert.equal(missingTable.error.status,404);
+assert.match(missingTable.error.message,/HTTP 404, PGRST205/);
+assert.ok(!JSON.stringify(missingTable).includes("PRIVATE BACKEND DETAIL"));
+assert.ok(!JSON.stringify(missingTable).includes("Sensitive hint"));
+const rejectedRpc=createNeonReadOnlyBridge({
+ dataApiUrl:url,getAccessToken:async()=>jwt,
+ request:async()=>({ok:false,status:404,json:async()=>({
+   code:"PGRST202",message:"Private schema metadata"
+ })})
+});
+const missingRpc=await rejectedRpc.rpc("terravale_neon_staging_account_bootstrap");
+assert.match(missingRpc.error.message,/HTTP 404, PGRST202/);
+assert.ok(!JSON.stringify(missingRpc).includes("Private schema metadata"));
+const proxyNotJson=createNeonReadOnlyBridge({
+ dataApiUrl:url,getAccessToken:async()=>jwt,
+ request:async()=>({ok:false,status:404,json:async()=>{throw new SyntaxError("HTML")}})
+});
+const proxyError=await proxyNotJson.from("campaigns").select("id");
+assert.match(proxyError.error.message,/HTTP 404/);
+assert.equal(proxyError.error.code,null);
+const invalidErrorCode=createNeonReadOnlyBridge({
+ dataApiUrl:url,getAccessToken:async()=>jwt,
+ request:async()=>({ok:false,status:404,json:async()=>({code:"secret_token"})})
+});
+const invalid=await invalidErrorCode.rpc("terravale_neon_staging_probe");
+assert.ok(!JSON.stringify(invalid).includes("secret_token"));
+assert.equal(invalid.error.code,null);
+
+console.log("PASS: staging-only V2 read adapter, safe 404 source/code diagnostics, JWT-only access and no writes.");
