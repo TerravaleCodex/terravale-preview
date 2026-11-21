@@ -262,7 +262,7 @@ async function testV2ReadCompatibility(){
       {label:"characters table",result:characters},
       {label:"campaigns table",result:campaigns},
       {label:"ownership RPC",result:summary},
-      {label:"original V2 profile",result:profileResult},
+      {label:"original V2 profile RPC",result:profileResult},
     ];
     const failed=checks.filter(x=>x.result?.error);
     if(failed.length){
