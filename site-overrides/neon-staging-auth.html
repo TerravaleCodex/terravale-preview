@@ -44,6 +44,13 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 .character-preview .char-title{display:block;font-size:14px;font-weight:800;overflow-wrap:anywhere}
 .character-preview .char-detail{display:block;color:var(--sub);font-size:12px;margin-top:6px;overflow-wrap:anywhere;line-height:1.5}
 .character-preview .char-access{display:inline-block;margin-top:9px;font-size:11px;color:var(--gold);font-weight:800}
+.character-preview .inspect{display:block;margin-top:12px;font-size:12px;padding:7px 10px}
+.sheet-read{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:16px;background:#130d1a}
+.sheet-read h3{font-family:Georgia,serif;font-weight:normal;font-size:21px;color:var(--gold);margin:0 0 8px}
+.sheet-read dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:11px;margin:14px 0 0}
+.sheet-read dt{color:var(--sub);font-size:12px}
+.sheet-read dd{margin:3px 0 0;font-weight:700;overflow-wrap:anywhere}
+
 
 @media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
 </style>
@@ -78,6 +85,11 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
       <h2>Migrated characters</h2>
       <p class="hint">Limited to characters your Discord account can view. Names, ancestry, class and level only; no private sheets, inventory, or favour scores.</p>
       <ul id="character-list"></ul>
+      <section id="sheet-read" class="sheet-read" hidden aria-live="polite">
+        <h3 id="sheet-read-title">Saved character sheet</h3>
+        <p class="hint">Read-only check of the actual saved build, state, inventory and resources. This is not a replacement for the V2 character sheet.</p>
+        <dl id="sheet-read-summary"></dl>
+      </section>
     </section>
     <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only read-only permission counts and limited character summaries are displayed. No full sheets are returned or modified.</p>
   </section>
@@ -92,6 +104,7 @@ const DATA_API_URL="https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.
 const els={connect:document.getElementById("connect"),check:document.getElementById("check"),permissions:document.getElementById("permissions"),permissionResult:document.getElementById("permissions-result"),
   characters:document.getElementById("characters"),characterPreview:document.getElementById("character-preview"),
   characterList:document.getElementById("character-list"),
+  sheetRead:document.getElementById("sheet-read"),sheetReadTitle:document.getElementById("sheet-read-title"),sheetReadSummary:document.getElementById("sheet-read-summary"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
@@ -111,6 +124,8 @@ function showSession(user){
   els.v2readsResult.textContent="";
   els.characterPreview.hidden=true;
   els.characterList.replaceChildren();
+  els.sheetRead.hidden=true;
+  els.sheetReadSummary.replaceChildren();
   els.permissionResult.hidden=true;
   els.permissionResult.textContent="";
   if(user){
@@ -306,6 +321,8 @@ async function previewMigratedCharacters(){
   setBusy(true);
   els.characterPreview.hidden=true;
   els.characterList.replaceChildren();
+  els.sheetRead.hidden=true;
+  els.sheetReadSummary.replaceChildren();
   status("info","Loading migrated characters…","Checking the signed Discord account against Neon's original character ownership and visibility rules.");
   try{
     const jwt=await getSignedStagingJwt();
@@ -334,6 +351,14 @@ async function previewMigratedCharacters(){
       const access=document.createElement("span");access.className="char-access";
       access.textContent=allowedAccess[ch.access];
       item.append(name,meta,access);
+      if(ch.access==="owned"||ch.access==="dm"){
+        const inspect=document.createElement("button");
+        inspect.className="secondary inspect";
+        inspect.type="button";
+        inspect.textContent="Inspect saved sheet (read-only)";
+        inspect.addEventListener("click",()=>inspectSavedSheet(ch.id));
+        item.append(inspect);
+      }
       els.characterList.append(item);
     }
     els.characterPreview.hidden=false;
@@ -343,6 +368,56 @@ async function previewMigratedCharacters(){
   finally{setBusy(false)}
 }
 els.characters.addEventListener("click",previewMigratedCharacters);
+async function inspectSavedSheet(characterId){
+  if(!client||busy||!signedIn||!readBridge)return;
+  setBusy(true);
+  els.sheetRead.hidden=true;
+  els.sheetReadSummary.replaceChildren();
+  status("info","Reading saved character sheet…",
+    "Neon is verifying ownership or campaign DM access and loading saved character state through RLS.");
+  try{
+    const reply=await readBridge.rpc("terravale_neon_staging_sheet_read",{p_character_id:characterId});
+    if(reply.error)throw new Error(reply.error.message);
+    const v=Array.isArray(reply.data)?reply.data[0]:reply.data;
+    if(!v||v.read_only!==true||!v.character||
+       v.character.id!==characterId||
+       !["owned","dm"].includes(v.character.access)||
+       !v.character.approved_build || typeof v.character.approved_build!=="object"||
+       !Array.isArray(v.wallet)||!Array.isArray(v.item_properties)){
+      throw new Error("Neon returned no authorised original sheet or an unexpected response.");
+    }
+    const character=v.character;
+    const build=character.approved_build;
+    const details=build.character&&typeof build.character==="object"?build.character:{};
+    const state=v.state&&typeof v.state==="object"?v.state:{};
+    const level=Number.isInteger(Number(build.level))&&Number(build.level)>=1&&Number(build.level)<=20?Number(build.level):"—";
+    const inventory=Array.isArray(state.inventory)?state.inventory:Array.isArray(details.inventory)?details.inventory:[];
+    const resources=state.resources&&typeof state.resources==="object"?
+      (Array.isArray(state.resources)?state.resources.length:Object.keys(state.resources).length):0;
+    const conditions=Array.isArray(state.conditions)?state.conditions.length:
+      state.conditions&&typeof state.conditions==="object"?Object.keys(state.conditions).length:0;
+    const fields=[
+      ["Campaign",character.campaign],["Access",character.access==="owned"?"Owner":"Campaign DM"],
+      ["Class",String(details.className||build.className||"—")],["Ancestry",String(details.ancestry||build.ancestry||"—")],
+      ["Level",String(level)],["Current HP",Number.isFinite(state.hp)?String(state.hp):"Not set"],
+      ["Temporary HP",Number.isFinite(state.temp_hp)?String(state.temp_hp):"Not set"],
+      ["Tracked resources",String(resources)],["Conditions",String(conditions)],
+      ["Inventory entries",String(inventory.length)],["Wallet denominations",String(v.wallet.length)],
+      ["Item charge/property entries",String(v.item_properties.length)]
+    ];
+    for(const [label,value] of fields){
+      const wrap=document.createElement("div");
+      const dt=document.createElement("dt");dt.textContent=label;
+      const dd=document.createElement("dd");dd.textContent=String(value).slice(0,160);
+      wrap.append(dt,dd);els.sheetReadSummary.append(wrap);
+    }
+    els.sheetReadTitle.textContent=String(character.name||details.name||"Saved character sheet").slice(0,120);
+    els.sheetRead.hidden=false;
+    status("success","Original sheet state loaded from Neon",
+      "The signed account retrieved its saved build, HP, resources, conditions, inventory and wallet through the read-only, RLS-guarded sheet RPC.");
+  }catch(err){status("error","Could not inspect saved sheet",safeError(err))}
+  finally{setBusy(false)}
+}
 els.signout.addEventListener("click",async()=>{
   if(!client||busy)return;
   setBusy(true);status("info","Signing out of staging…","Your live Supabase session is unaffected.");

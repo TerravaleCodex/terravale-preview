@@ -17,6 +17,7 @@ const RPC_NAMES = Object.freeze([
   "terravale_neon_staging_probe",
   "terravale_neon_staging_character_preview",
   "terravale_neon_staging_account_bootstrap",
+  "terravale_neon_staging_sheet_read",
 ]);
 
 function allowedName(value, options) {
@@ -153,6 +154,16 @@ export function createNeonReadOnlyBridge({
 
   async function rpc(name, args = {}) {
     allowedName(name, RPC_NAMES);
+    if(name === "terravale_neon_staging_sheet_read"){
+      // The only parameterised read. The database checks original owner / DM
+      // AND the existing RLS policies again; no user ID or role is accepted.
+      if(!args || typeof args !== "object" || Array.isArray(args) ||
+         Object.keys(args).length !== 1 || !Object.hasOwn(args,"p_character_id") ||
+         typeof args.p_character_id !== "string" ||
+         !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(args.p_character_id))
+        throw new TypeError("Read-only sheet requires one valid character UUID");
+      return call("POST", "/rpc/" + name, "", {p_character_id:args.p_character_id});
+    }
     if (args === null || typeof args !== "object" ||
         Array.isArray(args) || Object.keys(args).length) {
       throw new TypeError("Diagnostic RPCs accept no arguments");

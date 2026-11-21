@@ -38,6 +38,12 @@ const rpc=await api.rpc("terravale_neon_staging_probe");
 assert.equal(rpc.data.identity_recognised,true);
 assert.equal(calls[3].options.method,"POST");
 assert.equal(calls[3].options.body,"{}");
+const sampleId="12345678-1234-4234-8234-123456789abc";
+const sheet=await api.rpc("terravale_neon_staging_sheet_read",{p_character_id:sampleId});
+assert.equal(sheet.error,null,"Audited sheet fetch should be allowed for a UUID");
+assert.equal(calls[4].path,url+"/rpc/terravale_neon_staging_sheet_read");
+assert.equal(calls[4].options.method,"POST");
+assert.equal(calls[4].options.body,JSON.stringify({p_character_id:sampleId}));
 for(const f of [
  ()=>api.from("profiles"),()=>api.from("characters").select("*"),
  ()=>api.from("characters").select("approved_build"),
@@ -51,6 +57,11 @@ for(const f of [
  ()=>api.rpc("terravale_delete_character"),
  ()=>api.rpc("terravale_wallet_self_adjust"),
  ()=>api.rpc("terravale_neon_staging_probe",{userId:"fake"}),
+ ()=>api.rpc("terravale_neon_staging_sheet_read"),
+ ()=>api.rpc("terravale_neon_staging_sheet_read",{p_character_id:"not-an-uuid"}),
+ ()=>api.rpc("terravale_neon_staging_sheet_read",{p_character_id:sampleId,user_id:sampleId}),
+ ()=>api.rpc("terravale_neon_staging_sheet_read",{owner_id:sampleId}),
+
 ])await assert.rejects(f,TypeError,"Disallowed asynchronous RPC must reject");
 
 const badSession=createNeonReadOnlyBridge({

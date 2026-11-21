@@ -8,6 +8,8 @@ on:
       - "site-overrides/launch-home.html"
       - "site-overrides/neon-staging-auth.html"
       - "site-overrides/neon-readonly-bridge.mjs"
+      - "site-overrides/sql/neon_staging_sheet_read.sql"
+      - "tests/neon-staging-sheet-read.cjs"
       - "site-overrides/neon-v2-account-context.mjs"
       - "site-overrides/sql/neon_staging_profile_cached_route_fallback.sql"
       - "tests/neon-profile-rpc-fallback.cjs"
@@ -273,6 +275,8 @@ jobs:
         run: node tests/neon-profile-rpc-fallback.cjs
       - name: Verify Neon V2 Discord legacy owner profile
         run: node tests/neon-v2-account-context.mjs
+      - name: Verify RLS-scoped original V2 sheet reads (staging)
+        run: node tests/neon-staging-sheet-read.cjs
       - name: Verify Neon V2-style read bridge
         run: node tests/neon-v2-read-compatibility.mjs
       - name: Verify isolated Neon staging Discord login page
