@@ -129,7 +129,7 @@ els.check.addEventListener("click",checkSession);
 // Never log, display, store, or decode a bearer token for authorization.
 // Only the Neon Data API decides whether it is signed and valid.
 function looksLikeJwt(value){
-  return typeof value==="string" && /^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value);
+  return typeof value==="string" && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
 }
 function tokenFromAuthResult(result){
   const candidates=[
