@@ -115,13 +115,8 @@ async function accessibleCampaignIds(){
 }
 async function visibleRows(table){
   const records=await list(table),accessible=await accessibleCampaignIds();
-  if(table==='campaigns')return records.filter(x=>accessible.has(x.id)).map(x=>({
-    ...x,owner_id:/* existing V2 mapCampaign expects ownerId to infer local DM */
-    ((awaitDummy=>awaitDummy)(false))?x.owner_id:x.owner_id
-  }));
-  if(table==='characters')return records.filter(x=>accessible.has(x.campaign_id))
-    .filter(x=>x.owner_id===current?.id||x.sheet_visible_to_party||x.status==='pending'||
-      false /* additional DM visibility handled below */);
+  if(table==='campaigns')return records.filter(x=>accessible.has(x.id));
+  if(table==='characters')return records.filter(x=>accessible.has(x.campaign_id));
   if(table==='profiles')return records;
   if(table==='campaign_members')return records.filter(x=>accessible.has(x.campaign_id));
   if(table==='campaign_join_codes')return records.filter(x=>accessible.has(x.campaign_id));
