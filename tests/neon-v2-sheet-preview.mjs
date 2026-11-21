@@ -27,7 +27,7 @@ for(const invalid of [
 assert.throws(()=>toV2ReadOnlySheet(base,"not-a-uuid"));
 const legacy=fs.readFileSync("site-overrides/sheet-live-v091.html","utf8");
 assert.match(legacy,/if\(LIVE\.readOnly\)/);
-assert.match(legacy,/type:'TV_SHEET_LOAD'/);
+assert.match(legacy,/ev.data?.type==='TV_SHEET_LOAD'/);
 assert.match(legacy,/type:'TV_SHEET_READY'/);
 const html=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
 assert.match(html,/sheet-render-fixed-20261101\/\?live=1/);
