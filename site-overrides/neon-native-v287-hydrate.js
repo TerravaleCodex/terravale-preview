@@ -71,6 +71,10 @@
    navigate("/characters/"+id);
    send("PHASE",{phase:"navigated"});
    renderPage(false);
+   // V2.54–2.87 native training/feat/wallet observers normally receive this
+   // event after a verified cloud sync. The sandbox has no cloud sync, so
+   // announce the already-authorised snapshot once, in memory only.
+   window.dispatchEvent(new CustomEvent("terravale-characters-synced"));
    send("PHASE",{phase:"rendered"});
    const page=document.querySelector("#pageRoot");
    if(!page)throw new TypeError("Native V2.87 character page did not mount");
