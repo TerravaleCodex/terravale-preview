@@ -9,6 +9,8 @@ on:
       - "site-overrides/neon-staging-auth.html"
       - "site-overrides/neon-readonly-bridge.mjs"
       - "site-overrides/neon-v2-sheet-preview.mjs"
+      - "site-overrides/neon-v287-sheet-snapshot.mjs"
+      - "tests/neon-v287-sheet-snapshot.mjs"
       - "tests/neon-v2-sheet-preview.mjs"
       - "tests/neon-v2-sheet-browser.cjs"
       - "site-overrides/neon-staging-sheet-lock.js"
@@ -288,6 +290,8 @@ jobs:
         run: node tests/neon-staging-sheet-extras.cjs
       - name: Verify existing V2 sheet read-only staging adapter
         run: node tests/neon-v2-sheet-preview.mjs
+      - name: Verify source-preserving V2.87 read-only Neon sheet contract
+        run: node tests/neon-v287-sheet-snapshot.mjs
       - name: Browser-test existing V2 sheet rendering from an isolated read-only fixture
         run: node tests/neon-v2-sheet-browser.cjs
       - name: Verify Neon V2-style read bridge
@@ -334,6 +338,7 @@ jobs:
           cp site-overrides/neon-staging-auth.html published/neon-staging-auth/index.html
           cp site-overrides/neon-readonly-bridge.mjs published/neon-staging-auth/bridge.mjs
           cp site-overrides/neon-v2-sheet-preview.mjs published/neon-staging-auth/v2-sheet-preview.mjs
+          cp site-overrides/neon-v287-sheet-snapshot.mjs published/neon-staging-auth/v287-snapshot.mjs
           cp site-overrides/neon-v2-account-context.mjs published/neon-staging-auth/account-context.mjs
           node tools/build-neon-staging-sheet.cjs
           python3 - <<'PY'
@@ -363,6 +368,8 @@ jobs:
           assert bridge.read_text(encoding="utf-8")==Path("site-overrides/neon-readonly-bridge.mjs").read_text(encoding="utf-8")
           sheet_adapter=Path("published/neon-staging-auth/v2-sheet-preview.mjs")
           assert sheet_adapter.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-sheet-preview.mjs").read_text(encoding="utf-8")
+          v287_contract=Path("published/neon-staging-auth/v287-snapshot.mjs")
+          assert v287_contract.read_text(encoding="utf-8")==Path("site-overrides/neon-v287-sheet-snapshot.mjs").read_text(encoding="utf-8")
           guarded_sheet=Path("published/neon-staging-auth/sheet/index.html")
           assert "staging-readonly-lock.js" in guarded_sheet.read_text(encoding="utf-8")
           assert "staging-readonly-lock.js" not in Path("published/veiled-codex/index.html").read_text(encoding="utf-8")
