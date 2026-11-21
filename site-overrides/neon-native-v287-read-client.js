@@ -15,7 +15,12 @@
    const src=snapshot.sources;
    if(!record(src)||!record(src.proficiencies)||!record(src.training)||
      !Array.isArray(src.wallet)||!Array.isArray(src.wallet_ledger)||
-     !Array.isArray(src.bonus_requests)||!Array.isArray(src.custom_feats))
+     !Array.isArray(src.bonus_requests)||!Array.isArray(src.custom_feats)||
+     !Array.isArray(src.granted_boons)||!Array.isArray(src.canonical_awards)||
+     !Array.isArray(src.divine_effects)||!Array.isArray(src.divine_previews)||
+     !Array.isArray(src.divine_dispositions)||!record(src.divine_state)||
+     !Array.isArray(src.divine_burdens)||!Array.isArray(src.divine_fractures)||
+     !Array.isArray(src.divine_offers))
      throw new TypeError("Required saved V2.87 sources not available");
    const id=snapshot.id,campaign=snapshot.character.campaign_id;
    const safe=(table,rows)=>rows.map(x=>({...x,character_id:id,campaign_id:campaign}));
@@ -103,7 +108,34 @@
      }
      return Object.freeze(builder);
    }
-   const rpc=async()=>failure("Gameplay and unverified divine RPCs are unavailable in the Neon read-only copy");
+   const rpc=async(name,args={})=>{
+     // These are NOT database RPC calls. Reconstruct the exact THREE
+     // player-visible native Divine tab responses from one already-verified
+     // owner/DM sheet snapshot, with no extra access or invented grants.
+     const allowed=[
+       "terravale_divine_player_state",
+       "terravale_divine_canon_player_state",
+       "terravale_divine_canon_offers_player_state"
+     ];
+     if(!allowed.includes(name)||!record(args)||
+        Object.keys(args).length!==1||args.target_character!==id)
+       return failure("Only the verified character's player-visible divine reads are allowed");
+     if(name==="terravale_divine_player_state")
+       return {data:clone({
+         previews:src.divine_previews,
+         dispositions:src.divine_dispositions,
+         granted:src.granted_boons
+       }),error:null};
+     if(name==="terravale_divine_canon_player_state")
+       return {data:clone({
+         granted:src.canonical_awards,
+         divine_state:src.divine_state,
+         burdens:src.divine_burdens,
+         statuses:src.divine_effects,
+         fractures:src.divine_fractures
+       }),error:null};
+     return {data:clone({offers:src.divine_offers}),error:null};
+   };
    const supabase=Object.freeze({from,rpc,isReadOnly:true});
    // No identity is made up: this is an isolated UI compatibility facade,
    // NOT a signed-in Discord/Supabase user session.
