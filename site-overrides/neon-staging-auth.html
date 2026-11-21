@@ -516,7 +516,7 @@ async function inspectLinkedV2Data(){
       const heading=document.createElement("strong");heading.textContent=label;
       const detail=document.createElement("p");
       const content=items.slice(0,30).map(makeLabel).filter(Boolean);
-      detail.textContent=content.length?content.join(" · ")+(items.length>30?" · +"+(items.length-30)+" more"):"No active entries in the staging snapshot";
+      detail.textContent=content.length?content.join(" · ")+(items.length>30?" · +"+(items.length-30)+" more":""):"No active entries in the staging snapshot";
       group.append(heading,detail);
       els.sheetExtrasGroups.append(group);
     };
