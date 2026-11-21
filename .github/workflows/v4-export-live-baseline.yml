@@ -1,0 +1,36 @@
+name: V4 — Export exact live V2 baseline (never deploy)
+
+on:
+  push:
+    branches:
+      - v4/offline-live-baseline
+    paths:
+      - tools/export-v4-live-baseline.py
+      - .github/workflows/v4-export-live-baseline.yml
+      - .preview-v239-approved/**
+      - tools/assemble-approved-v239.py
+      - tools/overlay-v239-with-discord.py
+      - site-overrides/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Assemble the original deployed V2.87 site without visual edits
+        run: python tools/export-v4-live-baseline.py
+      - name: Publish source snapshot only as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: V4-EXACT-LIVE-V2-SNAPSHOT-NOT-YET-OFFLINE
+          path: dist/V4_Live_Exact_Source_Baseline.zip
+          if-no-files-found: error
+          retention-days: 30
