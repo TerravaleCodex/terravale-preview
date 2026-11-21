@@ -28,7 +28,7 @@ assert.equal(out.resource_sources.granted_divine_charge_records[0].current,0);
 assert.equal(out.resource_sources.granted_divine_charge_records[0].max,2);
 assert.deepEqual(out.counts,{inventory:1,saved_class_resources:0,wallet_denominations:1,
  item_properties:2,item_charge_properties:1,custom_feats:1,granted_boons:0,canonical_awards:1,divine_effects:0});
-assert.equal(out.sources.approved_build,undefined?null:out.sources.approved_build);
+assert.deepEqual(out.sources.approved_build,build,"Approved build retains its original values");
 assert.equal(out.sources.favour,undefined,"Raw favour is never included");
 assert.ok(Object.isFrozen(out)&&Object.isFrozen(out.sources)&&Object.isFrozen(out.sources.approved_build));
 assert.ok(Object.isFrozen(out.resource_sources.granted_divine_charge_records));
