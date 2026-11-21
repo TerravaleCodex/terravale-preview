@@ -94,10 +94,10 @@ main:has(#sheet-frame-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
         <p class="hint">Read-only check of the actual saved build, state, inventory and resources. This is not a replacement for the V2 character sheet.</p>
         <dl id="sheet-read-summary"></dl>
         <div class="controls" style="margin-top:15px">
-          <button class="secondary" id="sheet-open-v2" type="button" disabled>View in original V2 sheet (read-only)</button>
+          <button class="secondary" id="sheet-open-v2" type="button" disabled>Open V2 legacy renderer (read-only)</button>
         </div>
         <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
-          <p><strong>Original V2 embedded renderer.</strong> This displays saved Neon character data through the existing V2 layout. Editing is disabled. Some newer custom spell, boon and resource details are not yet supported by this renderer; the diagnostic summary above does not represent a complete field-by-field comparison.</p>
+          <p><strong>Legacy V2 sheet compatibility preview.</strong> This uses the repository’s earlier V2 embedded renderer with data read from Neon. It is not the current complete live V2.87 interface. Editing stays disabled; newer custom spells, divine boons and resources remain unverified.</p>
           <iframe id="sheet-frame" title="Existing V2 character sheet read-only preview" referrerpolicy="no-referrer"></iframe>
         </section>
       </section>
@@ -122,7 +122,7 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
 let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null;
-const V2_SHEET_URL="/terravale-preview/characters/sheet-render-fixed-20261101/?live=1";
+const V2_SHEET_URL="/terravale-preview/neon-staging-auth/sheet/?live=1";
 let verifiedSheetPayload=null;
 function clearSheetPreview(){
   verifiedSheetPayload=null;
