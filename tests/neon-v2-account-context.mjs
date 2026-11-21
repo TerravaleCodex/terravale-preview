@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import {buildV2ReadOnlyAccountContext} from "../site-overrides/neon-v2-account-context.mjs";
 const original="11111111-1111-4111-8111-111111111111";
 const verified={
@@ -32,4 +33,17 @@ for(const mutate of [
  null,{},[],{...verified,user_id:undefined},
 ])assert.throws(()=>buildV2ReadOnlyAccountContext(mutate),TypeError,
   "Only verified server-bootstrapped legacy accounts can become V2 identities");
+const sql=fs.readFileSync("site-overrides/sql/neon_staging_v2_identity_bootstrap.sql","utf8");
+for(const item of [
+ "SECURITY DEFINER","SET search_path TO ''","actor := auth.uid()",
+ 'a."providerId"=\'discord\'', 'a."userId"=auth.neon_request_user_id()',
+ "p.user_id=actor AND p.discord_uid=oauth_discord_id",
+ "'user_id',profile_row.user_id","'tvuid',profile_row.tvuid",
+ "'discord_uid',profile_row.discord_uid","'is_dm',authz.is_site_dm()",
+ "REVOKE ALL ON FUNCTION public.terravale_neon_staging_account_bootstrap() FROM PUBLIC",
+ "GRANT EXECUTE ON FUNCTION public.terravale_neon_staging_account_bootstrap() TO authenticated",
+])assert.ok(sql.includes(item),"Missing verified owner-only SQL rule: "+item);
+const actualDefinition=sql.slice(sql.indexOf("CREATE OR REPLACE FUNCTION"),sql.indexOf("\nREVOKE ALL"));
+assert.doesNotMatch(actualDefinition,/\b(?:INSERT INTO|UPDATE public\.|DELETE FROM|TRUNCATE)\b/i,
+  "Profile bootstrap must not write to user/campaign tables");
 console.log("PASS: signed Neon Discord account preserves original V2 user.id, TvUID, role and identity without writes.");
