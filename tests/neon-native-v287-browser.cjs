@@ -69,7 +69,7 @@ window.addEventListener("message",event=>{
 });
 const timer=setInterval(()=>{
  const report={ready,handshake,originMatched,loaded,error,messages,phases,pass:ready&&handshake&&originMatched&&loaded&&!error};
- if(report.pass||error||panels){
+ if(error||panels){
    finish(false);
  }
 },120);
