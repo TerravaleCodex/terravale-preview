@@ -18,6 +18,7 @@ const RPC_NAMES = Object.freeze([
   "terravale_neon_staging_character_preview",
   "terravale_neon_staging_account_bootstrap",
   "terravale_neon_staging_sheet_read",
+  "terravale_neon_staging_sheet_extras_read",
 ]);
 
 function allowedName(value, options) {
@@ -154,8 +155,9 @@ export function createNeonReadOnlyBridge({
 
   async function rpc(name, args = {}) {
     allowedName(name, RPC_NAMES);
-    if(name === "terravale_neon_staging_sheet_read"){
-      // The only parameterised read. The database checks original owner / DM
+    if(name === "terravale_neon_staging_sheet_read" ||
+       name === "terravale_neon_staging_sheet_extras_read"){
+      // Both parameterised reads. The database checks original owner / DM
       // AND the existing RLS policies again; no user ID or role is accepted.
       if(!args || typeof args !== "object" || Array.isArray(args) ||
          Object.keys(args).length !== 1 || !Object.hasOwn(args,"p_character_id") ||

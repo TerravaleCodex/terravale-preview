@@ -50,6 +50,13 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 .sheet-read dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:11px;margin:14px 0 0}
 .sheet-read dt{color:var(--sub);font-size:12px}
 .sheet-read dd{margin:3px 0 0;font-weight:700;overflow-wrap:anywhere}
+.linked-read{border-top:1px solid var(--line);margin-top:17px;padding-top:15px}
+.linked-read h4{font-size:15px;color:var(--gold);margin:0 0 8px}
+.linked-read dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:12px}
+.linked-group{padding:10px 12px;border:1px solid #51405b;border-radius:9px;margin-top:10px}
+.linked-group strong{display:block;font-size:12px;color:var(--gold);margin-bottom:5px}
+.linked-group p{margin:0;color:var(--sub);font-size:12px}
+
 .sheet-v2{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
 .sheet-v2 iframe{display:block;width:100%;min-height:650px;height:900px;border:1px solid var(--line);border-radius:12px;background:#0d0a13}
 .sheet-v2 p{font-size:12px;color:var(--sub);margin:8px 0 14px}
@@ -95,7 +102,14 @@ main:has(#sheet-frame-panel:not([hidden])){width:min(1320px,calc(100% - 32px))}
         <dl id="sheet-read-summary"></dl>
         <div class="controls" style="margin-top:15px">
           <button class="secondary" id="sheet-open-v2" type="button" disabled>Open V2 legacy renderer (read-only)</button>
+          <button class="secondary" id="sheet-extras-open" type="button" disabled>Verify linked V2.87 data (read-only)</button>
         </div>
+        <section id="sheet-extras-panel" class="linked-read" hidden aria-label="Verified additional V2.87 character data">
+          <h4>Linked character data in Neon</h4>
+          <p class="hint">Additional saved proficiencies, feats, and granted boons. Only verified owner or campaign DM reads. No exact favour scores or hidden divine choices.</p>
+          <dl id="sheet-extras-summary"></dl>
+          <div id="sheet-extras-groups"></div>
+        </section>
         <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
           <p><strong>Legacy V2 sheet compatibility preview.</strong> This uses the repository’s earlier V2 embedded renderer with data read from Neon. It is not the current complete live V2.87 interface. Editing stays disabled; newer custom spells, divine boons and resources remain unverified.</p>
           <iframe id="sheet-frame" title="Existing V2 character sheet read-only preview" referrerpolicy="no-referrer"></iframe>
@@ -117,15 +131,22 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   characterList:document.getElementById("character-list"),
   sheetRead:document.getElementById("sheet-read"),sheetReadTitle:document.getElementById("sheet-read-title"),sheetReadSummary:document.getElementById("sheet-read-summary"),
   sheetOpen:document.getElementById("sheet-open-v2"),sheetFramePanel:document.getElementById("sheet-frame-panel"),sheetFrame:document.getElementById("sheet-frame"),
+  sheetExtrasOpen:document.getElementById("sheet-extras-open"),sheetExtrasPanel:document.getElementById("sheet-extras-panel"),
+  sheetExtrasSummary:document.getElementById("sheet-extras-summary"),sheetExtrasGroups:document.getElementById("sheet-extras-groups"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
 let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null;
 const V2_SHEET_URL="/terravale-preview/neon-staging-auth/sheet/?live=1";
-let verifiedSheetPayload=null;
+let verifiedSheetPayload=null,currentSheetId=null;
 function clearSheetPreview(){
   verifiedSheetPayload=null;
+  currentSheetId=null;
+  els.sheetExtrasOpen.disabled=true;
+  els.sheetExtrasPanel.hidden=true;
+  els.sheetExtrasSummary.replaceChildren();
+  els.sheetExtrasGroups.replaceChildren();
   els.sheetOpen.disabled=true;
   els.sheetFramePanel.hidden=true;
   els.sheetFrame.removeAttribute("src");
@@ -438,6 +459,8 @@ async function inspectSavedSheet(characterId){
     }
     els.sheetReadTitle.textContent=String(character.name||details.name||"Saved character sheet").slice(0,120);
     els.sheetRead.hidden=false;
+    currentSheetId=characterId;
+    els.sheetExtrasOpen.disabled=false;
     // Render using the EXISTING embedded V2 layout only after this authorised
     // RPC succeeds. The adapter never receives the session JWT.
     try {
@@ -453,6 +476,73 @@ async function inspectSavedSheet(characterId){
   }catch(err){status("error","Could not inspect saved sheet",safeError(err))}
   finally{setBusy(false)}
 }
+async function inspectLinkedV2Data(){
+  const characterId=currentSheetId;
+  if(!client||busy||!signedIn||!readBridge||!characterId||els.sheetRead.hidden)return;
+  setBusy(true);
+  els.sheetExtrasOpen.disabled=true;
+  els.sheetExtrasPanel.hidden=true;
+  els.sheetExtrasSummary.replaceChildren();
+  els.sheetExtrasGroups.replaceChildren();
+  status("info","Checking linked V2.87 character data…",
+    "Reading granted feats, proficiencies, divine effects and boon charges from Neon staging.");
+  try{
+    const reply=await readBridge.rpc("terravale_neon_staging_sheet_extras_read",{p_character_id:characterId});
+    if(reply.error)throw new Error(reply.error.message);
+    const v=Array.isArray(reply.data)?reply.data[0]:reply.data;
+    const keys=["custom_feats","granted_boons","canonical_awards","divine_effects"];
+    if(!v||v.read_only!==true||v.character_id!==characterId||
+       !["owned","dm"].includes(v.access)||!keys.every(k=>Array.isArray(v[k])&&v[k].length<=100)||
+       !v.proficiencies||typeof v.proficiencies!=="object"||
+       !v.training||typeof v.training!=="object")throw new Error("Unexpected or unauthorised linked character data.");
+    if(currentSheetId!==characterId||!signedIn)return;
+    const arr=x=>Array.isArray(x)?x:[];
+    const rows=[
+      ["Tool proficiencies",arr(v.proficiencies.tools).length],
+      ["Languages",arr(v.proficiencies.languages).length],
+      ["Extra training",arr(v.training.extra_tools).length+arr(v.training.extra_languages).length],
+      ["Granted custom feats",v.custom_feats.length],
+      ["Granted divine boons",v.granted_boons.length],
+      ["Canonical divine awards",v.canonical_awards.length],
+      ["Active divine effects",v.divine_effects.length]
+    ];
+    for(const [label,value] of rows){
+      const wrap=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");
+      dt.textContent=label;dd.textContent=String(value);wrap.append(dt,dd);
+      els.sheetExtrasSummary.append(wrap);
+    }
+    const makeGroup=(label,items,makeLabel)=>{
+      const group=document.createElement("section");group.className="linked-group";
+      const heading=document.createElement("strong");heading.textContent=label;
+      const detail=document.createElement("p");
+      const content=items.slice(0,30).map(makeLabel).filter(Boolean);
+      detail.textContent=content.length?content.join(" · ")+(items.length>30?" · +"+(items.length-30)+" more":""):"No active entries in the staging snapshot";
+      group.append(heading,detail);
+      els.sheetExtrasGroups.append(group);
+    };
+    makeGroup("Learned tools",arr(v.proficiencies.tools),x=>typeof x==="string"?x.slice(0,80):"");
+    makeGroup("Languages",arr(v.proficiencies.languages),x=>typeof x==="string"?x.slice(0,80):"");
+    makeGroup("Custom feats",v.custom_feats,x=>typeof x?.name==="string"?x.name.slice(0,80):"");
+    const chargeLabel=x=>{
+      if(typeof x?.name!=="string")return "";
+      const current=Number(x.uses_remaining??x.charges_remaining);
+      const max=Number(x.max_uses??x.max_charges);
+      const charges=Number.isFinite(current)&&Number.isFinite(max)&&max>0?" ("+current+"/"+max+" charges)":"";
+      return x.name.slice(0,80)+charges;
+    };
+    makeGroup("Granted divine boons",v.granted_boons,chargeLabel);
+    makeGroup("Canonical awards",v.canonical_awards,chargeLabel);
+    makeGroup("Active divine effects",v.divine_effects,x=>typeof x?.key==="string"?x.key.slice(0,80):"");
+    els.sheetExtrasPanel.hidden=false;
+    status("success","Linked V2.87 data verified through Neon",
+      "Authorised read complete. No favours, ungranted boons, or gameplay records were changed.");
+  }catch(err){status("error","Linked V2.87 verification failed",safeError(err))}
+  finally{
+    setBusy(false);
+    els.sheetExtrasOpen.disabled=!currentSheetId||!signedIn;
+  }
+}
+els.sheetExtrasOpen.addEventListener("click",inspectLinkedV2Data);
 // Read-only original V2 iframe. Same-origin message checks and a verified
 // owner/DM payload are mandatory; no parent handler processes save requests.
 els.sheetOpen.addEventListener("click",()=>{
