@@ -7,6 +7,9 @@ on:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
       - "site-overrides/neon-staging-auth.html"
+      - ".github/workflows/neon-storage-migration.yml"
+      - "tools/neon_storage_migration.py"
+      - "tests/test_neon_storage_migration.py"
       - "site-overrides/sql/neon_staging_character_preview.sql"
       - "tests/neon-staging-character-preview.cjs"
       - "site-overrides/sql/neon_canonical_prelock_identity.sql"
@@ -255,6 +258,8 @@ jobs:
         run: node tests/v286-vault-resource-demo.cjs
       - name: Verify Neon canonical divine pre-lock identity guards
         run: node tests/neon-canon-prelock-identity.cjs
+      - name: Verify Supabase-to-Neon media copy safety (offline)
+        run: python -m unittest discover -s tests -p 'test_neon_storage_migration.py' -v
       - name: Verify RLS-scoped Neon migrated character preview
         run: node tests/neon-staging-character-preview.cjs
       - name: Verify isolated Neon staging Discord login page
