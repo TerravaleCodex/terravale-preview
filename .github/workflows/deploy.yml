@@ -7,6 +7,8 @@ on:
       - ".github/workflows/deploy.yml"
       - "site-overrides/launch-home.html"
       - "site-overrides/neon-staging-auth.html"
+      - "site-overrides/sql/neon_canonical_prelock_identity.sql"
+      - "tests/neon-canon-prelock-identity.cjs"
       - "tests/neon-staging-auth-probe.cjs"
       - "tests/v268-public-home.cjs"
       - "tests/v269-dashboard-default.cjs"
@@ -249,6 +251,8 @@ jobs:
         run: node tests/v285-divine-god-groups-charges.cjs
       - name: Verify compact Item Vault, resource display and source-backed demo boons
         run: node tests/v286-vault-resource-demo.cjs
+      - name: Verify Neon canonical divine pre-lock identity guards
+        run: node tests/neon-canon-prelock-identity.cjs
       - name: Verify isolated Neon staging Discord login page
         run: node tests/neon-staging-auth-probe.cjs
       - name: Verify V2.87 adaptive resource routing and live source actions
