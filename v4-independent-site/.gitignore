@@ -1,0 +1,7 @@
+*.zip
+*.tmp
+*.building
+__pycache__/
+.DS_Store
+*.log
+.offline-backups/
