@@ -114,6 +114,10 @@
      const trainingReady=!!trainEl&&!trainEl.textContent.includes("Loading");
      const abilitySelected=!!document.querySelector('#pageRoot .sheet20-tabs [data-value="abilities"][aria-selected="true"]');
      await view("features");
+     const featTab=document.querySelector('.sheet227-reader [data-v228-tab="feats"]')||
+       document.querySelector('#pageRoot [data-v228-tab="feats"]');
+     featTab?.click();
+     await new Promise(r=>setTimeout(r,480));
      const featEl=document.querySelector(".sheet227-reader");
      const feats=!!featEl?.textContent.includes("Audit Feat");
      const featMounted=!!featEl;
@@ -123,7 +127,7 @@
      const walletEl=document.querySelector("#tv254-sheet-wallet");
      const wallet=!!walletEl?.textContent.includes("Coin");
      send("PANEL_AUDIT",{training,feats,wallet,trainingMounted,trainingReady,
-       abilitySelected,featMounted,featuresSelected,walletMounted:!!walletEl,
+       abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
        hasRules:!!window.TerravaleRulesV4,
        hasV255Training:!!window.TerravaleV255Training?.renderSheet,
