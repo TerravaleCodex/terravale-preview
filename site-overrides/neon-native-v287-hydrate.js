@@ -25,6 +25,20 @@
    const id=snapshot.id;
    const campaignId=actor.campaign_id;
    if(!uuid(campaignId))throw new TypeError("Migrated character lacks an original campaign identifier");
+   // A charge record must match an actually saved inventory item. No orphan
+   // pools, duplicate item IDs or invented spell/class state in this preview.
+   const itemIds=new Set(state.inventory.filter(isRecord).map(item=>item.id));
+   const matched=new Set();
+   if(!Array.isArray(source.item_properties)||source.item_properties.some(entry=>{
+     if(!isRecord(entry)||typeof entry.item_id!=="string"||
+        !itemIds.has(entry.item_id)||matched.has(entry.item_id)||
+        !isRecord(entry.properties))return true;
+     matched.add(entry.item_id);
+     const p=entry.properties;
+     if(!Object.hasOwn(p,"max_charges")&&!Object.hasOwn(p,"charges"))return false;
+     return !Number.isInteger(p.max_charges)||p.max_charges<0||
+       !Number.isInteger(p.charges)||p.charges<0||p.charges>p.max_charges;
+   }))throw new TypeError("Saved item charges do not match the authorised inventory");
    const ch={
      ...approved,id,name:actor.name??approved.name??"Adventurer",
      campaign:campaignId,level:Number(source.approved_build.level??approved.level)||1,
