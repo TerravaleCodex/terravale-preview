@@ -82,11 +82,18 @@ def main():
     html=port(live)
     blank_check(html)
     out=Path(args.output).resolve()
-    if out.exists():shutil.rmtree(out)
+    # A one-time fork must never overwrite edited V4 modules on rerun.
+    # Refuse instead of removing the existing directory.
+    if out.exists():
+        raise RuntimeError("Independent V4 source already exists at "+str(out)+
+                           ". Never regenerate it from live; edit V4 directly.")
     out.mkdir(parents=True)
     assets=split_html(html,out)
-    if (out/'index.html').stat().st_size<100_000:
-        raise RuntimeError("Snapshot too small; original UI missing")
+    if (out/'index.html').stat().st_size<5_000 or len(assets)<10:
+        raise RuntimeError("Incomplete source extraction; original UI missing")
+    js_bytes=sum(x['bytes'] for x in assets if x['type']=='js')
+    if js_bytes<500_000:
+        raise RuntimeError("Native V2 JavaScript was not fully extracted")
     manifest={
         'source':'one-time finished V2.87 live HTML snapshot',
         'original_sha256':sha(raw),'original_bytes':len(raw),
