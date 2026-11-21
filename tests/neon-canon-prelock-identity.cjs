@@ -24,7 +24,7 @@ for(const action of actions){
 }
 assert.ok(sql.includes("TERRAVALE_NEON_PRELOCK_IDENTITY_GUARD"));
 assert.ok(sql.includes("auth.identities"));
-assert.ok(sql.includes("auth.uid"));
+assert.ok(sql.includes(String.raw`auth\.uid`));
 assert.ok(sql.includes("provider='discord'"));
 assert.ok(sql.includes("errcode='28000'"));
 assert.ok(sql.includes("total_functions<>14"));
