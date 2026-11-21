@@ -4,7 +4,7 @@ import {makeV287NeonReadOnlySnapshot} from "../site-overrides/neon-v287-sheet-sn
 const id="11111111-1111-4111-8111-111111111111";
 const build={class:"Cleric",level:5,character:{className:"Cleric",level:5,
   sheetV220:{resources:{show:"custom"}},spells:[{name:"Light"}],features:["Feature A"]}};
-const core={read_only:true,character:{id,name:"Sample",campaign:"Frostvale",status:"approved",access:"owned",approved_build:build},
+const core={read_only:true,character:{id,name:"Sample",campaign:"Frostvale",campaign_id:"22222222-2222-4222-8222-222222222222",status:"approved",access:"owned",approved_build:build},
  state:{hp:5,temp_hp:0,resources:[],conditions:[],inventory:[{name:"Sword"}],death_saves:{dead:false,stable:false,successes:0,failures:0}},
  wallet:[{denomination_id:"cp",quantity:12}],
  item_properties:[
@@ -20,6 +20,7 @@ const out=makeV287NeonReadOnlySnapshot(core,extras,id);
 assert.equal(out.read_only,true);
 assert.equal(out.schema,"terravale.neon.v287.sheet.readonly.v1");
 assert.equal(out.sources.character_state.hp,5);
+assert.equal(out.character.campaign_id,"22222222-2222-4222-8222-222222222222");
 assert.equal(out.sources.item_properties[0].properties.charges,0);
 assert.equal(out.resource_sources.item_charge_properties.length,1);
 assert.deepEqual(out.resource_sources.saved_spell_list,[{name:"Light"}]);
