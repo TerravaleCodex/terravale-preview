@@ -19,6 +19,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
+from v4_blank_content_patch import blank_platform
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -146,6 +147,11 @@ def port(original: str) -> str:
     # The hosted advertising module requires network and adds nothing to a
     # local preview. All original V2 appearance and content is still present.
     html = remove_one(html, 'v2-ads-atelier.mjs')
+    # Do not ship the live world's campaigns, gods, lore, class progression,
+    # races, currencies or preconfigured demo characters in a generic V4.
+    # The UNTOUCHED live source reference is generated separately first.
+    html, blank_report = blank_platform(html)
+    port.last_blank_report = blank_report
     # The production V2 screens remain byte-identical; this is their local
     # account/data compatibility gateway, NOT a recreated application.
     adapter = (ROOT / 'v4/offline-database.js').read_text(encoding='utf-8')
@@ -171,34 +177,45 @@ def main() -> None:
     assert 'data-source="v270-divine-workspace.js"' in html
     assert 'data-source="v2-discord-auth.mjs"' not in html
     assert 'data-source="v4-offline-database.js"' in html
+    assert 'id="tv238-v14-content"' in html
+    assert 'data-source="v247-demo-party-admin.js"' not in html
+    assert 'data-source="v248-curated-demo-sheets.js"' not in html
     DIST.mkdir(exist_ok=True)
     OUT.write_text(html,encoding='utf-8')
+    report_path = DIST / 'V4_BLANK_CONTENT_REPORT.json'
+    report_path.write_text(json.dumps(port.last_blank_report, indent=2, sort_keys=True), encoding='utf-8')
     metadata={
       'build':'V4 first pass from exact V2.87 production HTML',
       'source_v287_sha256':source_sha,
       'offline_html_sha256':hashlib.sha256(OUT.read_bytes()).hexdigest(),
       'live_body_reconstructed':False,
       'notes':[
-        'Only hosted login/ad modules were removed; actual V2 code retained.',
+        'The original V2 page renderer is retained; world-specific content tables are emptied.',
+        'Original Terravale V14 lore, demo characters and default rules registry are physically removed.',
         'Original V2 DOM/screens and native client scripts are included.',
         'Classic/Midnight colours and static desktop nav are additive.',
         'Core profiles/campaigns/character saves and approvals now go to local IndexedDB.',
         'Advanced divine, DM vault and real-time cloud actions still require offline method ports.',
-        'No verified live account, private lore, or cloud database is imported.'
+        'No verified live account, private lore, or cloud database is imported.',
+        'Some original V2 UI labels/references to Terravale may still remain until genericised.'
       ]
     }
     with zipfile.ZipFile(PACKAGE,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as z:
       z.write(OUT,arcname='The_Living_Codex_V4_Offline_Preview.html')
       z.write(ROOT/'v4/offline-database.js',arcname='source/offline-database.js')
+      z.write(report_path,arcname='V4_BLANK_CONTENT_REPORT.json')
       z.writestr('BUILD_INFO.json',json.dumps(metadata,indent=2))
       z.writestr('README.txt',
-         'This is the actual V2.87 live HTML, not a redesigned imitation.\n'
+         'Actual V2.87 application layout and components, with blank world content.\n'
          'Double-click The_Living_Codex_V4_Offline_Preview.html.\n'
          'Classic/Midnight themes can be chosen in the original header.\n'
+         'No Terravale lore, preset world-calendar entries, demo characters,\n'
+         'native class progression catalogue or preset currencies are loaded.\n'
          'Core profiles, campaigns, characters, sheet saves and approvals\n'
          'run using an emulated local IndexedDB database.\n'
          'Divine, vault and multiplayer cloud actions still need method ports.\n')
-    print('LIVE SOURCE preserved, SHA256 '+source_sha)
+    print('LIVE SOURCE reference unchanged, SHA256 '+source_sha)
+    print('Blank-content report: '+str(report_path))
     print('Actual V2-based offline first-pass file: '+str(OUT))
     print('Downloadable ZIP: '+str(PACKAGE))
 
