@@ -25,8 +25,19 @@ const snapshot={
  schema:"terravale.neon.v287.sheet.readonly.v1",read_only:true,id,access:"owned",
  character:{id,campaign:"Fixture campaign",campaign_id:campaignId,name:character.name,status:"approved"},
  sources:{approved_build:{class:"Gatewarden",ancestry:"Dvergr",level:4,character},
- character_state:{hp:20,temp_hp:1,blood_state:0,inventory:[],resources:[],conditions:[],death_saves:{dead:false,stable:false,successes:0,failures:0}},
- item_properties:[],
+ character_state:{hp:20,temp_hp:1,blood_state:0,
+ inventory:[
+ {id:"empty_wand",name:"Empty Wand",kind:"item",slot:"",qty:1,description:"No charges left"},
+ {id:"charged_staff",name:"Charged Staff",kind:"item",slot:"hand",qty:1,description:"Expends two charges"},
+ {id:"hidden_amulet",name:"Hidden Amulet",kind:"item",slot:"",qty:1,description:"No resource card"},
+ {id:"ordinary_apple",name:"Ordinary Apple",kind:"item",slot:"",qty:1,description:"Not magical"}
+ ],resources:[],conditions:[],death_saves:{dead:false,stable:false,successes:0,failures:0}},
+ item_properties:[
+ {item_id:"empty_wand",properties:{charges:0,max_charges:3,resource_tracker:true,recovery:"short",charge_cost:1,features:"Read-only spell source"}},
+ {item_id:"charged_staff",properties:{charges:2,max_charges:5,resource_tracker:true,recovery:"long",charge_cost:2,attunement:true,attuned:true,features:"Read-only magic staff"}},
+ {item_id:"hidden_amulet",properties:{charges:6,max_charges:6,resource_tracker:false,recovery:"manual",charge_cost:1}},
+ {item_id:"ordinary_apple",properties:{rarity:"mundane"}}
+ ],
  wallet:[{denomination_id:"gp",quantity:3}],
  wallet_ledger:[{id:"transaction",denomination_id:"gp",delta:-1,note:"Sample purchase",operation:"adjust",created_at:"2026-11-01T00:00:00Z"}],
  bonus_requests:[],proficiencies:{tools:[{id:"smith",source:"Starting training"}],
@@ -58,7 +69,9 @@ let ready=false,loaded=false,error="",messages=0,handshake=false,originMatched=f
 const finish=(timedOut=false)=>{
  if(document.body.dataset.nativeTest)return;
  clearInterval(timer);clearTimeout(deadline);
- const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true&&panels?.divine===true&&panels?.divineResources===true&&panels?.zeroCharges===true;
+ const pass=ready&&handshake&&originMatched&&loaded&&!error&&panels?.training===true&&panels?.feats===true&&panels?.wallet===true&&panels?.divine===true&&panels?.divineResources===true&&panels?.zeroCharges===true&&
+ panels?.itemResources===true&&panels?.itemZeroCharges===true&&panels?.itemPartialCharges===true&&
+ panels?.hiddenItemOmitted===true&&panels?.itemActivationBlocked===true&&panels?.adaptiveItemCatalog===true&&panels?.noInventedSpells===true;
  document.body.dataset.nativeTest=encodeURIComponent(JSON.stringify({ready,loaded,error,messages,handshake,originMatched,phases,diagnostic,panels,pass,timeout:timedOut}));
 };
 deadline=setTimeout(()=>finish(true),60000);

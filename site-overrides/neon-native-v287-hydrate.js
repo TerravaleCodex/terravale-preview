@@ -25,6 +25,20 @@
    const id=snapshot.id;
    const campaignId=actor.campaign_id;
    if(!uuid(campaignId))throw new TypeError("Migrated character lacks an original campaign identifier");
+   // A charge record must match an actually saved inventory item. No orphan
+   // pools, duplicate item IDs or invented spell/class state in this preview.
+   const itemIds=new Set(state.inventory.filter(isRecord).map(item=>item.id));
+   const matched=new Set();
+   if(!Array.isArray(source.item_properties)||source.item_properties.some(entry=>{
+     if(!isRecord(entry)||typeof entry.item_id!=="string"||
+        !itemIds.has(entry.item_id)||matched.has(entry.item_id)||
+        !isRecord(entry.properties))return true;
+     matched.add(entry.item_id);
+     const p=entry.properties;
+     if(!Object.hasOwn(p,"max_charges")&&!Object.hasOwn(p,"charges"))return false;
+     return !Number.isInteger(p.max_charges)||p.max_charges<0||
+       !Number.isInteger(p.charges)||p.charges<0||p.charges>p.max_charges;
+   }))throw new TypeError("Saved item charges do not match the authorised inventory");
    const ch={
      ...approved,id,name:actor.name??approved.name??"Adventurer",
      campaign:campaignId,level:Number(source.approved_build.level??approved.level)||1,
@@ -143,8 +157,38 @@
      const resources=document.querySelector('#pageRoot .sheet20-resource-panel');
      const divineResources=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("Audited Grace");
      const zeroCharges=!!resources?.querySelector('.tv285-resource-card')?.textContent.includes("0 / 2");
+     // Use the *existing* V2.51 item resource components and V2.87 adaptive
+     // catalog. Never replace a charge value or invent class/spell pools.
+     const itemCards=[...resources?.querySelectorAll('.tv-v251-resource-card')||[]];
+     const empty=itemCards.find(card=>card.dataset.v287ItemId==="empty_wand");
+     const partial=itemCards.find(card=>card.dataset.v287ItemId==="charged_staff");
+     const itemResources=!!empty&&!!partial;
+     const itemZeroCharges=!!empty?.textContent.includes("0 / 3 charges")&&
+       !!empty?.textContent.includes("Short or long rest");
+     const itemPartialCharges=!!partial?.textContent.includes("2 / 5 charges")&&
+       !!partial?.textContent.includes("Long rest")&&
+       !!partial?.textContent.includes("Activate · 2 charges");
+     const hiddenItemOmitted=!itemCards.some(card=>card.dataset.v287ItemId==="hidden_amulet"||
+       card.dataset.v287ItemId==="ordinary_apple");
+     // A native action click must not modify a single charge inside the
+     // read-only sandbox. The bootstrap intercepts it before any V2 handler.
+     const activate=partial?.querySelector('[data-tv-item-action="use"]');
+     const beforeCharges=partial?.querySelector('.tv-v251-count')?.textContent;
+     activate?.click();
+     await new Promise(r=>setTimeout(r,140));
+     const itemActivationBlocked=!!activate&&
+       beforeCharges===partial?.querySelector('.tv-v251-count')?.textContent&&
+       String(source.item_properties.find(p=>p.item_id==="charged_staff")?.properties?.charges)==="2";
+     // Original V2.87 view should index exactly the two visible item resources.
+     const catalog=document.querySelector('#pageRoot #tv287-resource-catalog');
+     const itemCatalogCards=[...catalog?.querySelectorAll('.tv287-card[data-resource-id^="item:"]')||[]];
+     const adaptiveItemCatalog=itemCatalogCards.length===2&&
+       itemCatalogCards.some(card=>card.textContent.includes("Empty Wand"))&&
+       itemCatalogCards.some(card=>card.textContent.includes("Charged Staff"));
+     const noInventedSpells=!resources?.querySelector('.v234-spell-grid .v234-resource-item');
      send("PANEL_AUDIT",{training,feats,wallet,divine:divine&&rules,
-       divineTab:!!divineTab,divineResources,zeroCharges,
+       divineTab:!!divineTab,divineResources,zeroCharges,itemResources,
+       itemZeroCharges,itemPartialCharges,hiddenItemOmitted,itemActivationBlocked,adaptiveItemCatalog,noInventedSpells,
        trainingMounted,trainingReady,
        abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
