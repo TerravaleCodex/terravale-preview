@@ -5,7 +5,7 @@
  * only the Neon staging form lock. NEVER patch the live sheet in place.
  */
 const fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypto");
-const src=path.resolve("published/characters/sheet-render-fixed-20261101");
+const src=path.resolve("published/veiled-codex/characters/sheet-render-fixed-20261101");
 const dst=path.resolve("published/neon-staging-auth/sheet");
 const lock=path.resolve("site-overrides/neon-staging-sheet-lock.js");
 if(!fs.existsSync(path.join(src,"index.html"))||!fs.existsSync(lock))
