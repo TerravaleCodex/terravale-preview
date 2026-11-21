@@ -31,10 +31,13 @@ assert.equal(calls[0].options.credentials,"omit");
 assert.equal(calls[0].options.headers.Authorization,"Bearer "+jwt);
 const second=await api.from("campaigns").select("id,name").limit(25);
 assert.equal(second.data.length,1);
+const bootstrap=await api.rpc("terravale_neon_staging_account_bootstrap");
+assert.equal(bootstrap.error,null,"Profile RPC should use audited authenticated endpoint");
+assert.ok(calls.some(call=>call.path.endsWith("/rpc/terravale_neon_staging_account_bootstrap")));
 const rpc=await api.rpc("terravale_neon_staging_probe");
 assert.equal(rpc.data.identity_recognised,true);
-assert.equal(calls[2].options.method,"POST");
-assert.equal(calls[2].options.body,"{}");
+assert.equal(calls[3].options.method,"POST");
+assert.equal(calls[3].options.body,"{}");
 for(const f of [
  ()=>api.from("profiles"),()=>api.from("characters").select("*"),
  ()=>api.from("characters").select("approved_build"),

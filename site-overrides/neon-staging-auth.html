@@ -96,7 +96,7 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false,readBridge=null;
+let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null;
 function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
@@ -245,19 +245,28 @@ async function testV2ReadCompatibility(){
   els.v2readsResult.hidden=true;
   els.v2readsResult.textContent="";
   status("info","Testing V2-style Neon queries…",
-    "Comparing the RLS-limited characters and campaigns returned by regular table SELECTs with the migration probe.");
+    "Verifying the original V2 Discord profile and matching RLS-limited characters and campaigns with the migration probe.");
   try{
-    const [characters,campaigns,summary]=await Promise.all([
+    const [characters,campaigns,summary,originalProfile]=await Promise.all([
       readBridge.from("characters").select("id,name,status,campaign_id")
         .order("name",{ascending:true}).limit(25),
       readBridge.from("campaigns").select("id,name")
         .order("name",{ascending:true}).limit(25),
       readBridge.rpc("terravale_neon_staging_probe"),
+      readBridge.rpc("terravale_neon_staging_account_bootstrap"),
     ]);
-    for(const result of [characters,campaigns,summary]) {
+    for(const result of [characters,campaigns,summary,originalProfile]) {
       if(result.error)throw new Error(result.error.message);
     }
     const report=Array.isArray(summary.data)?summary.data[0]:summary.data;
+    const bootstrap=Array.isArray(originalProfile.data)?originalProfile.data[0]:originalProfile.data;
+    const identity=makeLegacyContext(bootstrap);
+    // The UUID retained by V2 must be the verified original owner, not the
+    // new Neon Auth UUID. This object is staging-only, never put on live globals.
+    if(identity.state.profile.is_dm!==report.site_dm ||
+       identity.state.user.id!==identity.state.profile.user_id){
+      throw new Error("Migrated V2 owner/DM identity disagrees with Neon authorization.");
+    }
     if(!report?.identity_recognised || !Array.isArray(characters.data) ||
        !Array.isArray(campaigns.data) ||
        characters.data.length!==report.visible_characters ||
@@ -265,12 +274,14 @@ async function testV2ReadCompatibility(){
       throw new Error("Staging tables and migration permission probe disagree; no changes were made.");
     }
     els.v2readsResult.textContent=
-      "V2-style table reads passed: "+characters.data.length+
-      " characters and "+campaigns.data.length+
-      " campaigns, matching the independently checked Neon RLS results.";
+      "Original V2 account: "+identity.state.profile.discord_username+
+      " · TVUID: "+identity.state.profile.tvuid+
+      " · DM: "+(identity.state.profile.is_dm?"Yes":"No")+
+      " · Visible: "+characters.data.length+" characters, "+
+      campaigns.data.length+" campaigns. Original character-owner identity preserved.";
     els.v2readsResult.hidden=false;
-    status("success","Neon V2 read compatibility passed",
-      "The existing V2 query pattern works with signed Neon authentication and RLS. This is read-only and does not enable character editing.");
+    status("success","Neon V2 profile and read compatibility passed",
+      "Neon recovered your existing TvUID, Discord profile, original owner identity and DM role, alongside RLS-permitted V2 table reads. This is read-only.");
   }catch(err){
     status("error","V2 read compatibility failed",safeError(err));
   }finally{setBusy(false)}
@@ -340,6 +351,8 @@ try{
   client=createAuthClient(AUTH_URL);
   // Separate staging-only bridge; it does not replace the live V2's Supabase client.
   const {createNeonReadOnlyBridge}=await import("./bridge.mjs");
+  const {buildV2ReadOnlyAccountContext}=await import("./account-context.mjs");
+  makeLegacyContext=buildV2ReadOnlyAccountContext;
   readBridge=createNeonReadOnlyBridge({
     dataApiUrl:DATA_API_URL,
     getAccessToken:()=>getSignedStagingJwt()

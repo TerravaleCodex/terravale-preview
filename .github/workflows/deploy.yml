@@ -8,6 +8,9 @@ on:
       - "site-overrides/launch-home.html"
       - "site-overrides/neon-staging-auth.html"
       - "site-overrides/neon-readonly-bridge.mjs"
+      - "site-overrides/neon-v2-account-context.mjs"
+      - "site-overrides/sql/neon_staging_v2_identity_bootstrap.sql"
+      - "tests/neon-v2-account-context.mjs"
       - "tests/neon-v2-read-compatibility.mjs"
       - ".github/workflows/neon-storage-migration.yml"
       - "tools/neon_storage_migration.py"
@@ -264,6 +267,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_neon_storage_migration.py' -v
       - name: Verify RLS-scoped Neon migrated character preview
         run: node tests/neon-staging-character-preview.cjs
+      - name: Verify Neon V2 Discord legacy owner profile
+        run: node tests/neon-v2-account-context.mjs
       - name: Verify Neon V2-style read bridge
         run: node tests/neon-v2-read-compatibility.mjs
       - name: Verify isolated Neon staging Discord login page
@@ -307,6 +312,7 @@ jobs:
           mkdir -p published/neon-staging-auth
           cp site-overrides/neon-staging-auth.html published/neon-staging-auth/index.html
           cp site-overrides/neon-readonly-bridge.mjs published/neon-staging-auth/bridge.mjs
+          cp site-overrides/neon-v2-account-context.mjs published/neon-staging-auth/account-context.mjs
           python3 - <<'PY'
           from pathlib import Path
           entry=Path("published/index.html").read_text(encoding="utf-8")
@@ -332,6 +338,8 @@ jobs:
           assert staging.read_text(encoding="utf-8")==Path("site-overrides/neon-staging-auth.html").read_text(encoding="utf-8")
           bridge=Path("published/neon-staging-auth/bridge.mjs")
           assert bridge.read_text(encoding="utf-8")==Path("site-overrides/neon-readonly-bridge.mjs").read_text(encoding="utf-8")
+          identity=Path("published/neon-staging-auth/account-context.mjs")
+          assert identity.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-account-context.mjs").read_text(encoding="utf-8")
           assert "client.signIn.social" in staging.read_text(encoding="utf-8")
           assert sorted(x.name for x in public.parent.iterdir()) == ["ads","index.html"]
           assert len(list((public.parent/"ads").glob("zip-*.webp")))==56
