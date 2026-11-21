@@ -39,6 +39,16 @@
        .filter(x=>x?.item_id&&isRecord(x.properties))
        .map(x=>[x.item_id,x.properties]))
    };
+   // V2.54's original mount is invoked after each native tab repaint, because
+   // the older native page replaces its content root and invalidates old DOM
+   // observers. Do not reconstruct a wallet or training UI.
+   document.addEventListener("click",event=>{
+     if(!event.target?.closest?.("#pageRoot .sheet20-tabs [data-value]"))return;
+     setTimeout(()=>window.TerravaleNeonNativeMountV254?.(),125);
+   },true);
+   // Prefetch only already-granted custom feats for the original native
+   // Features tab; no extra network read or custom HTML renderer.
+   Promise.resolve(window.TerravaleV258Feats?.refresh?.(id,campaignId,true)).catch(()=>{});
    // The original V2.87 sheet reads db.characters and renders #pageRoot. The
    // approved build is never edited; this is an in-memory clone in a sandbox.
    db.campaigns=[{id:campaignId,name:typeof actor.campaign==="string"?actor.campaign:"Migrated campaign",role:snapshot.access==="dm"?"dm":"player",status:"Ongoing"}];
@@ -71,10 +81,9 @@
    navigate("/characters/"+id);
    send("PHASE",{phase:"navigated"});
    renderPage(false);
-   // V2.54–2.87 native training/feat/wallet observers normally receive this
-   // event after a verified cloud sync. The sandbox has no cloud sync, so
-   // announce the already-authorised snapshot once, in memory only.
-   window.dispatchEvent(new CustomEvent("terravale-characters-synced"));
+   // Mount native panels directly from the existing V2.54 renderer. No
+   // synthetic cloud-sync event is necessary (it would clear feat caches).
+   window.TerravaleNeonNativeMountV254?.();
    send("PHASE",{phase:"rendered"});
    const page=document.querySelector("#pageRoot");
    if(!page)throw new TypeError("Native V2.87 character page did not mount");
@@ -93,10 +102,7 @@
        // Every native sheetTab action may replace the entire tab DOM.
        const el=listTabs().find(x=>x.dataset.value===value);
        if(!el)return false;
-       el.click();
-       await new Promise(r=>setTimeout(r,110));
-       window.dispatchEvent(new CustomEvent("terravale-characters-synced"));
-       await new Promise(r=>setTimeout(r,700));return true;
+       el.click();await new Promise(r=>setTimeout(r,700));return true;
      };
      await view("abilities");
      const trainEl=document.querySelector("#tv254-sheet-proficiencies");
