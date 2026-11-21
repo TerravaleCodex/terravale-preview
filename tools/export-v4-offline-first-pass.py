@@ -146,10 +146,16 @@ def port(original: str) -> str:
     # The hosted advertising module requires network and adds nothing to a
     # local preview. All original V2 appearance and content is still present.
     html = remove_one(html, 'v2-ads-atelier.mjs')
+    # The production V2 screens remain byte-identical; this is their local
+    # account/data compatibility gateway, NOT a recreated application.
+    adapter = (ROOT / 'v4/offline-database.js').read_text(encoding='utf-8')
+    assert 'TerravaleOfflineDatabase' in adapter
+    assert '</script>' not in adapter.lower()
+    adapter_script = '<script data-source="v4-offline-database.js">\\n' + adapter + '\\n</script>'
     if html.count('</head>') != 1 or html.count('</body>') != 1:
         raise RuntimeError("Unexpected live HTML structure; abort safely")
     html = html.replace('</head>', '<style id="v4-offline-theme">\n'+CSS+'\n</style>\n</head>',1)
-    html = html.replace('</body>','<script id="v4-offline-controls">\n'+JS+'\n</script>\n</body>',1)
+    html = html.replace('</body>',adapter_script+'\\n'+'<script id="v4-offline-controls">\\n'+JS+'\\n</script>\\n</body>',1)
     return html
 
 
@@ -164,6 +170,7 @@ def main() -> None:
     assert 'data-source="v254-dm-vault.js"' in html
     assert 'data-source="v270-divine-workspace.js"' in html
     assert 'data-source="v2-discord-auth.mjs"' not in html
+    assert 'data-source="v4-offline-database.js"' in html
     DIST.mkdir(exist_ok=True)
     OUT.write_text(html,encoding='utf-8')
     metadata={
@@ -175,19 +182,22 @@ def main() -> None:
         'Only hosted login/ad modules were removed; actual V2 code retained.',
         'Original V2 DOM/screens and native client scripts are included.',
         'Classic/Midnight colours and static desktop nav are additive.',
-        'Cloud-only DM Chronicle, divine RPCs, character cloud storage and real-time mechanics are not yet ported to a local adapter.',
+        'Core profiles/campaigns/character saves and approvals now go to local IndexedDB.',
+        'Advanced divine, DM vault and real-time cloud actions still require offline method ports.',
         'No verified live account, private lore, or cloud database is imported.'
       ]
     }
     with zipfile.ZipFile(PACKAGE,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as z:
       z.write(OUT,arcname='The_Living_Codex_V4_Offline_Preview.html')
+      z.write(ROOT/'v4/offline-database.js',arcname='source/offline-database.js')
       z.writestr('BUILD_INFO.json',json.dumps(metadata,indent=2))
       z.writestr('README.txt',
          'This is the actual V2.87 live HTML, not a redesigned imitation.\n'
          'Double-click The_Living_Codex_V4_Offline_Preview.html.\n'
          'Classic/Midnight themes can be chosen in the original header.\n'
-         'The original screens are present, but online-only systems are not yet\n'
-         'connected to an offline database. Do not treat this as final V4.\n')
+         'Core profiles, campaigns, characters, sheet saves and approvals\n'
+         'run using an emulated local IndexedDB database.\n'
+         'Divine, vault and multiplayer cloud actions still need method ports.\n')
     print('LIVE SOURCE preserved, SHA256 '+source_sha)
     print('Actual V2-based offline first-pass file: '+str(OUT))
     print('Downloadable ZIP: '+str(PACKAGE))
