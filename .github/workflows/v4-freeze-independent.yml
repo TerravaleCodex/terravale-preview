@@ -1,0 +1,77 @@
+name: V4 — Freeze independent source from actual live V2.87 ONCE
+
+# Bootstrap the independent V4 project once. Do not run the old V2 patch
+# pipeline and do not re-run when V4 app files change.
+on:
+  push:
+    branches: [v4/offline-live-baseline]
+    paths:
+      - ".github/workflows/v4-freeze-independent.yml"
+      - "tools/v4_freeze_independent.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture-and-freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: One-time capture of finished deployed HTML (not patch scripts)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 --max-time 120 \
+            "https://terravalecodex.github.io/terravale-preview/veiled-codex/?snapshot=$GITHUB_SHA" \
+            -o "$RUNNER_TEMP/live-v287.html"
+          test "$(wc -c < "$RUNNER_TEMP/live-v287.html")" -gt 7000000
+          grep -q 'data-source="v287-adaptive-resources.js"' "$RUNNER_TEMP/live-v287.html"
+      - name: Freeze V2 once into independent content-blank V4 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/v4_freeze_independent.py \
+            --input "$RUNNER_TEMP/live-v287.html" \
+            --output "$GITHUB_WORKSPACE/v4-independent-site"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("v4-independent-site")
+          assert (root/"index.html").exists()
+          data=json.loads((root/"V4_SOURCE_MANIFEST.json").read_text())
+          assert data["independent_of_live_build"] is True
+          assert data["original_bytes"]>7_000_000
+          assert len(data["assets"])>10
+          assert len(list((root/"js").glob("*.js")))>10
+          html=(root/"index.html").read_text()
+          assert 'v2-discord-auth.mjs' not in html
+          assert 'v247-demo-party-admin.js' not in html
+          assert 'v248-curated-demo-sheets.js' not in html
+          assert 'id="tv238-v14-content"' in html
+          print("PASS: independently editable V4 source, without embedded world payload.")
+          PY
+          node tests/v4-offline-database.cjs
+      - name: Upload independent V4 project for offline use
+        uses: actions/upload-artifact@v4
+        with:
+          name: LIVING-CODEX-V4-INDEPENDENT-SOURCE
+          path: v4-independent-site/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Commit the independent V4 code to THIS branch (never main)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add v4-independent-site/
+          if git diff --cached --quiet; then
+            echo "V4 independent source already committed."
+          else
+            git commit -m "Freeze actual live V2.87 into independent, content-blank V4 modules"
+            git push origin HEAD:v4/offline-live-baseline
+          fi
