@@ -156,6 +156,15 @@
        !!partial?.textContent.includes("Activate · 2 charges");
      const hiddenItemOmitted=!itemCards.some(card=>card.dataset.v287ItemId==="hidden_amulet"||
        card.dataset.v287ItemId==="ordinary_apple");
+     // A native action click must not modify a single charge inside the
+     // read-only sandbox. The bootstrap intercepts it before any V2 handler.
+     const activate=partial?.querySelector('[data-tv-item-action="use"]');
+     const beforeCharges=partial?.querySelector('.tv-v251-count')?.textContent;
+     activate?.click();
+     await new Promise(r=>setTimeout(r,140));
+     const itemActivationBlocked=!!activate&&
+       beforeCharges===partial?.querySelector('.tv-v251-count')?.textContent&&
+       String(source.item_properties.find(p=>p.item_id==="charged_staff")?.properties?.charges)==="2";
      // Original V2.87 view should index exactly the two visible item resources.
      const catalog=document.querySelector('#pageRoot #tv287-resource-catalog');
      const itemCatalogCards=[...catalog?.querySelectorAll('.tv287-card[data-resource-id^="item:"]')||[]];
@@ -165,7 +174,7 @@
      const noInventedSpells=!resources?.querySelector('.v234-spell-grid .v234-resource-item');
      send("PANEL_AUDIT",{training,feats,wallet,divine:divine&&rules,
        divineTab:!!divineTab,divineResources,zeroCharges,itemResources,
-       itemZeroCharges,itemPartialCharges,hiddenItemOmitted,adaptiveItemCatalog,noInventedSpells,
+       itemZeroCharges,itemPartialCharges,hiddenItemOmitted,itemActivationBlocked,adaptiveItemCatalog,noInventedSpells,
        trainingMounted,trainingReady,
        abilitySelected,featMounted,featuresSelected,featSubtab:!!featTab,walletMounted:!!walletEl,
        nativeReadReady:!!window.TerravaleVerifiedAccount?.state?.ready,
