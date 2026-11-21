@@ -429,6 +429,10 @@ async function addDm(campaignId,profileId){
   if(m)await save('campaign_members',{...m,role:'dm'});
   else await save('campaign_members',{id:uuid(),campaign_id:campaignId,
     profile_id:profileId,role:'dm'});
+  // The live V2 interface exposes the DM perspective using a profile flag;
+  // membership retains the actual per-campaign permissions.
+  const coDm=await get('profiles',profileId);
+  await save('profiles',{...coDm,is_dm:true});
 }
 function dom(tag,cls,txt){
   const e=document.createElement(tag);if(cls)e.className=cls;
