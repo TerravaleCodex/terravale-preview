@@ -1,0 +1,36 @@
+"use strict";
+const fs=require("node:fs");
+const assert=require("node:assert/strict");
+const {spawnSync}=require("node:child_process");
+const sql=fs.readFileSync("site-overrides/sql/neon_staging_character_preview.sql","utf8");
+const html=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
+assert.match(sql,/CREATE OR REPLACE FUNCTION public\.terravale_neon_staging_character_preview\(\)/);
+assert.match(sql,/LANGUAGE sql\s+STABLE/);
+assert.doesNotMatch(sql,/SECURITY DEFINER/i,"Preview must be SECURITY INVOKER");
+assert.match(sql,/auth\.uid\(\)/);
+assert.match(sql,/JOIN public\.campaigns/);
+assert.match(sql,/FROM public\.characters/);
+assert.match(sql,/LIMIT 25/);
+assert.match(sql,/REVOKE ALL ON FUNCTION public\.terravale_neon_staging_character_preview\(\) FROM PUBLIC/);
+assert.match(sql,/GRANT EXECUTE ON FUNCTION public\.terravale_neon_staging_character_preview\(\) TO authenticated/);
+for(const forbidden of ["'backstory'","'owner_id'","'approved_build'","'inventory'","'favour'","'email'","'discord_uid'"]){
+ assert.ok(!sql.includes(forbidden),"Preview must not return "+forbidden);
+}
+assert.match(html,/id="characters"/);
+assert.match(html,/id="character-preview"/);
+assert.match(html,/id="character-list"/);
+assert.match(html,/DATA_API_URL\+"\/rpc\/terravale_neon_staging_character_preview"/);
+assert.match(html,/const jwt=await getSignedStagingJwt\(\)/);
+assert.match(html,/Authorization":"Bearer "\+jwt/);
+assert.match(html,/ch\.name\.slice\(0,120\)/);
+assert.match(html,/els\.characterList\.append\(item\)/);
+assert.match(html,/els\.characterList\.replaceChildren\(\)/);
+assert.match(html,/els\.characterPreview\.hidden=true/);
+assert.match(html,/access\.textContent=allowedAccess\[ch\.access\]/);
+assert.match(html,/Only read-only permission counts and limited character summaries/);
+assert.ok(!/\.innerHTML\s*=|console\.log\(\s*jwt|localStorage|sessionStorage/.test(html),"No token or unsafe HTML handling");
+const script=html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
+assert.ok(script,"Module not found");
+const checked=spawnSync(process.execPath,["--input-type=module","--check"],{input:script,encoding:"utf8"});
+assert.equal(checked.status,0,"Staging HTML module syntax failed: "+checked.stderr);
+console.log("PASS: RLS-only Neon character preview, no privileged fields or browser writes, valid UI module.");

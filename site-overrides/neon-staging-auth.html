@@ -36,6 +36,15 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
 .footer{margin-top:20px;color:#b39fbf;font-size:11px;line-height:1.7;text-align:center}
 .footer a{color:var(--gold)}.marker{color:#aa9cba;font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:700}
 #account{font-weight:700;color:var(--gold);overflow-wrap:anywhere}
+.character-preview{margin-top:20px;padding-top:15px;border-top:1px solid var(--line)}
+.character-preview h2{font-family:Georgia,serif;font-size:23px;font-weight:normal;color:var(--gold);margin:0 0 4px}
+.character-preview .hint{margin:0 0 14px}
+.character-preview ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.character-preview li{background:#130d1a;border:1px solid #51405b;border-radius:10px;padding:13px 14px;min-width:0}
+.character-preview .char-title{display:block;font-size:14px;font-weight:800;overflow-wrap:anywhere}
+.character-preview .char-detail{display:block;color:var(--sub);font-size:12px;margin-top:6px;overflow-wrap:anywhere;line-height:1.5}
+.character-preview .char-access{display:inline-block;margin-top:9px;font-size:11px;color:var(--gold);font-weight:800}
+
 @media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
 </style>
 </head>
@@ -59,10 +68,16 @@ background:#aa82d0;color:#160d1c;font-size:13px;font-weight:800;min-height:44px}
       <button type="button" id="connect" disabled>Continue with Discord</button>
       <button type="button" id="check" class="secondary" disabled>Check session</button>
       <button type="button" id="permissions" class="secondary" disabled>Verify character access (read-only)</button>
+      <button type="button" id="characters" class="secondary" disabled>Preview migrated characters</button>
       <button type="button" id="signout" class="secondary" hidden>Sign out of staging</button>
     </div>
     <output id="permissions-result" class="hint" hidden aria-live="polite"></output>
-    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only aggregate permission counts are displayed; no character records are returned or modified.</p>
+    <section id="character-preview" class="character-preview" hidden aria-label="Migrated character summaries">
+      <h2>Migrated characters</h2>
+      <p class="hint">Limited to characters your Discord account can view. Names, ancestry, class and level only; no private sheets, inventory, or favour scores.</p>
+      <ul id="character-list"></ul>
+    </section>
+    <p class="hint" style="margin-bottom:0">This test uses Neon's official authentication client. No passwords, OAuth secrets, session tokens or database credentials appear in this page. Only read-only permission counts and limited character summaries are displayed. No full sheets are returned or modified.</p>
   </section>
   <p class="footer"><span class="marker">Separate test environment</span><br>
   <a href="/terravale-preview/veiled-codex/">Return to the live Codex</a> ·
@@ -73,6 +88,8 @@ const AUTH_URL="https://ep-young-mode-bg86754w.neonauth.c-9.eu-central-1.aws.neo
 const CALLBACK_URL="https://terravalecodex.github.io/terravale-preview/neon-staging-auth/";
 const DATA_API_URL="https://ep-young-mode-bg86754w.apirest.c-9.eu-central-1.aws.neon.tech/terravale/rest/v1";
 const els={connect:document.getElementById("connect"),check:document.getElementById("check"),permissions:document.getElementById("permissions"),permissionResult:document.getElementById("permissions-result"),
+  characters:document.getElementById("characters"),characterPreview:document.getElementById("character-preview"),
+  characterList:document.getElementById("character-list"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
@@ -81,10 +98,13 @@ function status(kind,heading,body){
   els.status.dataset.kind=kind;
   els.title.textContent=heading;els.detail.textContent=body;
 }
-function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.permissions.disabled=value||!client||!signedIn;els.signout.disabled=value;}
+function setBusy(value){busy=value;els.connect.disabled=value||!client;els.check.disabled=value||!client;els.permissions.disabled=value||!client||!signedIn;els.characters.disabled=value||!client||!signedIn;els.signout.disabled=value;}
 function showSession(user){
   signedIn=Boolean(user);
   els.permissions.disabled=busy||!client||!signedIn;
+  els.characters.disabled=busy||!client||!signedIn;
+  els.characterPreview.hidden=true;
+  els.characterList.replaceChildren();
   els.permissionResult.hidden=true;
   els.permissionResult.textContent="";
   if(user){
@@ -211,6 +231,50 @@ async function verifyCharacterPermissions(){
   finally{setBusy(false)}
 }
 els.permissions.addEventListener("click",verifyCharacterPermissions);
+// A separate RLS-invoker RPC returns only a bounded character summary.
+// All user-created fields are rendered with textContent (never innerHTML).
+async function previewMigratedCharacters(){
+  if(!client||busy||!signedIn)return;
+  setBusy(true);
+  els.characterPreview.hidden=true;
+  els.characterList.replaceChildren();
+  status("info","Loading migrated characters…","Checking the signed Discord account against Neon's original character ownership and visibility rules.");
+  try{
+    const jwt=await getSignedStagingJwt();
+    const response=await fetch(DATA_API_URL+"/rpc/terravale_neon_staging_character_preview",{
+      method:"POST",mode:"cors",cache:"no-store",
+      headers:{"Authorization":"Bearer "+jwt,"Content-Type":"application/json","Accept":"application/json"},
+      body:"{}"
+    });
+    if(!response.ok)throw new Error("Neon rejected the character preview (HTTP "+response.status+").");
+    const payload=await response.json();
+    const result=Array.isArray(payload)?payload[0]:payload;
+    if(result?.read_only!==true||!Array.isArray(result.characters)||result.characters.length>25){
+      throw new Error("Unexpected character preview response.");
+    }
+    const allowedAccess={owned:"Your character",dm:"DM access",shared:"Shared with party"};
+    for(const ch of result.characters){
+      if(!ch||typeof ch.name!=="string"||typeof ch.campaign!=="string"||
+         !Object.hasOwn(allowedAccess,ch.access)||typeof ch.class!=="string"||
+         typeof ch.ancestry!=="string")throw new Error("Invalid character summary.");
+      const item=document.createElement("li");
+      const name=document.createElement("strong");name.className="char-title";
+      name.textContent=ch.name.slice(0,120);
+      const meta=document.createElement("span");meta.className="char-detail";
+      const level=Number.isInteger(ch.level)&&ch.level>=1&&ch.level<=20?" · Level "+ch.level:"";
+      meta.textContent=ch.campaign.slice(0,120)+" · "+ch.ancestry.slice(0,80)+" · "+ch.class.slice(0,80)+level;
+      const access=document.createElement("span");access.className="char-access";
+      access.textContent=allowedAccess[ch.access];
+      item.append(name,meta,access);
+      els.characterList.append(item);
+    }
+    els.characterPreview.hidden=false;
+    status("success","Character data loaded from Neon",
+      result.characters.length+" characters returned through real signed authentication and RLS. No records were changed.");
+  }catch(err){status("error","Could not preview migrated characters",safeError(err))}
+  finally{setBusy(false)}
+}
+els.characters.addEventListener("click",previewMigratedCharacters);
 els.signout.addEventListener("click",async()=>{
   if(!client||busy)return;
   setBusy(true);status("info","Signing out of staging…","Your live Supabase session is unaffected.");
