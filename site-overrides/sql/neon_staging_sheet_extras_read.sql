@@ -29,7 +29,7 @@ BEGIN
       SELECT jsonb_build_object(
         'tools',p.tools,'languages',p.languages,
         'pending_languages',p.pending_languages,
-        'dm_bonus',p.dm_bonus)
+        'dm_bonus',p.dm_bonus,'submitted',p.submitted)
       FROM public.terravale_character_proficiencies p
       WHERE p.character_id=selected.id
     ),'{}'::jsonb),
@@ -41,14 +41,37 @@ BEGIN
       FROM public.terravale_character_training_overrides t
       WHERE t.character_id=selected.id
     ),'{}'::jsonb),
+    'bonus_requests',COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'id',q.id,'kind',q.kind,'choice_pool',q.choice_pool,
+        'choice_count',q.choice_count,'status',q.status,
+        'note',q.note,'created_at',q.created_at)
+        ORDER BY q.created_at)
+      FROM (SELECT p.id,p.kind,p.choice_pool,p.choice_count,p.status,
+               p.note,p.created_at
+            FROM public.terravale_proficiency_bonus_choices p
+            WHERE p.character_id=selected.id AND p.status='pending'
+            ORDER BY p.created_at LIMIT 60) q
+    ),'[]'::jsonb),
+    'wallet_ledger',COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'id',w.id,'denomination_id',w.denomination_id,'delta',w.delta,
+        'note',w.note,'operation',w.operation,'created_at',w.created_at)
+        ORDER BY w.created_at DESC)
+      FROM (SELECT l.id,l.denomination_id,l.delta,l.note,l.operation,l.created_at
+            FROM public.terravale_wallet_ledger l
+            WHERE l.character_id=selected.id
+            ORDER BY l.created_at DESC LIMIT 7) w
+    ),'[]'::jsonb),
     'custom_feats',COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
-        'id',x.id,'name',x.name,'summary',x.short_description,
-        'rules',x.rules_text,'action_type',x.action_type,
+        'id',x.id,'feat_id',x.feat_id,'name',x.name,'summary',x.short_description,
+        'rules',x.rules_text,'prerequisites',x.prerequisites,
+        'rarity',x.rarity,'action_type',x.action_type,
         'uses_per_rest',x.uses_per_rest,'recovery',x.recovery)
         ORDER BY x.name)
-      FROM (SELECT g.id,f.name,f.short_description,f.rules_text,
-              f.action_type,f.uses_per_rest,f.recovery
+      FROM (SELECT g.id,f.id AS feat_id,f.name,f.short_description,f.rules_text,
+              f.prerequisites,f.rarity,f.action_type,f.uses_per_rest,f.recovery
             FROM public.terravale_character_custom_feats g
             JOIN public.terravale_dm_custom_feats f
               ON f.id=g.feat_id AND f.campaign_id=selected.campaign_id
