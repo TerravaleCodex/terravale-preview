@@ -151,11 +151,11 @@ def port(original: str) -> str:
     adapter = (ROOT / 'v4/offline-database.js').read_text(encoding='utf-8')
     assert 'TerravaleOfflineDatabase' in adapter
     assert '</script>' not in adapter.lower()
-    adapter_script = '<script data-source="v4-offline-database.js">\\n' + adapter + '\\n</script>'
+    adapter_script = '<script data-source="v4-offline-database.js">\n' + adapter + '\n</script>'
     if html.count('</head>') != 1 or html.count('</body>') != 1:
         raise RuntimeError("Unexpected live HTML structure; abort safely")
     html = html.replace('</head>', '<style id="v4-offline-theme">\n'+CSS+'\n</style>\n</head>',1)
-    html = html.replace('</body>',adapter_script+'\\n'+'<script id="v4-offline-controls">\\n'+JS+'\\n</script>\\n</body>',1)
+    html = html.replace('</body>',adapter_script+'\n'+'<script id="v4-offline-controls">\n'+JS+'\n</script>\n</body>',1)
     return html
 
 
