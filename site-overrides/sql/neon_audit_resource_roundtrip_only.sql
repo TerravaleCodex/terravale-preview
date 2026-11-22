@@ -86,6 +86,26 @@ REVOKE ALL ON FUNCTION public.terravale_neon_audit_resource_adjust(uuid,text,int
 -- AUDIT STATEMENT
 GRANT EXECUTE ON FUNCTION public.terravale_neon_audit_resource_adjust(uuid,text,integer,integer) TO authenticated;
 -- AUDIT STATEMENT
+-- One assigned PC per owner/campaign is enforced by the real Terravale
+-- partial unique index. Use TWO disposable fixture campaigns rather than
+-- weakening or removing any production constraint.
+WITH verified_owner AS (
+ SELECT c.owner_id
+ FROM public.characters c JOIN terravale_internal.identity_links i
+   ON i.legacy_user_id=c.owner_id AND i.oauth_provider='discord'
+ WHERE c.owner_id IS NOT NULL
+ ORDER BY c.id LIMIT 1
+), fixtures AS (
+ SELECT '11111111-1111-4111-8111-999999999981'::uuid AS campaign_id,
+        'Neon resource audit spellcaster campaign'::text AS name
+ UNION ALL
+ SELECT '11111111-1111-4111-8111-999999999982'::uuid,
+        'Neon resource audit class campaign'::text
+)
+INSERT INTO public.campaigns(id,name,owner_id,description)
+SELECT f.campaign_id,f.name,o.owner_id,'Synthetic isolated test fixture'
+FROM fixtures f CROSS JOIN verified_owner o;
+-- AUDIT STATEMENT
 WITH verified_owner AS (
  SELECT c.owner_id,c.campaign_id
  FROM public.characters c JOIN terravale_internal.identity_links i
@@ -94,13 +114,15 @@ WITH verified_owner AS (
  ORDER BY c.id LIMIT 1
 ), fixtures AS (
  SELECT '11111111-1111-4111-8111-999999999991'::uuid AS fixture_id,
+   '11111111-1111-4111-8111-999999999981'::uuid AS fixture_campaign_id,
    'Cleric'::text AS class_name,'Neon resource audit spellcaster'::text AS fixture_name
  UNION ALL
  SELECT '11111111-1111-4111-8111-999999999992'::uuid,
+   '11111111-1111-4111-8111-999999999982'::uuid,
    'Shaman'::text,'Neon resource audit class ability'::text
 )
 INSERT INTO public.characters(id,campaign_id,owner_id,name,status,approved_build,sheet_visible_to_party)
-SELECT f.fixture_id,o.campaign_id,o.owner_id,f.fixture_name,'approved',
+SELECT f.fixture_id,f.fixture_campaign_id,o.owner_id,f.fixture_name,'approved',
   jsonb_build_object('class',f.class_name,'level',3,'character',
     jsonb_build_object('name',f.fixture_name,'className',f.class_name,'level',3,
       'sheetV220',jsonb_build_object('resources','{}'::jsonb))),
