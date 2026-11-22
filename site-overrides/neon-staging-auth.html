@@ -64,6 +64,14 @@ main:has(#sheet-frame-panel:not([hidden])),main:has(#native-v287-panel:not([hidd
 .native-v287{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
 .native-v287 iframe{width:100%;height:1100px;min-height:720px;border:1px solid var(--line);border-radius:12px;display:block;background:#0d0a13}
 .native-v287 .hint{margin:0 0 13px}
+.resource-review{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 16px;background:rgba(25,19,35,.55)}
+.resource-review h3{font-size:15px;margin:0 0 4px;color:var(--gold)}
+.resource-review p{font-size:12px;color:var(--sub);margin:0 0 8px}
+.resource-review-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.resource-review-entry{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12px}
+.resource-review-entry strong{display:block;font-size:13px;margin-bottom:3px}
+.resource-review-entry span{color:var(--sub)}
+.resource-review-entry .review-state{color:var(--gold);font-weight:700}
 
 
 @media(max-width:520px){.controls button{width:100%}.info{align-items:start}.panel{padding:18px}}
@@ -117,6 +125,11 @@ main:has(#sheet-frame-panel:not([hidden])),main:has(#native-v287-panel:not([hidd
         <section class="native-v287" id="native-v287-panel" hidden aria-label="Original V2.87 native character sheet">
           <p class="hint"><strong>Actual V2.87 character page, not a redesign.</strong> An isolated copy of the original build displays the authorised Neon character snapshot. Editing, saved browser storage, external network connections and gameplay requests are blocked.</p>
           <p class="hint" id="native-resource-provenance" hidden></p>
+          <section class="resource-review" id="resource-review" hidden aria-label="Read-only resource reconciliation">
+            <h3>Resources awaiting review</h3>
+            <p id="resource-review-summary">Saved counts and published rule maxima will appear here, without changing anything.</p>
+            <div id="resource-review-list" class="resource-review-list"></div>
+          </section>
           <iframe id="native-v287-frame" title="Actual V2.87 character sheet — read only" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="eager"></iframe>
         </section>
         <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
@@ -145,11 +158,15 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   nativeOpen:document.getElementById("native-v287-open"),nativePanel:document.getElementById("native-v287-panel"),
   nativeFrame:document.getElementById("native-v287-frame"),
   nativeResourceProvenance:document.getElementById("native-resource-provenance"),
+  resourceReview:document.getElementById("resource-review"),
+  resourceReviewSummary:document.getElementById("resource-review-summary"),
+  resourceReviewList:document.getElementById("resource-review-list"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
   detail:document.getElementById("status-detail")};
-let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null,makeV287NeonReadOnlySnapshot=null;
+let client=null,busy=false,signedIn=false,readBridge=null,makeLegacyContext=null,loadOriginalProfile=null,toV2ReadOnlySheet=null,makeV287NeonReadOnlySnapshot=null,makeV287ResourceReview=null;
+let ruleManifestsPromise=null;
 const V2_SHEET_URL="/terravale-preview/neon-staging-auth/sheet/?live=1";
 const V287_NATIVE_URL="/terravale-preview/neon-staging-auth/native-v287/";
 let verifiedSheetPayload=null,currentSheetId=null,currentCoreSheet=null,currentV287Snapshot=null;
@@ -160,6 +177,9 @@ function clearSheetPreview(){
   currentSheetId=null;
   els.nativeResourceProvenance.hidden=true;
   els.nativeResourceProvenance.textContent="";
+  els.resourceReview.hidden=true;
+  els.resourceReviewList.replaceChildren();
+  els.resourceReviewSummary.textContent="";
   els.nativeOpen.disabled=true;
   els.nativePanel.hidden=true;
   els.nativeFrame.removeAttribute("src");
@@ -531,6 +551,41 @@ async function inspectLinkedV2Data(){
       ? "Class and spell counters: this character has no explicit saved usage records. The original V2.87 renderer may show class-derived full values; those are not verified remaining charges. Saved item and granted divine charges are separate sources."
       : "Class and spell counters: "+explicit+" explicit usage entr"+(explicit===1?"y":"ies")+" saved ("+coverage.explicit_spell_usage_entries+" spell, "+coverage.explicit_class_usage_entries+" class/other). Any other pool may still show a derived default rather than a verified remaining value.";
     els.nativeResourceProvenance.hidden=false;
+    // Load only public, source-verified rules. This page is a parent-side
+    // READ-ONLY preview; it never sends counters or approval requests.
+    els.resourceReview.hidden=false;
+    els.resourceReviewSummary.textContent="Checking reviewed class and spell tables…";
+    els.resourceReviewList.replaceChildren();
+    try{
+      const [fixed,spell]=await ruleManifestsPromise;
+      if(!signedIn||currentV287Snapshot!==v287||currentSheetId!==characterId)
+        throw new Error("Character access changed while reviewing");
+      const review=makeV287ResourceReview(v287,fixed,spell);
+      els.resourceReviewSummary.textContent=review.validBuild
+        ? review.missing+" missing counter(s) require DM confirmation; "+review.saved+" explicitly saved. "+
+          (review.invalid?review.invalid+" invalid saved counter(s). ":"")+
+          (review.unsupported?review.unsupported+" other/custom saved counter(s) not interpreted. ":"")+
+          "Displayed maximums are rules only, not verified remaining uses."
+        : review.notice;
+      for(const pool of review.pools){
+        const entry=document.createElement("div"),name=document.createElement("strong"),
+          state=document.createElement("span"),rule=document.createElement("span");
+        entry.className="resource-review-entry";
+        name.textContent=pool.label;
+        state.className="review-state";
+        state.textContent=pool.status==="saved"
+          ? pool.remaining+" / "+pool.max+" saved"
+          : pool.status==="requires-dm-confirmation"
+            ? "Unverified remaining · max "+pool.max
+            : "Saved count needs review · max "+pool.max;
+        rule.textContent=" · "+pool.source;
+        entry.append(name,state,rule);
+        els.resourceReviewList.append(entry);
+      }
+    }catch(err){
+      els.resourceReviewList.replaceChildren();
+      els.resourceReviewSummary.textContent="Resource rule review unavailable; no remaining-use counts were inferred.";
+    }
     els.nativeOpen.disabled=false;
     const arr=x=>Array.isArray(x)?x:[];
     const rows=[
@@ -652,6 +707,11 @@ try{
   const {buildV2ReadOnlyAccountContext,loadVerifiedV2AccountProfile}=await import("./account-context.mjs");
   ({toV2ReadOnlySheet}=await import("./v2-sheet-preview.mjs"));
   ({makeV287NeonReadOnlySnapshot}=await import("./v287-snapshot.mjs"));
+  ({makeV287ResourceReview}=await import("./v287-resource-review.mjs"));
+  ruleManifestsPromise=Promise.all([
+    fetch("./fixed-resources.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Fixed class rules unavailable");return r.json()}),
+    fetch("./spell-progression.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Spell progression unavailable");return r.json()})
+  ]);
   makeLegacyContext=buildV2ReadOnlyAccountContext;
   loadOriginalProfile=loadVerifiedV2AccountProfile;
   readBridge=createNeonReadOnlyBridge({
