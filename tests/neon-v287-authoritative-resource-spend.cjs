@@ -49,10 +49,11 @@ for(const t of [
  "'requires_refresh',prior.resulting_version IS DISTINCT FROM canonical.version",
  "'replayed',false"
 ])assert.ok(sql.includes(t),"Required server-side resource spend control missing: "+t);
-assert.ok(sql.indexOf("SELECT * INTO picked")<sql.indexOf("SELECT * INTO canonical"));
-assert.ok(sql.indexOf("SELECT * INTO canonical")<sql.indexOf("SELECT * INTO prior"));
-assert.ok(sql.indexOf("UPDATE terravale_internal.neon_resource_authority_audit")<
-          sql.indexOf("UPDATE public.characters SET approved_build=linked_build"));
+const spend=sql.slice(sql.indexOf("CREATE OR REPLACE FUNCTION public.terravale_neon_audit_resource_spend("));
+assert.ok(spend.indexOf("SELECT * INTO picked")<spend.indexOf("SELECT * INTO canonical"));
+assert.ok(spend.indexOf("SELECT * INTO canonical")<spend.indexOf("SELECT * INTO prior"));
+assert.ok(spend.indexOf("UPDATE terravale_internal.neon_resource_authority_audit")<
+          spend.indexOf("UPDATE public.characters SET approved_build=linked_build"));
 for(const bad of [
  /GRANT\s+UPDATE\s+ON\s+public\.characters/i,
  /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.terravale_save_character_sheet/i,
