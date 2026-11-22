@@ -58,4 +58,23 @@ assert.equal(lookup("Dvergr",3,"blood-reserve"),null);
 assert.equal(lookup("shaman",3,"spirit-favour"),null,"Class names are case-sensitive");
 assert.equal(lookup("Shaman",0,"spirit-favour"),null);
 assert.equal(lookup("Shaman",21,"spirit-favour"),null);
+const sql=fs.readFileSync("site-overrides/sql/neon_audit_fixed_resource_catalog_only.sql","utf8");
+assert.ok(sql.startsWith("-- AUDIT-ONLY RULES-CATALOG FOLLOW-UP"));
+for(const fragment of [
+ "p_character NOT IN","name LIKE 'Neon resource audit %'",
+ "r.class_name=row_data.approved_build#>>'{character,className}'",
+ "r.character_level=(row_data.approved_build#>>'{character,level}')::integer",
+ "r.source_revision='native-v287-v220-verified'",
+ "r.recovery='manual-review'",
+ "No source-verified server resource limit",
+ "authz.is_member(row_data.campaign_id)",
+ "authz.is_dm(row_data.campaign_id)",
+ "Outdated resource revision: reload required",
+ "REVOKE ALL ON terravale_internal.neon_resource_rules_audit"
+])assert.ok(sql.includes(fragment),"Rules-only audit safety control missing: "+fragment);
+assert.ok(!sql.includes("FROM terravale_internal.neon_resource_roundtrip_audit_limits"),
+ "Do not trust old per-character fixture maximums");
+assert.ok(!/GRANT UPDATE ON public\\.characters/i.test(sql));
+assert.equal((sql.match(/\('native-v287-v220-verified','(?:Shaman|Bloodforger)',\d+,'(?:spirit-favour|blood-reserve)',\d+,'manual-review'\)/g)||[]).length,39,
+ "Only 39 source-reviewed level/class resource limits may be installed");
 console.log("PASS: exact original V2.87 fixed class tables at every level; only reviewed Shaman/Bloodforger resources can be looked up, no default or automatic recovery.");
