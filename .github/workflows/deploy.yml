@@ -16,6 +16,7 @@ on:
       - "tests/neon-native-v287-read-client.cjs"
       - "tools/build-neon-native-v287.cjs"
       - "tests/neon-native-v287-browser.cjs"
+      - "tests/neon-v287-resource-source-audit.cjs"
       - "tests/neon-v287-sheet-snapshot.mjs"
       - "tests/neon-v2-sheet-preview.mjs"
       - "tests/neon-v2-sheet-browser.cjs"
@@ -306,6 +307,8 @@ jobs:
         run: node tests/neon-staging-auth-probe.cjs
       - name: Verify V2.87 adaptive resource routing and live source actions
         run: node tests/v287-adaptive-resources.cjs
+      - name: Audit authoritative V2.87 resource and spell persistence code
+        run: node tests/neon-v287-resource-source-audit.cjs
       - name: Inspect native character rest actions
         run: node tests/v281-rest-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page

@@ -1,0 +1,70 @@
+'use strict';
+/* Staging migration audit — inspect the actual built V2.87 source, not an
+   invented resource model. This prints only public-safe source code fragments
+   to GitHub Actions; never prints real character or database records. */
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const html=fs.readFileSync('published/veiled-codex/index.html','utf8');
+assert.ok(html.length>7_000_000&&html.includes('data-source="v287-adaptive-resources.js"'),
+ 'Actual assembled V2.87 native page required');
+const probes=[
+ ['native-resources-fn', /function\s+sheetV220ResourcesPanel\s*\(/g],
+ ['native-resource-buttons', /v234-resource-item/g],
+ ['native-resources-object', /sheetV220\??\.resources/g],
+ ['state-resource-save', /resources\s*:\s*(?:c\.|character\.|.*?resources)/g],
+ ['resource-action-handler', /(?:data-action|dataset\.action|case)\s*[:=]\s*['"][^'"]*resource[^'"]*['"]/gi],
+ ['spell-slots', /(?:spellSlots|spell_slots|spellSlot|slotCurrent|slotsRemaining)/g],
+ ['spell-grid', /v234-spell-grid/g],
+ ['class-resources', /v234-resource-line/g],
+ ['save-sheet-rpc', /terravale_save_character_sheet/g],
+ ['state-write-rpc', /(?:terravale_update_character_state|terravale_save_character_state|terravale_character_state_update)/g]
+];
+function clean(x){return x.replace(/\s+/g,' ')}
+for(const [label,re] of probes){
+ const matches=[...html.matchAll(re)];
+ console.log('SOURCE RESOURCE AUDIT '+label+' COUNT '+matches.length);
+ for(const m of matches.slice(0,8)){
+  const at=m.index;
+  // Only source logic from bundled public-safe site, never runtime data.
+  const before=Math.max(0,at-190),after=Math.min(html.length,at+550);
+  console.log('SOURCE SNIPPET '+label+' @'+at+': '+clean(html.slice(before,after)).slice(0,650));
+ }
+}
+// Trace the true 2.34+ resource override and original save hooks precisely.
+// These are public-source excerpts; no database rows or runtime characters.
+const focused=[
+ ['v220-state-fn','function sheetV220State(c)',1800],
+ ['v220-resource-class-fn','function sheetV220Resources(c)',4500],
+ ['v234-resource-override','sheetV220Resources=function(c)',6000],
+ ['v234-resource-panel-override','sheetV220ResourcesPanel=function(c)',3600],
+ ['v220-native-persist','function persist(',1900],
+ ['v234-internal-resource-write',".dataset.action==='sheetResource'",1600],
+ ['v234-counter-initial',"s.resources[r.id]",900],
+ ['native-class-rest','data-v235-rest',1200]
+];
+for(const [label,needle,length] of focused){
+ const i=html.indexOf(needle);
+ console.log('FOCUS SOURCE '+label+' @'+i);
+ if(i>=0)console.log('FOCUS CODE '+label+': '+clean(html.slice(i,Math.min(html.length,i+length))).slice(0,length));
+}
+// V2.34's final resource renderer is assembled well after the original
+// V2.20 functions. Trace the most recent override and its slot IDs.
+const v234=html.indexOf('data-source="v234',6000000);
+for(const [label,needle,length] of [
+  ['v234-pool-derivation','sheetV220Resources=function(c)',7600],
+  ['v234-resource-card','function resourceCell(',2400],
+  ['v234-current-default','state[r.id]===undefined',1900],
+  ['v234-panel-last','sheetV220ResourcesPanel=function(c)',3800],
+  ['live-persist-hook','onLocalPersist',1400]
+]){
+ const index=html.lastIndexOf(needle);
+ console.log('LAST SOURCE '+label+' @'+index);
+ if(index>=0)console.log('LAST CODE '+label+': '+clean(html.slice(index,index+length)).slice(0,length));
+}
+assert.ok(html.includes("s.resources[r.id]===undefined?r.max"),"Original V2 sheet no-usage fallback changed");
+assert.ok(html.includes("sheetV220ResourcesPanel=function(c)"),"Native V2.34 spell/class source lost");
+assert.ok(html.includes('window.TerravaleV2Bridge?.onLocalPersist?.()'),"Native sheet persistence hook missing");
+const native=html.match(/function\s+sheetV220ResourcesPanel\s*\(/);
+assert.ok(native,'Cannot audit V2.87 without its actual native resource renderer');
+// Audit explicitly, but do not falsely assert resource persistence until
+// database/state and exact write-path logic have been verified.
+console.log('PASS: approved V2.87 resource source audited; no source data modified.');

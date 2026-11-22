@@ -55,6 +55,24 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
  const build=c.approved_build;
  const approved=build.character;
  const basePrefs=isRecord(approved.sheetV220)?approved.sheetV220:{};
+ const savedUsage=isRecord(basePrefs.resources)?basePrefs.resources:null;
+ // This is the native V2.20/V2.34 current-usage source. The separate
+ // character_state.resources array is retained, but it is NOT the native
+ // sheet's source of spell-slot/class-resource consumption.
+ const usageKeys=savedUsage?Object.keys(savedUsage):[];
+ const spellUsageKeys=usageKeys.filter(k=>/^(?:spell-slot-|pact-slot-)/.test(k));
+ const classUsageKeys=usageKeys.filter(k=>!spellUsageKeys.includes(k));
+ const usageCoverage={
+   native_usage_source:"approved_build.character.sheetV220.resources",
+   explicit_saved_usage_entries:usageKeys.length,
+   explicit_spell_usage_entries:spellUsageKeys.length,
+   explicit_class_usage_entries:classUsageKeys.length,
+   // Empty does NOT mean "confirmed full"; V2's renderer defaults
+   // missing entries to the class-derived maximum.
+   has_explicit_saved_usage:usageKeys.length>0,
+   missing_entries_mean:"native-renderer-derived-default-not-verified-remaining",
+   separate_legacy_state_entries:st.resources.length
+ };
  const snapshot={
    schema:"terravale.neon.v287.sheet.readonly.v1",
    read_only:true,
@@ -81,7 +99,9 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
      divine_fractures:fractures,
      divine_offers:offers
    },
+   resource_coverage:usageCoverage,
    resource_sources:{
+     native_v220_usage: savedUsage,
      saved_class_resources:st.resources,
      saved_spell_list:Array.isArray(approved.spells)?approved.spells:null,
      saved_sheet_resource_settings:isRecord(basePrefs.resources)?basePrefs.resources:null,
@@ -97,6 +117,9 @@ export function makeV287NeonReadOnlySnapshot(core,linked,expectedId){
    counts:{
      inventory:st.inventory.length,
      saved_class_resources:st.resources.length,
+     explicit_native_usage:usageKeys.length,
+     explicit_spell_usage:spellUsageKeys.length,
+     explicit_class_usage:classUsageKeys.length,
      wallet_denominations:wallet.length,
      wallet_ledger:walletLedger.length,
      bonus_requests:bonusRequests.length,
