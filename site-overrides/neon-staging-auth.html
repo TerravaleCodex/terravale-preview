@@ -116,6 +116,7 @@ main:has(#sheet-frame-panel:not([hidden])),main:has(#native-v287-panel:not([hidd
         </section>
         <section class="native-v287" id="native-v287-panel" hidden aria-label="Original V2.87 native character sheet">
           <p class="hint"><strong>Actual V2.87 character page, not a redesign.</strong> An isolated copy of the original build displays the authorised Neon character snapshot. Editing, saved browser storage, external network connections and gameplay requests are blocked.</p>
+          <p class="hint" id="native-resource-provenance" hidden></p>
           <iframe id="native-v287-frame" title="Actual V2.87 character sheet — read only" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="eager"></iframe>
         </section>
         <section class="sheet-v2" id="sheet-frame-panel" hidden aria-label="Existing V2 character sheet, read-only">
@@ -143,6 +144,7 @@ const els={connect:document.getElementById("connect"),check:document.getElementB
   sheetExtrasSummary:document.getElementById("sheet-extras-summary"),sheetExtrasGroups:document.getElementById("sheet-extras-groups"),
   nativeOpen:document.getElementById("native-v287-open"),nativePanel:document.getElementById("native-v287-panel"),
   nativeFrame:document.getElementById("native-v287-frame"),
+  nativeResourceProvenance:document.getElementById("native-resource-provenance"),
   v2reads:document.getElementById("v2reads"),v2readsResult:document.getElementById("v2reads-result"),
   signout:document.getElementById("signout"),account:document.getElementById("account"),
   status:document.getElementById("status"),title:document.getElementById("status-title"),
@@ -156,6 +158,8 @@ function clearSheetPreview(){
   currentCoreSheet=null;
   currentV287Snapshot=null;
   currentSheetId=null;
+  els.nativeResourceProvenance.hidden=true;
+  els.nativeResourceProvenance.textContent="";
   els.nativeOpen.disabled=true;
   els.nativePanel.hidden=true;
   els.nativeFrame.removeAttribute("src");
@@ -519,6 +523,14 @@ async function inspectLinkedV2Data(){
     // full V2.87 UI and is never forwarded to the legacy embedded renderer.
     const v287=makeV287NeonReadOnlySnapshot(currentCoreSheet,v,characterId);
     currentV287Snapshot=v287;
+    // Native V2.34 defaults any missing saved resource entry to its derived
+    // class maximum. This is NOT a verified count of remaining spell slots.
+    const coverage=v287.resource_coverage;
+    const explicit=coverage.explicit_saved_usage_entries;
+    els.nativeResourceProvenance.textContent=explicit===0
+      ? "Class and spell counters: this character has no explicit saved usage records. The original V2.87 renderer may show class-derived full values; those are not verified remaining charges. Saved item and granted divine charges are separate sources."
+      : "Class and spell counters: "+explicit+" explicit usage entr"+(explicit===1?"y":"ies")+" saved ("+coverage.explicit_spell_usage_entries+" spell, "+coverage.explicit_class_usage_entries+" class/other). Any other pool may still show a derived default rather than a verified remaining value.";
+    els.nativeResourceProvenance.hidden=false;
     els.nativeOpen.disabled=false;
     const arr=x=>Array.isArray(x)?x:[];
     const rows=[
