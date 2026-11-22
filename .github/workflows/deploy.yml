@@ -10,6 +10,10 @@ on:
       - "site-overrides/neon-readonly-bridge.mjs"
       - "site-overrides/neon-v2-sheet-preview.mjs"
       - "site-overrides/neon-v287-sheet-snapshot.mjs"
+      - "site-overrides/neon-v287-resource-review.mjs"
+      - "tests/neon-v287-resource-review.mjs"
+      - "tests/neon-v287-approved-build-rule-lock.cjs"
+      - "site-overrides/sql/neon_audit_pinned_build_rules_only.sql"
       - "site-overrides/neon-native-v287-bootstrap.js"
       - "site-overrides/neon-native-v287-hydrate.js"
       - "site-overrides/neon-native-v287-read-client.js"
@@ -315,6 +319,10 @@ jobs:
         run: node tests/neon-v2-sheet-preview.mjs
       - name: Verify source-preserving V2.87 read-only Neon sheet contract
         run: node tests/neon-v287-sheet-snapshot.mjs
+      - name: Verify read-only V2.87 DM review distinguishes saved counts and missing usage
+        run: node tests/neon-v287-resource-review.mjs
+      - name: Audit private DM-approved class/level lock for synthetic Neon resource writes
+        run: node tests/neon-v287-approved-build-rule-lock.cjs
       - name: Browser-test existing V2 sheet rendering from an isolated read-only fixture
         run: node tests/neon-v2-sheet-browser.cjs
       - name: Verify Neon V2-style read bridge
@@ -380,6 +388,9 @@ jobs:
           cp site-overrides/neon-readonly-bridge.mjs published/neon-staging-auth/bridge.mjs
           cp site-overrides/neon-v2-sheet-preview.mjs published/neon-staging-auth/v2-sheet-preview.mjs
           cp site-overrides/neon-v287-sheet-snapshot.mjs published/neon-staging-auth/v287-snapshot.mjs
+          cp site-overrides/neon-v287-resource-review.mjs published/neon-staging-auth/v287-resource-review.mjs
+          cp site-overrides/neon-v287-spell-progression.json published/neon-staging-auth/spell-progression.json
+          cp site-overrides/neon-v287-fixed-resource-tables.json published/neon-staging-auth/fixed-resources.json
           cp site-overrides/neon-v2-account-context.mjs published/neon-staging-auth/account-context.mjs
           node tools/build-neon-staging-sheet.cjs
           node --check site-overrides/neon-native-v287-bootstrap.js
