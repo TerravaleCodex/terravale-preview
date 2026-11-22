@@ -15,7 +15,9 @@ function extractLiteral(name){
  const literal="["+match[1]+"]";
  // Only a fixed table of integer counts and plain {count,die} objects can be
  // evaluated; any other source syntax is rejected BEFORE sandbox evaluation.
- assert.match(literal,/^[\\[\\]{},:0-9a-z\\s]+$/,"Unexpected source tokens in native progression");
+ const stripped=literal.replaceAll("count","").replaceAll("die","").replaceAll("null","");
+ assert.ok([...stripped].every(ch=>"[]{}:,0123456789 \\n\\r\\t".includes(ch)),
+   "Unexpected source tokens in native progression");
  const value=vm.runInNewContext(literal,Object.create(null),{timeout:200});
  assert.equal(value.length,21,"Need explicit level-0 through level-20 entries");
  return JSON.parse(JSON.stringify(value));
