@@ -21,6 +21,8 @@ on:
       - "tests/neon-v287-rules-provenance-audit.cjs"
       - "tests/neon-v287-fixed-rule-catalog.cjs"
       - "tests/neon-v287-spell-source-probe.cjs"
+      - "tests/neon-v287-resource-overwrite-audit.cjs"
+      - "site-overrides/sql/neon_audit_resource_overwrite_guard_only.sql"
       - "site-overrides/neon-v287-fixed-resource-tables.json"
       - "site-overrides/sql/neon_audit_resource_roundtrip_only.sql"
       - "tests/neon-v287-sheet-snapshot.mjs"
@@ -323,6 +325,8 @@ jobs:
         run: node tests/neon-v287-fixed-rule-catalog.cjs
       - name: Identify original V2.87 spell and legacy save progression sources
         run: node tests/neon-v287-spell-source-probe.cjs
+      - name: Audit legacy whole-sheet save revision guard and ensure no broad write grants
+        run: node tests/neon-v287-resource-overwrite-audit.cjs
       - name: Inspect native character rest actions
         run: node tests/v281-rest-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
