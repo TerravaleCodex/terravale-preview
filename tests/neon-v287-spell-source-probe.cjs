@@ -22,9 +22,11 @@ for(const needle of markers){
  console.log("SPELL SOURCE "+needle+" at "+index+" = "+snippet.slice(0,7500));
  }
 }
-const el=html.match(/<script[^>]*id=["']v234-spell-tables["'][^>]*>([\\s\\S]*?)<\\/script>/);
-assert.ok(el,"Original V2.34 spell tables not embedded in assembled V2.87");
-const published=JSON.parse(el[1]);
+const at=html.indexOf('id="v234-spell-tables"');
+assert.ok(at>0,"Original V2.34 spell tables not embedded in assembled V2.87");
+const start=html.indexOf(">",at)+1,end=html.indexOf("</script>",start);
+assert.ok(start>at&&end>start&&end-start<120000,"Spell table source boundaries failed");
+const published=JSON.parse(html.slice(start,end));
 console.log("SPELL TABLE KEYS",Object.keys(published));
 for(const [name,entry] of Object.entries(published)){
  console.log("SPELL TABLE "+name+" "+JSON.stringify({
