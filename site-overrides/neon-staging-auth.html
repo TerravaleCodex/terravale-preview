@@ -557,6 +557,10 @@ async function inspectLinkedV2Data(){
     els.resourceReviewSummary.textContent="Checking reviewed class and spell tables…";
     els.resourceReviewList.replaceChildren();
     try{
+      if(!ruleManifestsPromise)ruleManifestsPromise=Promise.all([
+        fetch("./fixed-resources.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Fixed class rules unavailable");return r.json()}),
+        fetch("./spell-progression.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Spell progression unavailable");return r.json()})
+      ]);
       const [fixed,spell]=await ruleManifestsPromise;
       if(!signedIn||currentV287Snapshot!==v287||currentSheetId!==characterId)
         throw new Error("Character access changed while reviewing");
@@ -708,10 +712,6 @@ try{
   ({toV2ReadOnlySheet}=await import("./v2-sheet-preview.mjs"));
   ({makeV287NeonReadOnlySnapshot}=await import("./v287-snapshot.mjs"));
   ({makeV287ResourceReview}=await import("./v287-resource-review.mjs"));
-  ruleManifestsPromise=Promise.all([
-    fetch("./fixed-resources.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Fixed class rules unavailable");return r.json()}),
-    fetch("./spell-progression.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Spell progression unavailable");return r.json()})
-  ]);
   makeLegacyContext=buildV2ReadOnlyAccountContext;
   loadOriginalProfile=loadVerifiedV2AccountProfile;
   readBridge=createNeonReadOnlyBridge({
