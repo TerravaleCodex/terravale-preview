@@ -18,7 +18,7 @@ const probes=[
  ['save-sheet-rpc', /terravale_save_character_sheet/g],
  ['state-write-rpc', /(?:terravale_update_character_state|terravale_save_character_state|terravale_character_state_update)/g]
 ];
-function clean(x){return x.replace(/\s+/g,' ').slice(0,650)}
+function clean(x){return x.replace(/\s+/g,' ')}
 for(const [label,re] of probes){
  const matches=[...html.matchAll(re)];
  console.log('SOURCE RESOURCE AUDIT '+label+' COUNT '+matches.length);
@@ -26,7 +26,7 @@ for(const [label,re] of probes){
   const at=m.index;
   // Only source logic from bundled public-safe site, never runtime data.
   const before=Math.max(0,at-190),after=Math.min(html.length,at+550);
-  console.log('SOURCE SNIPPET '+label+' @'+at+': '+clean(html.slice(before,after)));
+  console.log('SOURCE SNIPPET '+label+' @'+at+': '+clean(html.slice(before,after)).slice(0,650));
  }
 }
 // Trace the true 2.34+ resource override and original save hooks precisely.
