@@ -48,3 +48,31 @@ The approved assembled site exposes `sheetV220State(c)`. The live V2.34+ Resourc
 6. Perform a final production→Neon incremental comparison before cutover.
 
 **Status:** source mapping complete; staged read-only provenance safeguards implemented. Write-path migration and real browser acceptance remain pending.
+
+## Isolated synthetic save/reload result (22 November, audit only)
+
+**Test location:** disposable Neon child branch `resource-usage-roundtrip-audit` (`br-rapid-haze-bglxt1nu`), created from staging. Nothing was installed on Neon staging or main, and no actual player character was edited.
+
+Two synthetic **campaigns** and characters were necessary because the real schema enforces a unique assigned PC per owner and campaign. The first fixture insert was correctly rejected by that rule and rolled back; the final test respected it.
+
+A **test-only** RPC `terravale_neon_audit_resource_adjust` was installed exclusively on the child branch. It accepts the resource ID, expected revision and requested remaining value, but never accepts a caller-supplied maximum or broad sheet JSON. Maxima come from a private two-row **fixture registry**, **not** a production-authoritative rule catalogue. A row-level lock and expected-revision comparison prevent stale overwrites.
+
+| Test | Observed result |
+|---|---|
+| Synthetic Cleric first-level spell-slot pool | Saved `0`, read back `0` with revision 1 |
+| Synthetic Shaman Spirit Favour | Saved `1`, read back `1` with revision 1 |
+| Spell pool updated with revision 1 | Saved `2`, revision incremented to 2 |
+| Stale spell request with revision 1 | Rejected; current value preserved |
+| Spell pool returned to zero at revision 2 | Saved `0` again at revision 3 |
+| Unknown/custom resource entry | Preserved unchanged while adjusting the registered spell slot |
+| Class and level fields | Preserved unchanged |
+| Above-capacity values | Rejected |
+| Unregistered resource identifier | Rejected |
+| Any copied real character | Rejected by synthetic-ID-only restriction |
+| Unlinked Discord identity | Rejected |
+| Anonymous function execution | Denied |
+| Direct character-table UPDATE as authenticated | Denied |
+| Original 9 migrated characters and 65 RLS policies | Unchanged |
+
+**Status:** the native saved-counter JSON structure supports precise versioned, field-level persistence in an isolated test, with explicit zero and unknown resources preserved. This proves a *mechanical approach*, **not** the production-ready write API. Before a staging write grant, remove the synthetic-only design, derive registered maxima and recovery rules from an authenticated campaign rules catalogue, test DM/other-player authorisation and concurrent browser sessions, and address legacy whole-sheet overwrite conflicts. Keep the original staging/live sheets read-only until those gates pass.
+
