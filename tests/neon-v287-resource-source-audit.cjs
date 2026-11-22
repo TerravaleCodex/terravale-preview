@@ -60,6 +60,9 @@ for(const [label,needle,length] of [
  console.log('LAST SOURCE '+label+' @'+index);
  if(index>=0)console.log('LAST CODE '+label+': '+clean(html.slice(index,index+length)).slice(0,length));
 }
+assert.ok(html.includes("s.resources[r.id]===undefined?r.max"),"Original V2 sheet no-usage fallback changed");
+assert.ok(html.includes("sheetV220ResourcesPanel=function(c)"),"Native V2.34 spell/class source lost");
+assert.ok(html.includes('window.TerravaleV2Bridge?.onLocalPersist?.()'),"Native sheet persistence hook missing");
 const native=html.match(/function\s+sheetV220ResourcesPanel\s*\(/);
 assert.ok(native,'Cannot audit V2.87 without its actual native resource renderer');
 // Audit explicitly, but do not falsely assert resource persistence until
