@@ -22,4 +22,14 @@ for(const needle of markers){
  console.log("SPELL SOURCE "+needle+" at "+index+" = "+snippet.slice(0,7500));
  }
 }
+const el=html.match(/<script[^>]*id=["']v234-spell-tables["'][^>]*>([\\s\\S]*?)<\\/script>/);
+assert.ok(el,"Original V2.34 spell tables not embedded in assembled V2.87");
+const published=JSON.parse(el[1]);
+console.log("SPELL TABLE KEYS",Object.keys(published));
+for(const [name,entry] of Object.entries(published)){
+ console.log("SPELL TABLE "+name+" "+JSON.stringify({
+   kind:entry.kind,source:entry.source,derived:!!entry.derived,
+   levels:Array.isArray(entry.levels)?entry.levels:null
+ }).slice(0,5200));
+}
 console.log("PASS original V2.87 spell and save source inspected");
