@@ -73,4 +73,32 @@ assert.equal(verifiedSlot("Wizard",1,"spell-slot-2"),null);
 assert.equal(verifiedSlot("Wizard",1,"spell-slot-1").max,2);
 assert.equal(verifiedSlot("Cleric",3,"spell-slot-01"),null);
 assert.equal(verifiedSlot("Cleric",3,"resource:custom"),null);
+// The audit SQL is another COPY of the same public V2.87 schedule. Reject
+// source drift rather than trusting an unchecked database fixture.
+const sql=fs.readFileSync("site-overrides/sql/neon_audit_spell_slot_catalog_only.sql","utf8");
+assert.ok(sql.startsWith("-- AUDIT ONLY:"));
+const prefix="$v234$",p=sql.indexOf(prefix),q=sql.indexOf(prefix,p+prefix.length);
+assert.ok(p>0&&q>p+prefix.length,"Audit SQL must contain a literal published manifest");
+const sqlSchedule=JSON.parse(sql.slice(p+prefix.length,q));
+const baseSchedule=Object.fromEntries(Object.entries(entries).filter(([key,x])=>!key.includes("|")&&!x.derived));
+assert.deepEqual(sqlSchedule,baseSchedule,"Audit database schedule must equal all source-reviewed base class tables");
+assert.equal(Object.keys(sqlSchedule).length,10);
+let count=0;
+for(const entry of Object.values(sqlSchedule))for(const row of entry.levels)
+ count+=Array.isArray(row)?row.filter(n=>n>0).length:row.count>0?1:0;
+assert.equal(count,848,"Source review required before a spell resource cap count changes");
+for(const fragment of [
+ "source_revision IN ('native-v287-v220-verified','native-v287-v234-spells-verified')",
+ "r.class_name=row_data.approved_build#>>'{character,className}'",
+ "r.character_level=(row_data.approved_build#>>'{character,level}')::integer",
+ "row_data.approved_build->>'class' IS DISTINCT FROM",
+ "row_data.approved_build->>'level' IS DISTINCT FROM",
+ "No source-verified server resource limit",
+ "name LIKE 'Neon resource audit %'",
+ "OUTDATED"
+])if(fragment!=="OUTDATED")assert.ok(sql.includes(fragment),"SQL safety rule missing: "+fragment);
+assert.ok(!/GRANT\s+UPDATE\s+ON\s+public\.characters/i.test(sql));
+assert.ok(!sql.includes("FROM terravale_internal.neon_resource_roundtrip_audit_limits"),
+ "No unreviewed per-character mock limits allowed");
+assert.ok(!Object.keys(sqlSchedule).some(k=>k.includes("|")),"Subclass resources must be separate and reviewed");
 console.log("PASS all 12 original V2.87 spell/Pact schedules at every level; exact base caster limits, subclass gating, no inferred recovery or pools.");
