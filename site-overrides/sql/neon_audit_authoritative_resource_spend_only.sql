@@ -155,7 +155,8 @@ BEGIN
    END IF;
    RETURN jsonb_build_object('resource_id',prior.resource_id,
      'remaining',prior.resulting_remaining,'max',prior.resulting_max,
-     'version',prior.resulting_version,'replayed',true);
+     'version',prior.resulting_version,'replayed',true,
+     'requires_refresh',prior.resulting_version IS DISTINCT FROM canonical.version);
  END IF;
  IF canonical.version IS DISTINCT FROM p_expected_version THEN
    RAISE EXCEPTION 'Resource version conflict; reload current state'
@@ -213,7 +214,8 @@ BEGIN
  ) VALUES(p_character,p_request_id,actor,p_resource,p_expected_version,p_spend,
    next_version,new_value,cap);
  RETURN jsonb_build_object('resource_id',p_resource,'remaining',new_value,
-   'max',cap,'version',next_version,'replayed',false);
+   'max',cap,'version',next_version,'replayed',false,
+   'requires_refresh',false);
 END
 $spend$;
 -- AUDIT STATEMENT
