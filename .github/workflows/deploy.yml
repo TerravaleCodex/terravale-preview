@@ -17,6 +17,8 @@ on:
       - "tools/build-neon-native-v287.cjs"
       - "tests/neon-native-v287-browser.cjs"
       - "tests/neon-v287-resource-source-audit.cjs"
+      - "tests/neon-v287-resource-roundtrip-audit.mjs"
+      - "site-overrides/sql/neon_audit_resource_roundtrip_only.sql"
       - "tests/neon-v287-sheet-snapshot.mjs"
       - "tests/neon-v2-sheet-preview.mjs"
       - "tests/neon-v2-sheet-browser.cjs"
@@ -309,6 +311,8 @@ jobs:
         run: node tests/v287-adaptive-resources.cjs
       - name: Audit authoritative V2.87 resource and spell persistence code
         run: node tests/neon-v287-resource-source-audit.cjs
+      - name: Verify synthetic Neon Cleric and Shaman usage source and audit-only write safety
+        run: node tests/neon-v287-resource-roundtrip-audit.mjs
       - name: Inspect native character rest actions
         run: node tests/v281-rest-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
