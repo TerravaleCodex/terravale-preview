@@ -68,5 +68,8 @@ assert.throws(()=>makeV287NeonReadOnlySnapshot(core,{...extras,canonical_awards:
 const html=fs.readFileSync("site-overrides/neon-staging-auth.html","utf8");
 assert.match(html,/makeV287NeonReadOnlySnapshot\(currentCoreSheet,v,characterId\)/);
 assert.match(html,/V2\.87 source snapshot checked/);
+assert.match(html,/native-resource-provenance/);
+assert.match(html,/no explicit saved usage records/);
+assert.match(html,/derived default rather than a verified remaining value/);
 assert.ok(!/\.innerHTML\s*=|localStorage|sessionStorage/.test(html));
 console.log("PASS: stable V2.87 read-only snapshot preserves original builds, zero charges, item/source shapes and per-character authorization.");
