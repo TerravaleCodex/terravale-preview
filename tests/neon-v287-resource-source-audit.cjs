@@ -29,6 +29,23 @@ for(const [label,re] of probes){
   console.log('SOURCE SNIPPET '+label+' @'+at+': '+clean(html.slice(before,after)));
  }
 }
+// Trace the true 2.34+ resource override and original save hooks precisely.
+// These are public-source excerpts; no database rows or runtime characters.
+const focused=[
+ ['v220-state-fn','function sheetV220State(c)',1800],
+ ['v220-resource-class-fn','function sheetV220Resources(c)',4500],
+ ['v234-resource-override','sheetV220Resources=function(c)',6000],
+ ['v234-resource-panel-override','sheetV220ResourcesPanel=function(c)',3600],
+ ['v220-native-persist','function persist(',1900],
+ ['v234-internal-resource-write',".dataset.action==='sheetResource'",1600],
+ ['v234-counter-initial',"s.resources[r.id]",900],
+ ['native-class-rest','data-v235-rest',1200]
+];
+for(const [label,needle,length] of focused){
+ const i=html.indexOf(needle);
+ console.log('FOCUS SOURCE '+label+' @'+i);
+ if(i>=0)console.log('FOCUS CODE '+label+': '+clean(html.slice(i,Math.min(html.length,i+length))).slice(0,length));
+}
 const native=html.match(/function\s+sheetV220ResourcesPanel\s*\(/);
 assert.ok(native,'Cannot audit V2.87 without its actual native resource renderer');
 // Audit explicitly, but do not falsely assert resource persistence until
