@@ -46,6 +46,20 @@ for(const [label,needle,length] of focused){
  console.log('FOCUS SOURCE '+label+' @'+i);
  if(i>=0)console.log('FOCUS CODE '+label+': '+clean(html.slice(i,Math.min(html.length,i+length))).slice(0,length));
 }
+// V2.34's final resource renderer is assembled well after the original
+// V2.20 functions. Trace the most recent override and its slot IDs.
+const v234=html.indexOf('data-source="v234',6000000);
+for(const [label,needle,length] of [
+  ['v234-pool-derivation','sheetV220Resources=function(c)',7600],
+  ['v234-resource-card','function resourceCell(',2400],
+  ['v234-current-default','state[r.id]===undefined',1900],
+  ['v234-panel-last','sheetV220ResourcesPanel=function(c)',3800],
+  ['live-persist-hook','onLocalPersist',1400]
+]){
+ const index=html.lastIndexOf(needle);
+ console.log('LAST SOURCE '+label+' @'+index);
+ if(index>=0)console.log('LAST CODE '+label+': '+clean(html.slice(index,index+length)).slice(0,length));
+}
 const native=html.match(/function\s+sheetV220ResourcesPanel\s*\(/);
 assert.ok(native,'Cannot audit V2.87 without its actual native resource renderer');
 // Audit explicitly, but do not falsely assert resource persistence until
