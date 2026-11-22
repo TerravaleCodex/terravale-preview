@@ -26,6 +26,9 @@ on:
       - "site-overrides/neon-v287-spell-progression.json"
       - "site-overrides/sql/neon_audit_spell_slot_catalog_only.sql"
       - "tests/neon-v287-spell-rule-catalog.cjs"
+      - "tests/neon-v287-authoritative-resource-spend.cjs"
+      - "site-overrides/sql/neon_audit_authoritative_resource_spend_only.sql"
+      - "site-overrides/sql/neon_audit_second_linked_actor_only.sql"
       - "site-overrides/neon-v287-fixed-resource-tables.json"
       - "site-overrides/sql/neon_audit_resource_roundtrip_only.sql"
       - "tests/neon-v287-sheet-snapshot.mjs"
@@ -332,6 +335,8 @@ jobs:
         run: node tests/neon-v287-resource-overwrite-audit.cjs
       - name: Verify source-checked V2.87 spell and Pact limits against private audit SQL
         run: node tests/neon-v287-spell-rule-catalog.cjs
+      - name: Require canonical idempotent source-authorised spend and no live write grants
+        run: node tests/neon-v287-authoritative-resource-spend.cjs
       - name: Inspect native character rest actions
         run: node tests/v281-rest-audit.cjs
       - name: Verify native Class Codex levels, features and paths do not repaint whole page
