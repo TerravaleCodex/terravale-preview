@@ -45,7 +45,7 @@ BEGIN
  END IF;
  IF p_character IS NULL OR p_resource IS NULL OR p_expected_version IS NULL
    OR p_initial_remaining IS NULL OR p_request_id IS NULL
-   OR p_basis NOT IN ('player_confirmed','dm_session_record')
+   OR p_basis IS NULL OR p_basis NOT IN ('player_confirmed','dm_session_record')
    OR p_confirmation IS DISTINCT FROM 'confirmed_current_remaining_not_derived'
    OR p_expected_version<0 OR p_expected_version>999999
    OR p_initial_remaining<0 OR p_initial_remaining>20
