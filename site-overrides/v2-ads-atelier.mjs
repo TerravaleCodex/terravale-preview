@@ -179,6 +179,26 @@ function layout(){
 #tv-live-atelier .tv-ad-interval-range{width:100%;accent-color:#b68bdf;margin-top:8px;cursor:pointer}
 #tv-live-atelier .tv-ad-interval-readout{display:block;color:#d9b9fa;font-weight:700;margin-top:8px}
 
+#tv-live-atelier>.tv-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px;row-gap:20px;align-items:start}
+#tv-live-atelier>.tv-form>*{min-width:0}
+#tv-live-atelier .tv-ad-compact-field{display:flex;flex-direction:column;gap:12px;min-width:0;align-self:start}
+#tv-live-atelier .tv-ad-field-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#tv-live-atelier .tv-ad-field-label{font-size:12px;color:#d2c9db}
+#tv-live-atelier .tv-ad-interval-readout{margin:0;font-size:12px}
+#tv-live-atelier .tv-ad-interval-range,#tv-live-atelier .tv-ad-slider-label input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border:0;border-radius:20px;background:linear-gradient(90deg,#a987d6 0%,#a987d6 var(--tv-slider-fill,0%),#34303b var(--tv-slider-fill,0%),#34303b 100%);outline:none;margin:6px 0 5px;cursor:pointer}
+#tv-live-atelier input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;border:3px solid #eee1ff;background:#8257ae;box-shadow:0 0 0 2px #31233f}
+#tv-live-atelier input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;border:3px solid #eee1ff;background:#8257ae}
+#tv-live-atelier .tv-ad-time-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:1px}
+#tv-live-atelier .tv-ad-time-presets button{min-width:0;padding:8px 3px;white-space:nowrap;font-size:11px}
+#tv-live-atelier .tv-ad-segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:0}
+#tv-live-atelier .tv-ad-segmented[aria-label="Position"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+#tv-live-atelier .tv-ad-segmented button{min-width:0;padding:8px 5px;white-space:nowrap}
+#tv-live-atelier .tv-ad-slider-label{gap:13px;padding:0}
+#tv-live-atelier .tv-ad-slider-label output{top:0}
+#tv-live-atelier .tv-ad-slider-label input[type=range]{margin-top:10px}
+#tv-live-atelier .tv-ad-replaced-select,#tv-live-atelier .tv-ad-visually-hidden{display:none!important}
+@media(max-width:780px){#tv-live-atelier>.tv-form{grid-template-columns:minmax(0,1fr);row-gap:18px}}
+@media(max-width:420px){#tv-live-atelier .tv-ad-time-presets button{font-size:10px}#tv-live-atelier .tv-ad-segmented button{font-size:11px}}
 </style><header><div><div class="tv-eyebrow">CABINET OF CURIOSITIES · DM CONTROL ROOM</div>
     <h2>Advertisement Atelier</h2><p class="tv-hint">Approved artwork, server-saved settings, every page. Ads remain off until you enable them.</p></div></header>
     <div class="tv-form">
@@ -230,23 +250,67 @@ function layout(){
       <button type="button" id="tv-ad-clear">Clear pop-ups</button></div>
     <p id="tv-ad-save-status" class="tv-hint" aria-live="polite"></p>
     <p class="tv-hint">The windows have no title bars; drag the artwork and use the translucent × to close them. ${ART.length} approved images available in this hosted build.</p>`;
-  panel.querySelector('[data-ad-setting="chance_percent"]').addEventListener("input",e=>{panel.querySelector("#tv-ad-chance-output").textContent=e.target.value+"%";});
+  panel.querySelector('[data-ad-setting="chance_percent"]').addEventListener("input",e=>{panel.querySelector("#tv-ad-chance-output").textContent=e.target.value+"%";panel._syncAdControls?.();});
+  // Keep each setting as a single grid item; the previous implementation
+  // inserted every control directly into .tv-form and broke row alignment.
   const syncs=[];
   for(const key of ["size_mode","position_mode"]){
-    const select=panel.querySelector('[data-ad-setting="'+key+'"]'),group=document.createElement("div");
-    group.className="tv-ad-button-group";group.setAttribute("role","group");group.setAttribute("aria-label",key==="size_mode"?"Artwork size":"Position");
+    const select=panel.querySelector('[data-ad-setting="'+key+'"]');
+    const originalLabel=select.closest("label");
+    const group=document.createElement("div");
+    const field=document.createElement("div");
+    field.className="tv-ad-compact-field";
+    group.className="tv-ad-button-group tv-ad-segmented";
+    group.setAttribute("role","group");
+    const name=key==="size_mode"?"Artwork size":"Position";
+    group.setAttribute("aria-label",name);
+    const heading=document.createElement("span");heading.className="tv-ad-field-label";heading.textContent=name;
     const update=()=>group.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.value===select.value)));
-    for(const option of select.options){const b=document.createElement("button");b.type="button";b.dataset.value=option.value;b.textContent=option.textContent;b.onclick=()=>{select.value=b.dataset.value;update();};group.append(b);}
-    select.after(group);select.classList.add("tv-ad-visually-hidden");syncs.push(update);
+    for(const option of select.options){
+      const button=document.createElement("button");button.type="button";
+      button.dataset.value=option.value;
+      button.textContent=key==="size_mode"?({"large":"Large","huge":"Very large","balanced":"Balanced","mixed":"Mixed"}[option.value]||option.textContent):({"scatter":"Scatter","center":"Centre","corners":"Corners"}[option.value]||option.textContent);
+      button.onclick=()=>{select.value=button.dataset.value;update();};
+      group.append(button);
+    }
+    originalLabel.replaceWith(field);
+    field.append(heading,select,group);
+    select.classList.add("tv-ad-visually-hidden");
+    syncs.push(update);
   }
-  const interval=panel.querySelector('[data-ad-setting="interval_seconds"]'),opts=[...interval.options],range=document.createElement("input"),readout=document.createElement("output"),shortcuts=document.createElement("div");
-  range.type="range";range.min=0;range.max=opts.length-1;range.step=1;range.className="tv-ad-interval-range";range.setAttribute("aria-label","Average interval");
-  readout.className="tv-ad-interval-readout";shortcuts.className="tv-ad-button-group";
-  interval.after(readout,range,shortcuts);interval.classList.add("tv-ad-visually-hidden");
-  const updateInterval=()=>{const i=Math.max(0,opts.findIndex(x=>x.value===interval.value));range.value=i;readout.textContent=opts[i].textContent;shortcuts.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.value===interval.value)));};
-  for(const val of ["5","15","30","60","120","300","600","1800","3600"]){const o=opts.find(x=>x.value===val),b=document.createElement("button");b.type="button";b.dataset.value=val;b.textContent=o.textContent;b.onclick=()=>{interval.value=val;updateInterval();};shortcuts.append(b);}
+  const interval=panel.querySelector('[data-ad-setting="interval_seconds"]');
+  const originalIntervalLabel=interval.closest("label");
+  const opts=[...interval.options];
+  const field=document.createElement("div");field.className="tv-ad-compact-field tv-ad-interval-field";
+  const head=document.createElement("div");head.className="tv-ad-field-head";
+  const title=document.createElement("span");title.className="tv-ad-field-label";title.textContent="Average interval";
+  const readout=document.createElement("output");readout.className="tv-ad-interval-readout";
+  head.append(title,readout);
+  const range=document.createElement("input");range.type="range";range.min="0";range.max=String(opts.length-1);range.step="1";range.className="tv-ad-interval-range";range.setAttribute("aria-label","Average interval");
+  const shortcuts=document.createElement("div");shortcuts.className="tv-ad-button-group tv-ad-time-presets";
+  originalIntervalLabel.replaceWith(field);
+  field.append(head,interval,range,shortcuts);
+  interval.classList.add("tv-ad-visually-hidden");
+  const updateInterval=()=>{
+    const i=Math.max(0,opts.findIndex(x=>x.value===interval.value));
+    range.value=String(i);readout.textContent=opts[i].textContent;
+    shortcuts.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.value===interval.value)));
+  };
+  for(const val of ["5","30","120","600","3600"]){
+    const option=opts.find(x=>x.value===val),button=document.createElement("button");
+    button.type="button";button.dataset.value=val;button.textContent=option.textContent;
+    button.onclick=()=>{interval.value=val;updateInterval();};shortcuts.append(button);
+  }
   range.addEventListener("input",()=>{interval.value=opts[Number(range.value)].value;updateInterval();});
-  syncs.push(updateInterval);panel._syncAdControls=()=>syncs.forEach(fn=>fn());panel._syncAdControls();
+  syncs.push(updateInterval);
+  panel._syncAdControls=()=>{
+    syncs.forEach(fn=>fn());
+    for(const slider of panel.querySelectorAll('input[type="range"]')){
+      const value=Number(slider.value),min=Number(slider.min)||0,max=Number(slider.max)||100;
+      slider.style.setProperty("--tv-slider-fill",Math.max(0,Math.min(100,(value-min)/(max-min)*100))+"%");
+    }
+  };
+  panel._syncAdControls();
   panel.querySelector("#tv-ad-save").onclick=saveSettings;
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
