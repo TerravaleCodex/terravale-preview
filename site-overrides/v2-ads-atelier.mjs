@@ -116,7 +116,7 @@ function spawnAd(force=false) {
   const close=document.createElement("button");close.className="tv-close";close.textContent="×";
   close.type="button";close.setAttribute("aria-label","Close advertisement");
   close.addEventListener("click",e=>{e.stopPropagation();closeAd(popup,true)});
-  popup.append(img,close);document.body.append(popup);openAds.push({popup,art});
+  popup.append(img,close);popup.style.zIndex=String(10020+ ++nextIndex);document.body.append(popup);openAds.push({popup,art});
   let drag=null;
   popup.addEventListener("pointerdown",e=>{
     if(e.target===close || close.contains(e.target))return;
