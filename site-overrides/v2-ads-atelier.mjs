@@ -172,6 +172,13 @@ function layout(){
 #tv-live-atelier .tv-ad-slider-label{display:flex;flex-direction:column;gap:14px;position:relative;padding:8px 0}
 #tv-live-atelier .tv-ad-slider-label output{position:absolute;right:0;top:8px;font-weight:700;color:#d9b8fb}
 #tv-live-atelier .tv-ad-slider-label input[type=range]{width:100%;accent-color:#b68bdf;cursor:pointer}
+#tv-live-atelier .tv-ad-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#tv-live-atelier .tv-ad-button-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#tv-live-atelier .tv-ad-button-group button{background:#1b1724;color:#d8cce2;border:1px solid #584763;border-radius:8px;padding:8px 10px;min-height:34px;font-size:12px}
+#tv-live-atelier .tv-ad-button-group button[aria-pressed=true]{background:#4c355f;border-color:#bb98e0;color:#fff}
+#tv-live-atelier .tv-ad-interval-range{width:100%;accent-color:#b68bdf;margin-top:8px;cursor:pointer}
+#tv-live-atelier .tv-ad-interval-readout{display:block;color:#d9b9fa;font-weight:700;margin-top:8px}
+
 </style><header><div><div class="tv-eyebrow">CABINET OF CURIOSITIES · DM CONTROL ROOM</div>
     <h2>Advertisement Atelier</h2><p class="tv-hint">Approved artwork, server-saved settings, every page. Ads remain off until you enable them.</p></div></header>
     <div class="tv-form">
@@ -224,6 +231,22 @@ function layout(){
     <p id="tv-ad-save-status" class="tv-hint" aria-live="polite"></p>
     <p class="tv-hint">The windows have no title bars; drag the artwork and use the translucent × to close them. ${ART.length} approved images available in this hosted build.</p>`;
   panel.querySelector('[data-ad-setting="chance_percent"]').addEventListener("input",e=>{panel.querySelector("#tv-ad-chance-output").textContent=e.target.value+"%";});
+  const syncs=[];
+  for(const key of ["size_mode","position_mode"]){
+    const select=panel.querySelector('[data-ad-setting="'+key+'"]'),group=document.createElement("div");
+    group.className="tv-ad-button-group";group.setAttribute("role","group");group.setAttribute("aria-label",key==="size_mode"?"Artwork size":"Position");
+    const update=()=>group.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.value===select.value)));
+    for(const option of select.options){const b=document.createElement("button");b.type="button";b.dataset.value=option.value;b.textContent=option.textContent;b.onclick=()=>{select.value=b.dataset.value;update();};group.append(b);}
+    select.after(group);select.classList.add("tv-ad-visually-hidden");syncs.push(update);
+  }
+  const interval=panel.querySelector('[data-ad-setting="interval_seconds"]'),opts=[...interval.options],range=document.createElement("input"),readout=document.createElement("output"),shortcuts=document.createElement("div");
+  range.type="range";range.min=0;range.max=opts.length-1;range.step=1;range.className="tv-ad-interval-range";range.setAttribute("aria-label","Average interval");
+  readout.className="tv-ad-interval-readout";shortcuts.className="tv-ad-button-group";
+  interval.after(readout,range,shortcuts);interval.classList.add("tv-ad-visually-hidden");
+  const updateInterval=()=>{const i=Math.max(0,opts.findIndex(x=>x.value===interval.value));range.value=i;readout.textContent=opts[i].textContent;shortcuts.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.value===interval.value)));};
+  for(const val of ["5","15","30","60","120","300","600","1800","3600"]){const o=opts.find(x=>x.value===val),b=document.createElement("button");b.type="button";b.dataset.value=val;b.textContent=o.textContent;b.onclick=()=>{interval.value=val;updateInterval();};shortcuts.append(b);}
+  range.addEventListener("input",()=>{interval.value=opts[Number(range.value)].value;updateInterval();});
+  syncs.push(updateInterval);panel._syncAdControls=()=>syncs.forEach(fn=>fn());panel._syncAdControls();
   panel.querySelector("#tv-ad-save").onclick=saveSettings;
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
@@ -348,6 +371,7 @@ function fillForm(){
   categoryDraft=new Set(safeCategories(settings.ad_categories));
   renderCategories();
   renderPriorities();
+  panel._syncAdControls?.();
 }
 async function saveSettings(){
   const panel=document.getElementById("tv-live-atelier");
