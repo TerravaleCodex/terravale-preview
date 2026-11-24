@@ -5,7 +5,7 @@ const ART = adsRoot ? JSON.parse(adsRoot.textContent) : [];
 const GRIM_MEAL_ID = "zip-037";
 const AD_WEIGHTS = Object.freeze([1,3,8]);
 const approvedAdIds = new Set(ART.map(art=>art.id));
-let priorityDraft = Object.create(null);
+let priorityDraft = Object.create(null), showAllPriorityRows=false;
 const safePriorities = value => {
   const output=Object.create(null);
   if(value && typeof value==="object" && !Array.isArray(value)){
@@ -162,7 +162,7 @@ function layout(){
       <label class="tv-toggle"><input type="checkbox" data-ad-setting="repeat_ads">Allow duplicate artwork</label>
     </div>
     <section class="tv-ad-frequency" aria-label="Advert frequency and selection">
-      <div class="tv-eyebrow">ADVERTISMENT ROTATION · DM ONLY</div>
+      <div class="tv-eyebrow">ADVERTISEMENT ROTATION · DM ONLY</div>
       <h3>Which adverts appear?</h3>
       <p class="tv-hint">Choose the Grim Meal campaign on its own, or make individual approved adverts appear more often in the normal rotation. These settings do not turn adverts on automatically.</p>
       <label class="tv-toggle tv-grim-only"><input type="checkbox" data-ad-setting="grim_food_only">Only show Grim Meal · Taste the Afterlife</label>
@@ -173,6 +173,7 @@ function layout(){
         <button type="button" id="tv-ad-priority-reset">Reset priorities</button>
       </div>
       <div class="tv-ad-priority-list" id="tv-ad-priority-list" aria-label="Advert frequency preferences"></div>
+      <button type="button" id="tv-ad-show-all" hidden>Show all adverts</button>
       <p class="tv-hint" id="tv-ad-priority-summary">Normal = 1× · More often = 3× · Spotlight = 8×. Weights affect selection, not overall pop-up frequency.</p>
     </section>
     <section class="tv-adblock-config" aria-label="Adblockn’t progression controls">
@@ -196,7 +197,12 @@ function layout(){
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
   panel.querySelector("#tv-ad-clear").onclick=clearAds;
-  panel.querySelector("#tv-ad-frequency-search").addEventListener("input",renderPriorities);
+  panel.querySelector("#tv-ad-frequency-search").addEventListener("input",()=>{
+    showAllPriorityRows=false;renderPriorities();
+  });
+  panel.querySelector("#tv-ad-show-all").onclick=()=>{
+    showAllPriorityRows=!showAllPriorityRows;renderPriorities();
+  };
   panel.querySelector("#tv-ad-priority-reset").onclick=()=>{
     priorityDraft=Object.create(null);renderPriorities();
   };
@@ -208,9 +214,14 @@ function renderPriorities(){
   if(!panel)return;
   const container=panel.querySelector("#tv-ad-priority-list");
   const query=panel.querySelector("#tv-ad-frequency-search").value.trim().toLowerCase();
-  const selected=ART.filter(art=>art.title.toLowerCase().includes(query)||art.id.includes(query));
+  const selected=ART.filter(art=>art.title.toLowerCase().includes(query)||art.id.includes(query))
+    .sort((a,b)=>(priorityDraft[b.id]||1)-(priorityDraft[a.id]||1));
+  const showAll=panel.querySelector("#tv-ad-show-all");
+  showAll.hidden=selected.length<=12;
+  showAll.textContent=showAllPriorityRows?"Show fewer adverts":"Show all "+selected.length+" adverts";
+  const visible=showAllPriorityRows?selected:selected.slice(0,12);
   container.replaceChildren();
-  for(const art of selected){
+  for(const art of visible){
     const row=document.createElement("div");row.className="tv-ad-priority-row";
     const thumb=document.createElement("img");thumb.src=manifestImage(art);thumb.alt="";thumb.loading="lazy";
     const title=document.createElement("span");title.textContent=art.title;title.title=art.title;
