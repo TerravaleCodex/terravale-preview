@@ -272,3 +272,57 @@
   .page-cabinet .cabinet-grid>.cab-card,
   .page-library .tv-lore .lore-grid>.lore-card{transition:none!important}
 }
+
+
+/* Cabinet DM Advertisement Atelier · per-art rotation control. */
+.tv-ad-controls .tv-ad-frequency{
+  margin:20px 0;padding:20px;border:1px solid var(--edge,#33313f);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#c3a5ff) 7%,var(--raised,#171821)),var(--raised,#171821));
+  border-radius:14px
+}
+.tv-ad-controls .tv-ad-frequency h3{font:500 25px/1.2 var(--serif,Georgia,serif);margin:9px 0}
+.tv-ad-controls .tv-ad-frequency .tv-grim-only{
+  display:flex;align-items:center;gap:12px;padding:15px;margin:16px 0 8px;
+  border:1px solid color-mix(in srgb,var(--accent,#c3a5ff) 55%,var(--edge));
+  border-radius:10px;background:color-mix(in srgb,var(--accent,#c3a5ff) 10%,transparent);
+  color:var(--ink);font-size:13px;font-weight:700;cursor:pointer
+}
+.tv-ad-frequency-head{
+  display:grid;grid-template-columns:minmax(160px,1fr) auto;align-items:end;gap:9px;
+  margin:19px 0 13px
+}
+.tv-ad-controls .tv-ad-frequency-head label{grid-column:1/-1;margin:0;color:var(--soft)}
+.tv-ad-controls #tv-ad-frequency-search{
+  width:100%;min-width:0;border:1px solid var(--edge);background:var(--surface);
+  color:var(--ink);border-radius:9px;padding:10px 12px;font:inherit
+}
+.tv-ad-priority-list{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));
+  gap:8px;padding:1px;margin-bottom:13px
+}
+.tv-ad-priority-row{
+  display:grid;grid-template-columns:45px minmax(0,1fr) auto;align-items:center;
+  gap:10px;min-width:0;border:1px solid var(--edge);
+  border-radius:9px;background:color-mix(in srgb,var(--surface,#101119) 78%,transparent);padding:8px
+}
+.tv-ad-priority-row img{width:45px;height:43px;object-fit:contain;border-radius:5px;background:#0c0a12}
+.tv-ad-priority-row span{min-width:0;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.tv-ad-controls .tv-ad-weight{
+  border-radius:8px;white-space:normal;text-align:center;max-width:115px;min-width:83px;
+  padding:9px 8px;font-size:11px;font-weight:700
+}
+.tv-ad-controls .tv-ad-weight[data-weight="3"]{
+  border-color:color-mix(in srgb,var(--accent,#c3a5ff) 60%,var(--edge));
+  color:var(--accent,#c3a5ff)
+}
+.tv-ad-controls .tv-ad-weight[data-weight="8"]{
+  border-color:var(--gold,#d8b781);color:var(--gold,#d8b781);
+  background:color-mix(in srgb,var(--gold,#d8b781) 9%,var(--raised,#171821))
+}
+@media(max-width:600px){
+  .tv-ad-controls .tv-ad-frequency{padding:15px}
+  .tv-ad-frequency-head{grid-template-columns:1fr}
+  .tv-ad-controls .tv-ad-weight{min-width:76px}
+}
+
+.tv-ad-controls #tv-ad-show-all{margin:4px 0 13px;min-width:190px}

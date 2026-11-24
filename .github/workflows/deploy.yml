@@ -212,6 +212,8 @@ on:
       - "site-overrides/v244-fixed-gallery.css"
       - "site-overrides/v2-discord-auth.mjs"
       - "site-overrides/v2-ads-atelier.mjs"
+      - "site-overrides/sql/v288_cabinet_ad_frequency_preferences.sql"
+      - "tests/v288-cabinet-ad-frequency.cjs"
       - "site-overrides/v248-*.js"
       - "site-overrides/v248-*.css"
       - "tools/v248_native_patch.py"
@@ -248,6 +250,7 @@ jobs:
           python3 tools/overlay-v239-with-discord.py
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
+          node tests/v288-cabinet-ad-frequency.cjs
           node --check site-overrides/v243-campaign-achievement-bridge.js
           node --check site-overrides/v246-real-characters.js
           node --check site-overrides/v246-ui-controls.js
