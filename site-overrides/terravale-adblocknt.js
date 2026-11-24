@@ -4,7 +4,7 @@ if(window.__tvAdblockntMounted)return;window.__tvAdblockntMounted=true;
 const BASE='/terravale-preview/', ROOT=BASE+'codex-ads/', API='https://emwlvbmnrrhxhrmlwkhs.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtd2x2Ym1ucnJoeGhybWx3a2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NjMwMzQsImV4cCI6MjEwODQzOTAzNH0.HAK2OGYfCITRCiGZ2WoIqYhRLQahyXtlUWcMwqBFk-g';
 const DEFAULT={enabled:false,auto:true,interval_seconds:25,motion:true,swarm:true};
 let settings={...DEFAULT},settingsLoaded=false,user=null,token=null,isDM=false,progress={ads_dismissed:0,adblocknt_unlocked_at:null,personal_adblocker:false,premium_shown:false};
-let ads=[],ui=null,layer=null,closeAll=null,widget=null,box=null,tab='cabinet',timer=null,settingsPoll=null,authPoll=null,open=new Map(),serial=0,z=21000,swarmTimer=[],swarmRunning=false,dbBusy=false,pending=0,noticeTimer=null,sessionKey='';
+let ads=[],adSelection={grim_food_only:false,ad_categories:[],ad_priorities:{}},ui=null,layer=null,closeAll=null,widget=null,box=null,tab='cabinet',timer=null,settingsPoll=null,authPoll=null,open=new Map(),serial=0,z=21000,swarmTimer=[],swarmRunning=false,dbBusy=false,pending=0,noticeTimer=null,sessionKey='';
 const $=(s,root=document)=>root.querySelector(s), E=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n;};
 const N=n=>Math.max(0,Math.floor(Number(n)||0));
 function access(){
@@ -37,13 +37,32 @@ function markSettings(newValues){const prior=JSON.stringify(settings),was=settin
 async function refreshSettings(){
  try{const r=await api('codex_ad_settings?select=enabled,auto,interval_seconds,motion,swarm&id=eq.1',{auth:false});if(!r?.[0])throw Error('Settings missing');markSettings(r[0]);}
  catch(e){markSettings(DEFAULT);if(box&&!box.hidden)alertUser('Ads held off','The global settings could not be checked, so deliveries remain disabled.');}
+ // Match the current Cabinet DM category/grim/frequency decisions.
+ try{
+   const rows=await api('site_ad_settings?select=grim_food_only,ad_categories,ad_priorities&id=eq.1',{auth:false});
+   if(rows?.[0])adSelection=rows[0];
+ }catch(e){console.warn('Live ad category selection unavailable:',e.message);}
 }
 function allow(){return settingsLoaded&&settings.enabled&&Boolean(user)&&!progress.personal_adblocker}
 function reschedule(){clearTimeout(timer);timer=null;if(!allow()||!settings.auto||swarmRunning)return;
  const sec=Math.max(5,Math.min(120,Number(settings.interval_seconds)||25));
  timer=setTimeout(()=>{if(allow()&&!document.hidden)spawnAd('normal');reschedule()},sec*1000);
 }
-function chooseAd(){if(!ads.length)return null;const onscreen=new Set([...open.values()].map(x=>x.ad?.id));const pool=ads.filter(x=>!onscreen.has(x.id));return (pool.length?pool:ads)[Math.floor(Math.random()*(pool.length||ads.length))];}
+function chooseAd(){
+ if(!ads.length)return null;
+ const categories=Array.isArray(adSelection.ad_categories)?adSelection.ad_categories:[];
+ const scoped=ads.filter(x=>adSelection.grim_food_only?x.category==='grim-gourmet':
+   (!categories.length||categories.includes(x.category)));
+ if(!scoped.length)return null;
+ const onscreen=new Set([...open.values()].map(x=>x.ad?.id));
+ const free=scoped.filter(x=>!onscreen.has(x.id));
+ const pool=free.length?free:scoped;
+ const saved=adSelection.ad_priorities||{};
+ const weights=pool.map(x=>[3,8].includes(saved[x.id])?saved[x.id]:1);
+ let pick=Math.random()*weights.reduce((sum,w)=>sum+w,0);
+ for(let i=0;i<pool.length;i++){pick-=weights[i];if(pick<0)return pool[i];}
+ return pool[pool.length-1];
+}
 function sizing(ad,incident=false){const ratio=(Number(ad.width)||800)/(Number(ad.height)||1100), w=window.innerWidth,h=window.innerHeight;
  const b=incident?(ratio>1.3?430:ratio>.9?385:330):(ratio>1.3?460:ratio>.9?400:350);
  return Math.round(Math.min(b*(.88+Math.random()*.30),w-26,Math.max(90,(h-36)*ratio)));
@@ -52,7 +71,7 @@ function spawnAd(kind='normal',forced=false){if(!ads.length||!settings.enabled||
  const ad=chooseAd();if(!ad)return null;const id=++serial,card=E('section','tv-ad-popup'+(kind==='swarm'?' tv-ad-swarm':'')),img=E('img','tv-ad-art'),close=E('button','tv-ad-dismiss','×');
  const w=sizing(ad,kind==='swarm'),h=Math.round(w/(ad.width/ad.height));card.dataset.kind=kind;card.style.width=w+'px';card.style.zIndex=++z;
  card.style.left=Math.round(10+Math.random()*Math.max(0,innerWidth-w-22))+'px';card.style.top=Math.round(12+Math.random()*Math.max(0,innerHeight-h-27))+'px';
- img.src=ROOT+'ads/'+ad.id+'.webp';img.alt=ad.title+' — fictional advertisement';img.draggable=false;img.decoding='async';
+ img.src=BASE+'veiled-codex/ads/'+ad.id+'.webp';img.alt=ad.title+' — fictional advertisement';img.draggable=false;img.decoding='async';
  close.type='button';close.setAttribute('aria-label','Dismiss '+ad.title);close.onclick=()=>dismiss(id,true);card.onpointerdown=()=>card.style.zIndex=++z;
  card.append(img,close);layer.append(card);open.set(id,{card,ad,kind});renderCounter();return id;
 }
@@ -160,7 +179,7 @@ function mount(){
   <div class="tv-ach-reward"><div class="tv-eyebrow">REWARD / APPEARANCE UNLOCK</div><strong>Terravale Adblocker™</strong><p class="tv-small">Dismiss 25 real ad pop-ups to unlock the optional Adblocker. The 20-ad incident is triggered at the unlock milestone when global ads and swarm mode are enabled.</p><button id="tv-ach-open-unlockables" class="tv-secondary" type="button">View unlockable →</button></div>
  </div>
  <div data-tv-pane="appearance" hidden><div class="tv-eyebrow">APPEARANCE · UNLOCKABLES</div><h1>Terravale <em>Adblocker™.</em></h1><p id="tv-adblock-hint" class="tv-small">Dismiss 25 windows to unlock it.</p><button id="tv-adblock-toggle" class="tv-primary" disabled>Unlock through Adblockn’t</button></div>
- <div data-tv-pane="adlab" hidden><div class="tv-eyebrow">ADVERSE ADVERTISING DIVISION</div><h1>Ad <em>Laboratory.</em></h1><p class="tv-small" id="tv-delivery-state">Checking global settings…</p><p class="tv-small">Approved artwork: 56 ads. Open windows: <strong id="tv-ads-open">0</strong>. The Codex's ad layer follows you from page to page.</p><div class="tv-actions"><button class="tv-primary" id="tv-preview-one">Spawn random ad</button><button id="tv-preview-swarm">Preview 20-ad incident</button></div><div id="tv-gallery" class="tv-gallery"></div></div>
+ <div data-tv-pane="adlab" hidden><div class="tv-eyebrow">ADVERSE ADVERTISING DIVISION</div><h1>Ad <em>Laboratory.</em></h1><p class="tv-small" id="tv-delivery-state">Checking global settings…</p><p class="tv-small">Approved artwork: <span id="tv-legacy-ad-count">159</span> ads. Open windows: <strong id="tv-ads-open">0</strong>. The Codex's ad layer follows you from page to page.</p><div class="tv-actions"><button class="tv-primary" id="tv-preview-one">Spawn random ad</button><button id="tv-preview-swarm">Preview 20-ad incident</button></div><div id="tv-gallery" class="tv-gallery"></div></div>
  <div data-tv-pane="dm" hidden><div class="tv-eyebrow">DUNGEON MASTER · GLOBAL SETTINGS</div><h1>Advertisement <em>Controls.</em></h1>${settingsForm()}</div>
  </main><footer>ALL ADVERTISEMENTS ARE FICTIONAL · OFFLINE TEST CHAMBER RETIRED</footer></section>`;
  box.addEventListener('click',ev=>{if(ev.target===box)closePanel()});
@@ -181,7 +200,7 @@ function addNavLinks(){const add=(section,id,label,onClick)=>{const root=$(secti
  else document.querySelectorAll('#tv-nav-dm-ads').forEach(x=>x.remove());
 }
 async function init(){
- try{const r=await fetch(ROOT+'ads.json',{cache:'force-cache'});if(r.ok){const d=await r.json();if(Array.isArray(d)&&d.length===56)ads=d;}}catch(e){console.warn('Approved ad manifest unavailable',e)}
+ try{const r=await fetch(BASE+'veiled-codex/ads.json',{cache:'force-cache'});if(r.ok){const d=await r.json();if(Array.isArray(d)&&d.length===159){ads=d;const count=$('#tv-legacy-ad-count');if(count)count.textContent=String(ads.length);}}}catch(e){console.warn('Approved ad manifest unavailable',e)}
  mount();await refreshSettings();await renewIdentity();authPoll=setInterval(()=>{renewIdentity();addNavLinks()},4500);settingsPoll=setInterval(refreshSettings,18000);setInterval(()=>{if(pending&&!dbBusy)flushDismissals()},12000);
  addNavLinks();
  window.addEventListener('terravale-achievements-changed',()=>paint());

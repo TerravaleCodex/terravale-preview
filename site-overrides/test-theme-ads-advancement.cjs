@@ -27,5 +27,8 @@ for(const needle of ["labButton.hidden=!isDM","if((which==='dm'||which==='adlab'
  assert(ads.includes(needle),"Ad Lab DM gate missing: "+needle);
 }
 assert(!ads.includes("const gallery=$('#tv-gallery');for(const a of ads){") || ads.includes("function populateGallery()"),"Ad gallery eagerly loaded for everyone");
-assert(JSON.parse(read("codex-ads/ads.json")).length===56,"player ads unintentionally removed");
+assert(JSON.parse(read("codex-ads/ads.json")).length===159,"complete historical 159-ad catalogue missing");
+assert(ads.includes("veiled-codex/ads.json"),"Legacy viewer must reference canonical modern catalogue");
+assert(ads.includes("veiled-codex/ads/"),"Legacy ad art must use the shared modern catalogue");
+assert(ads.includes("adSelection"),"Legacy Ad Lab must respect Cabinet DM category selection");
 console.log("PASS: themed Bloodforger nodes, DM-only Ad Laboratory UI, fully functional Advancement route + live-sheet links");

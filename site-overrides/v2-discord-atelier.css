@@ -326,3 +326,31 @@
 }
 
 .tv-ad-controls #tv-ad-show-all{margin:4px 0 13px;min-width:190px}
+
+
+/* V2.89 · DM category allowlist, distinct from appearance frequency. */
+.tv-ad-controls .tv-ad-category-head{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:10px;margin:18px 0 11px
+}
+.tv-ad-controls .tv-ad-category-head strong{font-size:13px;color:var(--ink)}
+.tv-ad-controls .tv-ad-category-head button{
+ font-size:11px;font-weight:700;padding:8px 12px;
+ border-color:color-mix(in srgb,var(--accent,#c3a5ff) 40%,var(--edge))
+}
+.tv-ad-category-options{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;
+ margin:0 0 12px
+}
+.tv-ad-controls .tv-ad-category-pill{
+ border-radius:999px;padding:9px 13px;font-size:11px;line-height:1.35;
+ background:var(--surface,#101119);
+ border:1px solid var(--edge,#33313f);color:var(--soft,#b2aebd)
+}
+.tv-ad-controls .tv-ad-category-pill[data-active="true"]{
+ color:var(--ink,#ebe8ef);
+ border-color:var(--accent,#c3a5ff);
+ background:color-mix(in srgb,var(--accent,#c3a5ff) 13%,var(--surface,#101119))
+}
+.tv-ad-controls .tv-ad-category-pill:disabled,
+.tv-ad-controls #tv-ad-category-all:disabled{opacity:.45;cursor:not-allowed}

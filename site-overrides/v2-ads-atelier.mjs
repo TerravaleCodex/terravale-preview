@@ -3,9 +3,20 @@
 const adsRoot = document.getElementById("tv-v2-ads-manifest");
 const ART = adsRoot ? JSON.parse(adsRoot.textContent) : [];
 const GRIM_MEAL_ID = "zip-037";
+const GRIM_GOURMET_CATEGORY = "grim-gourmet";
 const AD_WEIGHTS = Object.freeze([1,3,8]);
+const CATEGORY_LABELS = Object.freeze({
+ "grim-gourmet":"Grim Gourmet","food-drink":"Food & Drink","dating":"Dating & Romance",
+ "pets":"Pets & Companions","wellness":"Health & Lifestyle","magic":"Magic & Alchemy",
+ "tech":"Tech & Gadgets","games":"Games & Entertainment",
+ "travel":"Travel & Places","services":"Shops & Services","chaos":"Clickbait & Chaos"
+});
+const categoryKeys = Object.keys(CATEGORY_LABELS);
+const safeCategories = value => Array.isArray(value)
+  ? [...new Set(value.filter(category=>categoryKeys.includes(category)))]
+  : [];
 const approvedAdIds = new Set(ART.map(art=>art.id));
-let priorityDraft = Object.create(null), showAllPriorityRows=false;
+let priorityDraft = Object.create(null), categoryDraft=new Set(), showAllPriorityRows=false;
 const safePriorities = value => {
   const output=Object.create(null);
   if(value && typeof value==="object" && !Array.isArray(value)){
@@ -16,7 +27,11 @@ const safePriorities = value => {
   return output;
 };
 function eligibleArtwork(config,showing){
-  return ART.filter(art=>(!config?.grim_food_only || art.id===GRIM_MEAL_ID) &&
+  const categories=safeCategories(config?.ad_categories);
+  return ART.filter(art=>
+    (config?.grim_food_only
+      ? art.category===GRIM_GOURMET_CATEGORY
+      : (!categories.length || categories.includes(art.category))) &&
     (config?.repeat_ads || !showing.has(art.id)));
 }
 function chooseArtwork(pool,config,roll=Math.random()){
@@ -164,12 +179,17 @@ function layout(){
     <section class="tv-ad-frequency" aria-label="Advert frequency and selection">
       <div class="tv-eyebrow">ADVERTISEMENT ROTATION · DM ONLY</div>
       <h3>Which adverts appear?</h3>
-      <p class="tv-hint">Choose the Grim Meal campaign on its own, or make individual approved adverts appear more often in the normal rotation. These settings do not turn adverts on automatically.</p>
-      <label class="tv-toggle tv-grim-only"><input type="checkbox" data-ad-setting="grim_food_only">Only show Grim Meal · Taste the Afterlife</label>
-      <p class="tv-hint">When enabled, all other adverts are excluded, including from the test buttons. If duplicate artwork is off, one Grim Meal window can appear at a time.</p>
+      <p class="tv-hint">Choose which categories can appear globally, then make individual artworks more common. These options do not enable adverts automatically.</p>
+      <label class="tv-toggle tv-grim-only"><input type="checkbox" data-ad-setting="grim_food_only">Only show Grim Gourmet food adverts (19 designs)</label>
+      <p class="tv-hint">Grim Gourmet mode overrides the other category filters. If duplicate artwork is off, each Grim Gourmet design can appear once at a time.</p>
+      <div class="tv-ad-category-head">
+        <strong>Allowed categories</strong><button type="button" id="tv-ad-category-all" aria-pressed="true">All categories</button>
+      </div>
+      <div id="tv-ad-category-options" class="tv-ad-category-options" role="group" aria-label="Advert categories allowed to appear"></div>
+      <p class="tv-hint" id="tv-ad-category-summary">All approved categories can appear until you choose one.</p>
       <div class="tv-ad-frequency-head">
         <label for="tv-ad-frequency-search">Find an advert</label>
-        <input type="search" id="tv-ad-frequency-search" placeholder="Search all 56 approved adverts…" autocomplete="off">
+        <input type="search" id="tv-ad-frequency-search" placeholder="Search all 159 approved adverts…" autocomplete="off">
         <button type="button" id="tv-ad-priority-reset">Reset priorities</button>
       </div>
       <div class="tv-ad-priority-list" id="tv-ad-priority-list" aria-label="Advert frequency preferences"></div>
@@ -197,6 +217,12 @@ function layout(){
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
   panel.querySelector("#tv-ad-clear").onclick=clearAds;
+  panel.querySelector("#tv-ad-category-all").onclick=()=>{
+    categoryDraft.clear();renderCategories();renderPriorities();
+  };
+  panel.querySelector('[data-ad-setting="grim_food_only"]').addEventListener("change",()=>{
+    renderCategories();renderPriorities();
+  });
   panel.querySelector("#tv-ad-frequency-search").addEventListener("input",()=>{
     showAllPriorityRows=false;renderPriorities();
   });
@@ -209,12 +235,54 @@ function layout(){
   refreshAdblockStatus(panel);
   return panel;
 }
+function renderCategories(){
+  const panel=document.getElementById("tv-live-atelier");
+  if(!panel)return;
+  const container=panel.querySelector("#tv-ad-category-options");
+  const onlyGrim=panel.querySelector('[data-ad-setting="grim_food_only"]').checked;
+  container.replaceChildren();
+  for(const category of categoryKeys){
+    const count=ART.filter(x=>x.category===category).length;
+    if(!count)continue;
+    const button=document.createElement("button");
+    button.type="button";button.className="tv-ad-category-pill";
+    const enabled=!categoryDraft.size||categoryDraft.has(category);
+    button.dataset.active=enabled?"true":"false";
+    button.setAttribute("aria-pressed",enabled?"true":"false");
+    button.disabled=onlyGrim;
+    button.textContent=CATEGORY_LABELS[category]+" · "+count;
+    button.onclick=()=>{
+      if(!categoryDraft.size)categoryDraft.add(category);
+      else if(categoryDraft.has(category))categoryDraft.delete(category);
+      else categoryDraft.add(category);
+      renderCategories();renderPriorities();
+    };
+    container.append(button);
+  }
+  const all=panel.querySelector("#tv-ad-category-all");
+  all.disabled=onlyGrim;
+  all.setAttribute("aria-pressed",categoryDraft.size?"false":"true");
+  const amount=eligibleArtwork({
+    grim_food_only:onlyGrim,ad_categories:[...categoryDraft],repeat_ads:true
+  },new Set()).length;
+  panel.querySelector("#tv-ad-category-summary").textContent=
+    onlyGrim?"Grim Gourmet only: "+amount+" designs can appear.":
+    categoryDraft.size?"Selected "+categoryDraft.size+" categor"+(categoryDraft.size===1?"y":"ies")+
+      " · "+amount+" matching adverts can appear.":
+      "All "+ART.length+" adverts are eligible, subject to your normal pop-up settings.";
+}
 function renderPriorities(){
   const panel=document.getElementById("tv-live-atelier");
   if(!panel)return;
   const container=panel.querySelector("#tv-ad-priority-list");
   const query=panel.querySelector("#tv-ad-frequency-search").value.trim().toLowerCase();
-  const selected=ART.filter(art=>art.title.toLowerCase().includes(query)||art.id.includes(query))
+  const allowed=new Set(eligibleArtwork({
+    grim_food_only:panel.querySelector('[data-ad-setting="grim_food_only"]').checked,
+    ad_categories:[...categoryDraft],repeat_ads:true
+  },new Set()).map(x=>x.id));
+  const selected=ART.filter(art=>allowed.has(art.id) &&
+    (art.title.toLowerCase().includes(query)||art.id.includes(query)||
+      CATEGORY_LABELS[art.category]?.toLowerCase().includes(query)))
     .sort((a,b)=>(priorityDraft[b.id]||1)-(priorityDraft[a.id]||1));
   const showAll=panel.querySelector("#tv-ad-show-all");
   showAll.hidden=selected.length<=12;
@@ -266,6 +334,8 @@ function fillForm(){
     else item.value=value == null ? "" : String(value);
   }
   priorityDraft=safePriorities(settings.ad_priorities);
+  categoryDraft=new Set(safeCategories(settings.ad_categories));
+  renderCategories();
   renderPriorities();
 }
 async function saveSettings(){
@@ -283,6 +353,7 @@ async function saveSettings(){
     coverage:get("coverage").value,auto_dismiss_seconds:optionalNumber("auto_dismiss_seconds"),
     repeat_ads:get("repeat_ads").checked,
     grim_food_only:get("grim_food_only").checked,
+    ad_categories:[...categoryDraft],
     ad_priorities:safePriorities(priorityDraft),
     adblocknt_enabled:get("adblocknt_enabled").checked,
     adblocknt_swarm_enabled:get("adblocknt_swarm_enabled").checked,

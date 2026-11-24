@@ -260,6 +260,9 @@ assert len(list(public_ads.glob("*.webp"))) == len(catalog)
 inline_css = '<style data-source="v2-discord-atelier.css">\n' + css + '\n</style>\n'
 source = source.replace("</head>", inline_css + "</head>", 1)
 catalog_json = json.dumps(catalog,ensure_ascii=True,separators=(',',':')).replace("</","<\\/")
+# Shared 159-entry source for both modern V2 Atelier and legacy Ad Lab.
+# Use one hosted artwork set; avoid duplicating 60+ MB of image assets.
+(target.parent / "ads.json").write_text(json.dumps(catalog,ensure_ascii=False,separators=(',',':')),encoding="utf-8")
 reset_script = r'''<script data-source="v2-empty-workspace-integration">
 /* Operate on the original V2 store, not a second mock store. */
 window.TerravaleClearDemoWorkspace = function () {

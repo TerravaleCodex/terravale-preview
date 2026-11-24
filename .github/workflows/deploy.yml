@@ -214,6 +214,9 @@ on:
       - "site-overrides/v2-ads-atelier.mjs"
       - "site-overrides/sql/v288_cabinet_ad_frequency_preferences.sql"
       - "tests/v288-cabinet-ad-frequency.cjs"
+      - "tests/v289-cabinet-full-ads.cjs"
+      - "site-overrides/sql/v289_ad_categories.sql"
+      - "site-overrides/terravale-adblocknt.js"
       - "site-overrides/v248-*.js"
       - "site-overrides/v248-*.css"
       - "tools/v248_native_patch.py"
@@ -248,6 +251,13 @@ jobs:
         run: |
           python3 tools/assemble-approved-v239.py
           python3 tools/overlay-v239-with-discord.py
+          # Legacy Ad Lab and modern V2 use the same 159-image catalogue.
+          mkdir -p site/codex-ads/ads
+          cp site-overrides/approved-ads.json site/codex-ads/ads.json
+          cp site-overrides/terravale-adblocknt.js site/codex-ads/terravale-adblocknt.js
+          cp site-overrides/approved-ads/zip-*.webp site/codex-ads/ads/
+          node --check site-overrides/terravale-adblocknt.js
+          node tests/v289-cabinet-full-ads.cjs
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
           node tests/v288-cabinet-ad-frequency.cjs
@@ -442,8 +452,8 @@ jobs:
           identity=Path("published/neon-staging-auth/account-context.mjs")
           assert identity.read_text(encoding="utf-8")==Path("site-overrides/neon-v2-account-context.mjs").read_text(encoding="utf-8")
           assert "client.signIn.social" in staging.read_text(encoding="utf-8")
-          assert sorted(x.name for x in public.parent.iterdir()) == ["ads","index.html"]
-          assert len(list((public.parent/"ads").glob("zip-*.webp")))==56
+          assert sorted(x.name for x in public.parent.iterdir()) == ["ads","ads.json","index.html"]
+          assert len(list((public.parent/"ads").glob("zip-*.webp")))==159
           html=public.read_text(encoding="utf-8")
           assert 'data-source="v2-discord-auth.mjs"' in html, "Discord OAuth integration missing"
           assert 'data-source="v246-real-characters.js"' in html, "Approved character bridge missing"
