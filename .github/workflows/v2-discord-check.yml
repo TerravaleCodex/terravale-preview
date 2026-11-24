@@ -694,9 +694,9 @@ jobs:
           data=json.loads(match.group(1))
           assert len(data["articles"])==283 and len(data["heritageArticles"])==36 and len(data["events"])==31
           assert all(a["title"]=="Restricted ancestry article" for a in data["heritageArticles"])
-          assert len(list(Path("published/veiled-codex/ads").glob("*.webp")))==56
+          assert len(list(Path("published/veiled-codex/ads").glob("*.webp")))==159
           print("PASS: real V2 skin and 319 placeholder-safe lore records untouched")
-          print("PASS: 56 approved hosted ads, verified Discord module and no secret keys")
+          print("PASS: 159 approved hosted ads, verified Discord module and no secret keys")
           PY
       - name: Upload public-safe V2 visual regression bundle
         uses: actions/upload-artifact@v4
