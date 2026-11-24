@@ -162,18 +162,28 @@ function selectField(name,options,value) {
 function layout(){
   const panel=document.createElement("section");
   panel.className="tv-ad-controls";panel.id="tv-live-atelier";
-  panel.innerHTML=`<header><div><div class="tv-eyebrow">CABINET OF CURIOSITIES · DM CONTROL ROOM</div>
+  panel.innerHTML=`<style>
+#tv-live-atelier .tv-toggle{display:flex;align-items:center;gap:12px;min-height:38px;cursor:pointer}
+#tv-live-atelier .tv-toggle input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;flex:none;width:44px;height:24px;margin:0;border:1px solid #745787;border-radius:24px;background:#272131;cursor:pointer;transition:background .2s}
+#tv-live-atelier .tv-toggle input[type=checkbox]:before{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#c8bed3;transition:transform .2s}
+#tv-live-atelier .tv-toggle input[type=checkbox]:checked{background:#6c4b8e;border-color:#bd9be2}
+#tv-live-atelier .tv-toggle input[type=checkbox]:checked:before{transform:translateX(20px);background:#fff}
+#tv-live-atelier .tv-toggle input[type=checkbox]:focus-visible{outline:2px solid #d9bbff;outline-offset:3px}
+#tv-live-atelier .tv-ad-slider-label{display:flex;flex-direction:column;gap:14px;position:relative;padding:8px 0}
+#tv-live-atelier .tv-ad-slider-label output{position:absolute;right:0;top:8px;font-weight:700;color:#d9b8fb}
+#tv-live-atelier .tv-ad-slider-label input[type=range]{width:100%;accent-color:#b68bdf;cursor:pointer}
+</style><header><div><div class="tv-eyebrow">CABINET OF CURIOSITIES · DM CONTROL ROOM</div>
     <h2>Advertisement Atelier</h2><p class="tv-hint">Approved artwork, server-saved settings, every page. Ads remain off until you enable them.</p></div></header>
     <div class="tv-form">
       <label class="tv-toggle"><input type="checkbox" data-ad-setting="enabled">Enable advertisements</label>
       <label class="tv-toggle"><input type="checkbox" data-ad-setting="automatic">Automatic pop-ups</label>
-      ${selectField("Average interval",[[15,"15 seconds"],[30,"30 seconds"],[45,"45 seconds"],[60,"1 minute"],[90,"90 seconds"],[120,"2 minutes"],[180,"3 minutes"],[300,"5 minutes"],[600,"10 minutes"],[900,"15 minutes"],[1800,"30 minutes"],[3600,"1 hour"]],"interval_seconds")}
+      ${selectField("Average interval",[[5,"5 seconds"],[10,"10 seconds"],[15,"15 seconds"],[20,"20 seconds"],[25,"25 seconds"],[30,"30 seconds"],[45,"45 seconds"],[60,"1 minute"],[75,"75 seconds"],[90,"90 seconds"],[120,"2 minutes"],[150,"2.5 minutes"],[180,"3 minutes"],[240,"4 minutes"],[300,"5 minutes"],[420,"7 minutes"],[600,"10 minutes"],[900,"15 minutes"],[1200,"20 minutes"],[1800,"30 minutes"],[2700,"45 minutes"],[3600,"1 hour"]],"interval_seconds")}
       ${selectField("Simultaneous windows",[["","∞ No maximum"],[1,"1"],[2,"2"],[3,"3"],[4,"4"],[6,"6"],[8,"8"],[10,"10"],[15,"15"],[20,"20"],[30,"30"],[50,"50"],[100,"100"]],"max_ads")}
-      ${selectField("Appearance chance",[[0,"0%"],[5,"5%"],[10,"10%"],[20,"20%"],[30,"30%"],[40,"40%"],[50,"50%"],[60,"60%"],[70,"70%"],[80,"80%"],[90,"90%"],[95,"95%"],[100,"100%"]],"chance_percent")}
+      <label class="tv-ad-slider-label">Appearance chance <output id="tv-ad-chance-output">100%</output><input type="range" min="0" max="100" step="5" data-ad-setting="chance_percent"></label>
       ${selectField("Artwork size",[["large","Large, preferred"],["huge","Very large"],["balanced","Balanced"],["mixed","Mixed sizes"]],"size_mode")}
       ${selectField("Position",[["scatter","Scatter across screen"],["center","Centre"],["corners","Corners"]],"position_mode")}
       ${selectField("Coverage",[["all","Every page"],["dashboard","Dashboard only"],["codex","Codex only"],["cabinet","Cabinet only"]],"coverage")}
-      ${selectField("Auto-dismiss",[["","Never"],[10,"10 seconds"],[20,"20 seconds"],[30,"30 seconds"],[60,"1 minute"],[120,"2 minutes"],[300,"5 minutes"]],"auto_dismiss_seconds")}
+      ${selectField("Auto-dismiss",[["","Never"],[3,"3 seconds"],[5,"5 seconds"],[10,"10 seconds"],[15,"15 seconds"],[20,"20 seconds"],[30,"30 seconds"],[45,"45 seconds"],[60,"1 minute"],[90,"90 seconds"],[120,"2 minutes"],[180,"3 minutes"],[300,"5 minutes"],[600,"10 minutes"],[900,"15 minutes"],[1800,"30 minutes"],[3600,"1 hour"]],"auto_dismiss_seconds")}
       <label class="tv-toggle"><input type="checkbox" data-ad-setting="repeat_ads">Allow duplicate artwork</label>
     </div>
     <section class="tv-ad-frequency" aria-label="Advert frequency and selection">
@@ -213,6 +223,7 @@ function layout(){
       <button type="button" id="tv-ad-clear">Clear pop-ups</button></div>
     <p id="tv-ad-save-status" class="tv-hint" aria-live="polite"></p>
     <p class="tv-hint">The windows have no title bars; drag the artwork and use the translucent × to close them. ${ART.length} approved images available in this hosted build.</p>`;
+  panel.querySelector('[data-ad-setting="chance_percent"]').addEventListener("input",e=>{panel.querySelector("#tv-ad-chance-output").textContent=e.target.value+"%";});
   panel.querySelector("#tv-ad-save").onclick=saveSettings;
   panel.querySelector("#tv-ad-test").onclick=()=>spawnAd(true);
   panel.querySelector("#tv-ad-testfive").onclick=()=>{for(let i=0;i<5;i++)spawnAd(true)};
