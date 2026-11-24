@@ -32,7 +32,7 @@ assert.equal(eligibleArtwork({grim_food_only:true,ad_categories:["dating"]},new 
  "Grim Food-only override takes precedence");
 assert.equal(safeCategories(["grim-gourmet","grim-gourmet","invalid"]).length,1);
 assert.equal(safeCategories([]).length,0);
-assert.equal(eligibleArtwork({},new Set()).length,56,"Default remains all artwork");
+assert.equal(eligibleArtwork({},new Set()).length,159,"Default includes the full approved catalogue");
 const grim=eligibleArtwork({grim_food_only:true},new Set());
 assert.equal(grim.length,19,"Grim Food toggle includes all 19 related creative variants");
 assert.ok(grim.every(x=>x.category==="grim-gourmet"));
@@ -73,4 +73,4 @@ assert.ok(sql.includes("ADD COLUMN IF NOT EXISTS ad_priorities jsonb NOT NULL DE
 assert.ok(sql.includes("jsonb_typeof(ad_priorities) = 'object'"));
 assert.ok(!/UPDATE\s+public\.site_ad_settings|DROP\s+POLICY|CREATE\s+POLICY|ALTER\s+TABLE\s+public\.site_ad_settings\s+DISABLE/i.test(sql),
  "Never turn ads on or widen RLS within a preference migration");
-console.log("PASS Cabinet DM adverts: Grim Meal-only, no duplicate leakage, 1×/3×/8× weighting, unknown IDs filtered, searchable UI, safe default SQL and unchanged existing access controls.");
+console.log("PASS Cabinet DM adverts: 159 designs, 19 Grim Gourmet, category allowlist, duplicate suppression and 1×/3×/8× weighting.");
