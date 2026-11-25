@@ -118,3 +118,105 @@
 #tv-spells-page .tv-spell-integration code{font-size:10.5px}
 #tv-spells-page .tv-spell-integration-note{margin-left:auto;color:var(--sl-soft)}
 @media(max-width:600px){#tv-spells-page .tv-spell-integration-note{margin-left:0;flex-basis:100%}}
+
+/* V2.92: inherit the active site theme rather than forcing purple/black.
+   These are deliberately last in the stylesheet to override previous prototypes. */
+#tv-spells-page{
+ --sl-line:var(--edge,#37313f);
+ --sl-panel:var(--surface,#121019);
+ --sl-soft:var(--soft,#b5aebe);
+ --sl-gold:var(--gold,var(--accent,#d3ae76));
+ --sl-purple:var(--accent,#bba0e8);
+ color:var(--ink,#eee9f5);
+ font-family:var(--font,system-ui,sans-serif);
+}
+#tv-spells-page .tv-spell-hero{
+ background:linear-gradient(115deg,color-mix(in srgb,var(--raised,#191522) 90%,var(--accent) 10%),var(--surface,#121019));
+ border-color:var(--edge,#37313f);
+}
+#tv-spells-page .tv-spell-editions button,
+#tv-spells-page .tv-spell-filters,
+#tv-spells-page .tv-spell-index,
+#tv-spells-page .tv-spell-reader{
+ background:var(--surface,#121019);
+ color:var(--ink,#eee9f5);
+ border-color:var(--edge,#37313f);
+}
+#tv-spells-page .tv-spell-editions button[aria-pressed=true],
+#tv-spells-page #tv-spell-levels button[aria-pressed=true],
+#tv-spells-page .tv-spell-flags button[aria-pressed=true]{
+ background:color-mix(in srgb,var(--accent,#bba0e8) 18%,var(--surface,#121019))!important;
+ border-color:var(--accent,#bba0e8)!important;
+ color:var(--ink,#eee9f5)!important;
+}
+#tv-spells-page .tv-spell-inputs input,
+#tv-spells-page .tv-spell-select-trigger{
+ background:var(--raised,#171320)!important;
+ border-color:var(--edge,#37313f)!important;
+ color:var(--ink,#eee9f5)!important;
+}
+#tv-spells-page .tv-spell-inputs input::placeholder{color:var(--dim,#918a9b)}
+#tv-spells-page .tv-spell-inputs input:focus-visible,
+#tv-spells-page .tv-spell-select-trigger:focus-visible{
+ outline:2px solid var(--accent,#bba0e8)!important;
+ outline-offset:2px;
+}
+#tv-spells-page .tv-spell-select[data-open=true] .tv-spell-select-trigger{
+ border-color:var(--accent,#bba0e8)!important;
+ box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#bba0e8) 16%,transparent);
+}
+#tv-spells-page .tv-spell-select-trigger:after{border-color:var(--ink,#eee9f5)}
+#tv-spells-page .tv-spell-select-menu{
+ background:var(--raised,#171320)!important;
+ color:var(--ink,#eee9f5)!important;
+ border-color:var(--edge,#37313f)!important;
+}
+#tv-spells-page .tv-spell-select-menu button{
+ background:transparent!important;
+ color:var(--ink,#eee9f5)!important;
+}
+#tv-spells-page .tv-spell-select-menu button:hover,
+#tv-spells-page .tv-spell-select-menu button:focus-visible{
+ background:color-mix(in srgb,var(--accent,#bba0e8) 12%,var(--raised,#171320))!important;
+}
+#tv-spells-page .tv-spell-select-menu button[aria-selected=true]{
+ background:color-mix(in srgb,var(--accent,#bba0e8) 22%,var(--raised,#171320))!important;
+ color:var(--ink,#eee9f5)!important;
+}
+#tv-spells-page .tv-spell-stats>div,
+#tv-spells-page #tv-spell-levels button,
+#tv-spells-page .tv-spell-flags button{
+ background:var(--raised,#171320);
+ border-color:var(--edge,#37313f);
+ color:var(--ink,#eee9f5);
+}
+#tv-spells-page .tv-spell-list-item{color:var(--ink,#eee9f5)}
+#tv-spells-page .tv-spell-list-item:hover{
+ background:color-mix(in srgb,var(--accent,#bba0e8) 11%,var(--surface,#121019));
+}
+#tv-spells-page .tv-spell-list-item[aria-current=true]{
+ background:color-mix(in srgb,var(--accent,#bba0e8) 19%,var(--surface,#121019));
+ box-shadow:inset 3px 0 var(--accent,#bba0e8);
+}
+#tv-spells-page .tv-spell-list-item b,
+#tv-spells-page .tv-spell-level-badge,
+#tv-spells-page .tv-spell-eyebrow,
+#tv-spells-page .tv-spell-integration code{color:var(--accent,#bba0e8)}
+#tv-spells-page .tv-spell-description p,
+#tv-spells-page .tv-spell-integration strong{color:var(--ink,#eee9f5)}
+#tv-spells-page .tv-spell-tags span.active,
+#tv-spells-page .tv-spell-license a{color:var(--accent,#bba0e8);border-color:var(--accent,#bba0e8)}
+/* Hide the native dropdowns fully: only the button-based dropdowns are visible.
+   The hidden original still serves as a value adapter for existing filtering logic. */
+#tv-spells-page select#tv-spell-school.tv-spell-native-select,
+#tv-spells-page select#tv-spell-class.tv-spell-native-select{
+ display:none!important;
+ visibility:hidden!important;
+ position:absolute!important;
+ height:0!important;
+ min-height:0!important;
+ padding:0!important;
+ margin:0!important;
+ border:0!important;
+ pointer-events:none!important;
+}
