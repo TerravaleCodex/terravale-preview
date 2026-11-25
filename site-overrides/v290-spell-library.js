@@ -64,14 +64,14 @@ root.querySelector('#tv-spell-clear').addEventListener('click',()=>{query='';lev
 function navigation(){
 // Existing native V2 sidebars render buttons rather than regular anchors.
 const candidates=[...document.querySelectorAll('aside a,aside button,.sidebar a,.sidebar button')];
-const classes=candidates.find(el=>el.textContent?.trim()==='Classes'&&!el.closest('#tv-spells-page'));
+const classes=candidates.find(el=>{const text=(el.textContent||'').trim();return !el.closest('#tv-spells-page')&&(text==='Classes'||/^(?:[^a-zA-Z]{0,6}\s*)?Classes$/.test(text)||el.dataset?.tourNav==='/classes'||el.getAttribute('href')?.includes('/classes'));});
 if(!classes)return;
 let link=document.getElementById('tv-spells-sidebar-link');
 if(!link){
  link=classes.cloneNode(true);link.id='tv-spells-sidebar-link';
  link.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
  if(link.tagName==='A'){link.href='#/spells';}
- else{link.removeAttribute('onclick');link.type='button';}
+ else{link.removeAttribute('onclick');link.removeAttribute('data-route');link.removeAttribute('data-page');link.type='button';}
  link.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();location.hash='#/spells';mount()});
  const spans=link.querySelectorAll('span');
  if(spans.length){const label=spans[spans.length-1];label.textContent='Spells';}
