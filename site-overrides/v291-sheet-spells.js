@@ -17,6 +17,16 @@ const curated={
 const eligible=(c,records)=>!!(records.length||rule(c)||c.spells?.length);
 const views=new Map();
 const slotLevel=r=>Number((r.id.match(/(?:spell|pact)-slot-([1-9])/i)||r.name.match(/([1-9])(?:st|nd|rd|th)[ -]level/i)||r.name.match(/(?:level|slot)\s*([1-9])/i)||[])[1])||0;
+const scales=s=>/at higher levels|using a higher.level spell slot|using a spell slot of|higher.level slot/i.test(s.description||'');
+function confirmInPage(title,fields,description,accept){
+ const dialog=n('dialog','tv294-confirm');dialog.setAttribute('aria-label',title);
+ const h=n('h2','',title),grid=n('div','tv291-stat-grid');
+ for(const [label,value] of fields){const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));grid.append(item)}
+ const buttons=n('div','tv294-dialog-actions'),cancel=n('button','tv292-point-action','Cancel'),ok=n('button','tv292-point-action tv294-primary','Confirm');
+ cancel.type=ok.type='button';cancel.onclick=()=>dialog.close();ok.onclick=()=>{dialog.close();accept()};
+ buttons.append(cancel,ok);dialog.append(h,grid,n('p','tv287-muted',description),buttons);document.body.append(dialog);
+ dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();cancel.focus();
+}
 function render(c,records,card){
  const native=document.querySelector('#pageRoot .sheet20-content>.sheet20-resource-panel');
  if(!native)return;
@@ -64,12 +74,14 @@ function render(c,records,card){
    const deficit=missing(l);
    if(deficit){
     const gain=strainGain(deficit),dc=10+l+deficit,penalty=trial.strain;
-    if(!window.confirm('Test overcast '+name+'? Spend remaining '+trial.remaining+' points, gain '+gain+' strain (maximum 6), and attempt a Magical Stability check DC '+dc+'. Points and strain apply even on failure.'))return;
+    const route=location.hash,prior=trial.remaining,priorStrain=trial.strain;
+    confirmInPage('Overcast · '+name,[['Points spent',String(prior)],['Missing points',String(deficit)],['Strain after casting',Math.min(6,priorStrain+gain)+' / 6'],['Stability DC',String(dc)]],'Points and strain apply even if the check fails. Narrative backlash is determined by the DM.',()=>{
+    if(location.hash!==route||!panel.isConnected||view.pointTrial!==trial||!view.pointsMode||trial.remaining!==prior||trial.strain!==priorStrain||!canSpend(l))return;
     const roll=1+Math.floor(Math.random()*20),total=roll+ability+proficiency-penalty,success=total>=dc;
     trial.remaining=0;trial.strain=Math.min(6,trial.strain+gain);
     if(l>=6)trial.highUsed[l]=true;
     trial.log.unshift('Overcast '+name+' · d20 '+roll+' + '+ability+' INT + '+proficiency+' proficiency − '+penalty+' strain = '+total+' vs DC '+dc+' · '+(success?'Success':'Failed — DM determines backlash')+' · +'+gain+' strain');
-    trial.log=trial.log.slice(0,8);refreshTrial();return;
+    trial.log=trial.log.slice(0,8);refreshTrial();});return;
    }
    trial.remaining-=costs[l];if(l>=6)trial.highUsed[l]=true;
   }
@@ -139,7 +151,24 @@ function render(c,records,card){
   for(const [label,value] of [['Casting time',s.castingTime],['Range',s.range],['Duration',s.duration],['Components',(s.components||[]).join(', ')]]){const box=n('div','tv291-stat');box.append(n('small','',label),n('strong','',value||'—'));stats.append(box)}
   reader.append(stats);
   const tags=n('div','tv291-tags');if(s.ritual)tags.append(n('span','','Ritual'));if(s.concentration)tags.append(n('span','','Concentration'));if(tags.children.length)reader.append(tags);
-  if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=max;l++)up.append(action((missing(l)>0&&canSpend(l)?'Overcast Lv ':'Lv ')+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
+  if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=(scales(s)?max:s.level);l++)up.append(action((missing(l)>0&&canSpend(l)?'Overcast Lv ':'Lv ')+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
+  if(!pointsMode&&s.level>0&&scales(s)){
+   const up=n('div','tv292-point-actions');up.append(n('strong','','Upcast using a spell slot'));
+   for(const r of slotRecords.filter(r=>slotLevel(r)>s.level)){
+    const spendIndex=r.controls.findIndex(b=>/spend|use/i.test(b.textContent+' '+(b.getAttribute('aria-label')||'')));
+    const available=spendIndex>=0&&!r.controls[spendIndex].disabled&&r.counter.current>0;
+    up.append(action('Level '+slotLevel(r)+' · '+r.counter.label,()=>{
+     const route=location.hash;
+     confirmInPage('Upcast · '+s.name,[['Spell level',String(s.level)],['Slot level',String(slotLevel(r))],['Available slots',r.counter.label],['Cost','1 slot']],'This spends a real spell slot. Spell selection is still a reference; only use this for a spell your character is allowed to cast.',()=>{
+      if(location.hash!==route||!panel.isConnected||view.pointsMode)return;
+      const live=window.TerravaleV287Adaptive?.collect().find(x=>x.id===r.id);
+      if(!live||live.counter.current<=0||live.controls[spendIndex]?.disabled)return;
+      const control=card(live,true).querySelectorAll('.tv287-card-actions button')[spendIndex];control?.click();
+     });
+    },!available));
+   }
+   if(up.children.length>1)reader.append(up);
+  }
   reader.append(n('p','tv291-description',s.description));
  }
  function draw(){
