@@ -7,6 +7,7 @@ if(!Array.isArray(data)||data.length<600)return;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let edition='2014',query='',level='all',school='all',spellClass='all',ritual=false,concentration=false,selected='';
+let currentFilterAbort=null;
 const levels=[0,1,2,3,4,5,6,7,8,9];
 const schools=[...new Set(data.map(x=>x.school))].filter(Boolean).sort();
 const classes=[...new Set(data.flatMap(x=>x.classes))].filter(Boolean).sort();
@@ -92,10 +93,12 @@ target.innerHTML='<div class="tv-spell-reader-top"><div><div class="tv-spell-eye
 '<div class="tv-spell-tags"><span class="'+(s.ritual?'active':'')+'">Ritual: '+(s.ritual?'Yes':'No')+'</span><span class="'+(s.concentration?'active':'')+'">Concentration: '+(s.concentration?'Yes':'No')+'</span></div>'+
 '<section class="tv-spell-description"><h3>Spell description</h3>'+String(s.description||'').split(/\n\s*\n/).filter(Boolean).map(t=>'<p>'+esc(t).replace(/\n/g,'<br>')+'</p>').join('')+'</section>'+
 '<section class="tv-spell-class-list"><h3>Available to</h3><div>'+s.classes.map(c=>'<span>'+esc(c)+'</span>').join('')+'</div></section>'+
-'<div class="tv-spell-integration"><strong>Ready for future character-sheet integration</strong><p>Stable reference ID <code>'+esc(s.id)+'</code>. Later versions can link known and prepared spells, slot use, upcasting and concentration to this record. Material ingredients are reference text only; inventory tracking is not planned.</p></div>';
+'<div class="tv-spell-integration"><span>Reference ID</span> <code>'+esc(s.id)+'</code><span class="tv-spell-integration-note">Read-only spell reference · No material inventory tracking</span></div>';
 }
 function attachHandlers(root){
-root._spellAbort=new AbortController();
+currentFilterAbort?.abort();
+currentFilterAbort=new AbortController();
+root._spellAbort=currentFilterAbort;
 enhanceFilterSelects(root);
 root.querySelectorAll('[data-srd-edition]').forEach(b=>b.addEventListener('click',()=>{edition=b.dataset.srdEdition;selected='';renderList(true)}));
 root.querySelector('#tv-spell-query').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();selected='';renderList(true)});
