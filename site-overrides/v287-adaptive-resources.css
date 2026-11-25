@@ -204,3 +204,7 @@ dialog.tv294-confirm p{font-size:12px;line-height:1.6;color:var(--soft,#aaa);mar
 .tv294-dialog-actions{display:flex;justify-content:flex-end;gap:8px}
 .tv294-dialog-actions button{padding:8px 15px;border:1px solid var(--edge,#444);border-radius:7px;background:var(--raised,#222);color:var(--ink,#eee);cursor:pointer}
 .tv294-dialog-actions .tv294-primary{background:color-mix(in srgb,var(--accent,#aaa) 22%,var(--raised,#222));border-color:var(--accent,#aaa)}
+
+#pageRoot .tv295-manage{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;padding:8px 10px;background:var(--raised);border:1px solid var(--edge);border-radius:8px}
+#pageRoot .tv295-manage-spell{margin-top:12px;padding-top:10px;border-top:1px solid var(--edge)}
+#pageRoot .tv291-book-modes{justify-content:flex-end}
