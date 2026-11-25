@@ -216,14 +216,18 @@ let queued=false;
 function mount(){
  const demoId=location.hash.match(/^#\/characters\/([^/?#]+)/)?.[1];
  const demo=characters().find(c=>String(c.id)===demoId);
- const chronicle=document.querySelector('#pageRoot .sheet20-tabs [data-value="chronicle"][aria-selected="true"]');
- if(demo&&chronicle)window.TerravaleSheetSpells?.mountAdvancementPreview(demo,document.querySelector('#pageRoot .sheet20-content'));
+ const root=document.getElementById('pageRoot');
+ const tabs=root?.querySelector('.sheet20-tabs');
+ if(demo&&tabs)window.TerravaleSheetSpells?.mountAdvancementPreview(demo,tabs);
+ if(root&&/^#\/characters\/?$/.test(location.hash)){
+  for(const c of characters())window.TerravaleSheetSpells?.mountRosterAdvancement(c,root);
+ }
  if(!verified())return;
  if(hasDM())mountDm();
  mountPlayer();
 }
 const observer=new MutationObserver(()=>{
- if(!/^#\/(?:characters\/|dm(?:\/|$))/.test(location.hash)||queued)return;
+ if(!/^#\/(?:characters(?:\/|$)|dm(?:\/|$))/.test(location.hash)||queued)return;
  queued=true;requestAnimationFrame(()=>{queued=false;mount()});
 });
 observer.observe(document.getElementById('pageRoot')||document.body,{childList:true,subtree:true});
