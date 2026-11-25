@@ -22,16 +22,26 @@ const eligible=(c,records)=>!!(records.length||rule(c)||c.spells?.length);
 const views=new Map(), advancementPreview=new Set();
 const isAsterPreview=c=>String(c?.demoCurator||'').toLowerCase()==='aster'&&({ 'Aster Vaelith':6,'Elira Wren':4,'Pip Thornwhistle':3}[c?.name]===Number(c?.level));
 const previewGrants=c=>classKey(c)==='Ranger'?['hunters-mark']:[];
-function mountAdvancementPreview(c,host){
- if(!isAsterPreview(c)||!host||host.querySelector('.tv297-advancement-preview'))return;
- const section=n('section','sheet20-panel tv297-advancement-preview');
- const make=(label,fn)=>{const b=n('button','tv292-point-action',label);b.type='button';b.onclick=fn;return b};
- section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT'),n('h3','','Level '+c.level+' → '+(Number(c.level)+1)),n('p','tv287-muted','Walk through a complete level-up without changing the approved character.'));
- section.append(make('Open level-up wizard',()=>openAdvancementWizard(c)));host.prepend(section);
+function advancementKey(c){return 'tv298-levelup:'+(window.TerravaleVerifiedAccount?.state?.user?.id||'browser')+':'+String(c.campaign||'')+':'+String(c.id)}
+function advancementStatus(c){try{const d=JSON.parse(localStorage.getItem(advancementKey(c))||'null');return d?.complete?'Preview complete':d?'Resume level-up':'Level-up available'}catch{return 'Level-up available'}}
+function advancementButton(c,compact=false){
+ const b=n('button','tv306-advance'+(compact?' tv306-compact':''),advancementStatus(c)+' · Lv '+(Number(c.level)+1));b.type='button';b.dataset.tv306Character=String(c.id);b.title='Demo advancement only';b.onclick=e=>{e.stopPropagation();e.preventDefault();openAdvancementWizard(c)};return b
+}
+function mountAdvancementPreview(c,tabs){
+ if(!isAsterPreview(c)||!tabs||tabs.parentElement.querySelector('.tv306-sheet-advance'))return;
+ const bar=n('div','tv306-sheet-advance'),label=n('div','tv306-advance-label');
+ label.append(n('strong','','✦ '+advancementStatus(c)),n('small','','Level '+c.level+' → '+(Number(c.level)+1)+' · Demo preview'));
+ bar.append(label,advancementButton(c));tabs.before(bar);
+}
+function mountRosterAdvancement(c,root){
+ if(!isAsterPreview(c)||!root||root.querySelector('[data-tv306-character="'+String(c.id)+'"]'))return;
+ const headings=[...root.querySelectorAll('h1,h2,h3,h4')].filter(h=>h.textContent.trim()===c.name);
+ for(const h of headings){const slot=n('span','tv306-roster-advance');slot.append(advancementButton(c,true));h.after(slot)}
 }
 function openAdvancementWizard(c){
  if(!isAsterPreview(c))return;
- const id=String(c.id),account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser',key='tv298-levelup:'+account+':'+String(c.campaign||'')+':'+id;
+ const id=String(c.id),account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser',key=advancementKey(c);
+ if(document.querySelector('dialog.tv298-wizard[open]'))return;
  const baseKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+id;
  const cl=classKey(c),from=Number(c.level),to=from+1,oldRules=selectionRules(c),newRules=selectionRules({...c,level:to}),max=selectionLevels[cl][to-1],oldMax=selectionLevels[cl][from-1],newCount=newRules.known-oldRules.known,cantripCount=newRules.cantrips-oldRules.cantrips,replaceLimit=replacementAllowance(c),die={Wizard:6,Bard:8,Ranger:10}[cl],fixed=die/2+1;
  const catalogue=spells().filter(s=>s.classes.includes(cl));
@@ -46,9 +56,9 @@ function openAdvancementWizard(c){
  if(!replaceLimit||!replaceable.some(x=>x.id===state.replaceFrom)){state.replaceFrom='';state.replaceTo=''}
  if(!candidates.some(x=>x.id===state.replaceTo)||state.chosen.some(x=>sameSpell(x,state.replaceTo)))state.replaceTo='';
  const validSpells=()=>state.chosen.length===newCount&&(!state.replaceFrom||!!state.replaceTo)&&cantripCount===0;
- let search='',level=max,expanded='',edition='all',replacementMode=false;
+ let search='',level=max,expanded='',edition='all',replacementMode=newCount===0, replacementOpen=!!state.replaceFrom;
  const dialog=n('dialog','tv298-wizard');dialog.setAttribute('aria-label',c.name+' level-up preview');document.body.append(dialog);
- const save=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch{}};
+ const save=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch{};for(const b of document.querySelectorAll('[data-tv306-character]'))if(b.dataset.tv306Character===id)b.textContent=advancementStatus(c)+' · Lv '+to;const label=document.querySelector('.tv306-advance-label strong');if(label&&document.querySelector('.tv306-sheet-advance [data-tv306-character="'+id+'"]'))label.textContent='✦ '+advancementStatus(c)};
  const button=(label,fn,disabled=false,cls='')=>{const b=n('button','tv292-point-action '+cls,label);b.type='button';b.disabled=disabled;b.onclick=fn;return b};
  const stat=(label,value)=>{const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));return item};
  const conRaw=c.con??c.abilities?.con,con=conRaw!=null&&Number.isFinite(Number(conRaw))?Math.floor((Number(conRaw)-10)/2):null;
@@ -64,37 +74,52 @@ function openAdvancementWizard(c){
   if(state.complete){body.append(n('h3','','Preview completed'),n('p','tv287-muted','No real character data or DM request was changed.'));body.append(button('Start again',()=>{state=initial();save();render()}));return}
   if(state.step===0){
    body.append(n('h3','','General advancement'),n('p','tv287-muted','Review automatic changes and choose how to increase maximum hit points.'));
-   const grid=n('div','tv296-choice-grid');grid.append(stat('Hit dice',from+'d'+die+' → '+to+'d'+die),stat('Proficiency bonus','+'+(2+Math.floor((from-1)/4))+' → +'+(2+Math.floor((to-1)/4))),stat('Feat / ASI','No standard ASI at this level'),stat('Class feature',cl==='Bard'?'Font of Inspiration · see class primer':cl==='Ranger'?'Review subclass progression':'No new core feature (provisional)'));body.append(grid);
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Hit dice',from+'d'+die+' → '+to+'d'+die),stat('Proficiency bonus','+'+(2+Math.floor((from-1)/4))+' → +'+(2+Math.floor((to-1)/4))),stat('Feat / ASI',to===4?'Choice required · not implemented in demo':'No standard ASI at this level'),stat('Class feature',cl==='Bard'?'Font of Inspiration · see class primer':cl==='Ranger'?'Review subclass progression':'No new core feature (provisional)'));body.append(grid);
    const hpbox=n('section','tv298-box');hpbox.append(n('h3','','Maximum hit points'),n('p','tv287-muted','Choose fixed hit points or roll your new hit die.'));
-   const options=n('div','tv292-point-actions');for(const [label,value] of [['Fixed · '+fixed,'fixed'],['Roll d'+die,'roll']]){const b=button(label,()=>{state.hp=value;save();render()});b.setAttribute('aria-pressed',String(state.hp===value));options.append(b)}hpbox.append(options);
-   if(state.hp==='roll')hpbox.append(button(state.roll?'Rolled '+state.roll:'Roll hit die',()=>{state.roll=1+Math.floor(Math.random()*die);save();render()},!!state.roll));
-   hpbox.append(stat('Maximum HP increase',validHP()?hp():'Roll first'));body.append(hpbox);
+   const options=n('div','tv306-hp-options');
+   const fixedButton=button('Fixed · '+fixed,()=>{state.hp='fixed';save();render()});fixedButton.setAttribute('aria-pressed',String(state.hp==='fixed'));
+   const rollButton=button(state.roll?'Rolled · '+state.roll:'Roll d'+die,()=>{state.hp='roll';if(!state.roll)state.roll=1+Math.floor(Math.random()*die);save();render()});rollButton.setAttribute('aria-pressed',String(state.hp==='roll'));
+   options.append(fixedButton,rollButton,stat('Maximum HP increase',validHP()?hp():'Choose a method'));hpbox.append(options);body.append(hpbox);
   }else if(state.step===1){
-   body.append(n('h3','','Learn '+newCount+' new spell'+(newCount===1?'':'s')),n('p','tv287-muted','Choose '+cl+' spells up to level '+max+'. Existing known spells and granted spells are excluded.'));
+   body.append(n('h3','',newCount?'Learn '+newCount+' new spell'+(newCount===1?'':'s'):'Spell advancement'),n('p','tv287-muted','Choose '+cl+' spells up to level '+max+'. Existing known spells and granted spells are excluded.'));
    const grid=n('div','tv296-choice-grid');grid.append(stat('Maximum spell level',oldMax+' → '+max),stat('Learned spells',state.chosen.length+' / '+newCount),stat('Optional replacements',String(replaceLimit)));body.append(grid);
-   const selected=n('div','tv298-selected');for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)selected.append(button(spell.name+' · '+spell.edition+' ×',()=>{state.chosen=state.chosen.filter(x=>x!==sid);save();render()}))}if(!state.chosen.length)selected.append(n('span','tv287-muted','No new spells selected'));body.append(selected);
+   const selected=n('div','tv298-selected');for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)selected.append(button(spell.name+' · '+spell.edition+' ×',()=>{state.chosen=state.chosen.filter(x=>x!==sid);save();render()}))}if(!state.chosen.length&&newCount)selected.append(n('span','tv287-muted','Select '+newCount+' new spell'+(newCount===1?'':'s')));if(newCount)body.append(selected);
    if(replaceLimit){
-    const replacement=n('section','tv298-box');replacement.append(n('h3','','Optional spell replacement'),n('p','tv287-muted','Replace one previously known spell without using a new-spell choice. Granted spells cannot be replaced.'));
+    const replacement=n('section','tv298-box tv306-replacement'),top=n('div','tv306-replace-top');
     const old=replaceable.find(x=>x.id===state.replaceFrom),next=candidates.find(x=>x.id===state.replaceTo);
-    replacement.append(n('p','',old?old.name+' → '+(next?.name||'Choose replacement'):'No replacement selected'));
-    const pick=n('div','tv292-point-actions');
-    for(const spell of replaceable){const b=button(spell.name,()=>{state.replaceFrom=spell.id;state.replaceTo='';replacementMode=true;save();render()});b.setAttribute('aria-pressed',String(state.replaceFrom===spell.id));pick.append(b)}
-    replacement.append(pick,button('Skip / clear replacement',()=>{state.replaceFrom='';state.replaceTo='';replacementMode=false;save();render()}));
-    if(state.replaceFrom){const modes=n('div','tv292-point-actions');for(const [label,value] of [['Learn new spells',false],['Choose replacement',true]]){const b=button(label,()=>{replacementMode=value;render()});b.setAttribute('aria-pressed',String(replacementMode===value));modes.append(b)}replacement.append(modes)}
+    const info=n('div');info.append(n('h3','','Optional replacement'),n('p','tv287-muted',old?old.name+' → '+(next?.name||'Choose a replacement'):'Swap one known spell without using a new choice.'));
+    top.append(info,button(replacementOpen?'Cancel replacement':'Replace a spell',()=>{replacementOpen=!replacementOpen;if(!replacementOpen){state.replaceFrom='';state.replaceTo='';replacementMode=false;save()}else replacementMode=true;render()}));replacement.append(top);
+    if(replacementOpen){
+     const pick=n('div','tv306-replace-pick');pick.append(n('small','tv287-muted','1 · Choose the spell to forget'));
+     const buttons=n('div','tv292-point-actions');
+     for(const spell of replaceable){const b=button(spell.name,()=>{state.replaceFrom=spell.id;state.replaceTo='';replacementMode=true;save();render()});b.setAttribute('aria-pressed',String(state.replaceFrom===spell.id));buttons.append(b)}pick.append(buttons);replacement.append(pick);
+     if(old){const modes=n('div','tv292-point-actions');modes.append(n('small','tv287-muted',next?'Replacement selected':'2 · Select its replacement below'));if(newCount&&replacementMode)modes.append(button('Return to new spells',()=>{replacementMode=false;render()}));if(!replacementMode)modes.append(button('Change replacement',()=>{replacementMode=true;render()}));replacement.append(modes)}
+    }
     body.append(replacement);
    }
+   if((newCount===0&&!replacementOpen)||(replacementMode&&!state.replaceFrom)){body.append(n('p','tv287-muted',newCount===0?'No new spells are required at this level. Continue or choose an optional replacement.':'Choose the existing spell first.'))}
+   else{
    const filters=n('div','tv298-filters'),input=n('input','tv287-search');input.type='search';input.placeholder='Search eligible spells…';input.value=search;input.setAttribute('aria-label','Search eligible spells');filters.append(input);
    for(const l of Array.from({length:max+1},(_,i)=>i)){const b=button(l?'Level '+l:'All',()=>{level=l;render()});b.setAttribute('aria-pressed',String(l===level));filters.append(b)}body.append(filters);
    const editions=n('div','tv298-filters');
    for(const [label,value] of [['Both editions','all'],['2014','2014'],['2024','2024']]){const b=button(label,()=>{edition=value;render()});b.setAttribute('aria-pressed',String(edition===value));editions.append(b)}
    body.append(editions);
    const list=n('div','tv298-list');body.append(list);
-   function drawList(){list.replaceChildren();for(const spell of candidates.filter(x=>(!level||x.level===level)&&(edition==='all'||x.edition===edition)&&x.name.toLowerCase().includes(search.toLowerCase().trim())).sort((a,b)=>a.name.localeCompare(b.name))){
-    const row=n('div','tv298-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school+' · '+spell.edition+' · '+spell.castingTime));
-    const read=button(expanded===spell.id?'Hide details':'Details',()=>{expanded=expanded===spell.id?'':spell.id;drawList()});
-    const replacing=replacementMode&&!!state.replaceFrom,picked=replacing?state.replaceTo===spell.id:state.chosen.includes(spell.id),other=state.chosen.find(x=>sameSpell(x,spell.id)&&x!==spell.id),conflict=replacing?state.chosen.some(x=>sameSpell(x,spell.id)):!!state.replaceTo&&sameSpell(state.replaceTo,spell.id),choose=button(picked?'Selected ✓':replacing?'Replace with this':other?'Use this version':'Select',()=>{if(replacing)state.replaceTo=picked?'':spell.id;else state.chosen=picked?state.chosen.filter(x=>x!==spell.id):other?state.chosen.map(x=>x===other?spell.id:x):[...state.chosen,spell.id];save();render()},conflict||(!replacing&&!picked&&!other&&state.chosen.length>=newCount));choose.setAttribute('aria-pressed',String(picked));row.append(label,read,choose);list.append(row);if(expanded===spell.id)list.append(n('p','tv298-description',spell.description));
-   }if(!list.children.length)list.append(n('p','tv287-muted','No eligible spells match.'))}
-   input.oninput=()=>{search=input.value;drawList()};drawList();
+   function drawList(){
+    const scroll=list.scrollTop;list.replaceChildren();
+    const groups=new Map();for(const spell of candidates.filter(x=>(!level||x.level===level)&&(edition==='all'||x.edition===edition)&&x.name.toLowerCase().includes(search.toLowerCase().trim())).sort((a,b)=>a.name.localeCompare(b.name))){const k=spellIdentity(spell.id);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(spell)}
+    for(const versions of groups.values()){
+     const spell=versions[0],row=n('div','tv298-spell-row tv306-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school));
+     const actions=n('div','tv306-version-actions');
+     for(const v of versions){const replacing=replacementMode&&!!state.replaceFrom,picked=replacing?state.replaceTo===v.id:state.chosen.includes(v.id),other=state.chosen.find(x=>sameSpell(x,v.id)&&x!==v.id),conflict=replacing?state.chosen.some(x=>sameSpell(x,v.id)):!!state.replaceTo&&sameSpell(state.replaceTo,v.id);
+      const choose=button(v.edition+(picked?' ✓':''),()=>{const pos=list.scrollTop;if(replacing){state.replaceTo=picked?'':v.id;if(!picked&&newCount&&state.chosen.length<newCount)replacementMode=false}else state.chosen=picked?state.chosen.filter(x=>x!==v.id):other?state.chosen.map(x=>x===other?v.id:x):[...state.chosen,v.id];save();render();const nextList=dialog.querySelector('.tv298-list');if(nextList)nextList.scrollTop=pos},conflict||(!replacing&&!picked&&!other&&state.chosen.length>=newCount));choose.setAttribute('aria-pressed',String(picked));choose.title=(replacing?'Replace with ':'Select ')+v.name+' ('+v.edition+')';actions.append(choose)}
+     const details=button(expanded===spellIdentity(spell.id)?'Hide':'Details',()=>{expanded=expanded===spellIdentity(spell.id)?'':spellIdentity(spell.id);drawList()});row.append(label,actions,details);list.append(row);
+     if(expanded===spellIdentity(spell.id)){const detail=n('div','tv306-details');for(const v of versions){detail.append(n('strong','',v.edition+' · '+v.castingTime+' · '+v.range),n('p','tv298-description',v.description))}list.append(detail)}
+    }
+    if(!list.children.length)list.append(n('p','tv287-muted','No eligible spells match.'));list.scrollTop=scroll;
+   }
+   input.oninput=()=>{search=input.value;list.scrollTop=0;drawList()};drawList();
+   }
   }else{
    body.append(n('h3','','Review advancement'),n('p','tv287-muted','Confirm the proposed changes. This is a simulation only.'));
    const grid=n('div','tv296-choice-grid');grid.append(stat('Level',from+' → '+to),stat('Maximum HP increase',hp()),stat('Hit dice','+1d'+die),stat('Maximum spell level',oldMax+' → '+max),stat('Learned spells',oldRules.known+' → '+newRules.known),stat('Replacements',state.replaceTo?'1':'0'));body.append(grid);
@@ -197,7 +222,7 @@ function render(c,records,card){
  const header=n('header','tv291-header'), heading=n('div');
  heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · 2014 / 2024 SRD reference'));
  header.append(heading);panel.append(header);
- if(isAsterPreview(actual)){const launch=n('button','tv292-point-action','Preview level up');launch.type='button';launch.onclick=()=>openAdvancementWizard(actual);header.append(launch);}
+
  if(preview){const banner=n('section','tv297-advancement-preview');banner.append(n('strong','','LEVEL 7 PREVIEW · SPELL CHOICES'),n('p','tv287-muted','Choose two additional Wizard spells up to level 4. This separate draft cannot spend real slots or change Aster’s approved build.'));const exit=n('button','tv292-point-action','Exit preview');exit.type='button';exit.onclick=()=>{advancementPreview.delete(String(actual.id));render(actual,records,card)};banner.append(exit);panel.append(banner);}
  const slotRecords=records.filter(r=>r.kind==='spell'), abilities=records.filter(r=>r.kind!=='spell');
  const costs=[0,2,3,5,6,7,9,10,11,13];
@@ -385,5 +410,5 @@ function render(c,records,card){
  }
  search.addEventListener('input',()=>{view.query=search.value;view.selected='';list.scrollTop=0;draw()});draw();
 }
-window.TerravaleSheetSpells={eligible,render,mountAdvancementPreview};
+window.TerravaleSheetSpells={eligible,render,mountAdvancementPreview,mountRosterAdvancement};
 })();
