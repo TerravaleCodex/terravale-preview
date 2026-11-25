@@ -213,3 +213,8 @@ dialog.tv294-confirm p{font-size:12px;line-height:1.6;color:var(--soft,#aaa);mar
 #pageRoot .tv296-choices h3{font-size:17px;margin:0 0 9px}
 #pageRoot .tv296-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:8px}
 #pageRoot .tv296-choices p{margin:9px 0}
+
+#pageRoot .tv297-advancement-preview{padding:16px;margin:0 0 14px;border:1px solid var(--accent);border-radius:10px;background:var(--surface)}
+#pageRoot .tv297-advancement-preview h3{margin:6px 0 10px;font-size:21px}
+#pageRoot .tv297-advancement-preview .tv296-choice-grid{margin:12px 0}
+#pageRoot .tv297-advancement-preview .tv292-point-actions{margin-top:12px}
