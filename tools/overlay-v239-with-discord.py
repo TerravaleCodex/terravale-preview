@@ -38,11 +38,11 @@ source = patch_v281(source)
 v287_tabs = "const sections=[['overview','Overview'],['abilities','Abilities & skills']"
 assert source.count(v287_tabs) >= 1, "Native sheet tabs changed"
 source = source.replace(v287_tabs,
-    "const sections=[['overview','Overview'],['resources','Resources'],['abilities','Abilities & skills']")
+    "const sections=[['overview','Overview'],['resources','Resources'],['spells','Spells'],['abilities','Abilities & skills']")
 v287_body = "tab==='chronicle'?sheetV220Chronicle(c):sheetV220Overview(c)"
 assert source.count(v287_body) >= 1, "Native sheet tab router changed"
 source = source.replace(v287_body,
-    "tab==='chronicle'?sheetV220Chronicle(c):tab==='resources'?sheetV220ResourcesPanel(c):sheetV220Overview(c)")
+    "tab==='chronicle'?sheetV220Chronicle(c):tab==='resources'?sheetV220ResourcesPanel(c):tab==='spells'?sheetV220ResourcesPanel(c):sheetV220Overview(c)")
 # V2.69: The old V2.36 demo script forcibly changed '/'/Dashboard to
 # '#/characters' on every fresh visit. Remove only that historical redirect.
 # The rule is whitespace-tolerant because native build patches reformat HTML.
@@ -238,6 +238,7 @@ boon_reader_v282 = (ROOT / "site-overrides/v282-boon-reader.js").read_text()
 divine_links_v282 = (ROOT / "site-overrides/v282-divine-relationships.js").read_text()
 adaptive_v287 = (ROOT / "site-overrides/v287-adaptive-resources.js").read_text()
 spells_v290 = (ROOT / "site-overrides/v290-spell-library.js").read_text()
+sheet_spells_v291 = (ROOT / "site-overrides/v291-sheet-spells.js").read_text()
 spells_2014 = json.loads((ROOT / "site-overrides/spells/srd-2014.json").read_text())
 spells_2024 = json.loads((ROOT / "site-overrides/spells/srd-2024.json").read_text())
 assert len(spells_2014) == 319 and len(spells_2024) == 339
@@ -333,6 +334,7 @@ inline_js = (
     '<script data-source="v287-adaptive-resources.js">\n' + adaptive_v287 + '\n</script>\n'
     '<script type="application/json" id="tv-live-srd-spells">' + spells_catalog_json + '</script>\n'
     '<script data-source="v290-spell-library.js">\n' + spells_v290 + '\n</script>\n'
+    '<script data-source="v291-sheet-spells.js">\n' + sheet_spells_v291 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
