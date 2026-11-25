@@ -41,7 +41,20 @@ function render(c,records,card){
  const standardSlots=slotRecords.filter(r=>slotLevel(r)>0&&!/pact/i.test(r.id+' '+r.name));
  const validPoints=standardSlots.length>0&&standardSlots.every(r=>Number.isInteger(r.counter.current)&&Number.isInteger(r.counter.max));
  const pointMax=standardSlots.reduce((sum,r)=>sum+r.counter.max*costs[slotLevel(r)],0);
- const pointRemaining=standardSlots.reduce((sum,r)=>sum+r.counter.current*costs[slotLevel(r)],0);
+ const convertedRemaining=standardSlots.reduce((sum,r)=>sum+r.counter.current*costs[slotLevel(r)],0);
+ const snapshot=standardSlots.map(r=>r.id+':'+r.counter.label).join('|');
+ if(!view.pointTrial||view.pointTrial.snapshot!==snapshot||view.pointTrial.account!==account) view.pointTrial={snapshot,account,remaining:convertedRemaining,highUsed:{},log:[]};
+ const trial=view.pointTrial;
+ const pointRemaining=trial.remaining;
+ const canSpend=l=>Number.isInteger(l)&&l>=0&&l<=Math.max(0,...standardSlots.map(slotLevel))&&trial.remaining>=costs[l]&&(l<6||!trial.highUsed[l]);
+ function changePoints(l,restore=false,name='Manual adjustment'){
+  if(!pointsMode||!validPoints||!Number.isInteger(l)||l<0||l>Math.max(0,...standardSlots.map(slotLevel)))return;
+  if(restore){if(l===0||trial.remaining+costs[l]>pointMax||(l>=6&&!trial.highUsed[l]))return;trial.remaining+=costs[l];if(l>=6)delete trial.highUsed[l];}
+  else{if(!canSpend(l))return;trial.remaining-=costs[l];if(l>=6)trial.highUsed[l]=true;}
+  trial.log.unshift((restore?'Restored ':'Test cast: ')+name+' · '+costs[l]+' points');trial.log=trial.log.slice(0,8);
+  const y=window.scrollY;render(c,records,card);window.scrollTo(window.scrollX,y);
+ }
+ function action(text,fn,disabled=false){const b=n('button','tv292-point-action',text);b.type='button';b.disabled=disabled;b.onclick=fn;return b;}
  if(previewAllowed&&validPoints){
   const controls=n('div','tv292-system-switch');
   controls.append(n('small','','SPELLCASTING SYSTEM · PREVIEW'));
@@ -56,7 +69,10 @@ function render(c,records,card){
   const box=n('section','tv292-points');const line=n('div','tv292-points-head');
   line.append(n('strong','','Spell points'),n('strong','',pointRemaining+' / '+pointMax));box.append(line);
   const track=n('div','tv287-track'),fill=n('span');fill.style.width=(pointMax?100*pointRemaining/pointMax:0)+'%';track.append(fill);box.append(track);
-  box.append(n('p','tv287-muted','Preview · Converted from actual remaining slots. No resource changes. Arcane Strain and Overcasting are not active.'));
+  const actions=n('div','tv292-point-actions');
+  actions.append(action('Restore 1 point',()=>{trial.remaining++;render(c,records,card)},trial.remaining>=pointMax),action('Spend 1 point',()=>{trial.remaining--;render(c,records,card)},trial.remaining<=0),action('Reset from slots',()=>{view.pointTrial=null;render(c,records,card)}));
+  box.append(actions,n('p','tv287-muted','Interactive test balance · Separate from saved slots. Switching modes does not convert or spend real resources. Overcasting and strain are not active.'));
+  if(trial.log.length)box.append(n('p','tv292-point-feedback',trial.log[0]));
   panel.append(box);
  }
  function inlineSlots(r){
@@ -82,7 +98,8 @@ function render(c,records,card){
  const tools=n('div','tv291-spell-tools'),search=n('input','tv287-search');search.type='search';search.placeholder='Search spells…';search.value=view.query;search.setAttribute('aria-label','Search character spells');
  const levels=n('div','tv291-levels');tools.append(search,levels);book.append(tools);
  const workspace=n('div','tv291-full-workspace'),list=n('div','tv291-spell-list'),reader=n('div','tv291-reader');const tableHead=n('div','tv291-table-head');for(const label of ['Spell','Casting time','Range','Traits',''])tableHead.append(n('span','',label));list.append(tableHead);workspace.append(list);book.append(workspace);panel.append(book);
- const note=n('p','tv287-muted','Starred references are saved in this browser. They do not grant spells or enable casting.');book.append(note);
+ if(pointsMode&&validPoints){workspace.classList.add('tv292-points-mode');tableHead.append(n('span','','Test casting'));}
+ const note=n('p','tv287-muted',pointsMode?'Test casts use the experimental balance only; references are not approved spells.':'Starred references are saved in this browser. They do not grant spells or enable casting.');book.append(note);
  function detail(s){
   reader.replaceChildren();
   if(!s){reader.append(n('p','tv287-empty','No matching spell.'));return}
@@ -91,6 +108,7 @@ function render(c,records,card){
   for(const [label,value] of [['Casting time',s.castingTime],['Range',s.range],['Duration',s.duration],['Components',(s.components||[]).join(', ')]]){const box=n('div','tv291-stat');box.append(n('small','',label),n('strong','',value||'—'));stats.append(box)}
   reader.append(stats);
   const tags=n('div','tv291-tags');if(s.ritual)tags.append(n('span','','Ritual'));if(s.concentration)tags.append(n('span','','Concentration'));if(tags.children.length)reader.append(tags);
+  if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=max;l++)up.append(action('Lv '+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
   reader.append(n('p','tv291-description',s.description));
  }
  function draw(){
@@ -105,7 +123,7 @@ function render(c,records,card){
   function addGroup(l){
    const group=n('div','tv291-level-heading');group.append(n('strong','',l?'Level '+l:'Cantrips'));
    const available=slotRecords.filter(r=>slotLevel(r)===l);
-   if(pointsMode&&validPoints)group.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));
+   if(pointsMode&&validPoints){const controls=n('div','tv292-point-actions');controls.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));if(l)controls.append(action('− Spend',()=>changePoints(l,false,'Level '+l),!canSpend(l)),action('+ Restore',()=>changePoints(l,true,'Level '+l),trial.remaining+costs[l]>pointMax||(l>=6&&!trial.highUsed[l])));group.append(controls);}
    else for(const r of available)group.append(inlineSlots(r));
    list.append(group);
   }
@@ -115,7 +133,7 @@ function render(c,records,card){
    if(s.level!==last){addGroup(s.level);shown.add(s.level);last=s.level}
    const row=n('div','tv291-spell-choice');row.dataset.expanded=String(s.id===view.selected);
    const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
-   const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
+   const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);if(pointsMode&&validPoints){const controls=n('div','tv292-row-cast');controls.append(action(s.level?'Test cast · '+costs[s.level]:'Test cast · Free',()=>changePoints(s.level,false,s.name),!canSpend(s.level)));row.append(controls);}list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
   }
   if(!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
   if(!rows.length)list.append(n('p','tv287-empty',pool.length?'No matching spells.':'No verified SRD class list is mapped to this character.'));
