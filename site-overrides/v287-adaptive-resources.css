@@ -105,3 +105,32 @@
 #pageRoot .tv291-tags span{border:1px solid var(--edge);border-radius:20px;padding:4px 8px;color:var(--accent);font-size:10px}
 #pageRoot .tv291-description{font-size:13px;line-height:1.75;margin:14px 0 0;overflow-wrap:anywhere}
 @media(max-width:780px){#pageRoot .tv291-workspace{grid-template-columns:1fr}#pageRoot .tv291-spell-list{max-height:280px}#pageRoot .tv291-top{display:grid;grid-template-columns:1fr}}
+
+/* Spellbook: tactical table and matched reader, no oversized accordion rows. */
+#pageRoot .tv291-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:stretch;gap:12px}
+#pageRoot .tv291-top:has(>.tv291-block:only-child){grid-template-columns:minmax(0,1fr)}
+#pageRoot .tv291-block{padding:12px;display:flex;flex-direction:column}
+#pageRoot .tv291-slot-grid,#pageRoot .tv291-ability-grid{flex:1;align-items:stretch}
+#pageRoot .tv291-slot-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr))}
+#pageRoot .tv291-slot-card .tv287-card-header{align-items:center}
+#pageRoot .tv291-slot-card .tv287-card-name{white-space:nowrap}
+#pageRoot .tv291-slot-card .tv287-card-actions{margin-top:auto}
+#pageRoot .tv291-slot-card .tv287-card-actions button{flex:1;white-space:nowrap;padding:4px 5px}
+#pageRoot .tv291-book{padding:14px}
+#pageRoot .tv291-spell-tools .tv287-search{flex:1;max-width:none;min-width:130px}
+#pageRoot .tv291-table-workspace{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:stretch;gap:10px}
+#pageRoot .tv291-table-workspace .tv291-spell-list{height:460px;max-height:none;min-width:0}
+#pageRoot .tv291-table-head,#pageRoot .tv291-table-workspace .tv291-spell-choice{display:grid;grid-template-columns:minmax(95px,1.6fr) minmax(60px,1fr) minmax(50px,.8fr) 40px;gap:7px;align-items:center}
+#pageRoot .tv291-table-head{position:sticky;top:0;z-index:3;background:var(--raised);color:var(--soft);font-size:10px;font-weight:700;padding:10px 11px;border-bottom:1px solid var(--edge);min-height:36px}
+#pageRoot .tv291-table-workspace .tv291-level-heading{position:static;padding:6px 11px;background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-bottom:1px solid var(--edge)}
+#pageRoot .tv291-table-workspace .tv291-spell-choice{padding:8px 11px;min-height:48px}
+#pageRoot .tv291-choice-name{min-width:0;overflow-wrap:anywhere}
+#pageRoot .tv291-row-time,#pageRoot .tv291-row-range{font-size:10px;color:var(--soft);overflow-wrap:anywhere}
+#pageRoot .tv291-row-traits{display:flex;gap:3px;align-items:center}
+#pageRoot .tv291-row-traits span{font-size:9px;display:grid;place-items:center;min-width:16px;height:17px;border:1px solid var(--edge);border-radius:4px;color:var(--accent)}
+#pageRoot .tv291-row-traits .tv291-no-trait{border:0;color:var(--soft)}
+#pageRoot .tv291-table-workspace .tv291-reader{height:460px;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--edge) transparent;padding:15px}
+#pageRoot .tv291-table-workspace .tv291-reader-head h3{font-size:23px}
+#pageRoot .tv291-table-workspace .tv291-description{font-size:12px;line-height:1.7}
+@media(max-width:1050px){#pageRoot .tv291-table-workspace{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}#pageRoot .tv291-table-head,#pageRoot .tv291-table-workspace .tv291-spell-choice{grid-template-columns:minmax(90px,1.5fr) minmax(50px,1fr) 35px}#pageRoot .tv291-table-head span:nth-child(3),#pageRoot .tv291-row-range{display:none}}
+@media(max-width:760px){#pageRoot .tv291-top,#pageRoot .tv291-table-workspace{grid-template-columns:minmax(0,1fr)}#pageRoot .tv291-table-workspace .tv291-spell-list{height:300px}#pageRoot .tv291-table-workspace .tv291-reader{height:auto;max-height:460px;min-height:200px}}
