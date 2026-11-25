@@ -212,6 +212,9 @@ on:
       - "site-overrides/v244-fixed-gallery.css"
       - "site-overrides/v2-discord-auth.mjs"
       - "site-overrides/v2-ads-atelier.mjs"
+      - "site-overrides/v290-spell-library.js"
+      - "site-overrides/v290-spell-library.css"
+      - "site-overrides/spells/**"
       - "site-overrides/sql/v288_cabinet_ad_frequency_preferences.sql"
       - "tests/v288-cabinet-ad-frequency.cjs"
       - "tests/v289-cabinet-full-ads.cjs"
@@ -260,6 +263,7 @@ jobs:
           node tests/v289-cabinet-full-ads.cjs
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
+          node --check site-overrides/v290-spell-library.js
           node tests/v288-cabinet-ad-frequency.cjs
           node --check site-overrides/v243-campaign-achievement-bridge.js
           node --check site-overrides/v246-real-characters.js
@@ -461,6 +465,9 @@ jobs:
           assert 'data-source="v255-custom-feat-forge.js"' in html, "Custom feat forge missing"
           assert 'data-source="v254-dm-vault.js"' in html, "DM Chronicle missing"
           assert 'data-source="v270-divine-workspace.js"' in html
+          assert 'data-source="v290-spell-library.js"' in html
+          assert 'id="tv-live-srd-spells"' in html
+          assert '"srd521:fireball"' in html and '"srd51:fireball"' in html
           assert 'data-source="v273-boon-archive-import.js"' in html, "Divine workspace missing"
           assert "Terravale Codex V2.87" in html, "Latest V2 implementation missing"
           assert "sb_secret_" not in html
@@ -549,6 +556,7 @@ jobs:
           raw=Path("/tmp/terravale-v2-live.html").read_bytes()
           for marker in (
             b'data-source="v2-ads-atelier.mjs"',
+            b'data-source="v290-spell-library.js"',
             b'data-source="v250-dm-backpack-editor.js"',
             b'data-source="v251-live-item-actions.js"',
             b'data-source="v254-dm-vault.js"',
