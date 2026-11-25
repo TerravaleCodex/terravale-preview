@@ -192,3 +192,15 @@
 #pageRoot .tv293-strain .tv292-point-actions{margin-top:10px}
 #pageRoot .tv293-strain button[aria-checked=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--raised))}
 #pageRoot .tv292-point-feedback{padding:9px 11px;border:1px solid var(--edge);border-radius:7px;line-height:1.6}
+
+dialog.tv294-confirm{width:min(460px,calc(100vw - 32px));max-height:85vh;overflow:auto;border:1px solid var(--edge,#444);border-radius:14px;padding:22px;background:var(--surface,#151515);color:var(--ink,#eee);box-shadow:0 20px 80px #0009;font-family:inherit}
+dialog.tv294-confirm::backdrop{background:#0009;backdrop-filter:blur(3px)}
+dialog.tv294-confirm h2{font-family:var(--serif,Georgia,serif);font-size:23px;font-weight:500;margin:0 0 16px}
+dialog.tv294-confirm .tv291-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+dialog.tv294-confirm .tv291-stat{border:1px solid var(--edge,#444);background:var(--raised,#202020);border-radius:8px;padding:10px}
+dialog.tv294-confirm .tv291-stat small{display:block;color:var(--soft,#aaa);font-size:11px;margin-bottom:5px}
+dialog.tv294-confirm .tv291-stat strong{font-size:16px}
+dialog.tv294-confirm p{font-size:12px;line-height:1.6;color:var(--soft,#aaa);margin:15px 0}
+.tv294-dialog-actions{display:flex;justify-content:flex-end;gap:8px}
+.tv294-dialog-actions button{padding:8px 15px;border:1px solid var(--edge,#444);border-radius:7px;background:var(--raised,#222);color:var(--ink,#eee);cursor:pointer}
+.tv294-dialog-actions .tv294-primary{background:color-mix(in srgb,var(--accent,#aaa) 22%,var(--raised,#222));border-color:var(--accent,#aaa)}
