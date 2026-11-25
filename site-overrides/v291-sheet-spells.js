@@ -43,14 +43,36 @@ function render(c,records,card){
  const pointMax=standardSlots.reduce((sum,r)=>sum+r.counter.max*costs[slotLevel(r)],0);
  const convertedRemaining=standardSlots.reduce((sum,r)=>sum+r.counter.current*costs[slotLevel(r)],0);
  const snapshot=standardSlots.map(r=>r.id+':'+r.counter.label).join('|');
- if(!view.pointTrial||view.pointTrial.snapshot!==snapshot||view.pointTrial.account!==account) view.pointTrial={snapshot,account,remaining:convertedRemaining,highUsed:{},log:[]};
+ if(!view.pointTrial||view.pointTrial.snapshot!==snapshot||view.pointTrial.account!==account) view.pointTrial={snapshot,account,remaining:convertedRemaining,highUsed:{},log:[],strain:0,overcasting:false};
  const trial=view.pointTrial;
+ trial.strain=Math.max(0,Math.min(6,Number(trial.strain)||0));
+ const effectiveMax=()=>Math.floor(pointMax*(trial.strain>=3?.75:1));
+ trial.remaining=Math.min(trial.remaining,effectiveMax());
  const pointRemaining=trial.remaining;
- const canSpend=l=>Number.isInteger(l)&&l>=0&&l<=Math.max(0,...standardSlots.map(slotLevel))&&trial.remaining>=costs[l]&&(l<6||!trial.highUsed[l]);
+ const missing=l=>Math.max(0,costs[l]-trial.remaining);
+ const strainGain=d=>d<=2?1:d<=5?2:3;
+ const ability=Math.floor((Number(c.int||10)-10)/2);
+ const proficiency=2+Math.floor((Math.max(1,Number(c.level)||1)-1)/4);
+ const canSpend=l=>Number.isInteger(l)&&l>=0&&l<=Math.max(0,...standardSlots.map(slotLevel))&&(l===0||trial.strain<6)&&(l<6||!trial.highUsed[l])&&(missing(l)===0||(trial.overcasting&&trial.strain<5&&missing(l)<=8));
+ function refreshTrial(){const y=window.scrollY,x=window.scrollX;render(c,records,card);window.scrollTo(x,y);}
+ function castLabel(l){return missing(l)>0&&canSpend(l)?'Overcast · '+costs[l]:l?'Test cast · '+costs[l]:'Test cast · Free';}
  function changePoints(l,restore=false,name='Manual adjustment'){
   if(!pointsMode||!validPoints||!Number.isInteger(l)||l<0||l>Math.max(0,...standardSlots.map(slotLevel)))return;
-  if(restore){if(l===0||trial.remaining+costs[l]>pointMax||(l>=6&&!trial.highUsed[l]))return;trial.remaining+=costs[l];if(l>=6)delete trial.highUsed[l];}
-  else{if(!canSpend(l))return;trial.remaining-=costs[l];if(l>=6)trial.highUsed[l]=true;}
+  if(restore){if(l===0||trial.remaining+costs[l]>effectiveMax()||(l>=6&&!trial.highUsed[l]))return;trial.remaining+=costs[l];if(l>=6)delete trial.highUsed[l];}
+  else{
+   if(!canSpend(l))return;
+   const deficit=missing(l);
+   if(deficit){
+    const gain=strainGain(deficit),dc=10+l+deficit,penalty=trial.strain;
+    if(!window.confirm('Test overcast '+name+'? Spend remaining '+trial.remaining+' points, gain '+gain+' strain (maximum 6), and attempt a Magical Stability check DC '+dc+'. Points and strain apply even on failure.'))return;
+    const roll=1+Math.floor(Math.random()*20),total=roll+ability+proficiency-penalty,success=total>=dc;
+    trial.remaining=0;trial.strain=Math.min(6,trial.strain+gain);
+    if(l>=6)trial.highUsed[l]=true;
+    trial.log.unshift('Overcast '+name+' · d20 '+roll+' + '+ability+' INT + '+proficiency+' proficiency − '+penalty+' strain = '+total+' vs DC '+dc+' · '+(success?'Success':'Failed — DM determines backlash')+' · +'+gain+' strain');
+    trial.log=trial.log.slice(0,8);refreshTrial();return;
+   }
+   trial.remaining-=costs[l];if(l>=6)trial.highUsed[l]=true;
+  }
   trial.log.unshift((restore?'Restored ':'Test cast: ')+name+' · '+costs[l]+' points');trial.log=trial.log.slice(0,8);
   const y=window.scrollY;render(c,records,card);window.scrollTo(window.scrollX,y);
  }
@@ -67,11 +89,20 @@ function render(c,records,card){
  }
  if(pointsMode&&validPoints){
   const box=n('section','tv292-points');const line=n('div','tv292-points-head');
-  line.append(n('strong','','Spell points'),n('strong','',pointRemaining+' / '+pointMax));box.append(line);
-  const track=n('div','tv287-track'),fill=n('span');fill.style.width=(pointMax?100*pointRemaining/pointMax:0)+'%';track.append(fill);box.append(track);
+  line.append(n('strong','','Spell points'),n('strong','',pointRemaining+' / '+effectiveMax()));box.append(line);
+  const track=n('div','tv287-track'),fill=n('span');fill.style.width=(effectiveMax()?100*pointRemaining/effectiveMax():0)+'%';track.append(fill);box.append(track);
   const actions=n('div','tv292-point-actions');
-  actions.append(action('Restore 1 point',()=>{trial.remaining++;render(c,records,card)},trial.remaining>=pointMax),action('Spend 1 point',()=>{trial.remaining--;render(c,records,card)},trial.remaining<=0),action('Reset from slots',()=>{view.pointTrial=null;render(c,records,card)}));
-  box.append(actions,n('p','tv287-muted','Interactive test balance · Separate from saved slots. Switching modes does not convert or spend real resources. Overcasting and strain are not active.'));
+  actions.append(action('Restore 1 point',()=>{trial.remaining++;render(c,records,card)},trial.remaining>=effectiveMax()),action('Spend 1 point',()=>{trial.remaining--;render(c,records,card)},trial.remaining<=0),action('Reset from slots',()=>{view.pointTrial=null;render(c,records,card)}));
+  box.append(actions,n('p','tv287-muted','Interactive test balance · Separate from saved slots and real rests.'));
+  const strain=n('section','tv293-strain'),head=n('div','tv292-points-head');
+  head.append(n('strong','','Arcane Strain'),n('strong','',trial.strain+' / 6'));strain.append(head);
+  const pips=n('div','tv291-slot-pips');for(let i=0;i<6;i++){const pip=n('span','tv291-pip');pip.dataset.available=String(i<trial.strain);pips.append(pip)}strain.append(pips);
+  const effects=['No penalties','−1 Stability','−2 Stability','−3 Stability · 25% reduced point maximum','−4 Stability · reduced maximum · concentration disadvantage','−5 Stability · reduced maximum · concentration disadvantage · no overcasting','−6 Stability · reduced maximum · concentration disadvantage · no levelled spells'];
+  strain.append(n('p','tv287-muted',effects[trial.strain]));
+  const controls=n('div','tv292-point-actions');
+  const toggle=action('Overcasting '+(trial.overcasting?'on':'off'),()=>{trial.overcasting=!trial.overcasting;refreshTrial()});toggle.setAttribute('aria-pressed',String(trial.overcasting));toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(trial.overcasting));
+  controls.append(toggle,action('− Strain',()=>{trial.strain--;refreshTrial()},trial.strain===0),action('+ Strain',()=>{trial.strain++;refreshTrial()},trial.strain===6),action('Test long rest',()=>{trial.strain=Math.max(0,trial.strain-1);trial.remaining=effectiveMax();trial.highUsed={};trial.log.unshift('Test long rest · points restored; strain reduced by one');refreshTrial()}));
+  strain.append(controls);box.append(strain);
   if(trial.log.length)box.append(n('p','tv292-point-feedback',trial.log[0]));
   panel.append(box);
  }
@@ -108,7 +139,7 @@ function render(c,records,card){
   for(const [label,value] of [['Casting time',s.castingTime],['Range',s.range],['Duration',s.duration],['Components',(s.components||[]).join(', ')]]){const box=n('div','tv291-stat');box.append(n('small','',label),n('strong','',value||'—'));stats.append(box)}
   reader.append(stats);
   const tags=n('div','tv291-tags');if(s.ritual)tags.append(n('span','','Ritual'));if(s.concentration)tags.append(n('span','','Concentration'));if(tags.children.length)reader.append(tags);
-  if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=max;l++)up.append(action('Lv '+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
+  if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=max;l++)up.append(action((missing(l)>0&&canSpend(l)?'Overcast Lv ':'Lv ')+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
   reader.append(n('p','tv291-description',s.description));
  }
  function draw(){
@@ -123,7 +154,7 @@ function render(c,records,card){
   function addGroup(l){
    const group=n('div','tv291-level-heading');group.append(n('strong','',l?'Level '+l:'Cantrips'));
    const available=slotRecords.filter(r=>slotLevel(r)===l);
-   if(pointsMode&&validPoints){const controls=n('div','tv292-point-actions');controls.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));if(l)controls.append(action('− Spend',()=>changePoints(l,false,'Level '+l),!canSpend(l)),action('+ Restore',()=>changePoints(l,true,'Level '+l),trial.remaining+costs[l]>pointMax||(l>=6&&!trial.highUsed[l])));group.append(controls);}
+   if(pointsMode&&validPoints){const controls=n('div','tv292-point-actions');controls.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));if(l)controls.append(action(missing(l)>0&&canSpend(l)?'Overcast':'− Spend',()=>changePoints(l,false,'Level '+l),!canSpend(l)),action('+ Restore',()=>changePoints(l,true,'Level '+l),trial.remaining+costs[l]>effectiveMax()||(l>=6&&!trial.highUsed[l])));group.append(controls);}
    else for(const r of available)group.append(inlineSlots(r));
    list.append(group);
   }
@@ -133,7 +164,7 @@ function render(c,records,card){
    if(s.level!==last){addGroup(s.level);shown.add(s.level);last=s.level}
    const row=n('div','tv291-spell-choice');row.dataset.expanded=String(s.id===view.selected);
    const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
-   const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);if(pointsMode&&validPoints){const controls=n('div','tv292-row-cast');controls.append(action(s.level?'Test cast · '+costs[s.level]:'Test cast · Free',()=>changePoints(s.level,false,s.name),!canSpend(s.level)));row.append(controls);}list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
+   const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);if(pointsMode&&validPoints){const controls=n('div','tv292-row-cast');controls.append(action(castLabel(s.level),()=>changePoints(s.level,false,s.name),!canSpend(s.level)));row.append(controls);}list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
   }
   if(!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
   if(!rows.length)list.append(n('p','tv287-empty',pool.length?'No matching spells.':'No verified SRD class list is mapped to this character.'));
