@@ -1,0 +1,66 @@
+/* V2.90 live spell library, matching V2 classic and theme tokens. */
+#tv-spells-page{--sl-line:rgba(178,160,204,.20);--sl-panel:rgba(17,15,25,.74);--sl-soft:#b9b2c9;--sl-gold:#d3ae76;--sl-purple:#bba0e8;color:var(--text,#eee9f5);width:100%;max-width:1480px;margin:auto;padding:26px 28px 60px;font-family:inherit}
+#tv-spells-page *{box-sizing:border-box}
+#tv-spells-page button,#tv-spells-page select,#tv-spells-page input{font:inherit}
+#tv-spells-page .tv-spell-hero{position:relative;display:flex;justify-content:space-between;overflow:hidden;min-height:165px;padding:25px 30px;margin-bottom:19px;background:linear-gradient(118deg,rgba(43,32,57,.9),rgba(14,14,22,.93));border:1px solid var(--sl-line);border-radius:16px}
+#tv-spells-page .tv-spell-hero h1{font-size:clamp(27px,3vw,39px);margin:7px 0 10px;font-family:Georgia,serif;font-weight:500;letter-spacing:-.02em}
+#tv-spells-page .tv-spell-hero p{max-width:750px;font-size:13px;line-height:1.6;color:var(--sl-soft);margin:0}
+#tv-spells-page .tv-spell-eyebrow{font-size:10px;letter-spacing:.13em;font-weight:800;color:var(--sl-gold);text-transform:uppercase}
+#tv-spells-page .tv-spell-decor{font-size:108px;line-height:1;opacity:.1;margin:-30px 10px 0;color:var(--sl-purple)}
+#tv-spells-page .tv-spell-editions{display:flex;gap:10px;margin-bottom:17px}
+#tv-spells-page .tv-spell-editions button{display:flex;flex-direction:column;align-items:start;gap:4px;padding:12px 18px;min-width:174px;border-radius:10px;border:1px solid var(--sl-line);background:var(--sl-panel);color:inherit;text-align:left;cursor:pointer}
+#tv-spells-page .tv-spell-editions button[aria-pressed=true]{border-color:var(--sl-purple);background:linear-gradient(145deg,rgba(93,58,119,.3),rgba(30,26,42,.7))}
+#tv-spells-page .tv-spell-editions strong{font-size:13px;font-weight:700}
+#tv-spells-page .tv-spell-editions small{font-size:11px;color:var(--sl-soft)}
+#tv-spells-page .tv-spell-filters,#tv-spells-page .tv-spell-index,#tv-spells-page .tv-spell-reader{background:var(--sl-panel);border:1px solid var(--sl-line);border-radius:13px}
+#tv-spells-page .tv-spell-filters{padding:17px 20px;margin-bottom:16px}
+#tv-spells-page .tv-spell-filter-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:12px}
+#tv-spells-page .tv-spell-filter-title strong{font-family:Georgia,serif;font-size:20px;font-weight:500}
+#tv-spells-page .tv-spell-filter-title button{font-size:11px;border:1px solid var(--sl-line);padding:6px 10px;border-radius:7px;background:transparent;color:var(--sl-soft);cursor:pointer}
+#tv-spells-page .tv-spell-inputs{display:grid;grid-template-columns:minmax(200px,2fr) repeat(2,minmax(120px,1fr));gap:12px}
+#tv-spells-page .tv-spell-inputs label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--sl-soft)}
+#tv-spells-page .tv-spell-inputs input,#tv-spells-page .tv-spell-inputs select{width:100%;height:40px;padding:7px 12px;background:rgba(8,8,15,.5);color:inherit;border:1px solid var(--sl-line);border-radius:8px}
+#tv-spells-page .tv-spell-filter-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px}
+#tv-spells-page #tv-spell-levels,#tv-spells-page .tv-spell-flags{display:flex;gap:5px;flex-wrap:wrap}
+#tv-spells-page #tv-spell-levels button,#tv-spells-page .tv-spell-flags button{padding:7px 10px;min-width:34px;min-height:34px;font-size:12px;background:rgba(8,9,16,.35);border:1px solid var(--sl-line);border-radius:8px;color:var(--sl-soft);cursor:pointer}
+#tv-spells-page button[aria-pressed=true]{border-color:var(--sl-purple)!important;color:#f3eaff!important;background:rgba(103,66,133,.34)!important}
+#tv-spells-page .tv-spell-workspace{display:grid;grid-template-columns:minmax(250px,32%) minmax(0,1fr);align-items:start;gap:16px}
+#tv-spells-page .tv-spell-index{overflow:hidden}
+#tv-spells-page .tv-spell-index-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--sl-line)}
+#tv-spells-page .tv-spell-index-head strong{font-size:12px}
+#tv-spells-page .tv-spell-index-head small{font-size:10px;color:var(--sl-soft)}
+#tv-spells-page .tv-spell-index-scroll{max-height:665px;overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}
+#tv-spells-page .tv-spell-list-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-bottom:1px solid rgba(173,155,194,.1);background:transparent;color:inherit;text-align:left;padding:11px 15px;cursor:pointer}
+#tv-spells-page .tv-spell-list-item[aria-current=true]{background:rgba(110,77,144,.22);box-shadow:inset 3px 0 var(--sl-gold)}
+#tv-spells-page .tv-spell-list-item:hover{background:rgba(110,77,144,.16)}
+#tv-spells-page .tv-spell-list-item strong{display:block;font-size:12px}
+#tv-spells-page .tv-spell-list-item small{display:block;color:var(--sl-soft);font-size:10px;margin-top:4px}
+#tv-spells-page .tv-spell-list-item b{font-size:11px;color:var(--sl-gold);min-width:25px;height:25px;border:1px solid var(--sl-line);border-radius:7px;display:grid;place-items:center}
+#tv-spells-page .tv-spell-reader{min-width:0;padding:24px 26px}
+#tv-spells-page .tv-spell-reader-top{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--sl-line);padding-bottom:19px}
+#tv-spells-page .tv-spell-reader-top h2{font-family:Georgia,serif;font-weight:500;font-size:clamp(25px,2.7vw,35px);margin:7px 0 4px}
+#tv-spells-page .tv-spell-reader-top p{color:var(--sl-soft);font-size:12px;margin:0}
+#tv-spells-page .tv-spell-level-badge{display:grid;place-items:center;flex:none;width:49px;height:49px;border-radius:12px;border:1px solid var(--sl-line);color:var(--sl-gold);font-size:27px;font-family:Georgia,serif}
+#tv-spells-page .tv-spell-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
+#tv-spells-page .tv-spell-stats>div{border:1px solid var(--sl-line);border-radius:9px;padding:11px 13px;background:rgba(6,6,13,.16);min-width:0}
+#tv-spells-page .tv-spell-stats small{display:block;color:var(--sl-soft);font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+#tv-spells-page .tv-spell-stats strong{font-size:12px;font-weight:650;overflow-wrap:anywhere}
+#tv-spells-page .tv-spell-tags{display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--sl-line);padding-bottom:17px}
+#tv-spells-page .tv-spell-tags span{font-size:10px;border:1px solid var(--sl-line);color:var(--sl-soft);border-radius:99px;padding:5px 10px}
+#tv-spells-page .tv-spell-tags span.active{color:var(--sl-gold);border-color:rgba(215,177,109,.42)}
+#tv-spells-page .tv-spell-description{padding:21px 0 10px}
+#tv-spells-page .tv-spell-description h3,#tv-spells-page .tv-spell-class-list h3{font-family:Georgia,serif;font-size:17px;font-weight:500;margin:0 0 15px}
+#tv-spells-page .tv-spell-description p{white-space:normal;line-height:1.8;font-size:12px;margin:0 0 14px;color:var(--text,#efecf5);overflow-wrap:anywhere}
+#tv-spells-page .tv-spell-class-list{border-top:1px solid var(--sl-line);padding:15px 0 20px}
+#tv-spells-page .tv-spell-class-list>div{display:flex;gap:7px;flex-wrap:wrap}
+#tv-spells-page .tv-spell-class-list span{border:1px solid var(--sl-line);border-radius:7px;padding:5px 10px;font-size:11px}
+#tv-spells-page .tv-spell-integration{border:1px dashed var(--sl-line);border-radius:9px;padding:13px 14px;color:var(--sl-soft);font-size:11px}
+#tv-spells-page .tv-spell-integration strong{display:block;color:var(--text,#efecf5);font-size:12px}
+#tv-spells-page .tv-spell-integration p{margin:6px 0 0;line-height:1.65}
+#tv-spells-page .tv-spell-integration code{color:var(--sl-gold)}
+#tv-spells-page .tv-spell-license{font-size:10px;color:var(--sl-soft);line-height:1.7;padding:18px 4px}
+#tv-spells-page .tv-spell-license a{color:var(--sl-gold);text-decoration:underline}
+#tv-spells-page .tv-spell-empty{color:var(--sl-soft);font-size:12px;padding:24px}
+@media(max-width:940px){#tv-spells-page .tv-spell-inputs{grid-template-columns:1fr 1fr}#tv-spells-page .tv-spell-inputs label:first-child{grid-column:1/-1}#tv-spells-page .tv-spell-workspace{grid-template-columns:minmax(215px,34%) 1fr}}
+@media(max-width:700px){#tv-spells-page{padding:16px}#tv-spells-page .tv-spell-workspace{grid-template-columns:1fr}#tv-spells-page .tv-spell-index-scroll{max-height:310px}#tv-spells-page .tv-spell-reader{padding:17px}#tv-spells-page .tv-spell-decor{display:none}}
+@media(max-width:420px){#tv-spells-page .tv-spell-inputs{grid-template-columns:1fr}#tv-spells-page .tv-spell-inputs label:first-child{grid-column:auto}#tv-spells-page .tv-spell-editions button{min-width:0;flex:1;padding:10px}#tv-spells-page .tv-spell-stats{gap:7px}}
