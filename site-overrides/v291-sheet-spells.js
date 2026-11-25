@@ -35,25 +35,42 @@ function render(c,records,card){
  heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · 2014 SRD reference'));
  header.append(heading);panel.append(header);
  const slotRecords=records.filter(r=>r.kind==='spell'), abilities=records.filter(r=>r.kind!=='spell');
- const top=n('div','tv291-top');
- if(slotRecords.length){
-  const block=n('section','tv291-block');block.append(n('h3','','Spell slots'));
-  const grid=n('div','tv291-slot-grid');
-  for(const r of slotRecords){
-   const item=card(r,false);item.classList.add('tv291-slot-card');
-   const title=item.querySelector('.tv287-card-name');const lv=slotLevel(r);if(title&&lv)title.textContent=(/pact/i.test(r.name+' '+r.id)?'Pact · ':'Level ')+lv;
-   const track=item.querySelector('.tv287-track');
-   if(track&&Number.isInteger(r.counter.max)&&r.counter.max>0&&r.counter.max<=20&&Number.isInteger(r.counter.current)){
-    const dots=n('div','tv291-slot-pips');dots.setAttribute('aria-label',r.counter.label+' slots available');
-    for(let i=0;i<r.counter.max;i++){const pip=n('span','tv291-pip');pip.dataset.available=String(i<r.counter.current);dots.append(pip)}
-    track.replaceWith(dots);
-   }
-   grid.append(item);
+ const costs=[0,2,3,5,6,7,9,10,11,13];
+ const previewAllowed=demo&&c.name==='Aster Vaelith';
+ const pointsMode=previewAllowed&&view.pointsMode;
+ const standardSlots=slotRecords.filter(r=>slotLevel(r)>0&&!/pact/i.test(r.id+' '+r.name));
+ const validPoints=standardSlots.length>0&&standardSlots.every(r=>Number.isInteger(r.counter.current)&&Number.isInteger(r.counter.max));
+ const pointMax=standardSlots.reduce((sum,r)=>sum+r.counter.max*costs[slotLevel(r)],0);
+ const pointRemaining=standardSlots.reduce((sum,r)=>sum+r.counter.current*costs[slotLevel(r)],0);
+ if(previewAllowed&&validPoints){
+  const controls=n('div','tv292-system-switch');
+  controls.append(n('small','','SPELLCASTING SYSTEM · PREVIEW'));
+  const buttons=n('div','tv292-system-buttons');
+  for(const [name,value] of [['Spell slots',false],['Spell points',true]]){
+   const b=n('button','tv287-filter',name);b.type='button';b.setAttribute('aria-pressed',String(!!pointsMode===value));
+   b.onclick=()=>{view.pointsMode=value;render(c,records,card)};buttons.append(b);
   }
-  block.append(grid);top.append(block);
+  controls.append(buttons);header.append(controls);
  }
- if(abilities.length){const block=n('section','tv291-block');block.append(n('h3','','Spellcasting abilities'));const grid=n('div','tv291-ability-grid');for(const r of abilities)grid.append(card(r,false));block.append(grid);top.append(block)}
- if(top.children.length)panel.append(top);
+ if(pointsMode&&validPoints){
+  const box=n('section','tv292-points');const line=n('div','tv292-points-head');
+  line.append(n('strong','','Spell points'),n('strong','',pointRemaining+' / '+pointMax));box.append(line);
+  const track=n('div','tv287-track'),fill=n('span');fill.style.width=(pointMax?100*pointRemaining/pointMax:0)+'%';track.append(fill);box.append(track);
+  box.append(n('p','tv287-muted','Preview · Converted from actual remaining slots. No resource changes. Arcane Strain and Overcasting are not active.'));
+  panel.append(box);
+ }
+ function inlineSlots(r){
+  const item=card(r,true);item.classList.add('tv292-inline-slot');
+  item.querySelector('.tv287-card-name')?.remove();
+  item.querySelector('.tv287-track')?.remove();
+  const dots=n('div','tv291-slot-pips');
+  if(Number.isInteger(r.counter.max)&&r.counter.max>0&&r.counter.max<=20&&Number.isInteger(r.counter.current)){
+   dots.setAttribute('aria-label',r.counter.label+' slots available');
+   for(let i=0;i<r.counter.max;i++){const pip=n('span','tv291-pip');pip.dataset.available=String(i<r.counter.current);dots.append(pip)}
+  }
+  item.insertBefore(dots,item.firstChild);
+  return item;
+ }
  const pool=spells().filter(s=>s.edition==='2014'&&s.classes.includes(listClass(c)));
  const max=Math.max(0,...slotRecords.map(slotLevel));
  const book=n('section','tv291-book'),bookHead=n('div','tv291-book-head'),title=n('div');
@@ -85,13 +102,22 @@ function render(c,records,card){
   for(const l of options){const b=n('button','tv287-filter',l==='all'?'All':l===0?'Cantrips':String(l));b.type='button';b.setAttribute('aria-pressed',String(view.level===l));b.onclick=()=>{view.level=l;view.selected='';list.scrollTop=0;draw()};levels.append(b)}
   const rows=base.filter(s=>view.level==='all'||s.level===view.level).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
   if(!rows.some(s=>s.id===view.selected))view.selected='';
+  function addGroup(l){
+   const group=n('div','tv291-level-heading');group.append(n('strong','',l?'Level '+l:'Cantrips'));
+   const available=slotRecords.filter(r=>slotLevel(r)===l);
+   if(pointsMode&&validPoints)group.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));
+   else for(const r of available)group.append(inlineSlots(r));
+   list.append(group);
+  }
   let last=-1;
+  const shown=new Set();
   for(const s of rows){
-   if(s.level!==last){const group=n('div','tv291-level-heading');group.append(n('strong','',s.level?'Level '+s.level:'Cantrips'));const available=slotRecords.filter(r=>slotLevel(r)===s.level);if(available.length)group.append(n('span','',available.map(r=>r.counter.label+( /pact/i.test(r.id+' '+r.name)?' pact':' slots')).join(' · ')));list.append(group);last=s.level}
+   if(s.level!==last){addGroup(s.level);shown.add(s.level);last=s.level}
    const row=n('div','tv291-spell-choice');row.dataset.expanded=String(s.id===view.selected);
    const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
    const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
   }
+  if(!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
   if(!rows.length)list.append(n('p','tv287-empty',pool.length?'No matching spells.':'No verified SRD class list is mapped to this character.'));
   list.scrollTop=oldScroll;
  }
