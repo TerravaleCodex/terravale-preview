@@ -32,7 +32,10 @@ return '<section id="tv-spells-page" class="tv-spells-page" aria-label="Spell Li
 // Replace browser-native select menus with compact, theme-consistent menus.
 function enhanceFilterSelects(root){
  for(const id of ['tv-spell-school','tv-spell-class']){
-  const select=root.querySelector('#'+id);
+  const nativeSelect=root.querySelector('#'+id);
+  const values=[...nativeSelect.options].map(option=>({value:option.value,textContent:option.textContent}));
+  const select=document.createElement('input');select.type='hidden';select.id=id;select.value=nativeSelect.value;
+  nativeSelect.replaceWith(select);
   const frame=document.createElement('div');frame.className='tv-spell-select';frame.dataset.open='false';
   const trigger=document.createElement('button');trigger.type='button';trigger.className='tv-spell-select-trigger';
   trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
@@ -40,7 +43,7 @@ function enhanceFilterSelects(root){
   const options=document.createElement('div');options.className='tv-spell-select-menu';options.setAttribute('role','listbox');
   options.setAttribute('aria-label',id==='tv-spell-school'?'Schools':'Classes');
   const sync=()=>{
-   const selectedOption=select.selectedOptions[0];trigger.textContent=selectedOption?.textContent||'All';
+   const selectedOption=values.find(option=>option.value===select.value);trigger.textContent=selectedOption?.textContent||'All';
    options.querySelectorAll('button').forEach(button=>{button.setAttribute('aria-selected',String(button.dataset.value===select.value));});
   };
   const close=()=>{frame.dataset.open='false';trigger.setAttribute('aria-expanded','false');};
@@ -51,13 +54,13 @@ function enhanceFilterSelects(root){
    });
    if(shouldOpen){frame.dataset.open='true';trigger.setAttribute('aria-expanded','true');}
   });
-  for(const option of [...select.options]){
+  for(const option of values){
    const button=document.createElement('button');button.type='button';button.setAttribute('role','option');
    button.dataset.value=option.value;button.textContent=option.textContent;
    button.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();close();trigger.focus();});
    options.append(button);
   }
-  select.after(frame);frame.append(select,trigger,options);select.classList.add('tv-spell-native-select');
+  select.after(frame);frame.append(select,trigger,options);
   frame.addEventListener('keydown',event=>{
    if(event.key==='Escape'){close();trigger.focus();}
    if(event.key==='ArrowDown'&&event.target===trigger&&frame.dataset.open!=='true'){event.preventDefault();trigger.click();options.querySelector('[aria-selected="true"]')?.focus();}
@@ -116,7 +119,7 @@ const classes=candidates.find(el=>{const text=(el.textContent||'').trim();return
 if(!classes)return;
 let link=document.getElementById('tv-spells-sidebar-link');
 if(!link){
- link=classes.cloneNode(true);link.id='tv-spells-sidebar-link';
+ link=classes.cloneNode(true);link.id='tv-spells-sidebar-link';link.setAttribute('aria-label','Spells');link.setAttribute('title','Spells');
  link.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
  if(link.tagName==='A'){link.href='#/spells';}
  else{link.removeAttribute('onclick');link.removeAttribute('data-route');link.removeAttribute('data-page');link.type='button';}
