@@ -38,6 +38,15 @@ function render(c,records,card){
  const view=views.get(key);
  const account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser';
  const favKey='tv291-reference-favourites:'+account+':'+key;
+ const bookKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+key;
+ let draft={known:[],prepared:[]};try{const saved=JSON.parse(localStorage.getItem(bookKey)||'null');if(saved&&Array.isArray(saved.known)&&Array.isArray(saved.prepared))draft={known:saved.known.filter(x=>typeof x==='string'),prepared:saved.prepared.filter(x=>typeof x==='string'&&saved.known.includes(x))}}catch{}
+ function saveDraft(){try{localStorage.setItem(bookKey,JSON.stringify(draft))}catch{}}
+ function toggleKnown(id){if(draft.known.includes(id)){draft.known=draft.known.filter(x=>x!==id);draft.prepared=draft.prepared.filter(x=>x!==id)}else draft.known.push(id);saveDraft();draw()}
+ function togglePrepared(id){if(!draft.known.includes(id))return;if(draft.prepared.includes(id))draft.prepared=draft.prepared.filter(x=>x!==id);else draft.prepared.push(id);saveDraft();draw()}
+ const grantedIds=new Set(Array.isArray(c.grantedSpellIds)?c.grantedSpellIds.filter(x=>typeof x==='string'):[]);
+ const bookMode=()=>view.bookMode||'reference';
+ const preparing=['Wizard','Cleric','Druid','Paladin','Artificer'].includes(classKey(c));
+
  let favourites=new Set();try{const saved=JSON.parse(localStorage.getItem(favKey)||'[]');if(Array.isArray(saved))favourites=new Set(saved)}catch{}
  function toggleFavourite(id){if(favourites.has(id))favourites.delete(id);else favourites.add(id);try{localStorage.setItem(favKey,JSON.stringify([...favourites]))}catch{}draw();}
  panel.replaceChildren();
@@ -130,10 +139,10 @@ function render(c,records,card){
   item.insertBefore(dots,item.firstChild);
   return item;
  }
- const pool=spells().filter(s=>s.edition==='2014'&&s.classes.includes(listClass(c)));
+ const pool=spells().filter(s=>s.edition==='2014'&&(s.classes.includes(listClass(c))||grantedIds.has(s.id)));
  const max=Math.max(0,...slotRecords.map(slotLevel));
  const book=n('section','tv291-book'),bookHead=n('div','tv291-book-head'),title=n('div');
- title.append(n('h3','','Spellbook'),n('p','tv287-muted','Reference only · Known spells and casting not yet enabled.'));
+ title.append(n('h3','','Spellbook'),n('p','tv287-muted','Manage a local spellbook draft · No permanent spell grants or preparation changes.'));
  bookHead.append(title);
  if(recommended.length){const toggle=n('button','tv287-filter','Demo suggestions');toggle.type='button';toggle.setAttribute('aria-pressed',String(view.suggested));toggle.onclick=()=>{view.suggested=!view.suggested;toggle.setAttribute('aria-pressed',String(view.suggested));draw()};bookHead.append(toggle)}
  const modes=n('div','tv291-book-modes');bookHead.append(modes);
@@ -142,7 +151,8 @@ function render(c,records,card){
  const levels=n('div','tv291-levels');tools.append(search,levels);book.append(tools);
  const workspace=n('div','tv291-full-workspace'),list=n('div','tv291-spell-list'),reader=n('div','tv291-reader');const tableHead=n('div','tv291-table-head');for(const label of ['Spell','Casting time','Range','Traits',''])tableHead.append(n('span','',label));list.append(tableHead);workspace.append(list);book.append(workspace);panel.append(book);
  if(pointsMode&&validPoints){workspace.classList.add('tv292-points-mode');tableHead.append(n('span','','Test casting'));}
- const note=n('p','tv287-muted',pointsMode?'Test casts use the experimental balance only; references are not approved spells.':'Starred references are saved in this browser. They do not grant spells or enable casting.');book.append(note);
+ const note=n('p','tv287-muted','Draft spell selections and favourites are saved in this browser only. They do not grant spells, enforce preparation limits or alter approved character builds.');book.append(note);
+ const manage=n('div','tv295-manage');const tally=n('span','tv287-muted');manage.append(tally,action('Import demo suggestions',()=>{for(const spell of pool.filter(s=>recommended.includes(s.id.split(':')[1])&&(!max||s.level<=max)))if(!draft.known.includes(spell.id))draft.known.push(spell.id);saveDraft();view.bookMode='known';draw()},!recommended.length));bookHead.after(manage);
  function detail(s){
   reader.replaceChildren();
   if(!s){reader.append(n('p','tv287-empty','No matching spell.'));return}
@@ -169,12 +179,16 @@ function render(c,records,card){
    }
    if(up.children.length>1)reader.append(up);
   }
-  reader.append(n('p','tv291-description',s.description));
+  const manageSpell=n('div','tv292-point-actions tv295-manage-spell');
+  if(grantedIds.has(s.id))manageSpell.append(n('strong','','Granted spell'));
+  else{manageSpell.append(action(draft.known.includes(s.id)?'Remove from draft':'Add to known draft',()=>toggleKnown(s.id)));if(preparing&&s.level>0&&draft.known.includes(s.id))manageSpell.append(action(draft.prepared.includes(s.id)?'Unprepare draft':'Prepare draft',()=>togglePrepared(s.id)));}
+  reader.append(manageSpell,n('p','tv291-description',s.description));
  }
  function draw(){
   const oldScroll=list.scrollTop;list.replaceChildren(tableHead);levels.replaceChildren();modes.replaceChildren();
-  for(const [label,active,action] of [['All references',!view.favouritesOnly,()=>{view.favouritesOnly=false;draw()}],['Favourites',view.favouritesOnly,()=>{view.favouritesOnly=true;draw()}]]){const b=n('button','tv287-filter',label);b.type='button';b.setAttribute('aria-pressed',String(active));b.onclick=action;modes.append(b)}
-  const base=pool.filter(s=>(!view.suggested||recommended.includes(s.id.split(':')[1]))&&(!max||s.level<=max)&&(!view.favouritesOnly||favourites.has(s.id))&&(!view.query||s.name.toLowerCase().includes(view.query.toLowerCase().trim())));
+  tally.textContent=draft.known.length+' known draft · '+draft.prepared.length+' prepared draft';
+  for(const [label,id] of [['All references','reference'],['Known','known'],...(preparing?[['Prepared','prepared']]:[]),['Granted','granted'],['Favourites','favourites']]){const b=n('button','tv287-filter',label);b.type='button';b.setAttribute('aria-pressed',String(bookMode()===id));b.onclick=()=>{view.bookMode=id;view.selected='';draw()};modes.append(b)}
+  const base=pool.filter(s=>(bookMode()!=='reference'||!view.suggested||recommended.includes(s.id.split(':')[1]))&&(!max||s.level<=max||grantedIds.has(s.id))&&(bookMode()==='reference'||(bookMode()==='known'&&draft.known.includes(s.id))||(bookMode()==='prepared'&&(draft.prepared.includes(s.id)||(s.level===0&&draft.known.includes(s.id))||grantedIds.has(s.id)))||(bookMode()==='granted'&&grantedIds.has(s.id))||(bookMode()==='favourites'&&favourites.has(s.id)))&&(!view.query||s.name.toLowerCase().includes(view.query.toLowerCase().trim())));
   const options=['all',...new Set(base.map(s=>s.level).sort((a,b)=>a-b))];
   if(!options.includes(view.level))view.level='all';
   for(const l of options){const b=n('button','tv287-filter',l==='all'?'All':l===0?'Cantrips':String(l));b.type='button';b.setAttribute('aria-pressed',String(view.level===l));b.onclick=()=>{view.level=l;view.selected='';list.scrollTop=0;draw()};levels.append(b)}
@@ -192,7 +206,7 @@ function render(c,records,card){
   for(const s of rows){
    if(s.level!==last){addGroup(s.level);shown.add(s.level);last=s.level}
    const row=n('div','tv291-spell-choice');row.dataset.expanded=String(s.id===view.selected);
-   const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
+   const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school+(grantedIds.has(s.id)?' · Granted':draft.prepared.includes(s.id)?' · Prepared draft':draft.known.includes(s.id)?' · Known draft':'')));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
    const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);if(pointsMode&&validPoints){const controls=n('div','tv292-row-cast');controls.append(action(castLabel(s.level),()=>changePoints(s.level,false,s.name),!canSpend(s.level)));row.append(controls);}list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
   }
   if(!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
