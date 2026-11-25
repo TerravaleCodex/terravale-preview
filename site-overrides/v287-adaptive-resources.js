@@ -54,6 +54,9 @@ function controlsFor(el,kind){
   kind==='item'?'.tv-v251-resource-actions button':'.tv285-resource-actions button';
  return Array.from(el.querySelectorAll(sel)).slice(0,4);
 }
+function spellRelated(record){
+ return record.kind==='spell'||(record.kind==='class'&&/\b(arcane recovery|natural recovery|mystic arcanum|spell mastery|signature spells?|sorcery points?|metamagic|font of magic|flexible casting|pact magic)\b/i.test(record.name));
+}
 function collect(){
  const host=document.querySelector('#pageRoot .sheet20-resource-panel');
  if(!host)return[];
@@ -176,7 +179,7 @@ function catalog(records){
  tools.append(tally,search);head.append(left,tools);panel.append(head);
  const filters=n('div','tv287-filters'),grid=n('div','tv287-catalog-grid');
  panel.append(filters,grid);
- const choices=[['all','All'],['spell','Spellcasting'],['class','Class'],['item','Items'],['divine','Divine']];
+ const choices=[['all','All'],['class','Class'],['item','Items'],['divine','Divine']];
  function draw(){
   filters.replaceChildren();
   for(const [id,title]of choices){
@@ -212,14 +215,18 @@ function paint(force){
  syncCharacter(c);
  const nativeTab=root.querySelector('.sheet20-tabs [data-value][aria-selected="true"]');
  const mode=nativeTab?.dataset.value||'';
- if(mode!=='overview'&&mode!=='resources'){state.mode=mode;return}
+ if(mode!=='overview'&&mode!=='resources'&&mode!=='spells'){state.mode=mode;return}
  const records=collect(),sig=signatureFor(records,mode);
+ const spellTab=root.querySelector('.sheet20-tabs [data-value="spells"]');
+ if(spellTab)spellTab.hidden=mode!=='spells'&&!window.TerravaleSheetSpells?.eligible(c,records.filter(spellRelated));
  // Source-node replacement matters: native cards may have been reconstructed
  // with identical charge values after a live character sync.
  const changed=root!==state.root||sig!==state.signature||mode!==state.mode;
  if(!force&&!changed)return;
  state.root=root;state.mode=mode;state.signature=sig;
- if(mode==='overview')quickPanel(records);else catalog(records);
+ if(mode==='overview')quickPanel(records);
+ else if(mode==='spells'){window.TerravaleSheetSpells?.render(c,records.filter(spellRelated),card);}
+ else catalog(records.filter(r=>!spellRelated(r)));
 }
 const root=document.getElementById('pageRoot')||document.body;
 new MutationObserver(schedule).observe(root,{subtree:true,childList:true,characterData:true,attributes:true,
@@ -227,6 +234,6 @@ new MutationObserver(schedule).observe(root,{subtree:true,childList:true,charact
 window.addEventListener('hashchange',schedule);
 window.addEventListener('terravale-auth-ready',schedule);
 window.addEventListener('terravale-characters-synced',schedule);
-window.TerravaleV287Adaptive={refresh:()=>paint(true),getStarred:()=>Array.from(state.stars)};
+window.TerravaleV287Adaptive={refresh:()=>paint(true),getStarred:()=>Array.from(state.stars),collect,spellRelated};
 schedule();
 })();
