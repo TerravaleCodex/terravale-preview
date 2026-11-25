@@ -15,7 +15,21 @@ const curated={
  'Pip Thornwhistle':['hunters-mark','cure-wounds','goodberry']
 };
 const eligible=(c,records)=>!!(records.length||rule(c)||c.spells?.length);
-const views=new Map();
+const views=new Map(), advancementPreview=new Set();
+const isAsterPreview=c=>c?.name==='Aster Vaelith'&&String(c.demoCurator||'').toLowerCase()==='aster'&&Number(c.level)===6;
+function mountAdvancementPreview(c,host){
+ if(!isAsterPreview(c)||!host||host.querySelector('.tv297-advancement-preview'))return;
+ const section=n('section','sheet20-panel tv297-advancement-preview'),active=advancementPreview.has(String(c.id));
+ const make=(label,fn)=>{const b=n('button','tv292-point-action',label);b.type='button';b.onclick=fn;return b};
+ section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT SANDBOX'),n('h3','','Level 6 → 7'),n('p','tv287-muted','Preview only. No approved level, hit points, slots or DM requests are changed.'));
+ const grid=n('div','tv296-choice-grid');
+ for(const [label,value] of [['Hit dice','6d6 → 7d6'],['Maximum HP','+4 + CON modifier (fixed value; minimum 1)'],['Proficiency bonus','+3 → +3'],['Class features','No new core Wizard feature in the provisional progression'],['Spell slots','4 / 3 / 3 → 4 / 3 / 3 / 1'],['Learned spells','16 → 18'],['Cantrips','4 → 4'],['Prepared capacity','+1']]){const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));grid.append(item)}
+ section.append(grid);
+ const actions=n('div','tv292-point-actions');
+ actions.append(make(active?'Exit level 7 preview':'Start level 7 preview',()=>{if(active)advancementPreview.delete(String(c.id));else advancementPreview.add(String(c.id));section.remove();mountAdvancementPreview(c,host);window.TerravaleV287Adaptive?.refresh()}),make('Preview spell choices',()=>{advancementPreview.add(String(c.id));document.querySelector('#pageRoot .sheet20-tabs [data-value="spells"]')?.click();window.TerravaleV287Adaptive?.refresh()}));
+ section.append(actions);host.prepend(section);
+}
+
 const slotLevel=r=>Number((r.id.match(/(?:spell|pact)-slot-([1-9])/i)||r.name.match(/([1-9])(?:st|nd|rd|th)[ -]level/i)||r.name.match(/(?:level|slot)\s*([1-9])/i)||[])[1])||0;
 // Selection limits from published Terravale class-feature-rules.json (2026-10-28).
 // Wizard baseline is provisional pending confirmation of the full primer.
@@ -64,12 +78,15 @@ function render(c,records,card){
  native.classList.add('tv287-native-source');
  let panel=document.getElementById('tv291-spell-sheet');
  if(!panel){panel=n('section','sheet20-panel tv291-spell-sheet');panel.id='tv291-spell-sheet';native.after(panel)}
- const key=String(c.id), demo=String(c.demoCurator||'').toLowerCase()==='aster', recommended=demo?(curated[c.name]||[]):[];
+ const actual=c, preview=isAsterPreview(c)&&advancementPreview.has(String(c.id));
+ if(preview)c={...c,level:7};
+ const key=String(c.id)+(preview?':level7-preview':''), demo=String(c.demoCurator||'').toLowerCase()==='aster', recommended=demo?(curated[c.name]||[]):[];
  if(!views.has(key))views.set(key,{query:'',level:'all',suggested:!!recommended.length,selected:'',favouritesOnly:false});
  const view=views.get(key);
  const account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser';
  const favKey='tv291-reference-favourites:'+account+':'+key;
  const bookKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+key;
+ if(preview){try{if(!localStorage.getItem(bookKey)){const original=localStorage.getItem(bookKey.replace(/:level7-preview$/,''));if(original)localStorage.setItem(bookKey,original)}}catch{}}
  let draft={known:[],prepared:[]};try{const saved=JSON.parse(localStorage.getItem(bookKey)||'null');if(saved&&Array.isArray(saved.known)&&Array.isArray(saved.prepared))draft={known:saved.known.filter(x=>typeof x==='string'),prepared:saved.prepared.filter(x=>typeof x==='string')}}catch{}
  const limits=selectionRules(c);
  const catalogue=spells().filter(x=>x.edition==='2014'&&x.classes.includes(listClass(c)));
@@ -104,10 +121,11 @@ function render(c,records,card){
  const header=n('header','tv291-header'), heading=n('div');
  heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · 2014 SRD reference'));
  header.append(heading);panel.append(header);
+ if(preview){const banner=n('section','tv297-advancement-preview');banner.append(n('strong','','LEVEL 7 PREVIEW · SPELL CHOICES'),n('p','tv287-muted','Choose two additional Wizard spells up to level 4. This separate draft cannot spend real slots or change Aster’s approved build.'));const exit=n('button','tv292-point-action','Exit preview');exit.type='button';exit.onclick=()=>{advancementPreview.delete(String(actual.id));render(actual,records,card)};banner.append(exit);panel.append(banner);}
  const slotRecords=records.filter(r=>r.kind==='spell'), abilities=records.filter(r=>r.kind!=='spell');
  const costs=[0,2,3,5,6,7,9,10,11,13];
  const previewAllowed=demo&&c.name==='Aster Vaelith';
- const pointsMode=previewAllowed&&view.pointsMode;
+ const pointsMode=!preview&&previewAllowed&&view.pointsMode;
  const standardSlots=slotRecords.filter(r=>slotLevel(r)>0&&!/pact/i.test(r.id+' '+r.name));
  const validPoints=standardSlots.length>0&&standardSlots.every(r=>Number.isInteger(r.counter.current)&&Number.isInteger(r.counter.max));
  const pointMax=standardSlots.reduce((sum,r)=>sum+r.counter.max*costs[slotLevel(r)],0);
@@ -149,7 +167,7 @@ function render(c,records,card){
   const y=window.scrollY;render(c,records,card);window.scrollTo(window.scrollX,y);
  }
  function action(text,fn,disabled=false){const b=n('button','tv292-point-action',text);b.type='button';b.disabled=disabled;b.onclick=fn;return b;}
- if(previewAllowed&&validPoints){
+ if(!preview&&previewAllowed&&validPoints){
   const controls=n('div','tv292-system-switch');
   controls.append(n('small','','SPELLCASTING SYSTEM · PREVIEW'));
   const buttons=n('div','tv292-system-buttons');
@@ -214,7 +232,7 @@ function render(c,records,card){
   reader.append(stats);
   const tags=n('div','tv291-tags');if(s.ritual)tags.append(n('span','','Ritual'));if(s.concentration)tags.append(n('span','','Concentration'));if(tags.children.length)reader.append(tags);
   if(pointsMode&&validPoints&&s.level>0){const up=n('div','tv292-point-actions');up.append(n('strong','','Test casting level'));for(let l=s.level;l<=(scales(s)?max:s.level);l++)up.append(action((missing(l)>0&&canSpend(l)?'Overcast Lv ':'Lv ')+l+' · '+costs[l]+' pt',()=>changePoints(l,false,s.name+' (level '+l+')'),!canSpend(l)));reader.append(up);}
-  if(!pointsMode&&s.level>0&&scales(s)){
+  if(!preview&&!pointsMode&&s.level>0&&scales(s)){
    const up=n('div','tv292-point-actions');up.append(n('strong','','Upcast using a spell slot'));
    for(const r of slotRecords.filter(r=>slotLevel(r)>s.level)){
     const spendIndex=r.controls.findIndex(b=>/spend|use/i.test(b.textContent+' '+(b.getAttribute('aria-label')||'')));
@@ -272,7 +290,7 @@ function render(c,records,card){
    const group=n('div','tv291-level-heading');group.append(n('strong','',l?'Level '+l:'Cantrips'));
    const available=slotRecords.filter(r=>slotLevel(r)===l);
    if(pointsMode&&validPoints){const controls=n('div','tv292-point-actions');controls.append(n('span','tv292-cost',l?costs[l]+' points per cast':'Free'));if(l)controls.append(action(missing(l)>0&&canSpend(l)?'Overcast':'− Spend',()=>changePoints(l,false,'Level '+l),!canSpend(l)),action('+ Restore',()=>changePoints(l,true,'Level '+l),trial.remaining+costs[l]>effectiveMax()||(l>=6&&!trial.highUsed[l])));group.append(controls);}
-   else for(const r of available)group.append(inlineSlots(r));
+   else if(preview){if(l>0)group.append(n('span','tv292-cost',([0,4,3,3,1][l]||0)+' preview slots · read only'));}else for(const r of available)group.append(inlineSlots(r));
    list.append(group);
   }
   let last=-1;
@@ -283,11 +301,12 @@ function render(c,records,card){
    const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school+(grantedIds.has(s.id)?' · Granted':draft.prepared.includes(s.id)?' · Prepared draft':draft.known.includes(s.id)?' · Known draft':'')));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
    const open=n('button','tv291-open-spell');open.type='button';open.setAttribute('aria-expanded',String(view.selected===s.id));open.setAttribute('aria-label','Read '+s.name);open.append(...label.childNodes);label.replaceWith(open);open.onclick=()=>{view.selected=view.selected===s.id?'':s.id;draw()};const star=n('button','tv287-star',favourites.has(s.id)?'★':'☆');star.type='button';star.setAttribute('aria-label',(favourites.has(s.id)?'Unstar ':'Star ')+s.name);star.setAttribute('aria-pressed',String(favourites.has(s.id)));star.onclick=()=>toggleFavourite(s.id);row.append(star);if(pointsMode&&validPoints){const controls=n('div','tv292-row-cast');controls.append(action(castLabel(s.level),()=>changePoints(s.level,false,s.name),!canSpend(s.level)));row.append(controls);}list.append(row);if(view.selected===s.id){detail(s);list.append(reader)}
   }
-  if(!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
+  if(preview&&!shown.has(4)){addGroup(4);list.append(n('p','tv292-empty-level','Newly unlocked fourth-level spells. Use Choose spells to browse.'));}
+  if(!preview&&!pointsMode){for(const r of slotRecords){const l=slotLevel(r);if(!shown.has(l)){addGroup(l);shown.add(l);list.append(n('p','tv292-empty-level','No matching spells at this level.'));}}}
   if(!rows.length)list.append(n('p','tv287-empty',pool.length?'No matching spells.':'No verified SRD class list is mapped to this character.'));
   list.scrollTop=oldScroll;
  }
  search.addEventListener('input',()=>{view.query=search.value;view.selected='';list.scrollTop=0;draw()});draw();
 }
-window.TerravaleSheetSpells={eligible,render};
+window.TerravaleSheetSpells={eligible,render,mountAdvancementPreview};
 })();
