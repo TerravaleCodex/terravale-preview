@@ -37,6 +37,7 @@ function render(c,records,card){
   const grid=n('div','tv291-slot-grid');
   for(const r of slotRecords){
    const item=card(r,false);item.classList.add('tv291-slot-card');
+   const title=item.querySelector('.tv287-card-name');const lv=slotLevel(r);if(title&&lv)title.textContent=(/pact/i.test(r.name+' '+r.id)?'Pact · ':'Level ')+lv;
    const track=item.querySelector('.tv287-track');
    if(track&&Number.isInteger(r.counter.max)&&r.counter.max>0&&r.counter.max<=20&&Number.isInteger(r.counter.current)){
     const dots=n('div','tv291-slot-pips');dots.setAttribute('aria-label',r.counter.label+' slots available');
@@ -58,7 +59,7 @@ function render(c,records,card){
  book.append(bookHead);
  const tools=n('div','tv291-spell-tools'),search=n('input','tv287-search');search.type='search';search.placeholder='Search spells…';search.value=view.query;search.setAttribute('aria-label','Search character spells');
  const levels=n('div','tv291-levels');tools.append(search,levels);book.append(tools);
- const workspace=n('div','tv291-workspace'),list=n('div','tv291-spell-list'),reader=n('div','tv291-reader');workspace.append(list,reader);book.append(workspace);panel.append(book);
+ const workspace=n('div','tv291-workspace tv291-table-workspace'),list=n('div','tv291-spell-list'),reader=n('div','tv291-reader');const tableHead=n('div','tv291-table-head');for(const label of ['Spell','Casting time','Range','Traits'])tableHead.append(n('span','',label));list.append(tableHead);workspace.append(list,reader);book.append(workspace);panel.append(book);
  function detail(s){
   reader.replaceChildren();
   if(!s){reader.append(n('p','tv287-empty','No matching spell.'));return}
@@ -70,7 +71,7 @@ function render(c,records,card){
   reader.append(n('p','tv291-description',s.description));
  }
  function draw(){
-  const oldScroll=list.scrollTop;list.replaceChildren();levels.replaceChildren();
+  const oldScroll=list.scrollTop;list.replaceChildren(tableHead);levels.replaceChildren();
   const base=pool.filter(s=>(!view.suggested||recommended.includes(s.id.split(':')[1]))&&(!max||s.level<=max)&&(!view.query||s.name.toLowerCase().includes(view.query.toLowerCase().trim())));
   const options=['all',...new Set(base.map(s=>s.level).sort((a,b)=>a-b))];
   if(!options.includes(view.level))view.level='all';
@@ -81,7 +82,7 @@ function render(c,records,card){
   for(const s of rows){
    if(s.level!==last){list.append(n('div','tv291-level-heading',s.level?'Level '+s.level:'Cantrips'));last=s.level}
    const row=n('button','tv291-spell-choice');row.type='button';row.setAttribute('aria-pressed',String(s.id===view.selected));
-   const label=n('div');label.append(n('strong','',s.name),n('small','',s.school+(s.ritual?' · Ritual':'')+(s.concentration?' · Concentration':'')));row.append(label,n('span','tv291-choice-level',s.level?String(s.level):'C'));
+   const label=n('div','tv291-choice-name');label.append(n('strong','',s.name),n('small','',s.school));const traits=n('div','tv291-row-traits');if(s.ritual){const t=n('span','','R');t.title='Ritual';traits.append(t)}if(s.concentration){const t=n('span','','C');t.title='Concentration';traits.append(t)}if(!traits.children.length)traits.append(n('span','tv291-no-trait','—'));row.append(label,n('span','tv291-row-time',s.castingTime),n('span','tv291-row-range',s.range),traits);
    row.onclick=()=>{view.selected=s.id;list.querySelectorAll('.tv291-spell-choice').forEach(x=>x.setAttribute('aria-pressed',String(x===row)));detail(s)};list.append(row)
   }
   if(!rows.length)list.append(n('p','tv287-empty',pool.length?'No matching spells.':'No verified SRD class list is mapped to this character.'));
