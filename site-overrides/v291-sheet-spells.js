@@ -20,54 +20,71 @@ const curated={
 };
 const eligible=(c,records)=>!!(records.length||rule(c)||c.spells?.length);
 const views=new Map(), advancementPreview=new Set();
-const isAsterPreview=c=>c?.name==='Aster Vaelith'&&String(c.demoCurator||'').toLowerCase()==='aster'&&Number(c.level)===6;
+const isAsterPreview=c=>String(c?.demoCurator||'').toLowerCase()==='aster'&&({ 'Aster Vaelith':6,'Elira Wren':4,'Pip Thornwhistle':3}[c?.name]===Number(c?.level));
+const previewGrants=c=>classKey(c)==='Ranger'?['hunters-mark']:[];
 function mountAdvancementPreview(c,host){
  if(!isAsterPreview(c)||!host||host.querySelector('.tv297-advancement-preview'))return;
  const section=n('section','sheet20-panel tv297-advancement-preview');
  const make=(label,fn)=>{const b=n('button','tv292-point-action',label);b.type='button';b.onclick=fn;return b};
- section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT'),n('h3','','Level 6 → 7'),n('p','tv287-muted','Walk through a complete level-up without changing the approved character.'));
+ section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT'),n('h3','','Level '+c.level+' → '+(Number(c.level)+1)),n('p','tv287-muted','Walk through a complete level-up without changing the approved character.'));
  section.append(make('Open level-up wizard',()=>openAdvancementWizard(c)));host.prepend(section);
 }
 function openAdvancementWizard(c){
  if(!isAsterPreview(c))return;
  const id=String(c.id),account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser',key='tv298-levelup:'+account+':'+String(c.campaign||'')+':'+id;
  const baseKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+id;
- const catalogue=spells().filter(s=>s.classes.includes('Wizard'));
+ const cl=classKey(c),from=Number(c.level),to=from+1,oldRules=selectionRules(c),newRules=selectionRules({...c,level:to}),max=selectionLevels[cl][to-1],oldMax=selectionLevels[cl][from-1],newCount=newRules.known-oldRules.known,cantripCount=newRules.cantrips-oldRules.cantrips,replaceLimit=replacementAllowance(c),die={Wizard:6,Bard:8,Ranger:10}[cl],fixed=die/2+1;
+ const catalogue=spells().filter(s=>s.classes.includes(cl));
  const base=new Set();try{const d=JSON.parse(localStorage.getItem(baseKey)||'null');for(const x of d?.known||[])base.add(x)}catch{}
  // Demo baseline is independent of a visitor having imported suggestions.
- for(const slug of curated['Aster Vaelith']){const spell=catalogue.find(s=>s.id.split(':')[1]===slug);if(spell)base.add(spell.id)}
- const candidates=catalogue.filter(s=>s.level>=1&&s.level<=4&&![...base].some(id=>sameSpell(id,s.id)));
- let state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};
- try{const d=JSON.parse(localStorage.getItem(key)||'null');if(d){state={...state,...d,step:Math.max(0,Math.min(2,Number(d.step)||0)),chosen:uniqueVersions(Array.isArray(d.chosen)?d.chosen:[]).filter(x=>candidates.some(s=>s.id===x)).slice(0,2)}}}catch{}
- let search='',level=4,expanded='',edition='all';
- const dialog=n('dialog','tv298-wizard');dialog.setAttribute('aria-label','Aster level-up preview');document.body.append(dialog);
+ for(const slug of curated[c.name]||[]){const spell=catalogue.find(s=>s.id.split(':')[1]===slug);if(spell)base.add(spell.id)}
+ const grants=[...previewGrants(c),...(c.grantedSpellIds||[]).map(spellIdentity)];
+ const candidates=catalogue.filter(s=>s.level>=1&&s.level<=max&&!grants.includes(spellIdentity(s.id))&&![...base].some(id=>sameSpell(id,s.id)));
+ const replaceable=uniqueVersions([...base]).map(id=>catalogue.find(s=>s.id===id)).filter(s=>s&&s.level>0&&s.level<=oldMax&&!grants.includes(spellIdentity(s.id)));
+ const initial=()=>({step:0,hp:'fixed',roll:null,chosen:[],replaceFrom:'',replaceTo:'',complete:false});let state=initial();
+ try{const d=JSON.parse(localStorage.getItem(key)||'null');if(d){state={...state,...d,step:Math.max(0,Math.min(2,Number(d.step)||0)),chosen:uniqueVersions(Array.isArray(d.chosen)?d.chosen:[]).filter(x=>candidates.some(s=>s.id===x)).slice(0,newCount)}}}catch{}
+ if(!replaceLimit||!replaceable.some(x=>x.id===state.replaceFrom)){state.replaceFrom='';state.replaceTo=''}
+ if(!candidates.some(x=>x.id===state.replaceTo)||state.chosen.some(x=>sameSpell(x,state.replaceTo)))state.replaceTo='';
+ const validSpells=()=>state.chosen.length===newCount&&(!state.replaceFrom||!!state.replaceTo)&&cantripCount===0;
+ let search='',level=max,expanded='',edition='all',replacementMode=false;
+ const dialog=n('dialog','tv298-wizard');dialog.setAttribute('aria-label',c.name+' level-up preview');document.body.append(dialog);
  const save=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch{}};
  const button=(label,fn,disabled=false,cls='')=>{const b=n('button','tv292-point-action '+cls,label);b.type='button';b.disabled=disabled;b.onclick=fn;return b};
  const stat=(label,value)=>{const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));return item};
  const conRaw=c.con??c.abilities?.con,con=conRaw!=null&&Number.isFinite(Number(conRaw))?Math.floor((Number(conRaw)-10)/2):null;
- const hp=()=>con===null?'Constitution modifier not verified':String(Math.max(1,(state.hp==='roll'?state.roll||0:4)+con));
- const validHP=()=>state.hp==='fixed'||Number.isInteger(state.roll)&&state.roll>=1&&state.roll<=6;
+ const hp=()=>con===null?'Constitution modifier not verified':String(Math.max(1,(state.hp==='roll'?state.roll||0:fixed)+con));
+ const validHP=()=>state.hp==='fixed'||Number.isInteger(state.roll)&&state.roll>=1&&state.roll<=die;
  function render(){
   dialog.replaceChildren();
-  const head=n('header','tv298-head'),title=n('div');title.append(n('div','tv287-eyebrow','ADVANCEMENT · DEMO PREVIEW'),n('h2','','Aster Vaelith'),n('p','tv287-muted','Wizard · Level 6 → 7'));
+  const head=n('header','tv298-head'),title=n('div');title.append(n('div','tv287-eyebrow','ADVANCEMENT · DEMO PREVIEW'),n('h2','',c.name),n('p','tv287-muted',cl+' · Level '+from+' → '+to));
   head.append(title,button('Close',()=>{save();dialog.close()}));dialog.append(head);
   const steps=n('nav','tv298-steps');
-  ['General advancement','Spell selection','Review'].forEach((label,i)=>{const b=button((i+1)+'. '+label,()=>{state.step=i;save();render()},i>state.step&&(!validHP()||i===2&&state.chosen.length!==2));b.setAttribute('aria-current',i===state.step?'step':'false');steps.append(b)});dialog.append(steps);
+  ['General advancement','Spell selection','Review'].forEach((label,i)=>{const b=button((i+1)+'. '+label,()=>{state.step=i;save();render()},i>state.step&&(!validHP()||i===2&&!validSpells()));b.setAttribute('aria-current',i===state.step?'step':'false');steps.append(b)});dialog.append(steps);
   const body=n('main','tv298-body');dialog.append(body);
-  if(state.complete){body.append(n('h3','','Preview completed'),n('p','tv287-muted','No real character data or DM request was changed.'));body.append(button('Start again',()=>{state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};save();render()}));return}
+  if(state.complete){body.append(n('h3','','Preview completed'),n('p','tv287-muted','No real character data or DM request was changed.'));body.append(button('Start again',()=>{state=initial();save();render()}));return}
   if(state.step===0){
    body.append(n('h3','','General advancement'),n('p','tv287-muted','Review automatic changes and choose how to increase maximum hit points.'));
-   const grid=n('div','tv296-choice-grid');grid.append(stat('Hit dice','6d6 → 7d6'),stat('Proficiency bonus','+3 → +3'),stat('Feat / ASI','None at this level'),stat('Class feature','No new core feature (provisional)'));body.append(grid);
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Hit dice',from+'d'+die+' → '+to+'d'+die),stat('Proficiency bonus','+'+(2+Math.floor((from-1)/4))+' → +'+(2+Math.floor((to-1)/4))),stat('Feat / ASI','No standard ASI at this level'),stat('Class feature',cl==='Bard'?'Font of Inspiration · see class primer':cl==='Ranger'?'Review subclass progression':'No new core feature (provisional)'));body.append(grid);
    const hpbox=n('section','tv298-box');hpbox.append(n('h3','','Maximum hit points'),n('p','tv287-muted','Choose fixed hit points or roll your new hit die.'));
-   const options=n('div','tv292-point-actions');for(const [label,value] of [['Fixed · 4','fixed'],['Roll d6','roll']]){const b=button(label,()=>{state.hp=value;save();render()});b.setAttribute('aria-pressed',String(state.hp===value));options.append(b)}hpbox.append(options);
-   if(state.hp==='roll')hpbox.append(button(state.roll?'Rolled '+state.roll:'Roll hit die',()=>{state.roll=1+Math.floor(Math.random()*6);save();render()},!!state.roll));
+   const options=n('div','tv292-point-actions');for(const [label,value] of [['Fixed · '+fixed,'fixed'],['Roll d'+die,'roll']]){const b=button(label,()=>{state.hp=value;save();render()});b.setAttribute('aria-pressed',String(state.hp===value));options.append(b)}hpbox.append(options);
+   if(state.hp==='roll')hpbox.append(button(state.roll?'Rolled '+state.roll:'Roll hit die',()=>{state.roll=1+Math.floor(Math.random()*die);save();render()},!!state.roll));
    hpbox.append(stat('Maximum HP increase',validHP()?hp():'Roll first'));body.append(hpbox);
   }else if(state.step===1){
-   body.append(n('h3','','Learn two new spells'),n('p','tv287-muted','Choose two Wizard spells of levels 1–4. Choose the 2014 or 2024 version where available. Existing known spells and cantrips are excluded.'));
-   const grid=n('div','tv296-choice-grid');grid.append(stat('New spell slot','4th level · +1'),stat('Learned spells',state.chosen.length+' / 2'),stat('Preparation capacity','+1'));body.append(grid);
+   body.append(n('h3','','Learn '+newCount+' new spell'+(newCount===1?'':'s')),n('p','tv287-muted','Choose '+cl+' spells up to level '+max+'. Existing known spells and granted spells are excluded.'));
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Maximum spell level',oldMax+' → '+max),stat('Learned spells',state.chosen.length+' / '+newCount),stat('Optional replacements',String(replaceLimit)));body.append(grid);
    const selected=n('div','tv298-selected');for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)selected.append(button(spell.name+' · '+spell.edition+' ×',()=>{state.chosen=state.chosen.filter(x=>x!==sid);save();render()}))}if(!state.chosen.length)selected.append(n('span','tv287-muted','No new spells selected'));body.append(selected);
+   if(replaceLimit){
+    const replacement=n('section','tv298-box');replacement.append(n('h3','','Optional spell replacement'),n('p','tv287-muted','Replace one previously known spell without using a new-spell choice. Granted spells cannot be replaced.'));
+    const old=replaceable.find(x=>x.id===state.replaceFrom),next=candidates.find(x=>x.id===state.replaceTo);
+    replacement.append(n('p','',old?old.name+' → '+(next?.name||'Choose replacement'):'No replacement selected'));
+    const pick=n('div','tv292-point-actions');
+    for(const spell of replaceable){const b=button(spell.name,()=>{state.replaceFrom=spell.id;state.replaceTo='';replacementMode=true;save();render()});b.setAttribute('aria-pressed',String(state.replaceFrom===spell.id));pick.append(b)}
+    replacement.append(pick,button('Skip / clear replacement',()=>{state.replaceFrom='';state.replaceTo='';replacementMode=false;save();render()}));
+    if(state.replaceFrom){const modes=n('div','tv292-point-actions');for(const [label,value] of [['Learn new spells',false],['Choose replacement',true]]){const b=button(label,()=>{replacementMode=value;render()});b.setAttribute('aria-pressed',String(replacementMode===value));modes.append(b)}replacement.append(modes)}
+    body.append(replacement);
+   }
    const filters=n('div','tv298-filters'),input=n('input','tv287-search');input.type='search';input.placeholder='Search eligible spells…';input.value=search;input.setAttribute('aria-label','Search eligible spells');filters.append(input);
-   for(const l of [0,1,2,3,4]){const b=button(l?'Level '+l:'All',()=>{level=l;render()});b.setAttribute('aria-pressed',String(l===level));filters.append(b)}body.append(filters);
+   for(const l of Array.from({length:max+1},(_,i)=>i)){const b=button(l?'Level '+l:'All',()=>{level=l;render()});b.setAttribute('aria-pressed',String(l===level));filters.append(b)}body.append(filters);
    const editions=n('div','tv298-filters');
    for(const [label,value] of [['Both editions','all'],['2014','2014'],['2024','2024']]){const b=button(label,()=>{edition=value;render()});b.setAttribute('aria-pressed',String(edition===value));editions.append(b)}
    body.append(editions);
@@ -75,17 +92,17 @@ function openAdvancementWizard(c){
    function drawList(){list.replaceChildren();for(const spell of candidates.filter(x=>(!level||x.level===level)&&(edition==='all'||x.edition===edition)&&x.name.toLowerCase().includes(search.toLowerCase().trim())).sort((a,b)=>a.name.localeCompare(b.name))){
     const row=n('div','tv298-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school+' · '+spell.edition+' · '+spell.castingTime));
     const read=button(expanded===spell.id?'Hide details':'Details',()=>{expanded=expanded===spell.id?'':spell.id;drawList()});
-    const picked=state.chosen.includes(spell.id),other=state.chosen.find(x=>sameSpell(x,spell.id)&&x!==spell.id),choose=button(picked?'Selected ✓':other?'Use this version':'Select',()=>{state.chosen=picked?state.chosen.filter(x=>x!==spell.id):other?state.chosen.map(x=>x===other?spell.id:x):[...state.chosen,spell.id];save();render()},!picked&&!other&&state.chosen.length>=2);choose.setAttribute('aria-pressed',String(picked));row.append(label,read,choose);list.append(row);if(expanded===spell.id)list.append(n('p','tv298-description',spell.description));
+    const replacing=replacementMode&&!!state.replaceFrom,picked=replacing?state.replaceTo===spell.id:state.chosen.includes(spell.id),other=state.chosen.find(x=>sameSpell(x,spell.id)&&x!==spell.id),conflict=replacing?state.chosen.some(x=>sameSpell(x,spell.id)):!!state.replaceTo&&sameSpell(state.replaceTo,spell.id),choose=button(picked?'Selected ✓':replacing?'Replace with this':other?'Use this version':'Select',()=>{if(replacing)state.replaceTo=picked?'':spell.id;else state.chosen=picked?state.chosen.filter(x=>x!==spell.id):other?state.chosen.map(x=>x===other?spell.id:x):[...state.chosen,spell.id];save();render()},conflict||(!replacing&&!picked&&!other&&state.chosen.length>=newCount));choose.setAttribute('aria-pressed',String(picked));row.append(label,read,choose);list.append(row);if(expanded===spell.id)list.append(n('p','tv298-description',spell.description));
    }if(!list.children.length)list.append(n('p','tv287-muted','No eligible spells match.'))}
    input.oninput=()=>{search=input.value;drawList()};drawList();
   }else{
    body.append(n('h3','','Review advancement'),n('p','tv287-muted','Confirm the proposed changes. This is a simulation only.'));
-   const grid=n('div','tv296-choice-grid');grid.append(stat('Level','6 → 7'),stat('Maximum HP increase',hp()),stat('Hit dice','+1d6'),stat('Fourth-level slots','0 → 1'),stat('Learned spells','16 → 18'),stat('Preparation capacity','+1'));body.append(grid);
-   const choices=n('section','tv298-box');choices.append(n('h3','','New spells'));for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)choices.append(n('p','',spell.name+' · Level '+spell.level+' · '+spell.edition))}body.append(choices);
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Level',from+' → '+to),stat('Maximum HP increase',hp()),stat('Hit dice','+1d'+die),stat('Maximum spell level',oldMax+' → '+max),stat('Learned spells',oldRules.known+' → '+newRules.known),stat('Replacements',state.replaceTo?'1':'0'));body.append(grid);
+   const choices=n('section','tv298-box');choices.append(n('h3','','New spells'));for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)choices.append(n('p','',spell.name+' · Level '+spell.level+' · '+spell.edition))}if(state.replaceTo)choices.append(n('p','','Replacement: '+replaceable.find(x=>x.id===state.replaceFrom)?.name+' → '+candidates.find(x=>x.id===state.replaceTo)?.name));body.append(choices);
   }
-  const footer=n('footer','tv298-footer');footer.append(button('Reset preview',()=>{state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};save();render()}));
+  const footer=n('footer','tv298-footer');footer.append(button('Reset preview',()=>{state=initial();save();render()}));
   const nav=n('div','tv292-point-actions');if(state.step>0)nav.append(button('Back',()=>{state.step--;save();render()}));
-  nav.append(button(state.step===2?'Complete preview':'Continue',()=>{if(state.step===2)state.complete=true;else state.step++;save();render()},!validHP()||(state.step>=1&&state.chosen.length!==2),'tv294-primary'));footer.append(nav);dialog.append(footer);
+  nav.append(button(state.step===2?'Complete preview':'Continue',()=>{if(state.step===2)state.complete=true;else state.step++;save();render()},!validHP()||(state.step>=1&&!validSpells()),'tv294-primary'));footer.append(nav);dialog.append(footer);
  }
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});render();dialog.showModal();
 }
