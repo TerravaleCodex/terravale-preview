@@ -19,17 +19,69 @@ const views=new Map(), advancementPreview=new Set();
 const isAsterPreview=c=>c?.name==='Aster Vaelith'&&String(c.demoCurator||'').toLowerCase()==='aster'&&Number(c.level)===6;
 function mountAdvancementPreview(c,host){
  if(!isAsterPreview(c)||!host||host.querySelector('.tv297-advancement-preview'))return;
- const section=n('section','sheet20-panel tv297-advancement-preview'),active=advancementPreview.has(String(c.id));
+ const section=n('section','sheet20-panel tv297-advancement-preview');
  const make=(label,fn)=>{const b=n('button','tv292-point-action',label);b.type='button';b.onclick=fn;return b};
- section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT SANDBOX'),n('h3','','Level 6 → 7'),n('p','tv287-muted','Preview only. No approved level, hit points, slots or DM requests are changed.'));
- const grid=n('div','tv296-choice-grid');
- for(const [label,value] of [['Hit dice','6d6 → 7d6'],['Maximum HP','+4 + CON modifier (fixed value; minimum 1)'],['Proficiency bonus','+3 → +3'],['Class features','No new core Wizard feature in the provisional progression'],['Spell slots','4 / 3 / 3 → 4 / 3 / 3 / 1'],['Learned spells','16 → 18'],['Cantrips','4 → 4'],['Prepared capacity','+1']]){const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));grid.append(item)}
- section.append(grid);
- const actions=n('div','tv292-point-actions');
- actions.append(make(active?'Exit level 7 preview':'Start level 7 preview',()=>{if(active)advancementPreview.delete(String(c.id));else advancementPreview.add(String(c.id));section.remove();mountAdvancementPreview(c,host);window.TerravaleV287Adaptive?.refresh()}),make('Preview spell choices',()=>{advancementPreview.add(String(c.id));document.querySelector('#pageRoot .sheet20-tabs [data-value="spells"]')?.click();window.TerravaleV287Adaptive?.refresh()}));
- section.append(actions);host.prepend(section);
+ section.append(n('div','tv287-eyebrow','DEMO · ADVANCEMENT'),n('h3','','Level 6 → 7'),n('p','tv287-muted','Walk through a complete level-up without changing the approved character.'));
+ section.append(make('Open level-up wizard',()=>openAdvancementWizard(c)));host.prepend(section);
 }
-
+function openAdvancementWizard(c){
+ if(!isAsterPreview(c))return;
+ const id=String(c.id),account=window.TerravaleVerifiedAccount?.state?.user?.id||'browser',key='tv298-levelup:'+account+':'+String(c.campaign||'')+':'+id;
+ const baseKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+id;
+ const catalogue=spells().filter(s=>s.edition==='2014'&&s.classes.includes('Wizard'));
+ const base=new Set();try{const d=JSON.parse(localStorage.getItem(baseKey)||'null');for(const x of d?.known||[])base.add(x)}catch{}
+ // Demo baseline is independent of a visitor having imported suggestions.
+ for(const slug of curated['Aster Vaelith']){const spell=catalogue.find(s=>s.id.split(':')[1]===slug);if(spell)base.add(spell.id)}
+ const candidates=catalogue.filter(s=>s.level>=1&&s.level<=4&&!base.has(s.id));
+ let state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};
+ try{const d=JSON.parse(localStorage.getItem(key)||'null');if(d){state={...state,...d,step:Math.max(0,Math.min(2,Number(d.step)||0)),chosen:[...new Set(Array.isArray(d.chosen)?d.chosen:[])].filter(x=>candidates.some(s=>s.id===x)).slice(0,2)}}}catch{}
+ let search='',level=4,expanded='';
+ const dialog=n('dialog','tv298-wizard');dialog.setAttribute('aria-label','Aster level-up preview');document.body.append(dialog);
+ const save=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch{}};
+ const button=(label,fn,disabled=false,cls='')=>{const b=n('button','tv292-point-action '+cls,label);b.type='button';b.disabled=disabled;b.onclick=fn;return b};
+ const stat=(label,value)=>{const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',value));return item};
+ const conRaw=c.con??c.abilities?.con,con=conRaw!=null&&Number.isFinite(Number(conRaw))?Math.floor((Number(conRaw)-10)/2):null;
+ const hp=()=>con===null?'Constitution modifier not verified':String(Math.max(1,(state.hp==='roll'?state.roll||0:4)+con));
+ const validHP=()=>state.hp==='fixed'||Number.isInteger(state.roll)&&state.roll>=1&&state.roll<=6;
+ function render(){
+  dialog.replaceChildren();
+  const head=n('header','tv298-head'),title=n('div');title.append(n('div','tv287-eyebrow','ADVANCEMENT · DEMO PREVIEW'),n('h2','','Aster Vaelith'),n('p','tv287-muted','Wizard · Level 6 → 7'));
+  head.append(title,button('Close',()=>{save();dialog.close()}));dialog.append(head);
+  const steps=n('nav','tv298-steps');
+  ['General advancement','Spell selection','Review'].forEach((label,i)=>{const b=button((i+1)+'. '+label,()=>{state.step=i;save();render()},i>state.step&&(!validHP()||i===2&&state.chosen.length!==2));b.setAttribute('aria-current',i===state.step?'step':'false');steps.append(b)});dialog.append(steps);
+  const body=n('main','tv298-body');dialog.append(body);
+  if(state.complete){body.append(n('h3','','Preview completed'),n('p','tv287-muted','No real character data or DM request was changed.'));body.append(button('Start again',()=>{state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};save();render()}));return}
+  if(state.step===0){
+   body.append(n('h3','','General advancement'),n('p','tv287-muted','Review automatic changes and choose how to increase maximum hit points.'));
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Hit dice','6d6 → 7d6'),stat('Proficiency bonus','+3 → +3'),stat('Feat / ASI','None at this level'),stat('Class feature','No new core feature (provisional)'));body.append(grid);
+   const hpbox=n('section','tv298-box');hpbox.append(n('h3','','Maximum hit points'),n('p','tv287-muted','Choose fixed hit points or roll your new hit die.'));
+   const options=n('div','tv292-point-actions');for(const [label,value] of [['Fixed · 4','fixed'],['Roll d6','roll']]){const b=button(label,()=>{state.hp=value;save();render()});b.setAttribute('aria-pressed',String(state.hp===value));options.append(b)}hpbox.append(options);
+   if(state.hp==='roll')hpbox.append(button(state.roll?'Rolled '+state.roll:'Roll hit die',()=>{state.roll=1+Math.floor(Math.random()*6);save();render()},!!state.roll));
+   hpbox.append(stat('Maximum HP increase',validHP()?hp():'Roll first'));body.append(hpbox);
+  }else if(state.step===1){
+   body.append(n('h3','','Learn two new spells'),n('p','tv287-muted','Choose two Wizard spells of levels 1–4. Existing known spells and cantrips are excluded.'));
+   const grid=n('div','tv296-choice-grid');grid.append(stat('New spell slot','4th level · +1'),stat('Learned spells',state.chosen.length+' / 2'),stat('Preparation capacity','+1'));body.append(grid);
+   const selected=n('div','tv298-selected');for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)selected.append(button(spell.name+' ×',()=>{state.chosen=state.chosen.filter(x=>x!==sid);save();render()}))}if(!state.chosen.length)selected.append(n('span','tv287-muted','No new spells selected'));body.append(selected);
+   const filters=n('div','tv298-filters'),input=n('input','tv287-search');input.type='search';input.placeholder='Search eligible spells…';input.value=search;input.setAttribute('aria-label','Search eligible spells');filters.append(input);
+   for(const l of [0,1,2,3,4]){const b=button(l?'Level '+l:'All',()=>{level=l;render()});b.setAttribute('aria-pressed',String(l===level));filters.append(b)}body.append(filters);
+   const list=n('div','tv298-list');body.append(list);
+   function drawList(){list.replaceChildren();for(const spell of candidates.filter(x=>(!level||x.level===level)&&x.name.toLowerCase().includes(search.toLowerCase().trim())).sort((a,b)=>a.name.localeCompare(b.name))){
+    const row=n('div','tv298-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school+' · '+spell.castingTime));
+    const read=button(expanded===spell.id?'Hide details':'Details',()=>{expanded=expanded===spell.id?'':spell.id;drawList()});
+    const picked=state.chosen.includes(spell.id),choose=button(picked?'Selected ✓':'Select',()=>{state.chosen=picked?state.chosen.filter(x=>x!==spell.id):[...state.chosen,spell.id];save();render()},!picked&&state.chosen.length>=2);choose.setAttribute('aria-pressed',String(picked));row.append(label,read,choose);list.append(row);if(expanded===spell.id)list.append(n('p','tv298-description',spell.description));
+   }if(!list.children.length)list.append(n('p','tv287-muted','No eligible spells match.'))}
+   input.oninput=()=>{search=input.value;drawList()};drawList();
+  }else{
+   body.append(n('h3','','Review advancement'),n('p','tv287-muted','Confirm the proposed changes. This is a simulation only.'));
+   const grid=n('div','tv296-choice-grid');grid.append(stat('Level','6 → 7'),stat('Maximum HP increase',hp()),stat('Hit dice','+1d6'),stat('Fourth-level slots','0 → 1'),stat('Learned spells','16 → 18'),stat('Preparation capacity','+1'));body.append(grid);
+   const choices=n('section','tv298-box');choices.append(n('h3','','New spells'));for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)choices.append(n('p','',spell.name+' · Level '+spell.level))}body.append(choices);
+  }
+  const footer=n('footer','tv298-footer');footer.append(button('Reset preview',()=>{state={step:0,hp:'fixed',roll:null,chosen:[],complete:false};save();render()}));
+  const nav=n('div','tv292-point-actions');if(state.step>0)nav.append(button('Back',()=>{state.step--;save();render()}));
+  nav.append(button(state.step===2?'Complete preview':'Continue',()=>{if(state.step===2)state.complete=true;else state.step++;save();render()},!validHP()||(state.step>=1&&state.chosen.length!==2),'tv294-primary'));footer.append(nav);dialog.append(footer);
+ }
+ dialog.addEventListener('close',()=>dialog.remove(),{once:true});render();dialog.showModal();
+}
 const slotLevel=r=>Number((r.id.match(/(?:spell|pact)-slot-([1-9])/i)||r.name.match(/([1-9])(?:st|nd|rd|th)[ -]level/i)||r.name.match(/(?:level|slot)\s*([1-9])/i)||[])[1])||0;
 // Selection limits from published Terravale class-feature-rules.json (2026-10-28).
 // Wizard baseline is provisional pending confirmation of the full primer.
@@ -121,6 +173,7 @@ function render(c,records,card){
  const header=n('header','tv291-header'), heading=n('div');
  heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · 2014 SRD reference'));
  header.append(heading);panel.append(header);
+ if(isAsterPreview(actual)){const launch=n('button','tv292-point-action','Preview level up');launch.type='button';launch.onclick=()=>openAdvancementWizard(actual);header.append(launch);}
  if(preview){const banner=n('section','tv297-advancement-preview');banner.append(n('strong','','LEVEL 7 PREVIEW · SPELL CHOICES'),n('p','tv287-muted','Choose two additional Wizard spells up to level 4. This separate draft cannot spend real slots or change Aster’s approved build.'));const exit=n('button','tv292-point-action','Exit preview');exit.type='button';exit.onclick=()=>{advancementPreview.delete(String(actual.id));render(actual,records,card)};banner.append(exit);panel.append(banner);}
  const slotRecords=records.filter(r=>r.kind==='spell'), abilities=records.filter(r=>r.kind!=='spell');
  const costs=[0,2,3,5,6,7,9,10,11,13];
