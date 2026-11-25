@@ -64,3 +64,44 @@
 #pageRoot .tv291-spell-row summary .tv287-muted{margin:0;text-align:right}
 #pageRoot .tv291-spell-row[open] summary{margin-bottom:10px}
 #pageRoot .tv291-description{white-space:pre-wrap;font-size:12px;line-height:1.7;color:var(--ink)}
+
+/* Compact spell workspace, using the same active theme as the character sheet. */
+#pageRoot .tv291-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+#pageRoot .tv291-header h2{margin:5px 0}
+#pageRoot .tv291-header p{margin:0}
+#pageRoot .tv291-top{display:flex;gap:14px;align-items:start;flex-wrap:wrap;margin-bottom:18px}
+#pageRoot .tv291-block{min-width:0;flex:1 1 240px;border:1px solid var(--edge);border-radius:10px;padding:13px;background:var(--surface)}
+#pageRoot .tv291-block:first-child{flex:3 1 480px}
+#pageRoot .tv291-block h3{font-size:16px;margin:0 0 10px}
+#pageRoot .tv291-slot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:8px}
+#pageRoot .tv291-ability-grid{display:grid;gap:8px}
+#pageRoot .tv291-slot-card{gap:7px;padding:10px}
+#pageRoot .tv291-slot-card .tv287-card-sub{display:none}
+#pageRoot .tv291-slot-pips{display:flex;gap:6px;align-items:center;min-height:14px}
+#pageRoot .tv291-pip{display:block;width:13px;height:13px;border:1px solid var(--edge);background:var(--surface);border-radius:50%}
+#pageRoot .tv291-pip[data-available=true]{background:var(--accent);border-color:var(--accent)}
+#pageRoot .tv291-book{border:1px solid var(--edge);border-radius:10px;background:var(--surface);padding:14px}
+#pageRoot .tv291-book-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#pageRoot .tv291-book-head h3{margin:0 0 4px;font-size:20px}
+#pageRoot .tv291-book-head p{margin:0}
+#pageRoot .tv291-spell-tools{justify-content:space-between;align-items:center;margin:12px 0}
+#pageRoot .tv291-levels{display:flex;gap:5px;flex-wrap:wrap}
+#pageRoot .tv291-workspace{display:grid;grid-template-columns:minmax(210px,32%) minmax(0,1fr);gap:12px;align-items:start}
+#pageRoot .tv291-spell-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--edge);border-radius:9px;max-height:540px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--edge) transparent}
+#pageRoot .tv291-level-heading{position:sticky;top:0;z-index:1;background:var(--raised);color:var(--accent);padding:7px 11px;font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+#pageRoot .tv291-spell-choice{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;width:100%;border:0;border-bottom:1px solid var(--edge);border-radius:0;background:transparent;color:var(--ink);padding:10px 11px;cursor:pointer}
+#pageRoot .tv291-spell-choice[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 14%,var(--raised));box-shadow:inset 3px 0 var(--accent)}
+#pageRoot .tv291-spell-choice:hover{background:var(--raised)}
+#pageRoot .tv291-spell-choice strong{display:block;font-size:12px}
+#pageRoot .tv291-spell-choice small{display:block;color:var(--soft);font-size:10px;margin-top:3px}
+#pageRoot .tv291-choice-level{border:1px solid var(--edge);border-radius:6px;min-width:23px;height:23px;display:grid;place-items:center;color:var(--accent);font-size:11px;flex:none}
+#pageRoot .tv291-reader{border:1px solid var(--edge);border-radius:9px;padding:18px;min-width:0;background:var(--raised);min-height:250px}
+#pageRoot .tv291-reader-head h3{font-size:25px;margin:5px 0 13px}
+#pageRoot .tv291-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#pageRoot .tv291-stat{padding:9px 10px;border:1px solid var(--edge);border-radius:7px;background:var(--surface)}
+#pageRoot .tv291-stat small{display:block;font-size:10px;text-transform:uppercase;color:var(--soft);margin-bottom:4px}
+#pageRoot .tv291-stat strong{display:block;font-size:12px;overflow-wrap:anywhere}
+#pageRoot .tv291-tags{display:flex;gap:6px;margin-top:10px}
+#pageRoot .tv291-tags span{border:1px solid var(--edge);border-radius:20px;padding:4px 8px;color:var(--accent);font-size:10px}
+#pageRoot .tv291-description{font-size:13px;line-height:1.75;margin:14px 0 0;overflow-wrap:anywhere}
+@media(max-width:780px){#pageRoot .tv291-workspace{grid-template-columns:1fr}#pageRoot .tv291-spell-list{max-height:280px}#pageRoot .tv291-top{display:grid;grid-template-columns:1fr}}
