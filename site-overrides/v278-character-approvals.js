@@ -214,6 +214,10 @@ function mountDm(){
 }
 let queued=false;
 function mount(){
+ const demoId=location.hash.match(/^#\/characters\/([^/?#]+)/)?.[1];
+ const demo=characters().find(c=>String(c.id)===demoId);
+ const chronicle=document.querySelector('#pageRoot .sheet20-tabs [data-value="chronicle"][aria-selected="true"]');
+ if(demo&&chronicle)window.TerravaleSheetSpells?.mountAdvancementPreview(demo,document.querySelector('#pageRoot .sheet20-content'));
  if(!verified())return;
  if(hasDM())mountDm();
  mountPlayer();
