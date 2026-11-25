@@ -264,6 +264,7 @@ jobs:
           node --check site-overrides/v2-discord-auth.mjs
           node --check site-overrides/v2-ads-atelier.mjs
           node --check site-overrides/v290-spell-library.js
+          node tests/v290-spell-library.cjs
           node tests/v288-cabinet-ad-frequency.cjs
           node --check site-overrides/v243-campaign-achievement-bridge.js
           node --check site-overrides/v246-real-characters.js
