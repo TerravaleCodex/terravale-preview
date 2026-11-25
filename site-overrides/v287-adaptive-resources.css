@@ -175,3 +175,14 @@
 #pageRoot .tv292-points p{margin:9px 0 0}
 #pageRoot .tv291-level-heading .tv292-cost{color:var(--accent);font-weight:700}
 @media(max-width:600px){#pageRoot .tv291-header{flex-wrap:wrap;gap:12px}#pageRoot .tv292-system-switch{align-items:start}#pageRoot .tv292-inline-slot{flex-wrap:wrap}}
+
+#pageRoot .tv292-point-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#pageRoot .tv292-points .tv292-point-actions{margin-top:10px}
+#pageRoot .tv292-point-action{font:inherit;font-size:11px;white-space:nowrap;border:1px solid var(--edge);background:var(--raised);color:var(--ink);border-radius:7px;padding:6px 9px;cursor:pointer}
+#pageRoot .tv292-point-action:hover:not(:disabled){border-color:var(--accent)}
+#pageRoot .tv292-point-action:disabled{opacity:.4;cursor:not-allowed}
+#pageRoot .tv292-point-feedback{color:var(--accent);font-size:11px}
+#pageRoot .tv292-points-mode .tv291-table-head,#pageRoot .tv292-points-mode .tv291-spell-choice{grid-template-columns:minmax(110px,2fr) minmax(65px,1fr) minmax(65px,1fr) 48px 28px minmax(95px,auto);gap:8px}
+#pageRoot .tv292-row-cast{display:flex;justify-content:flex-end}
+#pageRoot .tv292-points-mode .tv291-reader .tv292-point-actions{margin-top:12px}
+@media(max-width:680px){#pageRoot .tv292-points-mode .tv291-table-head,#pageRoot .tv292-points-mode .tv291-spell-choice{grid-template-columns:minmax(80px,1fr) minmax(55px,.65fr) 35px 25px minmax(80px,auto);gap:4px}#pageRoot .tv292-row-cast button{white-space:normal;padding:4px}}
