@@ -25,6 +25,7 @@ declare prev public.terravale_spell_selection_rules%rowtype; next_rule public.te
 begin
  if p_from is null or p_to is null or p_to<>p_from+1 or p_from<1 or p_to>20
  or p_existing is null or p_add is null or p_remove is null or p_allowed_editions is null
+ or cardinality(p_allowed_editions)=0 or array_position(p_allowed_editions,null) is not null or not(p_allowed_editions <@ array['2014','2024']::text[])
  or cardinality(p_existing)>100 or cardinality(p_add)>100 or cardinality(p_remove)>1
  or array_position(p_existing,null) is not null or array_position(p_add,null) is not null or array_position(p_remove,null) is not null
  then return false; end if;
