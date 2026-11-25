@@ -55,7 +55,7 @@ function controlsFor(el,kind){
  return Array.from(el.querySelectorAll(sel)).slice(0,4);
 }
 function spellRelated(record){
- return record.kind==='spell'||(record.kind==='class'&&/\b(arcane recovery|natural recovery|mystic arcanum|spell mastery|signature spells?|sorcery points?|metamagic|font of magic|flexible casting|pact magic)\b/i.test(record.name));
+ return record.kind==='spell';
 }
 function collect(){
  const host=document.querySelector('#pageRoot .sheet20-resource-panel');
@@ -90,8 +90,14 @@ function invoke(record,index){
  const source=collect().find(x=>x.id===record.id);
  const button=source?.controls[index];
  if(!button||button.disabled||!button.isConnected)return;
+ const route=location.hash;
+ const tab=document.querySelector('.sheet20-tabs [aria-selected="true"]')?.dataset.value;
+ const scrolls=[];for(let el=source.element;el;el=el.parentElement){if(el.scrollHeight>el.clientHeight+2)scrolls.push([el,el.scrollTop]);}
+ const y=window.scrollY,x=window.scrollX;
+ const restore=()=>{if(location.hash!==route||document.querySelector('.sheet20-tabs [aria-selected="true"]')?.dataset.value!==tab)return;for(const [el,top] of scrolls)if(el.isConnected)el.scrollTop=top;window.scrollTo(x,y);};
  button.click();
  schedule();
+ restore();requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
 }
 function actionLabel(button){
  const text=safeTitle(button),title=String(button.getAttribute('aria-label')||'');
