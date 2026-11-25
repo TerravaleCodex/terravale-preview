@@ -186,3 +186,9 @@
 #pageRoot .tv292-row-cast{display:flex;justify-content:flex-end}
 #pageRoot .tv292-points-mode .tv291-reader .tv292-point-actions{margin-top:12px}
 @media(max-width:680px){#pageRoot .tv292-points-mode .tv291-table-head,#pageRoot .tv292-points-mode .tv291-spell-choice{grid-template-columns:minmax(80px,1fr) minmax(55px,.65fr) 35px 25px minmax(80px,auto);gap:4px}#pageRoot .tv292-row-cast button{white-space:normal;padding:4px}}
+
+#pageRoot .tv293-strain{margin-top:14px;padding-top:13px;border-top:1px solid var(--edge)}
+#pageRoot .tv293-strain .tv291-pip[data-available=true]{background:#bd795d;border-color:#bd795d}
+#pageRoot .tv293-strain .tv292-point-actions{margin-top:10px}
+#pageRoot .tv293-strain button[aria-checked=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--raised))}
+#pageRoot .tv292-point-feedback{padding:9px 11px;border:1px solid var(--edge);border-radius:7px;line-height:1.6}
