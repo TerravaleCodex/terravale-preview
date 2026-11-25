@@ -157,3 +157,21 @@
 #pageRoot .tv291-book>.tv287-muted:last-child{margin:10px 0 0}
 #pageRoot .tv291-full-workspace .tv291-row-time,#pageRoot .tv291-full-workspace .tv291-row-range{display:block;font-size:11px}
 @media(max-width:680px){#pageRoot .tv291-full-workspace .tv291-table-head,#pageRoot .tv291-full-workspace .tv291-spell-choice{grid-template-columns:minmax(95px,1.5fr) minmax(65px,1fr) 40px 27px;gap:6px;padding-left:9px;padding-right:9px}#pageRoot .tv291-full-workspace .tv291-table-head span:nth-child(3),#pageRoot .tv291-full-workspace .tv291-row-range{display:none}#pageRoot .tv291-full-workspace .tv291-reader .tv291-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+#pageRoot .tv292-inline-slot{display:flex;flex-direction:row;align-items:center;gap:8px;padding:0;border:0;background:transparent;min-width:0}
+#pageRoot .tv292-inline-slot .tv287-card-header{align-items:center;gap:4px}
+#pageRoot .tv292-inline-slot .tv287-card-count{font-size:12px;color:var(--ink)}
+#pageRoot .tv292-inline-slot .tv287-card-actions{flex-wrap:nowrap}
+#pageRoot .tv292-inline-slot .tv287-card-actions button{white-space:nowrap;min-height:25px;padding:3px 7px}
+#pageRoot .tv292-inline-slot .tv291-pip{width:11px;height:11px}
+#pageRoot .tv291-full-workspace .tv291-level-heading{gap:8px;flex-wrap:wrap;min-height:42px}
+#pageRoot .tv292-empty-level{padding:9px 14px;margin:0;color:var(--soft);font-size:11px}
+#pageRoot .tv292-system-switch{display:flex;flex-direction:column;gap:6px;align-items:end}
+#pageRoot .tv292-system-switch small{font-size:10px;color:var(--soft);letter-spacing:.07em}
+#pageRoot .tv292-system-buttons{display:flex;gap:5px}
+#pageRoot .tv292-points{border:1px solid var(--edge);border-radius:10px;padding:14px 16px;margin-bottom:14px;background:var(--surface)}
+#pageRoot .tv292-points-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#pageRoot .tv292-points .tv287-track{height:7px}
+#pageRoot .tv292-points p{margin:9px 0 0}
+#pageRoot .tv291-level-heading .tv292-cost{color:var(--accent);font-weight:700}
+@media(max-width:600px){#pageRoot .tv291-header{flex-wrap:wrap;gap:12px}#pageRoot .tv292-system-switch{align-items:start}#pageRoot .tv292-inline-slot{flex-wrap:wrap}}
