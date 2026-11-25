@@ -37,6 +37,17 @@ function selectionRules(c){
  }
  return null;
 }
+const selectionLevels={"Artificer":[1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5],"Bard":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Cleric":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Druid":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Oracle of the Two Waters":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Paladin":[1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5],"Ranger":[1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5],"Sorcerer":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Warlock":[1,1,2,2,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5],"Wizard":[1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9,9],"Fighter|Eldritch Knight":[0,0,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4],"Rogue|Arcane Trickster":[0,0,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4]};
+function selectionTasks(c){
+ const level=Math.min(20,Math.max(1,Number(c.level)||1)),cl=classKey(c),schedule=selectionLevels[cl+'|'+subclass(c)]||selectionLevels[cl];
+ if(!schedule||!selectionRules(c))return [];
+ const tasks=[];
+ for(let lv=1;lv<=level;lv++){
+  const now=selectionRules({...c,level:lv}),prev=lv>1?selectionRules({...c,level:lv-1}):{cantrips:0,known:0};
+  for(const [kind,count] of [['cantrip',now.cantrips-prev.cantrips],['learned',now.known-prev.known]])for(let i=0;i<count;i++)tasks.push({id:lv+':'+kind+':'+i,level:lv,kind,max:kind==='cantrip'?0:schedule[lv-1]});
+ }
+ return tasks;
+}
 const scales=s=>/at higher levels|using a higher.level spell slot|using a spell slot of|higher.level slot/i.test(s.description||'');
 function confirmInPage(title,fields,description,accept){
  const dialog=n('dialog','tv294-confirm');dialog.setAttribute('aria-label',title);
@@ -63,10 +74,20 @@ function render(c,records,card){
  const limits=selectionRules(c);
  const catalogue=spells().filter(x=>x.edition==='2014'&&x.classes.includes(listClass(c)));
  const byId=new Map(catalogue.map(x=>[x.id,x]));
- const maxLevel=Math.max(0,...records.filter(r=>r.kind==='spell').map(slotLevel));
+ const maxLevel=(selectionLevels[classKey(c)+'|'+subclass(c)]||selectionLevels[classKey(c)]||[])[Number(c.level)-1]??Math.max(0,...records.filter(r=>r.kind==='spell').map(slotLevel));
+ const tasks=selectionTasks(c);
  const mayEdit=demo||(c.status==='Approved'&&c.owner==='You');
  const countKnown=l=>new Set(draft.known.filter(id=>byId.has(id)&&((byId.get(id).level===0)===(l===0))&&!grantedIds.has(id))).size;
- function canAdd(id){const spell=byId.get(id);if(!mayEdit||!limits||!spell||grantedIds.has(id)||spell.level>maxLevel)return false;if(spell.level===0)return countKnown(0)<limits.cantrips;return limits.mode!=='prepared'&&countKnown(1)<limits.known;}
+ // Assign highest-level spells first to the earliest eligible choice. This prevents
+ // filling old level-one choices with spells unlocked only at later levels.
+ function allocate(ids){
+  const pending=tasks.slice(),assigned=new Map(),invalid=[];
+  const ordered=[...new Set(ids)].filter(id=>!grantedIds.has(id)).sort((a,b)=>(byId.get(b)?.level??99)-(byId.get(a)?.level??99));
+  for(const id of ordered){const spell=byId.get(id);const i=spell?pending.findIndex(t=>t.kind===(spell.level===0?'cantrip':'learned')&&spell.level<=t.max):-1;
+   if(i<0)invalid.push(id);else assigned.set(id,pending.splice(i,1)[0]);}
+  return {pending,assigned,invalid};
+ }
+ function canAdd(id){const spell=byId.get(id);if(!mayEdit||!limits||!spell||grantedIds.has(id)||spell.level>maxLevel)return false;return allocate([...draft.known,id]).invalid.length===0;}
  function canPrepare(id){const spell=byId.get(id);return !!(mayEdit&&limits&&limits.prepared!==null&&limits.prepared>0&&spell&&spell.level>0&&spell.level<=maxLevel&&!grantedIds.has(id)&&(limits.mode==='prepared'||draft.known.includes(id))&&draft.prepared.length<limits.prepared);}
  function saveDraft(){try{localStorage.setItem(bookKey,JSON.stringify(draft))}catch{}}
  function toggleKnown(id){if(!mayEdit)return;if(draft.known.includes(id)){draft.known=draft.known.filter(x=>x!==id);draft.prepared=draft.prepared.filter(x=>x!==id)}else if(canAdd(id))draft.known.push(id);saveDraft();draw()}
@@ -181,7 +202,7 @@ function render(c,records,card){
  const levels=n('div','tv291-levels');tools.append(search,levels);book.append(tools);
  const workspace=n('div','tv291-full-workspace'),list=n('div','tv291-spell-list'),reader=n('div','tv291-reader');const tableHead=n('div','tv291-table-head');for(const label of ['Spell','Casting time','Range','Traits',''])tableHead.append(n('span','',label));list.append(tableHead);workspace.append(list);book.append(workspace);panel.append(book);
  if(pointsMode&&validPoints){workspace.classList.add('tv292-points-mode');tableHead.append(n('span','','Test casting'));}
- const note=n('p','tv287-muted','Draft spell selections and favourites are saved in this browser only. They do not grant spells or alter approved character builds. Current-level base-class draft limits apply; feature exceptions and advancement history require review.');book.append(note);
+ const note=n('p','tv287-muted','Draft spell selections and favourites are saved in this browser only. They do not grant spells or alter approved character builds. Historical base-class draft limits apply; feature exceptions and server approval remain pending.');book.append(note);
  const manage=n('div','tv295-manage');const tally=n('span','tv287-muted');manage.append(tally,action('Import demo suggestions',()=>{for(const spell of pool.filter(s=>recommended.includes(s.id.split(':')[1])&&(!max||s.level<=max)))if(!draft.known.includes(spell.id)&&canAdd(spell.id))draft.known.push(spell.id);saveDraft();view.bookMode='known';draw()},!recommended.length||!mayEdit||!limits));bookHead.after(manage);
  const choicePanel=n('section','tv296-choices');bookHead.after(choicePanel);
  function detail(s){
@@ -228,11 +249,20 @@ function render(c,records,card){
    for(const [label,count,limit] of [['Cantrips',countKnown(0),limits.cantrips],...(limits.mode!=='prepared'?[['Learned spells',countKnown(1),limits.known]]:[]),...(preparing?[['Prepared spells',draft.prepared.length,limits.prepared]]:[])]){
     const item=n('div','tv291-stat');item.append(n('small','',label),n('strong','',count+' / '+(limit??'Unverified')));grid.append(item);
    }
-   choicePanel.append(grid,n('p','tv287-muted',limits.source+' · Current-level draft allowances. '+(!mayEdit?'Available after character approval, to the owner.':'Selections are local; advancement submission and server validation are not active.')));
+   choicePanel.append(grid,n('p','tv287-muted',limits.source+' · Level-by-level draft allowances. '+(!mayEdit?'Available after character approval, to the owner.':'Selections are local; advancement submission and server validation are not active.')));
+   const allocation=allocate(draft.known);
+   const status=n('p','tv287-muted',allocation.invalid.length?allocation.invalid.length+' existing draft choices exceed historical eligibility; remove or replace them before review.':allocation.pending.length?allocation.pending.length+' outstanding learned spell / cantrip choices.':'All learned spell and cantrip choices filled.');
+   choicePanel.append(status);
+   const progression=n('div','tv296-choice-grid');
+   for(const lv of [...new Set(tasks.map(t=>t.level))]){
+    const total=tasks.filter(t=>t.level===lv).length,left=allocation.pending.filter(t=>t.level===lv).length;
+    const item=n('div','tv291-stat');item.append(n('small','', 'Level '+lv+' choices'),n('strong','',(total-left)+' / '+total));progression.append(item);
+   }
+   choicePanel.append(progression);
    const browse=action('Choose spells',()=>{view.bookMode='reference';view.suggested=false;view.level='all';draw()},!mayEdit);choicePanel.append(browse);
   }
   for(const [label,id] of [['All references','reference'],['Known','known'],...(preparing?[['Prepared','prepared']]:[]),['Granted','granted'],['Favourites','favourites']]){const b=n('button','tv287-filter',label);b.type='button';b.setAttribute('aria-pressed',String(bookMode()===id));b.onclick=()=>{view.bookMode=id;view.selected='';draw()};modes.append(b)}
-  const base=pool.filter(s=>(bookMode()!=='reference'||!view.suggested||recommended.includes(s.id.split(':')[1]))&&(s.level<=max||grantedIds.has(s.id))&&(bookMode()==='reference'||(bookMode()==='known'&&draft.known.includes(s.id))||(bookMode()==='prepared'&&(draft.prepared.includes(s.id)||(s.level===0&&draft.known.includes(s.id))||grantedIds.has(s.id)))||(bookMode()==='granted'&&grantedIds.has(s.id))||(bookMode()==='favourites'&&favourites.has(s.id)))&&(!view.query||s.name.toLowerCase().includes(view.query.toLowerCase().trim())));
+  const base=pool.filter(s=>(bookMode()!=='reference'||!view.suggested||recommended.includes(s.id.split(':')[1]))&&(s.level<=maxLevel||grantedIds.has(s.id))&&(bookMode()==='reference'||(bookMode()==='known'&&draft.known.includes(s.id))||(bookMode()==='prepared'&&(draft.prepared.includes(s.id)||(s.level===0&&draft.known.includes(s.id))||grantedIds.has(s.id)))||(bookMode()==='granted'&&grantedIds.has(s.id))||(bookMode()==='favourites'&&favourites.has(s.id)))&&(!view.query||s.name.toLowerCase().includes(view.query.toLowerCase().trim())));
   const options=['all',...new Set(base.map(s=>s.level).sort((a,b)=>a-b))];
   if(!options.includes(view.level))view.level='all';
   for(const l of options){const b=n('button','tv287-filter',l==='all'?'All':l===0?'Cantrips':String(l));b.type='button';b.setAttribute('aria-pressed',String(view.level===l));b.onclick=()=>{view.level=l;view.selected='';list.scrollTop=0;draw()};levels.append(b)}
