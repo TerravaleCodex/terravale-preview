@@ -200,6 +200,7 @@ css += "\n" + (ROOT / "site-overrides/v284-concordant-reader.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v285-divine-resources.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v286-vault-compact-resources.css").read_text()
 css += "\n" + (ROOT / "site-overrides/v287-adaptive-resources.css").read_text()
+css += "\n" + (ROOT / "site-overrides/v290-spell-library.css").read_text()
 auth = (ROOT / "site-overrides/v2-discord-auth.mjs").read_text()
 ads = (ROOT / "site-overrides/v2-ads-atelier.mjs").read_text()
 bridge = (ROOT / "site-overrides/v243-campaign-achievement-bridge.js").read_text()
@@ -236,6 +237,13 @@ canonical_library_v281 = (ROOT / "site-overrides/v281-canonical-library.js").rea
 boon_reader_v282 = (ROOT / "site-overrides/v282-boon-reader.js").read_text()
 divine_links_v282 = (ROOT / "site-overrides/v282-divine-relationships.js").read_text()
 adaptive_v287 = (ROOT / "site-overrides/v287-adaptive-resources.js").read_text()
+spells_v290 = (ROOT / "site-overrides/v290-spell-library.js").read_text()
+spells_2014 = json.loads((ROOT / "site-overrides/spells/srd-2014.json").read_text())
+spells_2024 = json.loads((ROOT / "site-overrides/spells/srd-2024.json").read_text())
+assert len(spells_2014) == 319 and len(spells_2024) == 339
+assert all(s["edition"] == "2014" for s in spells_2014)
+assert all(s["edition"] == "2024" for s in spells_2024)
+spells_catalog_json = json.dumps(spells_2014 + spells_2024, ensure_ascii=True, separators=(",",":")).replace("</","<\\/")
 build_meta = json.dumps({"version":"2.87","build":os.environ.get("GITHUB_SHA","offline-preview")[:9]},separators=(',',':'))
 assert "sb_secret_" not in auth and "service_role" not in auth.lower()
 assert "var(--surface" in css and "var(--accent" in css
@@ -323,6 +331,8 @@ inline_js = (
     '<script data-source="v282-boon-reader.js">\n' + boon_reader_v282 + '\n</script>\n'
     '<script data-source="v282-divine-relationships.js">\n' + divine_links_v282 + '\n</script>\n'
     '<script data-source="v287-adaptive-resources.js">\n' + adaptive_v287 + '\n</script>\n'
+    '<script type="application/json" id="tv-live-srd-spells">' + spells_catalog_json + '</script>\n'
+    '<script data-source="v290-spell-library.js">\n' + spells_v290 + '\n</script>\n'
     '<script type="module" data-source="v2-discord-auth.mjs">\n' + auth + '\n</script>\n'
     '<script type="module" data-source="v2-ads-atelier.mjs">\n' + ads + '\n</script>\n'
 )
@@ -384,6 +394,8 @@ assert 'repeat(auto-fill,236px)' in source
 assert 'Join a campaign first' in source and 'Played by ' in source
 assert 'Want to test <strong>Adblockn’t' not in source
 assert source.count('data-source="v2-ads-atelier.mjs"') == 1
+assert source.count('data-source="v290-spell-library.js"') == 1
+assert source.count('id="tv-live-srd-spells"') == 1
 assert "terravale-profile-avatars" in source
 target.write_text(source,encoding="utf-8")
 print("PASS: authentic V2.39 theme and lore unchanged, two safe integration modules installed")
