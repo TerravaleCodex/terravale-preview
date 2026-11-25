@@ -28,12 +28,55 @@ return '<section id="tv-spells-page" class="tv-spells-page" aria-label="Spell Li
  '<p class="tv-spell-license">Includes material from the System Reference Document 5.1 and System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 4.0</a>. The text has been indexed and reformatted. <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener noreferrer">Official SRD</a>. Transcriptions: 5e-bits/5e-database (2014), downfallx/dnd-5e-srd-markdown (2024). Only spells present in these SRDs are included.</p>'+
  '</section>';
 }
-function renderList(){
+// Replace browser-native select menus with compact, theme-consistent menus.
+function enhanceFilterSelects(root){
+ for(const id of ['tv-spell-school','tv-spell-class']){
+  const select=root.querySelector('#'+id);
+  const frame=document.createElement('div');frame.className='tv-spell-select';frame.dataset.open='false';
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='tv-spell-select-trigger';
+  trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
+  trigger.setAttribute('aria-label',id==='tv-spell-school'?'Filter by school':'Filter by class');
+  const options=document.createElement('div');options.className='tv-spell-select-menu';options.setAttribute('role','listbox');
+  options.setAttribute('aria-label',id==='tv-spell-school'?'Schools':'Classes');
+  const sync=()=>{
+   const selectedOption=select.selectedOptions[0];trigger.textContent=selectedOption?.textContent||'All';
+   options.querySelectorAll('button').forEach(button=>{button.setAttribute('aria-selected',String(button.dataset.value===select.value));});
+  };
+  const close=()=>{frame.dataset.open='false';trigger.setAttribute('aria-expanded','false');};
+  trigger.addEventListener('click',()=>{
+   const shouldOpen=frame.dataset.open!=='true';
+   root.querySelectorAll('.tv-spell-select').forEach(el=>{
+    el.dataset.open='false';el.querySelector('.tv-spell-select-trigger')?.setAttribute('aria-expanded','false');
+   });
+   if(shouldOpen){frame.dataset.open='true';trigger.setAttribute('aria-expanded','true');}
+  });
+  for(const option of [...select.options]){
+   const button=document.createElement('button');button.type='button';button.setAttribute('role','option');
+   button.dataset.value=option.value;button.textContent=option.textContent;
+   button.addEventListener('click',()=>{select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();close();trigger.focus();});
+   options.append(button);
+  }
+  select.after(frame);frame.append(select,trigger,options);select.classList.add('tv-spell-native-select');
+  frame.addEventListener('keydown',event=>{
+   if(event.key==='Escape'){close();trigger.focus();}
+   if(event.key==='ArrowDown'&&event.target===trigger&&frame.dataset.open!=='true'){event.preventDefault();trigger.click();options.querySelector('[aria-selected="true"]')?.focus();}
+  });
+  select.addEventListener('change',sync);
+  sync();
+ }
+ document.addEventListener('pointerdown',event=>{
+  if(root.isConnected&&!event.target.closest('.tv-spell-select'))
+   root.querySelectorAll('.tv-spell-select').forEach(el=>{el.dataset.open='false';el.querySelector('.tv-spell-select-trigger')?.setAttribute('aria-expanded','false');});
+ },{signal:root._spellAbort.signal});
+}
+function renderList(resetScroll=false){
 const root=$('#tv-spells-page');if(!root)return;
 const list=matches();if(!list.some(s=>s.id===selected))selected=list[0]?.id||'';
 root.querySelector('#tv-spell-count').textContent=list.length+' matching spells';
-root.querySelector('#tv-spell-list').innerHTML=list.map(s=>'<button type="button" class="tv-spell-list-item" data-spell-id="'+esc(s.id)+'" aria-current="'+(s.id===selected)+'"><span><strong>'+esc(s.name)+'</strong><small>'+levelName(s.level)+' · '+esc(s.school)+(s.ritual?' · Ritual':'')+'</small></span><b>'+(s.level||'C')+'</b></button>').join('')||'<div class="tv-spell-empty">No spells match these filters.</div>';
-root.querySelectorAll('[data-spell-id]').forEach(button=>button.addEventListener('click',()=>{selected=button.dataset.spellId;renderList();}));
+const scrollArea=root.querySelector('#tv-spell-list');const previousScroll=scrollArea.scrollTop;
+scrollArea.innerHTML=list.map(s=>'<button type="button" class="tv-spell-list-item" data-spell-id="'+esc(s.id)+'" aria-current="'+(s.id===selected)+'"><span><strong>'+esc(s.name)+'</strong><small>'+levelName(s.level)+' · '+esc(s.school)+(s.ritual?' · Ritual':'')+'</small></span><b>'+(s.level||'C')+'</b></button>').join('')||'<div class="tv-spell-empty">No spells match these filters.</div>';
+scrollArea.scrollTop=resetScroll?0:previousScroll;
+root.querySelectorAll('[data-spell-id]').forEach(button=>button.addEventListener('click',()=>{selected=button.dataset.spellId;renderList(false);}));
 root.querySelectorAll('[data-srd-edition]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.srdEdition===edition)));
 root.querySelectorAll('[data-srd-level]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.srdLevel===String(level))));
 root.querySelector('#tv-spell-ritual').setAttribute('aria-pressed',String(ritual));
@@ -52,14 +95,16 @@ target.innerHTML='<div class="tv-spell-reader-top"><div><div class="tv-spell-eye
 '<div class="tv-spell-integration"><strong>Ready for future character-sheet integration</strong><p>Stable reference ID <code>'+esc(s.id)+'</code>. Later versions can link known and prepared spells, slot use, upcasting and concentration to this record. Material ingredients are reference text only; inventory tracking is not planned.</p></div>';
 }
 function attachHandlers(root){
-root.querySelectorAll('[data-srd-edition]').forEach(b=>b.addEventListener('click',()=>{edition=b.dataset.srdEdition;selected='';renderList()}));
-root.querySelector('#tv-spell-query').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();selected='';renderList()});
-root.querySelector('#tv-spell-school').addEventListener('change',e=>{school=e.target.value;selected='';renderList()});
-root.querySelector('#tv-spell-class').addEventListener('change',e=>{spellClass=e.target.value;selected='';renderList()});
-root.querySelectorAll('[data-srd-level]').forEach(b=>b.addEventListener('click',()=>{level=b.dataset.srdLevel;selected='';renderList()}));
-root.querySelector('#tv-spell-ritual').addEventListener('click',()=>{ritual=!ritual;selected='';renderList()});
-root.querySelector('#tv-spell-concentration').addEventListener('click',()=>{concentration=!concentration;selected='';renderList()});
-root.querySelector('#tv-spell-clear').addEventListener('click',()=>{query='';level='all';school='all';spellClass='all';ritual=false;concentration=false;selected='';root.querySelector('#tv-spell-query').value='';root.querySelector('#tv-spell-school').value='all';root.querySelector('#tv-spell-class').value='all';renderList()});
+root._spellAbort=new AbortController();
+enhanceFilterSelects(root);
+root.querySelectorAll('[data-srd-edition]').forEach(b=>b.addEventListener('click',()=>{edition=b.dataset.srdEdition;selected='';renderList(true)}));
+root.querySelector('#tv-spell-query').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();selected='';renderList(true)});
+root.querySelector('#tv-spell-school').addEventListener('change',e=>{school=e.target.value;selected='';renderList(true)});
+root.querySelector('#tv-spell-class').addEventListener('change',e=>{spellClass=e.target.value;selected='';renderList(true)});
+root.querySelectorAll('[data-srd-level]').forEach(b=>b.addEventListener('click',()=>{level=b.dataset.srdLevel;selected='';renderList(true)}));
+root.querySelector('#tv-spell-ritual').addEventListener('click',()=>{ritual=!ritual;selected='';renderList(true)});
+root.querySelector('#tv-spell-concentration').addEventListener('click',()=>{concentration=!concentration;selected='';renderList(true)});
+root.querySelector('#tv-spell-clear').addEventListener('click',()=>{query='';level='all';school='all';spellClass='all';ritual=false;concentration=false;selected='';root.querySelector('#tv-spell-query').value='';root.querySelector('#tv-spell-school').value='all';root.querySelector('#tv-spell-class').value='all';renderList(true)});
 }
 function navigation(){
 // Existing native V2 sidebars render buttons rather than regular anchors.
@@ -88,7 +133,7 @@ const root=$('#pageRoot');if(!root)return;
 if(root.querySelector('#tv-spells-page'))return;
 root.innerHTML=contentHTML();
 const page=root.querySelector('#tv-spells-page');
-attachHandlers(page);renderList();
+attachHandlers(page);renderList(true);
 }
 let queued=false;
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;mount()});}
