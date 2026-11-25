@@ -208,3 +208,8 @@ dialog.tv294-confirm p{font-size:12px;line-height:1.6;color:var(--soft,#aaa);mar
 #pageRoot .tv295-manage{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;padding:8px 10px;background:var(--raised);border:1px solid var(--edge);border-radius:8px}
 #pageRoot .tv295-manage-spell{margin-top:12px;padding-top:10px;border-top:1px solid var(--edge)}
 #pageRoot .tv291-book-modes{justify-content:flex-end}
+
+#pageRoot .tv296-choices{margin-top:12px;padding:13px;border:1px solid var(--edge);border-radius:9px;background:var(--raised)}
+#pageRoot .tv296-choices h3{font-size:17px;margin:0 0 9px}
+#pageRoot .tv296-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:8px}
+#pageRoot .tv296-choices p{margin:9px 0}
