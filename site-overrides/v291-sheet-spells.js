@@ -24,6 +24,34 @@ const curated={
 };
 const eligible=(c,records)=>!!(records.length||rule(c)||c.spells?.length);
 const views=new Map(), advancementPreview=new Set();
+const campaignPolicies=new Map(),policyLoads=new Map();
+const policyAccount=()=>String(window.TerravaleVerifiedAccount?.state?.user?.id||'');
+const policyKey=c=>policyAccount()+'|'+String(c.campaign||'');
+const ruleLabel=r=>({'2014':'D&D 2014','2024':'D&D 2024',tv5e:'Tv5e',custom:'Custom'}[r]||'Ruleset unconfigured');
+function spellPolicy(c){
+ const p=campaignPolicies.get(policyKey(c));
+ if(p)return p;
+ if(String(c.demoCurator||'').toLowerCase()==='aster')return {ruleset:'tv5e',editions:['2014','2024'],demo:true};
+ return {ruleset:'',editions:[],unconfigured:true};
+}
+function refreshCampaignPolicy(c){
+ const key=policyKey(c),account=window.TerravaleVerifiedAccount,client=account?.supabase;
+ if(!client||!policyAccount()||!c.campaign||policyLoads.has(key))return;
+ const request=Promise.resolve().then(()=>client.from('terravale_campaign_spell_policy').select('ruleset,editions,revision').eq('campaign_id',c.campaign).maybeSingle()).then(({data,error})=>{
+  if(error||!data||!Array.isArray(data.editions)||!['2014','2024','tv5e','custom'].includes(data.ruleset))return;
+  campaignPolicies.set(key,{ruleset:data.ruleset,editions:[...new Set(data.editions.filter(x=>['2014','2024'].includes(x)))],revision:data.revision});
+  if(policyKey(c)===key){window.TerravaleV287Adaptive?.refresh();mountRulesetTag(c,document.querySelector('#pageRoot .sheet20-tabs'))}
+ }).catch(()=>{});
+ policyLoads.set(key,request);
+}
+function mountRulesetTag(c,tabs){
+ if(!tabs||!c)return;refreshCampaignPolicy(c);
+ const p=spellPolicy(c),label=ruleLabel(p.ruleset)+(p.demo?' · Demo':'');
+ let tag=tabs.parentElement.querySelector('.tv309-ruleset-tag');
+ if(!tag){tag=n('div','tv309-ruleset-tag');tabs.before(tag)}
+ tag.textContent=label+' · '+(p.editions.length?p.editions.map(x=>'SRD '+(x==='2014'?'5.1':'5.2.1')).join(' + '):'Spell catalogue not configured');
+}
+const editionChoices=p=>p.editions.length>1?[['Both editions','all'],...p.editions.map(x=>[x,x])]:[];
 const isAsterPreview=c=>String(c?.demoCurator||'').toLowerCase()==='aster'&&({ 'Aster Vaelith':6,'Elira Wren':4,'Pip Thornwhistle':3}[c?.name]===Number(c?.level));
 const previewGrants=c=>classKey(c)==='Ranger'?['hunters-mark']:[];
 function advancementKey(c){return 'tv298-levelup:'+(window.TerravaleVerifiedAccount?.state?.user?.id||'browser')+':'+String(c.campaign||'')+':'+String(c.id)}
@@ -48,7 +76,8 @@ function openAdvancementWizard(c){
  if(document.querySelector('dialog.tv298-wizard[open]'))return;
  const baseKey='tv295-spellbook-draft:'+account+':'+String(c.campaign||'')+':'+id;
  const cl=classKey(c),from=Number(c.level),to=from+1,oldRules=selectionRules(c),newRules=selectionRules({...c,level:to}),max=selectionLevels[cl][to-1],oldMax=selectionLevels[cl][from-1],newCount=newRules.known-oldRules.known,cantripCount=newRules.cantrips-oldRules.cantrips,replaceLimit=replacementAllowance(c),die={Wizard:6,Bard:8,Ranger:10}[cl],fixed=die/2+1;
- const catalogue=spells().filter(s=>s.classes.includes(cl));
+ const policy=spellPolicy(c);if(!policy.editions.length)return;
+ const catalogue=spells().filter(s=>s.classes.includes(cl)&&policy.editions.includes(s.edition));
  const base=new Set();try{const d=JSON.parse(localStorage.getItem(baseKey)||'null');for(const x of d?.known||[])base.add(x)}catch{}
  // Demo baseline is independent of a visitor having imported suggestions.
  for(const slug of curated[c.name]||[]){const spell=catalogue.find(s=>s.id.split(':')[1]===slug);if(spell)base.add(spell.id)}
@@ -111,8 +140,8 @@ function openAdvancementWizard(c){
    const filters=n('div','tv298-filters'),input=n('input','tv287-search');input.type='search';input.placeholder='Search eligible spells…';input.value=search;input.setAttribute('aria-label','Search eligible spells');filters.append(input);
    for(const l of Array.from({length:max+1},(_,i)=>i)){const b=button(l?'Level '+l:'All',()=>{level=l;render()});b.setAttribute('aria-pressed',String(l===level));filters.append(b)}body.append(filters);
    const editions=n('div','tv298-filters');
-   for(const [label,value] of [['Both editions','all'],['2014','2014'],['2024','2024']]){const b=button(label,()=>{edition=value;render()});b.setAttribute('aria-pressed',String(edition===value));editions.append(b)}
-   body.append(editions);
+   for(const [label,value] of editionChoices(policy)){const b=button(label,()=>{edition=value;render()});b.setAttribute('aria-pressed',String(edition===value));editions.append(b)}
+   if(policy.editions.length>1)body.append(editions);
    const list=n('div','tv298-list');body.append(list);
    function drawList(){
     const scroll=list.scrollTop;list.replaceChildren();
@@ -199,6 +228,7 @@ function render(c,records,card){
  if(preview){try{if(!localStorage.getItem(bookKey)){const original=localStorage.getItem(bookKey.replace(/:level7-preview$/,''));if(original)localStorage.setItem(bookKey,original)}}catch{}}
  let draft={known:[],prepared:[]};try{const saved=JSON.parse(localStorage.getItem(bookKey)||'null');if(saved&&Array.isArray(saved.known)&&Array.isArray(saved.prepared))draft={known:saved.known.filter(x=>typeof x==='string'),prepared:saved.prepared.filter(x=>typeof x==='string')}}catch{}
  const limits=selectionRules(c);
+ const policy=spellPolicy(c);refreshCampaignPolicy(c);
  const catalogue=spells().filter(x=>x.classes.includes(listClass(c)));
  const byId=new Map(catalogue.map(x=>[x.id,x]));
  const maxLevel=(selectionLevels[classKey(c)+'|'+subclass(c)]||selectionLevels[classKey(c)]||[])[Number(c.level)-1]??Math.max(0,...records.filter(r=>r.kind==='spell').map(slotLevel));
@@ -214,8 +244,8 @@ function render(c,records,card){
    if(i<0)invalid.push(id);else assigned.set(id,pending.splice(i,1)[0]);}
   return {pending,assigned,invalid};
  }
- function canAdd(id){const spell=byId.get(id);if(!mayEdit||!limits||!spell||[...grantedIds].some(x=>sameSpell(x,id))||draft.known.some(x=>sameSpell(x,id))||spell.level>maxLevel)return false;return allocate([...draft.known,id]).invalid.length===0;}
- function canPrepare(id){const spell=byId.get(id);return !!(mayEdit&&limits&&limits.prepared!==null&&limits.prepared>0&&spell&&spell.level>0&&spell.level<=maxLevel&&!grantedIds.has(id)&&(limits.mode==='prepared'||draft.known.includes(id))&&!draft.prepared.some(x=>sameSpell(x,id))&&draft.prepared.length<limits.prepared);}
+ function canAdd(id){const spell=byId.get(id);if(!mayEdit||!limits||!spell||!policy.editions.includes(spell.edition)||[...grantedIds].some(x=>sameSpell(x,id))||draft.known.some(x=>sameSpell(x,id))||spell.level>maxLevel)return false;return allocate([...draft.known,id]).invalid.length===0;}
+ function canPrepare(id){const spell=byId.get(id);return !!(mayEdit&&limits&&limits.prepared!==null&&limits.prepared>0&&spell&&policy.editions.includes(spell.edition)&&spell.level>0&&spell.level<=maxLevel&&!grantedIds.has(id)&&(limits.mode==='prepared'||draft.known.includes(id))&&!draft.prepared.some(x=>sameSpell(x,id))&&draft.prepared.length<limits.prepared);}
  function saveDraft(){try{localStorage.setItem(bookKey,JSON.stringify(draft))}catch{}}
  function toggleKnown(id){if(!mayEdit)return;if(draft.known.includes(id)){draft.known=draft.known.filter(x=>x!==id);draft.prepared=draft.prepared.filter(x=>x!==id)}else if(canAdd(id))draft.known.push(id);saveDraft();draw()}
  function togglePrepared(id){if(!mayEdit)return;if(draft.prepared.includes(id))draft.prepared=draft.prepared.filter(x=>x!==id);else if(canPrepare(id))draft.prepared.push(id);saveDraft();draw()}
@@ -229,8 +259,10 @@ function render(c,records,card){
  function toggleFavourite(id){if(favourites.has(id))favourites.delete(id);else favourites.add(id);try{localStorage.setItem(favKey,JSON.stringify([...favourites]))}catch{}draw();}
  panel.replaceChildren();
  const header=n('header','tv291-header'), heading=n('div');
- heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · 2014 / 2024 SRD reference'));
+ heading.append(n('div','tv287-eyebrow','CHARACTER SHEET · SPELLCASTING'),n('h2','','Spells'),n('p','tv287-muted',classKey(c)+' · Level '+c.level+' · '+ruleLabel(policy.ruleset)+(policy.demo?' · Demo':'')));
  header.append(heading);panel.append(header);
+ if(policy.unconfigured)panel.append(n('p','tv287-muted','Campaign spell policy is not configured or unavailable. New spell selections are disabled; existing draft spells are preserved.'));
+ else panel.append(n('p','tv287-muted','Allowed catalogues: '+(policy.editions.join(' / ')||'None')));
 
  if(preview){const banner=n('section','tv297-advancement-preview');banner.append(n('strong','','LEVEL 7 PREVIEW · SPELL CHOICES'),n('p','tv287-muted','Choose two additional Wizard spells up to level 4. This separate draft cannot spend real slots or change Aster’s approved build.'));const exit=n('button','tv292-point-action','Exit preview');exit.type='button';exit.onclick=()=>{advancementPreview.delete(String(actual.id));render(actual,records,card)};banner.append(exit);panel.append(banner);}
  const slotRecords=records.filter(r=>r.kind==='spell'), abilities=records.filter(r=>r.kind!=='spell');
@@ -319,7 +351,7 @@ function render(c,records,card){
   item.insertBefore(dots,item.firstChild);
   return item;
  }
- const pool=spells().filter(s=>s.classes.includes(listClass(c))||grantedIds.has(s.id));
+ const pool=spells().filter(s=>(s.classes.includes(listClass(c))&&policy.editions.includes(s.edition))||grantedIds.has(s.id)||draft.known.includes(s.id)||draft.prepared.includes(s.id));
  const max=Math.max(0,...slotRecords.map(slotLevel));
  const book=n('section','tv291-book'),bookHead=n('div','tv291-book-head'),title=n('div');
  title.append(n('h3','','Spellbook'),n('p','tv287-muted','Manage a local spellbook draft · No permanent spell grants or preparation changes.'));
@@ -369,7 +401,7 @@ function render(c,records,card){
   reader.append(manageSpell,n('p','tv291-description',s.description));
  }
  function draw(){
-  const oldScroll=list.scrollTop;list.replaceChildren(tableHead);levels.replaceChildren();modes.replaceChildren();editionFilters.replaceChildren();for(const [label,value] of [['Both editions','all'],['2014','2014'],['2024','2024']]){const b=n('button','tv287-filter',label);b.type='button';b.setAttribute('aria-pressed',String((view.edition||'all')===value));b.onclick=()=>{view.edition=value;draw()};editionFilters.append(b)}
+  const oldScroll=list.scrollTop;list.replaceChildren(tableHead);levels.replaceChildren();modes.replaceChildren();editionFilters.replaceChildren();if(view.edition!=='all'&&!policy.editions.includes(view.edition))view.edition='all';editionFilters.hidden=policy.editions.length<2;for(const [label,value] of editionChoices(policy)){const b=n('button','tv287-filter',label);b.type='button';b.setAttribute('aria-pressed',String((view.edition||'all')===value));b.onclick=()=>{view.edition=value;draw()};editionFilters.append(b)}
   tally.textContent=draft.known.length+' known draft · '+draft.prepared.length+' prepared draft';
   choicePanel.replaceChildren();choicePanel.append(n('h3','','Spell selection · Level '+c.level));
   if(!limits)choicePanel.append(n('p','tv287-muted','Selection rules for this class or subclass are not configured. No new selections are enabled.'));
@@ -419,5 +451,5 @@ function render(c,records,card){
  }
  search.addEventListener('input',()=>{view.query=search.value;view.selected='';list.scrollTop=0;draw()});draw();
 }
-window.TerravaleSheetSpells={eligible,render,mountAdvancementPreview,mountRosterAdvancement};
+window.TerravaleSheetSpells={eligible,render,mountAdvancementPreview,mountRosterAdvancement,mountRulesetTag};
 })();
