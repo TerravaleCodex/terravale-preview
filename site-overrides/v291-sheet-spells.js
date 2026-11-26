@@ -6,6 +6,10 @@ const read=id=>{try{return JSON.parse(document.getElementById(id)?.textContent||
 const spells=()=>read('tv-live-srd-spells');
 const spellIdentity=id=>String(id).split(':').slice(1).join(':');
 const sameSpell=(a,b)=>spellIdentity(a)===spellIdentity(b);
+// Reviewed against both installed records; equivalence is limited to the shared
+// Terravale mechanics. Preserve both source IDs and edition-specific eligibility.
+const equivalentSpellIds=new Set(['misty-step','remove-curse','protection-from-energy','longstrider','magic-missile','expeditious-retreat','guiding-bolt','shield-of-faith','knock','ray-of-frost','burning-hands','scorching-ray','floating-disk','hypnotic-pattern']);
+const sharedMechanics=versions=>versions.length===2&&equivalentSpellIds.has(spellIdentity(versions[0].id));
 const uniqueVersions=ids=>{const seen=new Set();return ids.filter(id=>{const identity=spellIdentity(id);if(seen.has(identity))return false;seen.add(identity);return true})};
 const replacementAllowance=c=>['Bard','Ranger','Sorcerer'].includes(String(c.className||c.class||''))?1:0;
 const schedules=()=>read('v234-spell-tables');
@@ -56,7 +60,7 @@ function openAdvancementWizard(c){
  if(!replaceLimit||!replaceable.some(x=>x.id===state.replaceFrom)){state.replaceFrom='';state.replaceTo=''}
  if(!candidates.some(x=>x.id===state.replaceTo)||state.chosen.some(x=>sameSpell(x,state.replaceTo)))state.replaceTo='';
  const validSpells=()=>state.chosen.length===newCount&&(!state.replaceFrom||!!state.replaceTo)&&cantripCount===0;
- let search='',level=max,expanded='',edition='all',replacementMode=newCount===0, replacementOpen=!!state.replaceFrom;
+ let search='',level=max,expanded='',edition='all',replacementMode=newCount===0||!!state.replaceFrom&&!state.replaceTo, replacementOpen=!!state.replaceFrom, changeOld=false;
  const dialog=n('dialog','tv298-wizard');dialog.setAttribute('aria-label',c.name+' level-up preview');document.body.append(dialog);
  const save=()=>{try{localStorage.setItem(key,JSON.stringify(state))}catch{};for(const b of document.querySelectorAll('[data-tv306-character]'))if(b.dataset.tv306Character===id)b.textContent=advancementStatus(c)+' · Lv '+to;const label=document.querySelector('.tv306-advance-label strong');if(label&&document.querySelector('.tv306-sheet-advance [data-tv306-character="'+id+'"]'))label.textContent='✦ '+advancementStatus(c)};
  const button=(label,fn,disabled=false,cls='')=>{const b=n('button','tv292-point-action '+cls,label);b.type='button';b.disabled=disabled;b.onclick=fn;return b};
@@ -65,7 +69,7 @@ function openAdvancementWizard(c){
  const hp=()=>con===null?'Constitution modifier not verified':String(Math.max(1,(state.hp==='roll'?state.roll||0:fixed)+con));
  const validHP=()=>state.hp==='fixed'||Number.isInteger(state.roll)&&state.roll>=1&&state.roll<=die;
  function render(){
-  dialog.replaceChildren();
+  dialog.replaceChildren();dialog.dataset.step=String(state.step);
   const head=n('header','tv298-head'),title=n('div');title.append(n('div','tv287-eyebrow','ADVANCEMENT · DEMO PREVIEW'),n('h2','',c.name),n('p','tv287-muted',cl+' · Level '+from+' → '+to));
   head.append(title,button('Close',()=>{save();dialog.close()}));dialog.append(head);
   const steps=n('nav','tv298-steps');
@@ -80,12 +84,12 @@ function openAdvancementWizard(c){
    const fixedButton=button('Fixed · '+fixed,()=>{state.hp='fixed';save();render()});fixedButton.setAttribute('aria-pressed',String(state.hp==='fixed'));
    const rollButton=button(state.roll?'Rolled · '+state.roll:'Roll d'+die,()=>{state.hp='roll';if(!state.roll)state.roll=1+Math.floor(Math.random()*die);save();render()});rollButton.setAttribute('aria-pressed',String(state.hp==='roll'));
    const methods=n('div','tv307-hp-methods');methods.append(fixedButton,rollButton);
-   const result=stat('Maximum HP increase',validHP()?('+'+hp()):'Choose a method');
+   const result=stat('HP increase',validHP()?(con===null?hp():'+'+hp()):'Choose a method');
    result.append(n('small','tv287-muted',(state.hp==='roll'?state.roll:fixed)+' hit die'+(con===null?' + CON':(con>=0?' + ':' − ')+Math.abs(con)+' CON')));
    options.append(methods,result);hpbox.append(options);body.append(hpbox);
   }else if(state.step===1){
    body.append(n('h3','',newCount?'Learn '+newCount+' new spell'+(newCount===1?'':'s'):'Spell advancement'),n('p','tv287-muted','Choose '+cl+' spells up to level '+max+'. Existing known spells and granted spells are excluded.'));
-   const grid=n('div','tv296-choice-grid');grid.append(stat('Maximum spell level',oldMax+' → '+max),stat('Learned spells',state.chosen.length+' / '+newCount),stat('Optional replacements',String(replaceLimit)));body.append(grid);
+   const grid=n('div','tv308-summary');grid.append(n('span','','Spell level '+oldMax+' → '+max),n('strong','',state.chosen.length+' / '+newCount+' new spells'),n('span','',replaceLimit?(state.replaceTo?'1 / 1 replacement':'Optional replacement available'):'No replacements'));body.append(grid);
    const selected=n('div','tv298-selected');for(const sid of state.chosen){const spell=candidates.find(x=>x.id===sid);if(spell)selected.append(button(spell.name+' · '+spell.edition+' ×',()=>{state.chosen=state.chosen.filter(x=>x!==sid);save();render()}))}if(!state.chosen.length&&newCount)selected.append(n('span','tv287-muted','Select '+newCount+' new spell'+(newCount===1?'':'s')));if(newCount)body.append(selected);
    if(replaceLimit){
     const replacement=n('section','tv298-box tv306-replacement'),top=n('div','tv306-replace-top');
@@ -94,10 +98,10 @@ function openAdvancementWizard(c){
     top.append(info,button(replacementOpen?'Cancel replacement':'Replace a spell',()=>{replacementOpen=!replacementOpen;if(!replacementOpen){state.replaceFrom='';state.replaceTo='';replacementMode=false;save()}else replacementMode=true;render()}));replacement.append(top);
     if(replacementOpen){
      if(old){const swap=n('div','tv307-swap'),left=n('div','tv307-swap-old'),right=n('div','tv307-swap-new');left.append(n('small','','FORGET'),n('strong','',old.name),n('small','',old.edition+' · Level '+old.level));right.append(n('small','',next?'LEARN INSTEAD':'SELECTING REPLACEMENT'),n('strong','',next?.name||'Choose a spell below'),n('small','',next?next.edition+' · Level '+next.level:'Eligible class spells'));swap.append(left,n('span','tv307-swap-arrow','→'),right);replacement.append(swap)}
-     const pick=n('div','tv306-replace-pick');pick.append(n('small','tv287-muted',old?'Change the spell to forget':'1 · Choose the spell to forget'));
+     if(!old||changeOld){const pick=n('div','tv306-replace-pick');pick.append(n('small','tv287-muted',old?'Change the spell to forget':'1 · Choose the spell to forget'));
      const buttons=n('div','tv292-point-actions');
-     for(const spell of replaceable){const b=button(spell.name,()=>{state.replaceFrom=spell.id;state.replaceTo='';replacementMode=true;save();render()});b.setAttribute('aria-pressed',String(state.replaceFrom===spell.id));buttons.append(b)}pick.append(buttons);replacement.append(pick);
-     if(old){const modes=n('div','tv292-point-actions');if(newCount&&replacementMode&&next)modes.append(button('Return to new spells',()=>{replacementMode=false;render()}));if(!replacementMode)modes.append(button('Change replacement',()=>{replacementMode=true;render()}));if(modes.children.length)replacement.append(modes)}
+     for(const spell of replaceable){const b=button(spell.name,()=>{state.replaceFrom=spell.id;state.replaceTo='';replacementMode=true;changeOld=false;save();render()});b.setAttribute('aria-pressed',String(state.replaceFrom===spell.id));buttons.append(b)}pick.append(buttons);replacement.append(pick);}
+     if(old){const modes=n('div','tv292-point-actions');modes.append(button(changeOld?'Keep outgoing spell':'Change outgoing spell',()=>{changeOld=!changeOld;render()}));if(newCount&&replacementMode&&next)modes.append(button('Return to new spells',()=>{replacementMode=false;render()}));if(!replacementMode)modes.append(button('Change replacement',()=>{replacementMode=true;render()}));if(modes.children.length)replacement.append(modes)}
     }
     body.append(replacement);
    }
@@ -114,12 +118,12 @@ function openAdvancementWizard(c){
     const scroll=list.scrollTop;list.replaceChildren();
     const groups=new Map();for(const spell of candidates.filter(x=>(!level||x.level===level)&&(edition==='all'||x.edition===edition)&&x.name.toLowerCase().includes(search.toLowerCase().trim())).sort((a,b)=>a.name.localeCompare(b.name))){const k=spellIdentity(spell.id);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(spell)}
     for(const versions of groups.values()){
-     const spell=versions[0],row=n('div','tv298-spell-row tv306-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school));
+     const shared=sharedMechanics(versions),preferred=versions.find(v=>state.chosen.includes(v.id)||state.replaceTo===v.id)||versions.find(v=>v.edition==='2024')||versions[0],spell=shared?preferred:versions[0],row=n('div','tv298-spell-row tv306-spell-row'),label=n('div');label.append(n('strong','',spell.name),n('small','tv287-muted','Level '+spell.level+' · '+spell.school));
      const actions=n('div','tv306-version-actions');
-     for(const v of versions){const replacing=replacementMode&&!!state.replaceFrom,picked=replacing?state.replaceTo===v.id:state.chosen.includes(v.id),other=state.chosen.find(x=>sameSpell(x,v.id)&&x!==v.id),conflict=replacing?state.chosen.some(x=>sameSpell(x,v.id)):!!state.replaceTo&&sameSpell(state.replaceTo,v.id);
-      const choose=button(v.edition+(picked?' ✓':''),()=>{const pos=list.scrollTop;if(replacing){state.replaceTo=picked?'':v.id;if(!picked&&newCount&&state.chosen.length<newCount)replacementMode=false}else state.chosen=picked?state.chosen.filter(x=>x!==v.id):other?state.chosen.map(x=>x===other?v.id:x):[...state.chosen,v.id];save();render();const nextList=dialog.querySelector('.tv298-list');if(nextList)nextList.scrollTop=pos},conflict||(!replacing&&!picked&&!other&&state.chosen.length>=newCount));choose.setAttribute('aria-pressed',String(picked));choose.title=(replacing?'Replace with ':'Select ')+v.name+' ('+v.edition+')';choose.textContent=(replacing?'Replace · ':'')+v.edition+(picked?' ✓':'');actions.append(choose)}
+     for(const v of (shared?[preferred]:versions)){const replacing=replacementMode&&!!state.replaceFrom,picked=replacing?state.replaceTo===v.id:state.chosen.includes(v.id),other=state.chosen.find(x=>sameSpell(x,v.id)&&x!==v.id),conflict=replacing?state.chosen.some(x=>sameSpell(x,v.id)):!!state.replaceTo&&sameSpell(state.replaceTo,v.id);
+      const choose=button(v.edition+(picked?' ✓':''),()=>{const pos=list.scrollTop;if(replacing){state.replaceTo=picked?'':v.id;if(!picked&&newCount&&state.chosen.length<newCount)replacementMode=false}else state.chosen=picked?state.chosen.filter(x=>x!==v.id):other?state.chosen.map(x=>x===other?v.id:x):[...state.chosen,v.id];save();render();const nextList=dialog.querySelector('.tv298-list');if(nextList)nextList.scrollTop=pos},conflict||(!replacing&&!picked&&!other&&state.chosen.length>=newCount));choose.setAttribute('aria-pressed',String(picked));choose.title=(replacing?'Replace with ':'Select ')+v.name+' ('+v.edition+')';choose.textContent=(shared?(replacing?'Replace':'Select'):(replacing?'Replace · ':'')+v.edition)+(picked?' ✓':'');if(shared)choose.title='Same reviewed mechanics in both editions';actions.append(choose)}
      const details=button(expanded===spellIdentity(spell.id)?'Hide':'Details',()=>{expanded=expanded===spellIdentity(spell.id)?'':spellIdentity(spell.id);drawList()});row.append(label,actions,details);list.append(row);
-     if(expanded===spellIdentity(spell.id)){const detail=n('div','tv306-details');for(const v of versions){detail.append(n('strong','',v.edition+' · '+v.castingTime+' · '+v.range),n('p','tv298-description',v.description))}list.append(detail)}
+     if(expanded===spellIdentity(spell.id)){const detail=n('div','tv306-details');for(const v of (shared?[preferred]:versions)){detail.append(n('strong','',(shared?'Shared mechanics · ':v.edition+' · ')+v.castingTime+' · '+v.range),n('p','tv298-description',v.description))}list.append(detail)}
     }
     if(!list.children.length)list.append(n('p','tv287-muted','No eligible spells match.'));list.scrollTop=scroll;
    }
