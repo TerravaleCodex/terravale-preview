@@ -126,9 +126,11 @@ const server=http.createServer((req,res)=>{
  let browser=null,ws=null;
  try{
    const url="http://127.0.0.1:"+server.address().port+"/fixture";
+   let startupLog="";
    browser=cp.spawn(chrome,["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
      "--disable-background-networking","--remote-debugging-port=0","--user-data-dir="+profile,
-     "--window-size=1400,950",url],{stdio:"ignore"});
+     "--window-size=1400,950",url],{stdio:["ignore","ignore","pipe"]});
+   browser.stderr.on("data",chunk=>{startupLog=(startupLog+chunk.toString()).slice(-12000)});
    let port="";
    for(let k=0;k<100;k++){
      const marker=path.join(profile,"DevToolsActivePort");
@@ -137,7 +139,7 @@ const server=http.createServer((req,res)=>{
      }
      await sleep(100);
    }
-   assert.ok(port,"Chromium DevTools did not start");
+   assert.ok(port,"Chromium DevTools did not start; exit="+browser.exitCode+" stderr="+startupLog);
    let target=null;
    for(let k=0;k<100;k++){
      const rows=await (await fetch("http://127.0.0.1:"+port+"/json/list")).json();
