@@ -272,3 +272,27 @@ dialog.tv298-wizard::backdrop{background:#000a;backdrop-filter:blur(4px)}
 .tv307-picker-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:7px;background:var(--raised,#222);margin:12px 0 8px}
 .tv307-picker-status.tv307-replacing{border:1px solid var(--accent,#aaa);background:color-mix(in srgb,var(--accent,#aaa) 10%,var(--raised,#222))}
 @media(max-width:600px){.tv306-hp-options{grid-template-columns:1fr}.tv307-swap{grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:5px}.tv307-swap-old,.tv307-swap-new{padding:8px}.tv307-picker-status{flex-wrap:wrap}}
+
+/* V308: fixed wizard chrome, a single flexible scrolling spell list. */
+dialog.tv298-wizard[open]{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100dvh - 32px)}
+.tv298-head{padding:12px 20px}.tv298-head h2{font-size:23px;margin:3px 0}.tv298-steps{padding:0 20px 10px}.tv298-steps button{padding:7px 10px}
+.tv298-head,.tv298-steps,.tv298-footer{flex:0 0 auto}
+.tv298-body{min-height:0;padding:14px 20px;overflow:auto}
+.tv298-footer{padding:10px 20px;position:static}
+.tv298-wizard[data-step="1"]{height:min(780px,calc(100dvh - 32px))}
+.tv298-wizard[data-step="1"] .tv298-body{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.tv298-wizard[data-step="1"] .tv298-body>*{flex-shrink:0}
+.tv298-wizard[data-step="1"] .tv298-body>h3{font-size:18px;margin:0 0 3px}
+.tv298-wizard[data-step="1"] .tv298-body>p{margin:0 0 6px}
+.tv308-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:1px solid var(--edge,#444);border-radius:7px;font-size:11px}
+.tv298-selected{min-height:0;margin:6px 0}.tv298-selected button{padding:5px 9px}
+.tv306-replacement{padding:9px 12px;margin:5px 0}.tv306-replace-top h3{margin:0;font-size:15px}.tv306-replace-top p{margin:2px 0}
+.tv307-swap{margin:6px 0;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}
+.tv307-swap-old,.tv307-swap-new{min-height:0;padding:7px 10px;gap:3px}.tv307-swap strong{font-size:14px}
+.tv306-replace-pick{margin:6px 0}.tv306-replacement button{padding:5px 8px}
+.tv307-picker-status{margin:5px 0;padding:6px 9px;font-size:12px}
+.tv298-filters{margin:3px 0;gap:5px}.tv298-filters button,.tv298-filters input{padding:6px 9px}
+.tv298-wizard[data-step="1"] .tv298-list{flex:1 1 0;min-height:0;max-height:none;overflow:auto;margin-top:4px}
+.tv298-spell-row{padding:7px 10px}.tv298-spell-row button{padding:6px 9px}
+.tv306-hp-options{grid-template-columns:2fr 1fr;gap:8px}.tv307-hp-methods button{min-height:40px}.tv306-hp-options>.tv291-stat{padding:6px 10px}.tv306-hp-options>.tv291-stat strong{font-size:17px}
+@media(max-height:650px),(max-width:600px){.tv298-wizard[data-step="1"] .tv298-body{overflow:auto}.tv298-wizard[data-step="1"] .tv298-list{flex:0 0 220px}.tv306-hp-options{grid-template-columns:1fr}.tv308-summary{flex-wrap:wrap}}
