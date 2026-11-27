@@ -322,3 +322,14 @@ dialog.tv298-wizard[open]{display:flex;flex-direction:column;overflow:hidden;max
 .tv311-pending{color:var(--soft,#aaa);font-size:10px;flex-shrink:0}
 .tv311-rule-sections>.tv-campaign-editor-intro{grid-column:1/-1;margin:0}
 @media(max-width:850px){.tv311-rule-sections{grid-template-columns:1fr}}
+
+/* V312: all rules preview fields are usable without pretending to persist. */
+.tv312-rule-row{align-items:center;flex-wrap:wrap}
+.tv312-rule-row>div:first-child{flex:1 1 150px}
+.tv312-rule-controls{display:flex!important;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:4px!important;align-items:center;max-width:100%}
+.tv312-rule-controls button{white-space:normal;padding:5px 8px;font-size:11px;min-height:28px}
+.tv312-rule-controls button[aria-pressed="true"]{border-color:var(--accent,#aaa);background:color-mix(in srgb,var(--accent,#aaa) 14%,var(--raised,#222))}
+.tv312-rule-controls input{width:65px;padding:6px 8px;border:1px solid var(--edge,#444);border-radius:6px;color:var(--ink,#eee);background:var(--raised,#222)}
+.tv312-preview-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;border:1px solid var(--edge,#444);border-radius:8px;background:var(--surface,#141414)}
+.tv312-preview-footer small{color:var(--soft,#aaa)}
+@media(max-width:650px){.tv312-rule-controls{justify-content:flex-start}}
