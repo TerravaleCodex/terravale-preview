@@ -308,20 +308,17 @@
       const area=body.querySelector('.campaign-detail-section')||body;
       const panel=document.createElement('section');
       panel.id='tv-campaign-story-settings';panel.className='tv-campaign-story tv-campaign-story-settings';
-      const rules=document.createElement('section');
-      rules.id='tv-campaign-rules-settings';rules.className='tv-campaign-story tv-campaign-story-settings';
-      area.append(rules,panel);
-      renderCampaignRules(rules,campaign);
+      area.append(panel);
       renderCampaignEditor(panel,campaign);
     }
   }
-  async function renderCampaignRules(panel,campaign){
+  async function renderCampaignRules(panel,campaign,editable){
     const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!=null)el.textContent=value;return el};
     const labels={'2014':'D&D 2014','2024':'D&D 2024',tv5e:'Tv5e',custom:'Custom'};
     const defaults=r=>r==='2014'?['2014']:r==='2024'?['2024']:r==='tv5e'?['2014','2024']:[];
     const state={ruleset:'',override:false,editions:[]};
     let revision=0,loaded=false,dirty=false;
-    const over=make('div','v2-overline','DM EDITOR · CAMPAIGN MECHANICS');
+    const over=make('div','v2-overline',editable?'DM EDITOR · CAMPAIGN MECHANICS':'CAMPAIGN MECHANICS · READ ONLY');
     const title=make('h3','','Rules & Content');
     const intro=make('p','tv-campaign-editor-intro','Choose the campaign ruleset and spell catalogues. Characters inherit these settings; existing learned spells are preserved.');
     const options=make('div','tv309-rule-options');
@@ -335,13 +332,13 @@
     function update(){
       options.replaceChildren();catalogues.replaceChildren();
       for(const [id,label] of Object.entries(labels)){
-        const b=make('button','btn ghost small',label);b.type='button';b.setAttribute('aria-pressed',String(state.ruleset===id));
+        const b=make('button','btn ghost small',label);b.type='button';b.disabled=!editable;b.setAttribute('aria-pressed',String(state.ruleset===id));
         b.onclick=()=>{state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);dirty=true;update()};options.append(b);
       }
-      override.textContent='Override ruleset defaults · '+(state.override?'On':'Off');override.setAttribute('aria-pressed',String(state.override));override.disabled=!state.ruleset||state.ruleset==='custom';
+      override.textContent='Override ruleset defaults · '+(state.override?'On':'Off');override.setAttribute('aria-pressed',String(state.override));override.disabled=!editable||!state.ruleset||state.ruleset==='custom';
       for(const id of ['2014','2024']){
         const row=make('div','tv309-catalogue-row'),copy=make('div');copy.append(make('strong','',labels[id]),make('small','',id==='2014'?'System Reference Document 5.1':'System Reference Document 5.2.1'));
-        const b=make('button','btn ghost small tv309-toggle',state.editions.includes(id)?'Allowed':'Blocked');b.type='button';b.setAttribute('aria-pressed',String(state.editions.includes(id)));b.disabled=!state.override;
+        const b=make('button','btn ghost small tv309-toggle',state.editions.includes(id)?'Allowed':'Blocked');b.type='button';b.setAttribute('aria-pressed',String(state.editions.includes(id)));b.disabled=!editable||!state.override;
         b.onclick=()=>{state.editions=state.editions.includes(id)?state.editions.filter(x=>x!==id):[...state.editions,id].sort();dirty=true;update()};row.append(copy,b);catalogues.append(row);
       }
       catalogues.append(codex);
@@ -351,15 +348,16 @@
       if(dirty)status.textContent='Unsaved preview · saving is not available until the campaign policy migration is enabled.';
     }
     override.onclick=()=>{state.override=!state.override;if(!state.override)state.editions=defaults(state.ruleset);dirty=true;update()};
-    panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary,actions,status);
+    panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary);if(editable)panel.append(actions);panel.append(status);
     update();
+    if(isDemo(campaign.id)){state.ruleset='tv5e';state.editions=defaults('tv5e');update();status.textContent='Shared demo · read only';return}
     try{
       const {data,error}=await client().from('terravale_campaign_spell_policy').select('ruleset,override_catalogues,editions,revision').eq('campaign_id',campaign.id).maybeSingle();
       if(!panel.isConnected||dirty)return;
       if(error)throw error;
       if(data&&labels[data.ruleset]&&Array.isArray(data.editions)){state.ruleset=data.ruleset;state.override=data.override_catalogues===true;state.editions=data.editions.filter(x=>['2014','2024'].includes(x));revision=data.revision}
-      loaded=true;update();status.textContent='Preview only · server saving is not enabled yet.';
-    }catch(e){if(panel.isConnected&&!dirty)status.textContent='Preview only · campaign policy storage is not available on this server yet.'}
+      loaded=true;update();status.textContent=editable?'Preview only · server saving is not enabled yet.':data?'Current campaign rules · managed by your DM.':'Your DM has not configured the campaign rules yet.';
+    }catch(e){if(panel.isConnected&&!dirty)status.textContent=editable?'Preview only · campaign policy storage is not available on this server yet.':'Campaign rules are not available on this server yet.'}
   }
   function renderCampaignEditor(panel,campaign){
     panel.replaceChildren();
@@ -421,6 +419,45 @@
     panel.append(over,title,subtitle,form);
   }
 
+  // Independent Rules tab: retain native tab state and content, without invoking
+  // the native delegated action with an unsupported tab identifier.
+  function mountCampaignRulesTab(root,campaign){
+    const tabs=root.querySelector('.campaign-detail-tabs'),body=root.querySelector('.campaign-detail-content');
+    if(!tabs||!body)return false;
+    let button=tabs.querySelector('[data-tv310-rules]');
+    if(!button){
+      button=document.createElement('button');button.type='button';button.textContent='Rules';
+      const native=tabs.querySelector('[data-value="settings"]')||tabs.querySelector('button');
+      button.className=native?.className||'';button.classList.remove('active','is-active');
+      button.dataset.tv310Rules='true';button.setAttribute('role','tab');button.setAttribute('aria-selected','false');
+      if(native)native.before(button);else tabs.append(button);
+      button.addEventListener('click',()=>{
+        if(button.getAttribute('aria-selected')==='true')return;
+        for(const tab of tabs.querySelectorAll('[aria-selected]')){
+          if(tab===button)continue;
+          tab.dataset.tv310Selected=tab.getAttribute('aria-selected');
+          tab.setAttribute('aria-selected','false');
+        }
+        button.setAttribute('aria-selected','true');
+        for(const child of [...body.children]){child.dataset.tv310PreviousHidden=String(child.hidden);child.hidden=true}
+        const view=document.createElement('section');view.id='tv310-rules-view';view.className='campaign-detail-section';
+        const title=document.createElement('div');title.className='campaign-detail-title';title.innerHTML='<h2>Campaign rules</h2><p>Mechanical settings and permitted content for this campaign.</p>';
+        const panel=document.createElement('section');panel.id='tv-campaign-rules-settings';panel.className='tv-campaign-story tv-campaign-story-settings';
+        view.append(title,panel);body.append(view);
+        renderCampaignRules(panel,campaign,Boolean(identity()?.profile?.is_dm&&campaign.role==='dm'&&!isDemo(campaign.id)));
+      });
+      tabs.addEventListener('click',event=>{
+        if(button.getAttribute('aria-selected')!=='true'||button.contains(event.target))return;
+        const target=event.target.closest('[data-value]');if(!target||!tabs.contains(target))return;
+        button.setAttribute('aria-selected','false');
+        body.querySelector('#tv310-rules-view')?.remove();
+        for(const child of body.querySelectorAll('[data-tv310-previous-hidden]')){child.hidden=child.dataset.tv310PreviousHidden==='true';delete child.dataset.tv310PreviousHidden}
+        for(const tab of tabs.querySelectorAll('[data-tv310-selected]')){tab.setAttribute('aria-selected',tab.dataset.tv310Selected);delete tab.dataset.tv310Selected}
+      },true);
+    }
+    return button.getAttribute('aria-selected')==='true'&&Boolean(body.querySelector('#tv310-rules-view'));
+  }
+
   // Adjust the existing dashboard link rather than rendering a fake second dashboard.
   function decoratePage(){
     const path=route();
@@ -438,6 +475,7 @@
     if(!current || !hasCampaign(id))return;
     const root=document.getElementById('pageRoot');
     if(!root)return;
+    if(mountCampaignRulesTab(root,current))return;
     const currentTab=selectedCampaignTab(root);
     if(currentTab==='settings'&&!root.querySelector('#tv-campaign-membership')){
       const section=document.createElement('section');
