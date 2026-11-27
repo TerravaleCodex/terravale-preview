@@ -532,9 +532,79 @@
     return button.getAttribute('aria-selected')==='true'&&Boolean(body.querySelector('#tv310-rules-view'));
   }
 
+  // Dedicated Tv5e reference, opened from the native dashboard.
+  const tvGuideSections=[
+    ['start','Getting started','What is Tv5e?',[
+      ['A familiar foundation','Tv5e is Terravale’s tabletop ruleset. It builds on the original 2014 fifth edition, incorporates selected 2024 revisions and adds original mechanics for the setting. It is not simply the 2024 rules with a different name.'],
+      ['The basic loop','Describe what your character wants to do. The Dungeon Master decides whether a roll is needed, resolves the outcome and describes what happens next. A d20 check generally adds the relevant ability modifier and proficiency when applicable.'],
+      ['Your campaign comes first','Ask your DM which ruleset, content and optional systems are in use. The campaign Rules tab is intended to centralize these choices; its current preview does not apply settings.']]],
+    ['creation','Character creation','Build your adventurer',[
+      ['Ancestry and class','Ancestry describes your character’s people and inherited traits. Class describes their training, abilities and progression. Some Terravale classes have ancestry restrictions. Check the relevant class and ancestry entries before choosing.'],
+      ['Backstory benefits','Tv5e replaces standard backgrounds with benefits agreed with the DM based on your character’s history. Discuss training, languages and other appropriate benefits rather than assuming a fixed package.'],
+      ['Ability scores and feats','The six ability scores describe physical and mental strengths. Feats grant additional abilities; class advancement and ancestry-specific feats have their own eligibility rules. Multiclassing is normally disabled in Tv5e.'],
+      ['Approval and progression','Submit your character for DM approval. When advancing, use your class’s level progression and resolve HP, features and choices with your DM. Automated level-up and spell selection are still being developed.']]],
+    ['play','Playing the game','Checks, combat and recovery',[
+      ['Checks and saves','Ability checks resolve uncertain actions; saving throws resist danger or other effects. Advantage generally means rolling two d20s and using the higher result; disadvantage uses the lower.'],
+      ['Combat','Initiative determines turn order. Movement, actions, bonus actions and reactions follow the relevant rules. Terravale expands grappling and conditions; use the specific rule or DM ruling when an effect changes normal combat.'],
+      ['Health and resources','Hit points track your ability to withstand harm. Class abilities, item charges and other resources may recover on a short rest, long rest or another specified trigger. Do not assume that every resource resets at the same time.'],
+      ['Inspiration','Standard inspiration is disabled by default in Tv5e. The DM can still reward creative play through the campaign’s agreed rules.']]],
+    ['magic','Magic & spellcasting','How magic works at the table',[
+      ['Spell slots','The familiar spellcasting system spends a slot of the appropriate level. Cantrips normally cost no slot. Spell descriptions determine casting time, range, components, duration and concentration.'],
+      ['Learning and preparing','Known casters learn a limited selection; prepared casters choose from eligible spells according to their class. A Wizard uses a spellbook. Different class features can grant additional spells. Check your class rather than assuming all spellcasters work alike.'],
+      ['Spell points — in development','A shared pool of points replaces ordinary spell slots in the proposed alternative. The DMG-style and Tv5e variants are being developed. Pact Magic and separate class resources are not automatically converted.'],
+      ['Arcane Strain — in development','The proposed Tv5e system allows some casters to attempt overcasting when short of points, risking strain and a stability check. Increasing strain can impair casting. This is not yet an active campaign-wide rule.']]],
+    ['world','Terravale mechanics','What makes the system different',[
+      ['Divine favour and boons','Gods and patrons can grant blessings, abilities, resources and consequences. The DM determines access and awards; a boon is not automatically available simply because it appears in the Codex.'],
+      ['Tools, languages and training','Proficiencies describe learned skills and training. Terravale includes setting-specific tools and languages; use the character sheet and DM-approved training options.'],
+      ['Currency and equipment','Terravale supports regional currencies, denominations, item charges and equipment properties. Ask the DM which economy applies to your campaign; do not assume every coin has a universal exchange value.'],
+      ['Original classes and ancestries','Some options use unique systems such as Gatewarden defenses or Bloodforger exertion. Their own class and ancestry descriptions take precedence over general examples.']]],
+    ['platform','Using the Codex','Where to find everything',[
+      ['Characters','Create and inspect your adventurer, manage inventory, resources, conditions and spell references. Your approved character and DM permissions determine what you can edit.'],
+      ['Session Room','Use the shared play tools for rolls, checks, combat and character actions. The DM manages the table and authorized changes.'],
+      ['Library & Notes','Browse classes, ancestries, feats, spells and lore. Save useful references and keep private or party journal entries. A reference entry does not automatically grant an ability.'],
+      ['Campaign Rules and DM Chronicle','Campaign Rules is the intended home for mechanical settings; configuration is currently preview-only. The DM Chronicle provides existing tools for approvals, items, divine awards and other campaign management.']]]
+  ];
+  let tvGuideOpen=false,tvGuideCategory='start';
+  function mountTvGuide(root){
+    if(!root)return;
+    if(tvGuideOpen){
+      if(root.querySelector('#tv314-guide'))return;
+      const wrap=document.createElement('section');wrap.id='tv314-guide';wrap.className='tv314-guide';
+      const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!=null)el.textContent=value;return el};
+      const back=make('button','btn ghost small','‹ Dashboard');back.type='button';back.onclick=()=>{tvGuideOpen=false;renderPage(false)};
+      const hero=make('header','tv314-guide-hero');hero.append(make('div','v2-overline','THE LIVING CODEX · SYSTEM REFERENCE'),make('h1','','The Tv5e Handbook'),make('p','','Learn how Terravale’s rules work, from creating your first character to exploring its original mechanics.'),back);
+      const layout=make('div','tv313-workspace'),nav=make('nav','tv313-navigation'),main=make('article','tv313-main');nav.setAttribute('aria-label','Handbook chapters');layout.append(nav,main);wrap.append(hero,layout);
+      function draw(){
+        nav.replaceChildren();main.replaceChildren();
+        for(const [id,name] of tvGuideSections){const b=make('button','tv313-nav-button',name);b.type='button';b.setAttribute('aria-current',id===tvGuideCategory?'page':'false');b.onclick=()=>{tvGuideCategory=id;draw()};nav.append(b)}
+        const chapter=tvGuideSections.find(x=>x[0]===tvGuideCategory)||tvGuideSections[0];main.append(make('div','v2-overline','TV5E · '+chapter[1].toUpperCase()),make('h2','',chapter[2]));
+        for(const [title,description] of chapter[3]){const section=make('section','tv314-guide-section');section.append(make('h3','',title),make('p','',description));main.append(section)}
+        const note=make('p','tv314-guide-note','Reference guide · This overview does not replace detailed class rules, spell descriptions or your DM’s rulings. Planned systems are marked explicitly.');main.append(note);
+      }
+      // Keep the native dashboard intact while displaying the dedicated reading view.
+      for(const child of [...root.children]){child.dataset.tv314Hidden=String(child.hidden);child.hidden=true}
+      root.append(wrap);draw();return;
+    }
+    for(const child of root.querySelectorAll('[data-tv314-hidden]')){child.hidden=child.dataset.tv314Hidden==='true';delete child.dataset.tv314Hidden}
+    root.querySelector('#tv314-guide')?.remove();
+    if(root.querySelector('[data-tv314-entry]'))return;
+    const heading=[...root.querySelectorAll('h2,h3,h4')].find(x=>x.textContent.trim()==='Recently explored');
+    if(!heading)return;
+    const card=heading.closest('section,article')||heading.parentElement?.parentElement;
+    if(!card||!root.contains(card))return;
+    card.dataset.tv314Entry='true';
+    const eyebrow=card.querySelector('.v2-overline');if(eyebrow)eyebrow.textContent='LEARN THE SYSTEM';
+    heading.textContent='The Tv5e Handbook';
+    const links=[...card.querySelectorAll('a,button')];const link=links.find(x=>/view journal/i.test(x.textContent));
+    if(link){const b=document.createElement('button');b.type='button';b.className=link.className;b.textContent='Read handbook ›';b.onclick=()=>{tvGuideOpen=true;mountTvGuide(root);window.scrollTo(0,0)};link.replaceWith(b)}
+    else{const b=document.createElement('button');b.type='button';b.className='btn ghost small';b.textContent='Read handbook ›';b.onclick=()=>{tvGuideOpen=true;mountTvGuide(root)};card.append(b)}
+    const p=card.querySelector('p');if(p)p.textContent='New to Terravale? Discover character creation, combat, magic and the rules that make Tv5e unique.';
+  }
+
   // Adjust the existing dashboard link rather than rendering a fake second dashboard.
   function decoratePage(){
     const path=route();
+    if(path==='/')mountTvGuide(document.getElementById('pageRoot'));else tvGuideOpen=false;
     if(path==='/' && !hasCampaign(db.campaign)){
       for(const a of document.querySelectorAll('#pageRoot a[href="#/characters/create"]')){
         a.href='#/campaigns';
