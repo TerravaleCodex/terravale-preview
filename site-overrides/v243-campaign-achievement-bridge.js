@@ -564,6 +564,39 @@
       ['Library & Notes','Browse classes, ancestries, feats, spells and lore. Save useful references and keep private or party journal entries. A reference entry does not automatically grant an ability.'],
       ['Campaign Rules and DM Chronicle','Campaign Rules is the intended home for mechanical settings; configuration is currently preview-only. The DM Chronicle provides existing tools for approvals, items, divine awards and other campaign management.']]]
   ];
+  // Additional handbook chapters and worked examples. Proposed mechanics never
+  // become authoritative merely by appearing in this reference.
+  tvGuideSections.push(
+    ['differences','Tv5e at a glance','What changes from ordinary fifth edition?',[
+      ['Rules foundation','Tv5e uses the 2014 rules as its foundation with selected 2024 revisions. Do not assume every revised rule automatically applies. The campaign’s agreed rules and specific Terravale features determine the result.'],
+      ['Character origins','Standard backgrounds are replaced by DM-agreed backstory benefits. Ancestry-specific feats are handled separately from class advancement feats. Some ancestry and class combinations are restricted.'],
+      ['Progression','Multiclassing and standard inspiration are disabled by default. Characters progress within their chosen class. Original class resources and features follow their own descriptions.'],
+      ['Combat and magic','Expanded grappling and additional conditions are Terravale systems. A universal change to how many spells can be cast per turn is not finalized. Do not treat the proposed spell point system as active by default.'],
+      ['Optional systems','Divine favour, regional currencies and additional conditions have dedicated tools. Campaign-wide switches are still previews; ask your DM which systems apply.']]],
+    ['examples','Worked examples','Learn through play',[
+      ['Making an ability check','Example: you try to force open a stuck door. Your DM asks for a Strength check with difficulty 13. You roll 11 and add a Strength modifier of +3, reaching 14. You succeed. Add proficiency only when the relevant proficiency applies.'],
+      ['Attacking a target','Example: a weapon attack uses a +3 ability modifier and +2 proficiency. A roll of 12 gives a total of 17. Against AC 15, the attack hits; then roll the weapon’s damage according to its rules.'],
+      ['Advantage and disadvantage','Example: with advantage you roll 6 and 15, then use 15 before adding modifiers. With disadvantage you use 6. These are not extra damage dice.'],
+      ['Spending resources','Example: your ability has three uses and says it recovers on a short rest. After using it twice you have one left. Only recover it when the specified trigger occurs. A different ability may need a long rest.'],
+      ['Choosing a spell','Example: your class allows you to learn a new first-level spell. Check its class list, the permitted edition and the spell’s requirements. A spell in the public reference library is not automatically available to your character.'],
+      ['Overcasting — proposed example','Under the proposed Tv5e points model, a first-level spell costs 2 points. If you have 1 point, the deficit is 1 and would add 1 strain. A stability check determines whether the spell succeeds. This is a design example, not an active campaign rule.']]],
+    ['reference','Quick reference','Common terms and formulas',[
+      ['Ability modifier','Floor((ability score − 10) ÷ 2). Example: Strength 16 gives +3. Strength 9 gives −1.'],
+      ['Proficiency bonus (PB)','A bonus based on character level. Add it when a rule says you are proficient; do not add it twice unless a specific feature changes that rule.'],
+      ['Difficulty Class (DC)','The target number for a check or saving throw. Meeting or exceeding the DC normally succeeds.'],
+      ['Armour Class (AC)','The target number an attack roll normally needs to meet or exceed to hit.'],
+      ['HP and temporary HP','Hit points measure remaining health. Temporary hit points are a separate buffer and do not normally stack. Follow the effect that grants them.'],
+      ['Action economy','The set of actions, bonus actions, movement and reactions available under the applicable combat rules. A feature must authorize a bonus action or reaction.'],
+      ['Concentration','Some spells require ongoing concentration. You normally maintain only one concentration spell at a time; damage or other effects may end it.'],
+      ['Known, prepared and granted spells','Known spells are learned choices; prepared spells are available selections under a class’s preparation rules; granted spells come from a feature or other source. These are distinct categories.'],
+      ['Rest and recovery','A short or long rest restores only what the applicable rule specifies. Some resources recover on different schedules or need DM authorization.']]],
+    ['roadmap','Rules in development','What is established, and what is coming?',[
+      ['Established Tv5e decisions','2014-based hybrid rules, no standard backgrounds, no multiclassing, no standard inspiration, ancestry-specific options, and expanded combat conditions. Exact class and ancestry mechanics belong in their respective entries.'],
+      ['Available tools','The live Codex includes class references, character resources, training, divine awards, currencies, spell references and Session Room tools. Availability depends on permissions and character data.'],
+      ['Campaign Rules preview','The campaign settings interface currently lets DMs experiment with presets and toggles. Saving and mechanical enforcement are not yet connected.'],
+      ['Spellcasting under development','Spell point conversion, Arcane Strain, overcasting and server-validated spell selection are being developed. Wordcasting and alternate casting-time systems are not part of this release.'],
+      ['Content still being refined','The Terravale Artificer is being reworked. Class-specific spellcasting, exact grapple rules and other detailed mechanics should be taken from their approved sources rather than inferred from this introductory guide.']]]
+  );
   let tvGuideOpen=false,tvGuideCategory='start';
   function mountTvGuide(root){
     if(!root)return;
@@ -574,12 +607,31 @@
       const back=make('button','btn ghost small','‹ Dashboard');back.type='button';back.onclick=()=>{tvGuideOpen=false;renderPage(false)};
       const hero=make('header','tv314-guide-hero');hero.append(make('div','v2-overline','THE LIVING CODEX · SYSTEM REFERENCE'),make('h1','','The Tv5e Handbook'),make('p','','Learn how Terravale’s rules work, from creating your first character to exploring its original mechanics.'),back);
       const layout=make('div','tv313-workspace'),nav=make('nav','tv313-navigation'),main=make('article','tv313-main');nav.setAttribute('aria-label','Handbook chapters');layout.append(nav,main);wrap.append(hero,layout);
+      const search=make('input','tv315-guide-search');search.type='search';search.placeholder='Search the handbook…';search.setAttribute('aria-label','Search handbook');
+      const searchWrap=make('div','tv315-guide-search-wrap');searchWrap.append(search);hero.append(searchWrap);
+      const quick=make('div','tv315-guide-links');
+      for(const [label,id] of [['New player','start'],['What’s different?','differences'],['Worked examples','examples'],['Glossary','reference']]){
+        const b=make('button','btn ghost small',label);b.type='button';b.onclick=()=>{search.value='';tvGuideCategory=id;draw()};quick.append(b)
+      }
+      hero.append(quick);
+      search.addEventListener('input',draw);
       function draw(){
         nav.replaceChildren();main.replaceChildren();
-        for(const [id,name] of tvGuideSections){const b=make('button','tv313-nav-button',name);b.type='button';b.setAttribute('aria-current',id===tvGuideCategory?'page':'false');b.onclick=()=>{tvGuideCategory=id;draw()};nav.append(b)}
+        for(const [id,name] of tvGuideSections){const b=make('button','tv313-nav-button',name);b.type='button';b.setAttribute('aria-current',id===tvGuideCategory?'page':'false');b.onclick=()=>{search.value='';tvGuideCategory=id;draw()};nav.append(b)}
+        const query=search.value.trim().toLowerCase();
+        if(query){
+          const matches=tvGuideSections.flatMap(ch=>ch[3].filter(([t,d])=>(ch[1]+' '+t+' '+d).toLowerCase().includes(query)).map(([t,d])=>({id:ch[0],chapter:ch[1],t,d})));
+          main.append(make('h2','','Search results'),make('p','tv314-guide-note',matches.length+' matching entries'));
+          for(const m of matches){const result=make('section','tv314-guide-section');const b=make('button','tv315-search-result',m.t);b.type='button';b.onclick=()=>{search.value='';tvGuideCategory=m.id;draw()};result.append(make('div','v2-overline',m.chapter),b,make('p','',m.d));main.append(result)}
+          if(!matches.length)main.append(make('p','','No matching entries. Try a term such as spell, ancestry, rest or proficiency.'));
+          return;
+        }
         const chapter=tvGuideSections.find(x=>x[0]===tvGuideCategory)||tvGuideSections[0];main.append(make('div','v2-overline','TV5E · '+chapter[1].toUpperCase()),make('h2','',chapter[2]));
         for(const [title,description] of chapter[3]){const section=make('section','tv314-guide-section');section.append(make('h3','',title),make('p','',description));main.append(section)}
         const note=make('p','tv314-guide-note','Reference guide · This overview does not replace detailed class rules, spell descriptions or your DM’s rulings. Planned systems are marked explicitly.');main.append(note);
+        const index=tvGuideSections.indexOf(chapter),pager=make('div','tv315-guide-pager');
+        for(const [offset,prefix] of [[-1,'‹ '],[1,'Next: ']]){const next=tvGuideSections[index+offset];if(!next)continue;const b=make('button','btn ghost small',prefix+next[1]);b.type='button';b.onclick=()=>{tvGuideCategory=next[0];draw();wrap.scrollIntoView({block:'start'})};pager.append(b)}
+        main.append(pager);
       }
       // Keep the native dashboard intact while displaying the dedicated reading view.
       for(const child of [...root.children]){child.dataset.tv314Hidden=String(child.hidden);child.hidden=true}
