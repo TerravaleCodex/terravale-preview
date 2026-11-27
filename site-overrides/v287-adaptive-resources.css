@@ -360,3 +360,17 @@ dialog.tv298-wizard[open]{display:flex;flex-direction:column;overflow:hidden;max
 .tv313-switch:disabled{opacity:.45;cursor:not-allowed}
 .tv313-rules-shell .tv312-preview-footer{margin:0;background:none}
 @media(max-width:760px){.tv313-workspace{grid-template-columns:1fr;gap:12px}.tv313-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.tv313-main{border-left:0;padding-left:0;border-top:1px solid var(--edge,#444);padding-top:12px}}
+
+/* Tv5e Handbook: native theme, calm reading surface and chapter navigation. */
+#pageRoot>[data-tv314-hidden][hidden]{display:none!important}
+.tv314-guide{max-width:1280px;margin:0 auto;display:grid;gap:22px}
+.tv314-guide-hero{padding:28px;border:1px solid var(--edge,#444);border-radius:14px;background:var(--surface,#141414)}
+.tv314-guide-hero h1{font-size:clamp(28px,4vw,40px);margin:10px 0}
+.tv314-guide-hero p{max-width:68ch;line-height:1.65;color:var(--soft,#aaa);margin:0 0 15px}
+.tv314-guide .tv313-workspace{padding:20px;border:1px solid var(--edge,#444);border-radius:12px;background:var(--surface,#141414)}
+.tv314-guide article h2{margin:8px 0 18px;font-size:26px}
+.tv314-guide-section{padding:16px 0;border-bottom:1px solid var(--edge,#444)}
+.tv314-guide-section h3{font-size:18px;margin:0 0 7px}
+.tv314-guide-section p{font-size:14px;line-height:1.7;margin:0;max-width:76ch}
+.tv314-guide-note{font-size:12px;line-height:1.5;color:var(--soft,#aaa);margin:18px 0 0}
+@media(max-width:760px){.tv314-guide-hero,.tv314-guide .tv313-workspace{padding:16px}}
