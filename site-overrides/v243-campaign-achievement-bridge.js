@@ -308,9 +308,58 @@
       const area=body.querySelector('.campaign-detail-section')||body;
       const panel=document.createElement('section');
       panel.id='tv-campaign-story-settings';panel.className='tv-campaign-story tv-campaign-story-settings';
-      area.append(panel);
+      const rules=document.createElement('section');
+      rules.id='tv-campaign-rules-settings';rules.className='tv-campaign-story tv-campaign-story-settings';
+      area.append(rules,panel);
+      renderCampaignRules(rules,campaign);
       renderCampaignEditor(panel,campaign);
     }
+  }
+  async function renderCampaignRules(panel,campaign){
+    const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!=null)el.textContent=value;return el};
+    const labels={'2014':'D&D 2014','2024':'D&D 2024',tv5e:'Tv5e',custom:'Custom'};
+    const defaults=r=>r==='2014'?['2014']:r==='2024'?['2024']:r==='tv5e'?['2014','2024']:[];
+    const state={ruleset:'',override:false,editions:[]};
+    let revision=0,loaded=false,dirty=false;
+    const over=make('div','v2-overline','DM EDITOR · CAMPAIGN MECHANICS');
+    const title=make('h3','','Rules & Content');
+    const intro=make('p','tv-campaign-editor-intro','Choose the campaign ruleset and spell catalogues. Characters inherit these settings; existing learned spells are preserved.');
+    const options=make('div','tv309-rule-options');
+    const catalogues=make('div','tv309-catalogue-options');
+    const override=make('button','btn ghost small tv309-toggle');override.type='button';
+    const summary=make('p','tv-campaign-story-status');summary.setAttribute('role','status');
+    const status=make('p','tv-campaign-story-status','Checking campaign settings…');status.setAttribute('role','status');
+    const save=make('button','btn primary small','Save rules & content');save.type='button';save.disabled=true;
+    const actions=make('div','tv-campaign-story-actions');actions.append(save);
+    const codex=make('div','tv309-catalogue-row');const codexCopy=make('div');codexCopy.append(make('strong','','Codex spells'),make('small','','Custom and published spell content · coming later'));const codexToggle=make('button','btn ghost small','Unavailable');codexToggle.type='button';codexToggle.disabled=true;codex.append(codexCopy,codexToggle);
+    function update(){
+      options.replaceChildren();catalogues.replaceChildren();
+      for(const [id,label] of Object.entries(labels)){
+        const b=make('button','btn ghost small',label);b.type='button';b.setAttribute('aria-pressed',String(state.ruleset===id));
+        b.onclick=()=>{state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);dirty=true;update()};options.append(b);
+      }
+      override.textContent='Override ruleset defaults · '+(state.override?'On':'Off');override.setAttribute('aria-pressed',String(state.override));override.disabled=!state.ruleset||state.ruleset==='custom';
+      for(const id of ['2014','2024']){
+        const row=make('div','tv309-catalogue-row'),copy=make('div');copy.append(make('strong','',labels[id]),make('small','',id==='2014'?'System Reference Document 5.1':'System Reference Document 5.2.1'));
+        const b=make('button','btn ghost small tv309-toggle',state.editions.includes(id)?'Allowed':'Blocked');b.type='button';b.setAttribute('aria-pressed',String(state.editions.includes(id)));b.disabled=!state.override;
+        b.onclick=()=>{state.editions=state.editions.includes(id)?state.editions.filter(x=>x!==id):[...state.editions,id].sort();dirty=true;update()};row.append(copy,b);catalogues.append(row);
+      }
+      catalogues.append(codex);
+      summary.textContent=state.ruleset?'Character tag: '+labels[state.ruleset]+' · '+(state.editions.length?state.editions.map(x=>labels[x]).join(' + '):'No official spell catalogues'):'Campaign ruleset not configured';
+      // Preview only until server authorization is deployed and verified.
+      save.disabled=true;
+      if(dirty)status.textContent='Unsaved preview · saving is not available until the campaign policy migration is enabled.';
+    }
+    override.onclick=()=>{state.override=!state.override;if(!state.override)state.editions=defaults(state.ruleset);dirty=true;update()};
+    panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary,actions,status);
+    update();
+    try{
+      const {data,error}=await client().from('terravale_campaign_spell_policy').select('ruleset,override_catalogues,editions,revision').eq('campaign_id',campaign.id).maybeSingle();
+      if(!panel.isConnected||dirty)return;
+      if(error)throw error;
+      if(data&&labels[data.ruleset]&&Array.isArray(data.editions)){state.ruleset=data.ruleset;state.override=data.override_catalogues===true;state.editions=data.editions.filter(x=>['2014','2024'].includes(x));revision=data.revision}
+      loaded=true;update();status.textContent='Preview only · server saving is not enabled yet.';
+    }catch(e){if(panel.isConnected&&!dirty)status.textContent='Preview only · campaign policy storage is not available on this server yet.'}
   }
   function renderCampaignEditor(panel,campaign){
     panel.replaceChildren();
