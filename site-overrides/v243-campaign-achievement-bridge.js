@@ -322,24 +322,24 @@
       return {classes14:a,classes24:b,classesTv:tv,ancestry14:a,ancestry24:b,ancestryTv:tv,feats14:a,feats24:b,featsTv:tv,codexContent:false,startingLevel:1,abilityScores:'choice',prerequisites:true,multiclass:!tv&&r!=='custom',backgrounds:tv?'backstory':'standard',hp:'choice',advancement:'dm',casting:'slots',strain:tv,overcast:tv,castingExceptions:false,recovery:'preserve',divine:tv,conditions:tv,currency:tv,grapple:tv,inspiration:!tv&&r!=='custom',visibility:'dm',rests:'dm',dice:'choice',milestones:'party'};
     };
     state.extra=initialExtras('');
-    let drawExtras=()=>{};
+    let drawExtras=()=>{},activeCategory=0;
     let revision=0,loaded=false,dirty=false;
     const over=make('div','v2-overline',editable?'DM EDITOR · CAMPAIGN MECHANICS':'CAMPAIGN MECHANICS · READ ONLY');
-    const title=make('h3','','Rules & Content');
-    const intro=make('p','tv-campaign-editor-intro','Choose the campaign ruleset and spell catalogues. Characters inherit these settings; existing learned spells are preserved.');
+    const title=make('h3','','Campaign rules');
+    const intro=make('p','tv-campaign-editor-intro',editable?'Experiment with the settings below. This preview does not change your campaign.':'View the rules configured by your Dungeon Master.');
     const options=make('div','tv309-rule-options');
     const catalogues=make('div','tv309-catalogue-options');
     const override=make('button','btn ghost small tv309-toggle');override.type='button';
     const summary=make('p','tv-campaign-story-status');summary.setAttribute('role','status');
     const status=make('p','tv-campaign-story-status','Checking campaign settings…');status.setAttribute('role','status');
-    const save=make('button','btn primary small','Save rules & content');save.type='button';save.disabled=true;
+    const save=make('button','btn primary small','Save unavailable');save.type='button';save.disabled=true;
     const actions=make('div','tv-campaign-story-actions');actions.append(save);
     const codex=make('div','tv309-catalogue-row');const codexCopy=make('div');codexCopy.append(make('strong','','Codex spells'),make('small','','Custom and published spell content · coming later'));const codexToggle=make('button','btn ghost small','Unavailable');codexToggle.type='button';codexToggle.disabled=!editable;codexToggle.onclick=()=>{state.codexSpells=!state.codexSpells;dirty=true;update()};codex.append(codexCopy,codexToggle);
     function update(){
       options.replaceChildren();catalogues.replaceChildren();
       for(const [id,label] of Object.entries(labels)){
         const b=make('button','btn ghost small',label);b.type='button';b.disabled=!editable;b.setAttribute('aria-pressed',String(state.ruleset===id));
-        b.onclick=()=>{state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);state.extra=initialExtras(id);state.codexSpells=false;dirty=true;update()};options.append(b);
+        b.onclick=()=>{if(state.ruleset===id)return;state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);state.extra=initialExtras(id);state.codexSpells=false;dirty=true;update()};options.append(b);
       }
       override.textContent='Override ruleset defaults · '+(state.override?'On':'Off');override.setAttribute('aria-pressed',String(state.override));override.disabled=!editable||!state.ruleset||state.ruleset==='custom';
       for(const id of ['2014','2024']){
@@ -351,11 +351,18 @@
       summary.textContent=state.ruleset?'Character tag: '+labels[state.ruleset]+' · '+(state.editions.length?state.editions.map(x=>labels[x]).join(' + '):'No official spell catalogues'):'Campaign ruleset not configured';
       // Preview only until server authorization is deployed and verified.
       save.disabled=true;
-      drawExtras();if(dirty)status.textContent='Unsaved preview · all settings below are draft choices only. No campaign mechanics or records have changed.';
+      drawExtras();if(dirty)status.textContent='Unsaved preview · changes are not applied to the campaign.';
     }
     override.onclick=()=>{state.override=!state.override;if(!state.override)state.editions=defaults(state.ruleset);dirty=true;update()};
-    panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary);if(editable)panel.append(actions);panel.append(status);
-    const extras=make('div','tv311-rule-sections');
+    const workspace=make('div','tv313-workspace'),nav=make('nav','tv313-navigation'),main=make('div','tv313-main'),corePanel=make('section','tv313-core');
+    nav.setAttribute('aria-label','Rules categories');
+    const coreTitle=make('h3','','Core ruleset'),coreIntro=make('p','tv-campaign-editor-intro','Choose a rules foundation. You can adjust each content collection independently.');
+    const coreHeading=make('div','tv313-section-title');coreHeading.append(coreTitle,coreIntro);
+    corePanel.append(coreHeading,make('strong','','Game version'),options,make('strong','','Spell catalogues'),override,catalogues,summary);
+    main.append(corePanel);workspace.append(nav,main);
+    panel.append(over,title,intro,status,workspace);if(editable)panel.append(actions);
+    panel.classList.add('tv313-rules-shell');
+    const extras=make('div','tv311-rule-sections tv313-extras');main.append(extras);
     const toggle=(key,name,desc,dependency)=>({key,name,desc,dependency});
     const choice=(key,name,desc,values,dependency)=>({key,name,desc,values,dependency});
     const sections=[
@@ -384,9 +391,13 @@
         choice('milestones','Session advancement','Multi-party support pending',[['party','Per party'],['campaign','Campaign-wide']])]}
     ];
     drawExtras=()=>{
-      extras.replaceChildren();
-      for(const section of sections){
-        const group=make('section','tv311-rule-group'),head=make('div','tv311-rule-heading');head.append(make('h3','',section.title),make('small','tv311-pending',editable?'Preview controls':'Not configured'));group.append(head,make('p','tv-campaign-editor-intro',section.desc));
+      nav.replaceChildren();extras.replaceChildren();corePanel.hidden=activeCategory!==0;extras.hidden=activeCategory===0;
+      const names=['Core ruleset','Starter content','Character creation','Spellcasting','Optional mechanics','Table & session rules'];
+      const hints=['Game version & spells','Classes, ancestries & feats','Creation & level-up','Casting & recovery','Terravale modules','Shared play & permissions'];
+      names.forEach((name,i)=>{const b=make('button','tv313-nav-button');b.type='button';b.setAttribute('aria-current',activeCategory===i?'page':'false');b.append(make('strong','',name),make('small','',hints[i]));b.onclick=()=>{activeCategory=i;drawExtras()};nav.append(b)});
+      for(const [index,section] of sections.entries()){
+        if(activeCategory!==index+1)continue;
+        const group=make('section','tv311-rule-group'),head=make('div','tv311-rule-heading');head.append(make('h3','',section.title));group.append(head,make('p','tv-campaign-editor-intro',section.desc));
         for(const item of section.rows){
           const row=make('div','tv309-catalogue-row tv312-rule-row'),copy=make('div');copy.append(make('strong','',item.name),make('small','',item.desc));row.append(copy);
           const enabled=editable&&(!item.dependency||item.dependency(state.extra));
@@ -395,17 +406,17 @@
           if(!editable){control.append(make('small','tv311-pending','Not connected'))}
           else if(item.number){const input=make('input','');input.type='number';input.min='1';input.max='20';input.value=String(state.extra[item.key]);input.disabled=!enabled;input.setAttribute('aria-label',item.name);input.onchange=()=>change(Math.max(1,Math.min(20,Math.trunc(Number(input.value)||1))));control.append(input)}
           else if(item.values){for(const [value,label] of item.values){const b=make('button','btn ghost small',label);b.type='button';b.disabled=!enabled;b.setAttribute('aria-pressed',String(state.extra[item.key]===value));b.onclick=()=>change(value);control.append(b)}}
-          else{const on=Boolean(state.extra[item.key])&&(!item.dependency||item.dependency(state.extra));const b=make('button','btn ghost small tv309-toggle',on?'On':'Off');b.type='button';b.disabled=!enabled;b.setAttribute('aria-pressed',String(on));b.onclick=()=>change(!on);control.append(b)}
+          else{const on=Boolean(state.extra[item.key])&&(!item.dependency||item.dependency(state.extra));const b=make('button','tv313-switch');b.type='button';b.disabled=!enabled;b.setAttribute('role','switch');b.setAttribute('aria-label',item.name);b.setAttribute('aria-checked',String(on));b.append(make('span','tv313-switch-track'),make('span','',on?'On':'Off'));b.onclick=()=>change(!on);control.append(b)}
           row.append(control);group.append(row);
         }
         extras.append(group);
       }
       const core=make('p','tv-campaign-editor-intro','Core feats, training, languages, inventory and basic D&D mechanics are not optional modules. Preview choices are not applied to characters.');extras.append(core);
     };
-    panel.after(extras);
+    // The category content lives inside the shared settings workspace.
     if(editable){
       const reset=make('button','btn ghost small','Reset preview');reset.type='button';reset.onclick=()=>{state.editions=defaults(state.ruleset);state.override=state.ruleset==='custom';state.extra=initialExtras(state.ruleset);state.codexSpells=false;dirty=true;update()};actions.prepend(reset);
-      const bottom=make('div','tv312-preview-footer');bottom.append(make('strong','','Unsaved preview'),make('small','','All six sections are included. No settings are applied or persisted.' ));extras.after(bottom);
+      const bottom=make('div','tv312-preview-footer');bottom.append(make('strong','','Unsaved preview'),make('small','','All six sections are included. No settings are applied or persisted.' ));panel.append(bottom);
     }
     update();
     if(isDemo(campaign.id)){state.ruleset='tv5e';state.extra=initialExtras('tv5e');state.editions=defaults('tv5e');update();status.textContent='Shared demo · read only';return}
@@ -415,7 +426,7 @@
       if(error)throw error;
       if(data&&labels[data.ruleset]&&Array.isArray(data.editions)){state.ruleset=data.ruleset;state.extra=initialExtras(data.ruleset);state.override=data.override_catalogues===true;state.editions=data.editions.filter(x=>['2014','2024'].includes(x));revision=data.revision}
       loaded=true;update();status.textContent=editable?'Preview only · server saving is not enabled yet.':data?'Current campaign rules · managed by your DM.':'Your DM has not configured the campaign rules yet.';
-    }catch(e){if(panel.isConnected&&!dirty)status.textContent=editable?'Preview only · campaign policy storage is not available on this server yet.':'Campaign rules are not available on this server yet.'}
+    }catch(e){if(panel.isConnected&&!dirty)status.textContent=editable?'Preview mode · try any setting; saving is not connected.':'Campaign rules are not available on this server yet.'}
   }
   function renderCampaignEditor(panel,campaign){
     panel.replaceChildren();
