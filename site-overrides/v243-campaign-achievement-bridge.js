@@ -316,7 +316,13 @@
     const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!=null)el.textContent=value;return el};
     const labels={'2014':'D&D 2014','2024':'D&D 2024',tv5e:'Tv5e',custom:'Custom'};
     const defaults=r=>r==='2014'?['2014']:r==='2024'?['2024']:r==='tv5e'?['2014','2024']:[];
-    const state={ruleset:'',override:false,editions:[]};
+    const state={ruleset:'',override:false,editions:[],codexSpells:false,extra:{}};
+    const initialExtras=r=>{
+      const tv=r==='tv5e',a=r==='2014'||tv,b=r==='2024'||tv;
+      return {classes14:a,classes24:b,classesTv:tv,ancestry14:a,ancestry24:b,ancestryTv:tv,feats14:a,feats24:b,featsTv:tv,codexContent:false,startingLevel:1,abilityScores:'choice',prerequisites:true,multiclass:!tv&&r!=='custom',backgrounds:tv?'backstory':'standard',hp:'choice',advancement:'dm',casting:'slots',strain:tv,overcast:tv,castingExceptions:false,recovery:'preserve',divine:tv,conditions:tv,currency:tv,grapple:tv,inspiration:!tv&&r!=='custom',visibility:'dm',rests:'dm',dice:'choice',milestones:'party'};
+    };
+    state.extra=initialExtras('');
+    let drawExtras=()=>{};
     let revision=0,loaded=false,dirty=false;
     const over=make('div','v2-overline',editable?'DM EDITOR · CAMPAIGN MECHANICS':'CAMPAIGN MECHANICS · READ ONLY');
     const title=make('h3','','Rules & Content');
@@ -328,12 +334,12 @@
     const status=make('p','tv-campaign-story-status','Checking campaign settings…');status.setAttribute('role','status');
     const save=make('button','btn primary small','Save rules & content');save.type='button';save.disabled=true;
     const actions=make('div','tv-campaign-story-actions');actions.append(save);
-    const codex=make('div','tv309-catalogue-row');const codexCopy=make('div');codexCopy.append(make('strong','','Codex spells'),make('small','','Custom and published spell content · coming later'));const codexToggle=make('button','btn ghost small','Unavailable');codexToggle.type='button';codexToggle.disabled=true;codex.append(codexCopy,codexToggle);
+    const codex=make('div','tv309-catalogue-row');const codexCopy=make('div');codexCopy.append(make('strong','','Codex spells'),make('small','','Custom and published spell content · coming later'));const codexToggle=make('button','btn ghost small','Unavailable');codexToggle.type='button';codexToggle.disabled=!editable;codexToggle.onclick=()=>{state.codexSpells=!state.codexSpells;dirty=true;update()};codex.append(codexCopy,codexToggle);
     function update(){
       options.replaceChildren();catalogues.replaceChildren();
       for(const [id,label] of Object.entries(labels)){
         const b=make('button','btn ghost small',label);b.type='button';b.disabled=!editable;b.setAttribute('aria-pressed',String(state.ruleset===id));
-        b.onclick=()=>{state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);dirty=true;update()};options.append(b);
+        b.onclick=()=>{state.ruleset=id;state.override=id==='custom';state.editions=defaults(id);state.extra=initialExtras(id);state.codexSpells=false;dirty=true;update()};options.append(b);
       }
       override.textContent='Override ruleset defaults · '+(state.override?'On':'Off');override.setAttribute('aria-pressed',String(state.override));override.disabled=!editable||!state.ruleset||state.ruleset==='custom';
       for(const id of ['2014','2024']){
@@ -341,44 +347,73 @@
         const b=make('button','btn ghost small tv309-toggle',state.editions.includes(id)?'Allowed':'Blocked');b.type='button';b.setAttribute('aria-pressed',String(state.editions.includes(id)));b.disabled=!editable||!state.override;
         b.onclick=()=>{state.editions=state.editions.includes(id)?state.editions.filter(x=>x!==id):[...state.editions,id].sort();dirty=true;update()};row.append(copy,b);catalogues.append(row);
       }
-      catalogues.append(codex);
+      codexToggle.textContent=state.codexSpells?'Allowed · preview':'Blocked';codexToggle.setAttribute('aria-pressed',String(state.codexSpells));catalogues.append(codex);
       summary.textContent=state.ruleset?'Character tag: '+labels[state.ruleset]+' · '+(state.editions.length?state.editions.map(x=>labels[x]).join(' + '):'No official spell catalogues'):'Campaign ruleset not configured';
       // Preview only until server authorization is deployed and verified.
       save.disabled=true;
-      if(dirty)status.textContent='Unsaved preview · saving is not available until the campaign policy migration is enabled.';
+      drawExtras();if(dirty)status.textContent='Unsaved preview · all settings below are draft choices only. No campaign mechanics or records have changed.';
     }
     override.onclick=()=>{state.override=!state.override;if(!state.override)state.editions=defaults(state.ruleset);dirty=true;update()};
     panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary);if(editable)panel.append(actions);panel.append(status);
-    // Future settings are explicitly non-authoritative design previews; no fake saves.
     const extras=make('div','tv311-rule-sections');
+    const toggle=(key,name,desc,dependency)=>({key,name,desc,dependency});
+    const choice=(key,name,desc,values,dependency)=>({key,name,desc,values,dependency});
     const sections=[
-      {title:'Starter content',desc:'Choose which built-in collections are available when creating characters. These choices do not delete existing content.',rows:[
-        ['2014 classes & subclasses','SRD 5.1 class catalogue'],['2024 classes & subclasses','SRD 5.2.1 class catalogue'],['Tv5e classes & subclasses','Terravale original and adapted classes'],
-        ['2014 ancestries','SRD 5.1 ancestry catalogue'],['2024 ancestries','SRD 5.2.1 ancestry catalogue'],['Tv5e ancestries','Terravale ancestry catalogue'],
-        ['Feat catalogues','Edition-specific feats and original Terravale feats'],['Campaign and Codex content','Published or campaign-owned classes, ancestries, feats, items and spells; access and pinned versions required']]},
-      {title:'Character creation & advancement',desc:'Campaign-wide character creation and progression policies.',rows:[
-        ['Starting level','Level-one default; higher starts require complete progression validation'],['Ability score generation','Standard array, point buy or DM-approved rolls'],['Ancestry prerequisites','Enforce Terravale class and ancestry dependencies; DM may approve an exception'],['Multiclassing','Tv5e default: disabled'],['Backgrounds','Tv5e uses backstory benefits instead of standard backgrounds'],['HP advancement','Fixed or rolled hit dice, with DM approval'],['Level-up authorization','DM-controlled availability and approval; existing approved records preserved']]},
-      {title:'Spellcasting',desc:'Choose a resource model without changing spell effects, concentration or components.',rows:[
-        ['Casting resource','Standard spell slots / DMG spell points / Tv5e spell points'],['Arcane Strain & overcasting','Optional Tv5e stability checks and strain; requires points mode'],['Character exceptions','DM-approved casting resource overrides; Pact Magic and custom class resources remain separate'],['Recovery and conversion','Preserve spent resources when switching; long-rest and high-level casting limits']]},
-      {title:'Optional mechanics',desc:'Modules extend the core game and expose their associated settings only when implemented.',rows:[
-        ['Divine Favour & Boons','Unlock divine relationships, offers, charges and patron mechanics in Divine and DM Chronicle'],['Additional conditions','Enable Terravale-specific conditions in sheets and Session Room'],['Custom multi-currency','Enable regional denominations, exchange rates and treasury settings in DM Chronicle'],['Grappling & expanded conditions','Tv5e extensions to the core combat rules'],['Inspiration','Tv5e default: disabled']]},
-      {title:'Table & session rules',desc:'Mechanical permissions and shared play; campaign administration stays in Settings.',rows:[
-        ['Party visibility','DM-controlled character sheet sharing; private records remain private'],['Rest management','DM-controlled recovery in Session Room; class-specific rules retained'],['Dice visibility','Public, private and DM-only roll options'],['Session advancement','Party-specific advancement and milestone permissions; multi-party support pending']]},
+      {title:'Starter content',desc:'Independently choose the collections available during character creation.',rows:[
+        toggle('classes14','2014 classes & subclasses','SRD 5.1'),toggle('classes24','2024 classes & subclasses','SRD 5.2.1'),toggle('classesTv','Tv5e classes & subclasses','Terravale class catalogue'),
+        toggle('ancestry14','2014 ancestries','SRD 5.1'),toggle('ancestry24','2024 ancestries','SRD 5.2.1'),toggle('ancestryTv','Tv5e ancestries','Terravale ancestry catalogue'),
+        toggle('feats14','2014 feats','SRD 5.1'),toggle('feats24','2024 feats','SRD 5.2.1'),toggle('featsTv','Tv5e feats','Terravale feat catalogue'),toggle('codexContent','Campaign & Codex content','Published and campaign-owned content; future access checks')]},
+      {title:'Character creation & advancement',desc:'Character generation and progression rules.',rows:[
+        {key:'startingLevel',name:'Starting level',desc:'Higher starts require progression validation',number:true},
+        choice('abilityScores','Ability score generation','Permitted generation method',[['choice','Player choice'],['array','Standard array'],['point','Point buy'],['roll','Rolled']]),
+        toggle('prerequisites','Ancestry prerequisites','Enforce class and ancestry dependencies'),toggle('multiclass','Multiclassing','Allow multiple classes'),
+        choice('backgrounds','Backgrounds','Character origin benefits',[['standard','Standard'],['backstory','Backstory benefits'],['none','None']]),
+        choice('hp','HP advancement','Hit die method',[['choice','Player choice'],['fixed','Fixed'],['roll','Rolled']]),
+        choice('advancement','Level-up authorization','DM approval is retained',[['dm','DM unlock'],['request','Player request']])]},
+      {title:'Spellcasting',desc:'Resource model, strain and recovery.',rows:[
+        choice('casting','Casting resource','Pact Magic and class resources remain separate',[['slots','Spell slots'],['dmg','DMG points'],['tv','Tv5e points']]),
+        toggle('strain','Arcane Strain','Tv5e stability penalties',x=>x.casting==='tv'),toggle('overcast','Overcasting & stability','Permit casting beyond available points',x=>x.casting==='tv'&&x.strain),
+        toggle('castingExceptions','Character exceptions','DM-approved resource model overrides'),
+        choice('recovery','Resource conversion','Preserve spent resources when changing models',[['preserve','Preserve usage'],['rest','Change after long rest']])]},
+      {title:'Optional mechanics',desc:'Modules unlock connected settings when implemented.',rows:[
+        toggle('divine','Divine Favour & Boons','Divine tab and DM Chronicle'),toggle('conditions','Additional conditions','Sheets and Session Room'),toggle('currency','Custom multi-currency','Wallets and DM Treasury'),toggle('grapple','Expanded grappling','Terravale combat extensions'),toggle('inspiration','Inspiration','Enable inspiration tracking')]},
+      {title:'Table & session rules',desc:'Shared play and mechanical permissions.',rows:[
+        choice('visibility','Party visibility','Private records remain private',[['dm','DM controlled'],['shared','Shared sheets'],['private','Private']]),
+        choice('rests','Rest management','Class recovery rules retained',[['dm','DM controlled'],['player','Player initiated']]),
+        choice('dice','Dice visibility','Roll disclosure defaults',[['choice','Player choice'],['public','Public'],['dm','DM only']]),
+        choice('milestones','Session advancement','Multi-party support pending',[['party','Per party'],['campaign','Campaign-wide']])]}
     ];
-    for(const section of sections){
-      const group=make('section','tv311-rule-group');const head=make('div','tv311-rule-heading');head.append(make('h3','',section.title),make('small','tv311-pending','Planned settings'));group.append(head,make('p','tv-campaign-editor-intro',section.desc));
-      for(const [name,description] of section.rows){const row=make('div','tv309-catalogue-row'),copy=make('div');copy.append(make('strong','',name),make('small','',description));row.append(copy,make('small','tv311-pending','Not connected'));group.append(row)}
-      extras.append(group);
-    }
-    const core=make('p','tv-campaign-editor-intro','Core feats, training, languages, inventory and basic D&D mechanics are always available; they are not optional modules.');extras.append(core);
+    drawExtras=()=>{
+      extras.replaceChildren();
+      for(const section of sections){
+        const group=make('section','tv311-rule-group'),head=make('div','tv311-rule-heading');head.append(make('h3','',section.title),make('small','tv311-pending',editable?'Preview controls':'Not configured'));group.append(head,make('p','tv-campaign-editor-intro',section.desc));
+        for(const item of section.rows){
+          const row=make('div','tv309-catalogue-row tv312-rule-row'),copy=make('div');copy.append(make('strong','',item.name),make('small','',item.desc));row.append(copy);
+          const enabled=editable&&(!item.dependency||item.dependency(state.extra));
+          const control=make('div','tv312-rule-controls');
+          const change=value=>{state.extra[item.key]=value;dirty=true;update()};
+          if(!editable){control.append(make('small','tv311-pending','Not connected'))}
+          else if(item.number){const input=make('input','');input.type='number';input.min='1';input.max='20';input.value=String(state.extra[item.key]);input.disabled=!enabled;input.setAttribute('aria-label',item.name);input.onchange=()=>change(Math.max(1,Math.min(20,Math.trunc(Number(input.value)||1))));control.append(input)}
+          else if(item.values){for(const [value,label] of item.values){const b=make('button','btn ghost small',label);b.type='button';b.disabled=!enabled;b.setAttribute('aria-pressed',String(state.extra[item.key]===value));b.onclick=()=>change(value);control.append(b)}}
+          else{const on=Boolean(state.extra[item.key])&&(!item.dependency||item.dependency(state.extra));const b=make('button','btn ghost small tv309-toggle',on?'On':'Off');b.type='button';b.disabled=!enabled;b.setAttribute('aria-pressed',String(on));b.onclick=()=>change(!on);control.append(b)}
+          row.append(control);group.append(row);
+        }
+        extras.append(group);
+      }
+      const core=make('p','tv-campaign-editor-intro','Core feats, training, languages, inventory and basic D&D mechanics are not optional modules. Preview choices are not applied to characters.');extras.append(core);
+    };
     panel.after(extras);
+    if(editable){
+      const reset=make('button','btn ghost small','Reset preview');reset.type='button';reset.onclick=()=>{state.editions=defaults(state.ruleset);state.override=state.ruleset==='custom';state.extra=initialExtras(state.ruleset);state.codexSpells=false;dirty=true;update()};actions.prepend(reset);
+      const bottom=make('div','tv312-preview-footer');bottom.append(make('strong','','Unsaved preview'),make('small','','All six sections are included. No settings are applied or persisted.' ));extras.after(bottom);
+    }
     update();
-    if(isDemo(campaign.id)){state.ruleset='tv5e';state.editions=defaults('tv5e');update();status.textContent='Shared demo · read only';return}
+    if(isDemo(campaign.id)){state.ruleset='tv5e';state.extra=initialExtras('tv5e');state.editions=defaults('tv5e');update();status.textContent='Shared demo · read only';return}
     try{
       const {data,error}=await client().from('terravale_campaign_spell_policy').select('ruleset,override_catalogues,editions,revision').eq('campaign_id',campaign.id).maybeSingle();
       if(!panel.isConnected||dirty)return;
       if(error)throw error;
-      if(data&&labels[data.ruleset]&&Array.isArray(data.editions)){state.ruleset=data.ruleset;state.override=data.override_catalogues===true;state.editions=data.editions.filter(x=>['2014','2024'].includes(x));revision=data.revision}
+      if(data&&labels[data.ruleset]&&Array.isArray(data.editions)){state.ruleset=data.ruleset;state.extra=initialExtras(data.ruleset);state.override=data.override_catalogues===true;state.editions=data.editions.filter(x=>['2014','2024'].includes(x));revision=data.revision}
       loaded=true;update();status.textContent=editable?'Preview only · server saving is not enabled yet.':data?'Current campaign rules · managed by your DM.':'Your DM has not configured the campaign rules yet.';
     }catch(e){if(panel.isConnected&&!dirty)status.textContent=editable?'Preview only · campaign policy storage is not available on this server yet.':'Campaign rules are not available on this server yet.'}
   }
