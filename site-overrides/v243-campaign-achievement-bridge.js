@@ -644,7 +644,12 @@
     if(!heading)return;
     const card=heading.closest('section,article')||heading.parentElement?.parentElement;
     if(!card||!root.contains(card))return;
+    // Temporarily clear the former Recently explored / handbook dashboard area.
+    // Keep the handbook source available for a future dedicated reference.
     card.dataset.tv314Entry='true';
+    card.hidden=true;
+    card.style.setProperty('display','none','important');
+    return;
     const eyebrow=card.querySelector('.v2-overline');if(eyebrow)eyebrow.textContent='LEARN THE SYSTEM';
     heading.textContent='The Tv5e Handbook';
     const links=[...card.querySelectorAll('a,button')];const link=links.find(x=>/view journal/i.test(x.textContent));
