@@ -309,3 +309,16 @@ dialog.tv298-wizard[open]{display:flex;flex-direction:column;overflow:hidden;max
 .tv309-catalogue-row>div{display:grid;gap:3px}.tv309-catalogue-row small{color:var(--soft,#aaa);font-size:11px}
 .tv309-ruleset-tag{font-size:11px;color:var(--soft,#aaa);margin:0 0 8px}
 @media(max-width:650px){.tv309-rule-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V311: compact campaign rules roadmap, independent of display settings. */
+.tv311-rule-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.tv311-rule-group{display:grid;align-content:start;gap:7px;min-width:0;padding:14px;border:1px solid var(--edge,#444);border-radius:10px;background:var(--surface,#141414)}
+.tv311-rule-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tv311-rule-heading h3{margin:0;font-size:18px}
+.tv311-rule-group p{margin:0 0 4px}
+.tv311-rule-group .tv309-catalogue-row{padding:8px 10px}
+.tv311-rule-group .tv309-catalogue-row>div{min-width:0}
+.tv311-rule-group .tv309-catalogue-row small{overflow-wrap:anywhere}
+.tv311-pending{color:var(--soft,#aaa);font-size:10px;flex-shrink:0}
+.tv311-rule-sections>.tv-campaign-editor-intro{grid-column:1/-1;margin:0}
+@media(max-width:850px){.tv311-rule-sections{grid-template-columns:1fr}}
