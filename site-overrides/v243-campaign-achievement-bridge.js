@@ -349,6 +349,29 @@
     }
     override.onclick=()=>{state.override=!state.override;if(!state.override)state.editions=defaults(state.ruleset);dirty=true;update()};
     panel.append(over,title,intro,make('strong','','Campaign ruleset'),options,override,catalogues,summary);if(editable)panel.append(actions);panel.append(status);
+    // Future settings are explicitly non-authoritative design previews; no fake saves.
+    const extras=make('div','tv311-rule-sections');
+    const sections=[
+      {title:'Starter content',desc:'Choose which built-in collections are available when creating characters. These choices do not delete existing content.',rows:[
+        ['2014 classes & subclasses','SRD 5.1 class catalogue'],['2024 classes & subclasses','SRD 5.2.1 class catalogue'],['Tv5e classes & subclasses','Terravale original and adapted classes'],
+        ['2014 ancestries','SRD 5.1 ancestry catalogue'],['2024 ancestries','SRD 5.2.1 ancestry catalogue'],['Tv5e ancestries','Terravale ancestry catalogue'],
+        ['Feat catalogues','Edition-specific feats and original Terravale feats'],['Campaign and Codex content','Published or campaign-owned classes, ancestries, feats, items and spells; access and pinned versions required']]},
+      {title:'Character creation & advancement',desc:'Campaign-wide character creation and progression policies.',rows:[
+        ['Starting level','Level-one default; higher starts require complete progression validation'],['Ability score generation','Standard array, point buy or DM-approved rolls'],['Ancestry prerequisites','Enforce Terravale class and ancestry dependencies; DM may approve an exception'],['Multiclassing','Tv5e default: disabled'],['Backgrounds','Tv5e uses backstory benefits instead of standard backgrounds'],['HP advancement','Fixed or rolled hit dice, with DM approval'],['Level-up authorization','DM-controlled availability and approval; existing approved records preserved']]},
+      {title:'Spellcasting',desc:'Choose a resource model without changing spell effects, concentration or components.',rows:[
+        ['Casting resource','Standard spell slots / DMG spell points / Tv5e spell points'],['Arcane Strain & overcasting','Optional Tv5e stability checks and strain; requires points mode'],['Character exceptions','DM-approved casting resource overrides; Pact Magic and custom class resources remain separate'],['Recovery and conversion','Preserve spent resources when switching; long-rest and high-level casting limits']]},
+      {title:'Optional mechanics',desc:'Modules extend the core game and expose their associated settings only when implemented.',rows:[
+        ['Divine Favour & Boons','Unlock divine relationships, offers, charges and patron mechanics in Divine and DM Chronicle'],['Additional conditions','Enable Terravale-specific conditions in sheets and Session Room'],['Custom multi-currency','Enable regional denominations, exchange rates and treasury settings in DM Chronicle'],['Grappling & expanded conditions','Tv5e extensions to the core combat rules'],['Inspiration','Tv5e default: disabled']]},
+      {title:'Table & session rules',desc:'Mechanical permissions and shared play; campaign administration stays in Settings.',rows:[
+        ['Party visibility','DM-controlled character sheet sharing; private records remain private'],['Rest management','DM-controlled recovery in Session Room; class-specific rules retained'],['Dice visibility','Public, private and DM-only roll options'],['Session advancement','Party-specific advancement and milestone permissions; multi-party support pending']]},
+    ];
+    for(const section of sections){
+      const group=make('section','tv311-rule-group');const head=make('div','tv311-rule-heading');head.append(make('h3','',section.title),make('small','tv311-pending','Planned settings'));group.append(head,make('p','tv-campaign-editor-intro',section.desc));
+      for(const [name,description] of section.rows){const row=make('div','tv309-catalogue-row'),copy=make('div');copy.append(make('strong','',name),make('small','',description));row.append(copy,make('small','tv311-pending','Not connected'));group.append(row)}
+      extras.append(group);
+    }
+    const core=make('p','tv-campaign-editor-intro','Core feats, training, languages, inventory and basic D&D mechanics are always available; they are not optional modules.');extras.append(core);
+    panel.after(extras);
     update();
     if(isDemo(campaign.id)){state.ruleset='tv5e';state.editions=defaults('tv5e');update();status.textContent='Shared demo · read only';return}
     try{
